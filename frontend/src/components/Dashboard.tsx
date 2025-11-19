@@ -1,219 +1,232 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
-import { motion, LayoutGroup } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_USERS } from '../data/mockData';
+import { MOCK_FLOWS, type Flow } from '../data/flows';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
-
-interface ActiveRoutine {
-  userId: string;
-  routineId: string;
-}
+import { GlobalAlarm } from './GlobalAlarm';
 
 export const Dashboard: React.FC = () => {
-  const [time, setTime] = useState(new Date());
-  const [activeRoutines, setActiveRoutines] = useState<ActiveRoutine[]>([]);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // Flow State
+  const [activeFlow, setActiveFlow] = useState<Flow | null>(null);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  
+  // Active Routines (triggered by flow)
+  const [activeRoutines, setActiveRoutines] = useState<{userId: string, routineId: string}[]>([]);
 
-  // Main Clock & Auto-Trigger Logic
+  // Clock
   useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      setTime(now);
-
-      const currentTimeStr = format(now, 'HH:mm');
-      
-      setActiveRoutines(prev => {
-        const newRoutines = [...prev];
-        let changed = false;
-
-        MOCK_USERS.forEach(user => {
-          user.routines.forEach(routine => {
-            if (routine.scheduleTime === currentTimeStr) {
-              // Check if already active
-              if (!newRoutines.find(ar => ar.userId === user.id && ar.routineId === routine.id)) {
-                 // For simplicity: If user is NOT in activeRoutines, add them.
-                 if (!newRoutines.find(ar => ar.userId === user.id)) {
-                   newRoutines.push({ userId: user.id, routineId: routine.id });
-                   changed = true;
-                 }
-              }
-            }
-          });
-        });
-        
-        return changed ? newRoutines : prev;
-      });
-
-    }, 1000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // TESTING ONLY: Trigger Morning Routine after 3 seconds
+  // Flow Trigger Logic (Test Mode: Trigger after 3s)
   useEffect(() => {
     const timeout = setTimeout(() => {
-      const now = new Date();
-      const currentTimeStr = format(now, 'HH:mm');
-      console.log('⚡ SIMULATING SCHEDULE MATCH for', currentTimeStr);
-      
-      // Mutate mock data for testing
-      const elektra = MOCK_USERS.find(u => u.name === 'Ηλέκτρα');
-      const morning = elektra?.routines.find(r => r.title === 'Πρωινή Ρουτίνα');
-      if (morning) {
-        morning.scheduleTime = currentTimeStr;
+      // Trigger Morning Flow
+      const flow = MOCK_FLOWS.find(f => f.id === 'morning-flow');
+      if (flow) {
+        setActiveFlow(flow);
+        setCurrentStepIndex(0);
       }
     }, 3000);
     return () => clearTimeout(timeout);
   }, []);
 
-  const startRoutine = (userId: string, routineId: string) => {
-    setActiveRoutines(prev => {
-      if (!prev.find(ar => ar.userId === userId)) {
-        return [...prev, { userId, routineId }];
+  const handleStepComplete = () => {
+    if (!activeFlow) return;
+    
+    const nextIndex = currentStepIndex + 1;
+    if (nextIndex < activeFlow.steps.length) {
+      setCurrentStepIndex(nextIndex);
+      
+      // Execute next step actions immediately if it's a parallel routine step
+      const nextStep = activeFlow.steps[nextIndex];
+      if (nextStep.type === 'parallel' && nextStep.actions) {
+        const newRoutines = nextStep.actions
+          .filter(a => a.type === 'routine')
+          .map(a => ({ userId: a.userId, routineId: a.routineId }));
+        
+        setActiveRoutines(prev => [...prev, ...newRoutines]);
       }
-      return prev;
-    });
+    } else {
+      // Flow Complete
+      setActiveFlow(null);
+      setCurrentStepIndex(0);
+    }
   };
 
-  const endRoutine = (userId: string) => {
-    setActiveRoutines(prev => prev.filter(ar => ar.userId !== userId));
+  const handleRoutineExit = (userId: string) => {
+    setActiveRoutines(prev => prev.filter(r => r.userId !== userId));
   };
 
-  // Grid Logic
+  const handleRoutineComplete = (userId: string) => {
+    handleRoutineExit(userId);
+  };
+
+  // Determine View Mode
   const activeCount = activeRoutines.length;
-  const gridClass = activeCount === 0 ? 'idle' : activeCount === 1 ? 'single' : activeCount === 2 ? 'dual' : 'grid';
+  const viewMode = activeCount === 0 ? 'IDLE' : activeCount === 1 ? 'SINGLE' : activeCount === 2 ? 'DUAL' : 'GRID';
+
+  const currentStep = activeFlow?.steps[currentStepIndex];
 
   return (
-    <div className={`dashboard-container ${gridClass}`}>
-      <LayoutGroup>
-        {/* Header / Clock Area */}
-        <motion.header 
-          layout
-          className="dashboard-header"
-        >
-          <motion.h1 layout className="clock">{format(time, 'h:mm a')}</motion.h1>
-          <motion.p layout className="date">{format(time, 'EEEE, d MMMM', { locale: el })}</motion.p>
-        </motion.header>
+    <div className="dashboard">
+      <AnimatePresence>
+        {activeFlow && currentStep?.type === 'alarm' && (
+          <GlobalAlarm onDismiss={handleStepComplete} />
+        )}
+      </AnimatePresence>
 
-        {/* Active Stage (The Grid) */}
-        <div className="stage-area">
-          {activeRoutines.map(ar => (
+      {/* Background Animation */}
+      <div className="bg-gradient" />
+
+      {/* Main Stage */}
+      <div className={`stage ${viewMode.toLowerCase()}`}>
+        <AnimatePresence>
+          {activeCount === 0 && (
             <motion.div 
-              layout
-              key={ar.userId}
-              className="stage-lane"
-              initial={{ opacity: 0, scale: 0.8 }}
+              className="clock-container"
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
+              exit={{ opacity: 0, scale: 0.9 }}
             >
-              <InlineRoutinePlayer 
-                userId={ar.userId}
-                routineId={ar.routineId}
-                onComplete={() => endRoutine(ar.userId)}
-                onExit={() => endRoutine(ar.userId)}
-              />
+              <h1 className="time-display">
+                {format(currentTime, 'HH:mm')}
+              </h1>
+              <p className="date-display">
+                {format(currentTime, 'EEEE, d MMMM', { locale: el })}
+              </p>
             </motion.div>
-          ))}
-        </div>
+          )}
+        </AnimatePresence>
 
-        {/* Inactive Dock */}
-        <motion.div layout className="dock-area">
-          {MOCK_USERS.filter(u => !activeRoutines.find(ar => ar.userId === u.id)).map(user => (
+        {/* Active Routines Grid */}
+        {activeRoutines.map((ar) => (
+          <motion.div 
+            key={`${ar.userId}-${ar.routineId}`}
+            className="routine-slot"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: "spring", bounce: 0.3 }}
+          >
+            <InlineRoutinePlayer 
+              userId={ar.userId}
+              routineId={ar.routineId}
+              onComplete={() => handleRoutineComplete(ar.userId)}
+              onExit={() => handleRoutineExit(ar.userId)}
+            />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Dock (Inactive Users) */}
+      {activeCount === 0 && (
+        <motion.div 
+          className="dock"
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+        >
+          {MOCK_USERS.map(user => (
             <motion.div 
-              layout
               key={user.id}
-              className="dock-card"
-              style={{ borderColor: user.color }}
+              className="dock-item"
+              whileHover={{ scale: 1.1, y: -10 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                // Manual trigger (optional, for now just logs)
+                console.log('Manual trigger for', user.name);
+              }}
             >
-              <div className="dock-avatar" style={{ background: user.color }}>{user.avatar}</div>
-              <div className="dock-info">
-                <h3>{user.name}</h3>
-                <div className="dock-routines">
-                  {user.routines.map(r => (
-                    <button 
-                      key={r.id}
-                      className="btn-start-routine"
-                      onClick={() => startRoutine(user.id, r.id)}
-                      style={{ '--hover-color': user.color } as React.CSSProperties}
-                    >
-                      {r.title}
-                    </button>
-                  ))}
-                </div>
+              <div className="dock-avatar" style={{ background: user.color }}>
+                {user.avatar}
               </div>
+              <span className="dock-name">{user.name}</span>
             </motion.div>
           ))}
         </motion.div>
-      </LayoutGroup>
+      )}
 
       <style>{`
-        .dashboard-container {
+        .dashboard {
           height: 100vh;
-          display: flex;
-          flex-direction: column;
-          padding: 1rem;
+          width: 100vw;
           overflow: hidden;
-          transition: all 0.5s ease;
-        }
-
-        /* Layout States */
-        .dashboard-container.idle .dashboard-header {
-          flex: 1;
+          position: relative;
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          align-items: center;
+          color: white;
         }
-        .dashboard-container.idle .clock { font-size: 8rem; }
-        
-        .dashboard-container:not(.idle) .dashboard-header {
-          flex: 0 0 auto;
-          flex-direction: row;
-          justify-content: space-between;
-          padding: 0 2rem;
-        }
-        .dashboard-container:not(.idle) .clock { font-size: 2rem; }
-        .dashboard-container:not(.idle) .date { font-size: 1rem; }
 
-        /* Stage Area */
-        .stage-area {
+        .bg-gradient {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+          z-index: -1;
+        }
+
+        .stage {
           flex: 1;
-          display: grid;
-          gap: 1rem;
-          padding: 1rem 0;
-          min-height: 0; /* Fix flex overflow */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem;
+          gap: 2rem;
+          position: relative;
         }
 
-        .dashboard-container.single .stage-area { grid-template-columns: 1fr; }
-        .dashboard-container.dual .stage-area { grid-template-columns: 1fr 1fr; }
-        .dashboard-container.grid .stage-area { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        .stage.single .routine-slot { width: 100%; height: 100%; max-width: 600px; }
+        .stage.dual .routine-slot { width: 50%; height: 100%; }
+        .stage.grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 
-        .stage-lane {
+        .routine-slot {
           height: 100%;
           width: 100%;
-          min-height: 0;
         }
 
-        /* Dock Area */
-        .dock-area {
-          flex: 0 0 auto;
-          display: flex;
-          gap: 1rem;
-          justify-content: center;
-          padding-top: 1rem;
-          border-top: 1px solid var(--glass-border);
+        .clock-container {
+          text-align: center;
+          z-index: 1;
         }
 
-        .dock-card {
-          background: var(--glass-bg);
-          backdrop-filter: blur(10px);
-          border: 1px solid var(--glass-border);
-          border-radius: 1.5rem;
-          padding: 1rem;
+        .time-display {
+          font-size: 12rem;
+          font-weight: 200;
+          line-height: 1;
+          text-shadow: 0 0 30px rgba(255,255,255,0.2);
+          font-variant-numeric: tabular-nums;
+        }
+
+        .date-display {
+          font-size: 3rem;
+          opacity: 0.7;
+          text-transform: capitalize;
+        }
+
+        .dock {
+          height: 120px;
+          background: rgba(255,255,255,0.1);
+          backdrop-filter: blur(20px);
           display: flex;
           align-items: center;
-          gap: 1rem;
-          width: 300px;
+          justify-content: center;
+          gap: 3rem;
+          padding-bottom: 1rem;
+        }
+
+        .dock-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          cursor: pointer;
         }
 
         .dock-avatar {
@@ -224,28 +237,12 @@ export const Dashboard: React.FC = () => {
           align-items: center;
           justify-content: center;
           font-size: 2rem;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .dock-info h3 { margin-bottom: 0.5rem; }
-
-        .dock-routines {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
-
-        .btn-start-routine {
-          background: rgba(255,255,255,0.1);
-          color: white;
-          padding: 0.25rem 0.75rem;
-          border-radius: 1rem;
-          font-size: 0.8rem;
-          transition: background 0.2s;
-        }
-
-        .btn-start-routine:hover {
-          background: var(--hover-color);
-          color: black;
+        .dock-name {
+          font-size: 1rem;
+          font-weight: 600;
         }
       `}</style>
     </div>

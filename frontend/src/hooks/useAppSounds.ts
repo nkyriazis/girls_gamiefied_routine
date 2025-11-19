@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 export const useAppSounds = () => {
   const playTone = (freq: number, type: OscillatorType, duration: number) => {
@@ -47,9 +47,49 @@ export const useAppSounds = () => {
     setTimeout(() => playTone(440, 'square', 0.5), 600);
   }, []);
 
+  // Alarm Loop Ref
+  const alarmIntervalRef = useRef<any>(null);
+
+  const playWakeUpLoop = useCallback(() => {
+    if (alarmIntervalRef.current) return;
+
+    const playMelody = () => {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const now = ctx.currentTime;
+      // Simple "Morning" melody: C4 E4 G4 C5
+      [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        
+        gain.gain.setValueAtTime(0.1, now + i * 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.4);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(now + i * 0.2);
+        osc.stop(now + i * 0.2 + 0.5);
+      });
+    };
+
+    playMelody();
+    alarmIntervalRef.current = setInterval(playMelody, 2000);
+  }, []);
+
+  const stopWakeUpLoop = useCallback(() => {
+    if (alarmIntervalRef.current) {
+      clearInterval(alarmIntervalRef.current);
+      alarmIntervalRef.current = null;
+    }
+  }, []);
+
   return {
     playClick,
     playSuccess,
-    playAlarm
+    playAlarm,
+    playWakeUpLoop,
+    stopWakeUpLoop
   };
 };
