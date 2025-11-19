@@ -1,0 +1,7 @@
+.gemini
+.vscode
+.idea
+*.log
+tmp
+node_modules
+dist
