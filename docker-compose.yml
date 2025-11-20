@@ -1,4 +1,15 @@
 services:
+  backend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: sh -c "npm install prisma@^6.0.0 @prisma/client@^6.0.0 && npx prisma migrate deploy && npm run dev"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - routine-net
+
   frontend:
     image: node:20-alpine
     working_dir: /app
@@ -9,3 +20,10 @@ services:
     command: npm run dev -- --host
     environment:
       - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+    networks:
+      - routine-net
+
+networks:
+  routine-net:
