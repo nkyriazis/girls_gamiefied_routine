@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  avatar      String
+  color       String
+  stars       Int      @default(0)
+  assignments RoutineAssignment[]
+  executions  RoutineExecution[]
+}
+
+model Routine {
+  id          String   @id @default(uuid())
+  title       String
+  themeColor  String?
+  icon        String?
+  tasks       RoutineTask[]
+  assignments RoutineAssignment[]
+  executions  RoutineExecution[]
+}
+
+model Task {
+  id           String   @id @default(uuid())
+  title        String
+  icon         String
+  routineTasks RoutineTask[]
+}
+
+model RoutineTask {
+  id              String   @id @default(uuid())
+  routineId       String
+  routine         Routine  @relation(fields: [routineId], references: [id])
+  taskId          String
+  task            Task     @relation(fields: [taskId], references: [id])
+  order           Int
+  durationSeconds Int
+}
+
+model RoutineAssignment {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  routineId      String
+  routine        Routine  @relation(fields: [routineId], references: [id])
+  scheduleTime   String?  // HH:mm
+  cronExpression String?  // Cron string
+  themeColor     String?  // Optional override
+}
+
+model Alarm {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // 'melody', 'beep'
+  mediaSource String?  // URL or internal ID
+}
+
+model Flow {
+  id          String   @id @default(uuid())
+  triggerTime String   // HH:mm or Cron
+  steps       String   // JSON string of FlowStep[]
+}
+
+model RoutineExecution {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  routineId   String
+  routine     Routine  @relation(fields: [routineId], references: [id])
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  totalStars  Int      @default(0)
+  tasks       TaskExecution[]
+}
+
+model TaskExecution {
+  id          String   @id @default(uuid())
+  executionId String
+  execution   RoutineExecution @relation(fields: [executionId], references: [id])
+  taskId      String
+  duration    Int
+  completedAt DateTime @default(now())
+  isOnTime    Boolean
+}
