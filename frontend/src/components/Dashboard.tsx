@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MOCK_USERS } from '../data/mockData';
-import { MOCK_FLOWS, type Flow } from '../data/flows';
+import { type User } from '../data/mockData';
+import { type Flow } from '../data/flows';
+import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
 
 export const Dashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [users, setUsers] = useState<User[]>([]);
+  const [flows, setFlows] = useState<Flow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Flow State
   const [activeFlow, setActiveFlow] = useState<Flow | null>(null);
@@ -16,6 +20,74 @@ export const Dashboard: React.FC = () => {
   
   // Active Routines (triggered by flow)
   const [activeRoutines, setActiveRoutines] = useState<{userId: string, routineId: string}[]>([]);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [ws, setWs] = useState<WebSocket | null>(null);
+
+  // Fetch Data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [usersData, flowsData] = await Promise.all([
+          api.getUsers(),
+          api.getFlows()
+        ]);
+        setUsers(usersData);
+        setFlows(flowsData);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+
+    // WebSocket connection
+    const websocket = new WebSocket(`ws://${window.location.host}/ws`);
+    websocket.onopen = () => {
+      console.log('WebSocket connected');
+    };
+    websocket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log('WebSocket message:', message);
+
+      if (message.type === 'ALARM_START') {
+        // Trigger alarm by creating a temporary flow
+        const alarmFlow = {
+          id: 'temp-alarm',
+          triggerTime: '',
+          steps: [{ type: 'alarm' as const, props: { sound: 'melody' } }]
+        };
+        setActiveFlow(alarmFlow as any);
+        setCurrentStepIndex(0);
+      } else if (message.type === 'ROUTINE_START') {
+        const { userId, routineId } = message.payload;
+        setActiveRoutines(prev => [...prev, { userId, routineId }]);
+      } else if (message.type === 'FLOW_START') {
+        const { flowId, steps } = message.payload;
+        const flow = flows.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
+        setActiveFlow(flow);
+        setCurrentStepIndex(0);
+        // Execute first step if it's an alarm
+        if (steps[0]?.type === 'alarm') {
+          // Alarm will be shown by the component
+        }
+      }
+    };
+    setWs(websocket);
+
+    // Check for URL push parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const pushId = urlParams.get('push');
+    if (pushId) {
+      api.pushNow(pushId).catch(err => console.error('Push failed:', err));
+      // Clear the URL parameter
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    return () => {
+      websocket.close();
+    };
+  }, []);
 
   // Clock
   useEffect(() => {
@@ -23,18 +95,8 @@ export const Dashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Flow Trigger Logic (Test Mode: Trigger after 3s)
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      // Trigger Morning Flow
-      const flow = MOCK_FLOWS.find(f => f.id === 'morning-flow');
-      if (flow) {
-        setActiveFlow(flow);
-        setCurrentStepIndex(0);
-      }
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, []);
+  // Flow Trigger Logic (Test Mode: Trigger after 3s) - REMOVED
+  // Real implementation will listen to WebSockets or manual triggers
 
   const handleStepComplete = () => {
     if (!activeFlow) return;
@@ -75,6 +137,12 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
+      {!hasInteracted && (
+        <div className="interaction-overlay" onClick={() => setHasInteracted(true)}>
+          <div className="start-btn">Click to Start</div>
+        </div>
+      )}
+
       <AnimatePresence>
         {activeFlow && currentStep?.type === 'alarm' && (
           <GlobalAlarm onDismiss={handleStepComplete} />
@@ -105,23 +173,30 @@ export const Dashboard: React.FC = () => {
         </AnimatePresence>
 
         {/* Active Routines Grid */}
-        {activeRoutines.map((ar) => (
-          <motion.div 
-            key={`${ar.userId}-${ar.routineId}`}
-            className="routine-slot"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: "spring", bounce: 0.3 }}
-          >
-            <InlineRoutinePlayer 
-              userId={ar.userId}
-              routineId={ar.routineId}
-              onComplete={() => handleRoutineComplete(ar.userId)}
-              onExit={() => handleRoutineExit(ar.userId)}
-            />
-          </motion.div>
-        ))}
+        {activeRoutines.map((ar) => {
+          const user = users.find(u => u.id === ar.userId);
+          const routine = user?.routines.find(r => r.id === ar.routineId);
+          
+          if (!user || !routine) return null;
+
+          return (
+            <motion.div 
+              key={`${ar.userId}-${ar.routineId}`}
+              className="routine-slot"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", bounce: 0.3 }}
+            >
+              <InlineRoutinePlayer 
+                user={user}
+                routine={routine}
+                onComplete={() => handleRoutineComplete(ar.userId)}
+                onExit={() => handleRoutineExit(ar.userId)}
+              />
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Dock (Inactive Users) */}
@@ -131,15 +206,18 @@ export const Dashboard: React.FC = () => {
           initial={{ y: 100 }}
           animate={{ y: 0 }}
         >
-          {MOCK_USERS.map(user => (
+          {users.map(user => (
             <motion.div 
               key={user.id}
               className="dock-item"
               whileHover={{ scale: 1.1, y: -10 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => {
-                // Manual trigger (optional, for now just logs)
-                console.log('Manual trigger for', user.name);
+                // Trigger the user's first routine assignment
+                const firstRoutine = user.routines[0];
+                if (firstRoutine) {
+                  api.pushNow(firstRoutine.id).catch(err => console.error('Push failed:', err));
+                }
               }}
             >
               <div className="dock-avatar" style={{ background: user.color }}>
@@ -160,6 +238,33 @@ export const Dashboard: React.FC = () => {
           display: flex;
           flex-direction: column;
           color: white;
+        }
+
+        .interaction-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.7);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(5px);
+          cursor: pointer;
+        }
+
+        .start-btn {
+          font-size: 3rem;
+          font-weight: 900;
+          color: white;
+          padding: 2rem 4rem;
+          border: 4px solid white;
+          border-radius: 2rem;
+          text-transform: uppercase;
+          letter-spacing: 4px;
+          animation: pulse 2s infinite;
         }
 
         .bg-gradient {

@@ -1,0 +1,4 @@
+# Agent Behavior Rules
+
+1. **No Host Modifications**: Do not affect the host system directly. Avoid installing global dependencies, modifying system configuration, or writing outside the project directories.
+2. **Docker Preference**: Always resort to Docker for any special setup requirements, databases, or services. Use the existing `docker-compose.yml` or propose updates to it rather than installing local tools.

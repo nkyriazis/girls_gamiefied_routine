@@ -1,26 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MOCK_USERS } from '../data/mockData';
+import { type User, type Routine } from '../data/mockData';
 import { RewardOverlay } from './RewardOverlay';
 import { useAppSounds } from '../hooks/useAppSounds';
 
 interface InlineRoutinePlayerProps {
-  userId: string;
-  routineId: string;
+  user: User;
+  routine: Routine;
   onComplete: () => void;
   onExit: () => void;
 }
 
 export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({ 
-  userId, 
-  routineId, 
+  user, 
+  routine, 
   onComplete,
   onExit
 }) => {
   const { playClick, playSuccess, playAlarm } = useAppSounds();
-  
-  const user = MOCK_USERS.find(u => u.id === userId);
-  const routine = user?.routines.find(r => r.id === routineId);
+  const completionTimeoutRef = useRef<number | null>(null);
 
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -63,9 +61,18 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
     setIsCompleted(true);
     playSuccess();
     // Show reward for a few seconds then notify parent
-    setTimeout(() => {
+    completionTimeoutRef.current = setTimeout(() => {
       onComplete();
     }, 5000);
+  };
+
+  const handleRewardClose = () => {
+    // When user clicks the reward, clear the timeout and call onComplete immediately
+    if (completionTimeoutRef.current) {
+      clearTimeout(completionTimeoutRef.current);
+      completionTimeoutRef.current = null;
+    }
+    onComplete();
   };
 
   const formatTime = (seconds: number) => {
@@ -82,7 +89,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         {isCompleted && (
           <RewardOverlay 
             starsEarned={50} 
-            onClose={onComplete} 
+            onClose={handleRewardClose} 
           />
         )}
       </AnimatePresence>
