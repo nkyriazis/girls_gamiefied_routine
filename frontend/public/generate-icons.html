@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; text-align: center; }
+        .preview { margin: 2rem; }
+        button { padding: 1rem 2rem; font-size: 1.2rem; background: #4ECDC4; color: white; border: none; border-radius: 0.5rem; cursor: pointer; }
+        button:hover { background: #3dbdb4; }
+        .status { margin-top: 1rem; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>PWA Icon Generator</h1>
+    <p>This tool will generate the required PNG icons from your <code>logo.svg</code>.</p>
+    
+    <div class="preview">
+        <img id="source" src="logo.svg" width="200" height="200" alt="Source Logo">
+    </div>
+
+    <button onclick="generateAll()">Generate & Download All</button>
+    <div id="status" class="status"></div>
+
+    <script>
+        const sizes = [
+            { name: 'pwa-192x192.png', size: 192 },
+            { name: 'pwa-512x512.png', size: 512 },
+            { name: 'apple-touch-icon.png', size: 180 },
+            { name: 'favicon.ico', size: 64 } // Saving as PNG, rename to .ico if needed or use as is
+        ];
+
+        async function generateAll() {
+            const status = document.getElementById('status');
+            status.textContent = 'Generating...';
+            
+            const img = document.getElementById('source');
+            
+            // Ensure image is loaded
+            if (!img.complete) {
+                await new Promise(resolve => img.onload = resolve);
+            }
+
+            for (const icon of sizes) {
+                const canvas = document.createElement('canvas');
+                canvas.width = icon.size;
+                canvas.height = icon.size;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw
+                ctx.drawImage(img, 0, 0, icon.size, icon.size);
+                
+                // Convert to blob
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                
+                // Download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = icon.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                await new Promise(r => setTimeout(r, 500)); // Small delay between downloads
+            }
+
+            status.innerHTML = 'Done! <br>Please move the downloaded files to your <code>frontend/public</code> folder.';
+        }
+    </script>
+</body>
+</html>
