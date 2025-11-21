@@ -229,7 +229,8 @@ export const Dashboard: React.FC = () => {
 
       <style>{`
         .dashboard {
-          height: 100vh;
+          height: 100vh; /* Fallback */
+          height: 100dvh;
           width: 100vw;
           overflow: hidden;
           position: relative;
@@ -311,6 +312,15 @@ export const Dashboard: React.FC = () => {
           font-size: 3rem;
           opacity: 0.7;
           text-transform: capitalize;
+        }
+
+        @media (max-width: 768px) {
+          .time-display { font-size: 6rem; }
+          .date-display { font-size: 1.5rem; }
+          .stage { padding: 1rem; gap: 1rem; }
+          .stage.grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+          .stage.dual { flex-direction: column; }
+          .stage.dual .routine-slot { width: 100%; height: 50%; }
         }
 
         .dock {

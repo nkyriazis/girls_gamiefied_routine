@@ -342,6 +342,11 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         @media (max-width: 800px) {
           .task-icon { font-size: 3rem; }
           .timer { font-size: 3rem; }
+          .user-name-header { font-size: 1.2rem; }
+          .user-badge { width: 40px; height: 40px; font-size: 1.5rem; }
+          .player-header { padding: 0.8rem; gap: 0.8rem; }
+          .task-name { font-size: 1.5rem; }
+          .btn-done { font-size: 1.2rem; padding: 0.6rem 2rem; }
         }
 
         .floating-stars {

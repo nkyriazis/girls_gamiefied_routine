@@ -35,6 +35,7 @@ export default defineConfig({
     })
   ],
   server: {
+    host: true, // Listen on all addresses (0.0.0.0)
     proxy: {
       '/api': {
         target: 'http://backend:3000',
