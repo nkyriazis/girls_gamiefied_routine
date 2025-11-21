@@ -187,9 +187,11 @@ async function triggerAction(id: string, db: Db) {
 
 // Scheduler Logic
 async function checkSchedules(date: Date) {
-  console.log('Checking schedules for:', date.toISOString());
   const db = await readDb();
   const timezone = db.settings?.timezone || 'Europe/Athens';
+  
+  const localTime = DateTime.fromJSDate(date).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
+  console.log(`Checking schedules for: ${localTime} (${timezone})`);
   
   for (const schedule of db.schedules) {
     try {
