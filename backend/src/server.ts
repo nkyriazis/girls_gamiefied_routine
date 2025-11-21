@@ -1,9 +1,42 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
-import { PrismaClient } from '@prisma/client';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { randomUUID } from 'crypto';
 
-const prisma = new PrismaClient();
+const DATA_FILE = path.join(process.cwd(), 'data.json');
+console.log('Using data file:', DATA_FILE);
+
+interface Db {
+  users: any[];
+  routines: any[];
+  tasks: any[];
+  routineTasks: any[];
+  routineAssignments: any[];
+  flows: any[];
+  routineExecutions: any[];
+  taskExecutions: any[];
+}
+
+async function readDb(): Promise<Db> {
+  try {
+    const data = await fs.readFile(DATA_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    // If file doesn't exist, return empty structure or handle error
+    console.error("Error reading DB:", error);
+    return {
+      users: [], routines: [], tasks: [], routineTasks: [], 
+      routineAssignments: [], flows: [], routineExecutions: [], taskExecutions: []
+    };
+  }
+}
+
+async function writeDb(data: Db) {
+  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+}
+
 const server = Fastify({ logger: true });
 
 // WebSocket connections
@@ -33,57 +66,80 @@ server.get('/health', async () => {
 });
 
 // User routes
-server.get('/api/users', async () => {
-  const users = await prisma.user.findMany({
-    include: {
-      assignments: {
-        include: {
-          routine: {
-            include: {
-              tasks: {
-                include: {
-                  task: true
-                },
-                orderBy: {
-                  order: 'asc'
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-  });
+server.get('/api/users', async (request, reply) => {
+  try {
+    const db = await readDb();
+    
+    // Join data manually
+    const users = db.users.map((user: any) => {
+      const assignments = db.routineAssignments
+        .filter((a: any) => a.userId === user.id)
+        .map((assignment: any) => {
+          const routine = db.routines.find((r: any) => r.id === assignment.routineId);
+          if (!routine) return null;
 
-  // Transform to match the expected frontend structure
-  return users.map(user => ({
-    ...user,
-    routines: user.assignments.map(assignment => ({
-      id: assignment.id, // Use assignment ID as the Routine ID for the frontend
-      title: assignment.routine.title,
-      scheduleTime: assignment.scheduleTime,
-      cronExpression: assignment.cronExpression,
-      themeColor: assignment.themeColor || assignment.routine.themeColor,
-      icon: assignment.routine.icon,
-      tasks: assignment.routine.tasks.map(rt => ({
-        id: rt.task.id,
-        title: rt.task.title,
-        icon: rt.task.icon,
-        durationSeconds: rt.durationSeconds,
-        routineId: assignment.id
-      }))
-    })),
-    assignments: undefined // Remove the raw assignments from the response
-  }));
+          const routineTasks = db.routineTasks
+            .filter((rt: any) => rt.routineId === routine.id)
+            .sort((a: any, b: any) => a.order - b.order)
+            .map((rt: any) => {
+              const task = db.tasks.find((t: any) => t.id === rt.taskId);
+              return {
+                ...rt,
+                task: task
+              };
+            });
+
+          return {
+            ...assignment,
+            routine: {
+              ...routine,
+              tasks: routineTasks
+            }
+          };
+        })
+        .filter((a: any) => a !== null);
+
+      return {
+        ...user,
+        assignments
+      };
+    });
+
+    // Transform to match the expected frontend structure
+    return users.map((user: any) => ({
+      ...user,
+      routines: user.assignments.map((assignment: any) => ({
+        id: assignment.id, // Use assignment ID as the Routine ID for the frontend
+        title: assignment.routine.title,
+        scheduleTime: assignment.scheduleTime,
+        cronExpression: assignment.cronExpression,
+        themeColor: assignment.themeColor || assignment.routine.themeColor,
+        icon: assignment.routine.icon,
+        tasks: assignment.routine.tasks.map((rt: any) => ({
+          id: rt.task.id,
+          title: rt.task.title,
+          icon: rt.task.icon,
+          durationSeconds: rt.durationSeconds,
+          routineId: assignment.id
+        }))
+      })),
+      assignments: undefined // Remove the raw assignments from the response
+    }));
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
+  }
 });
 
 // Flow routes
-server.get('/api/flows', async () => {
-  const flows = await prisma.flow.findMany();
-  return flows.map((flow) => ({
-    ...flow,
-    steps: JSON.parse(flow.steps),
-  }));
+server.get('/api/flows', async (request, reply) => {
+  try {
+    const db = await readDb();
+    return db.flows; // Steps are already objects in JSON
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
+  }
 });
 
 // Push hook endpoint
@@ -100,20 +156,23 @@ server.post('/api/hooks/push', async (request, reply) => {
     return { success: true, type: 'alarm' };
   }
 
+  const db = await readDb();
+
   // Try to find RoutineAssignment
-  const assignment = await prisma.routineAssignment.findUnique({
-    where: { id },
-    include: { routine: true }
-  });
+  const assignment = db.routineAssignments.find(a => a.id === id);
 
   if (assignment) {
     // Create execution record
-    const execution = await prisma.routineExecution.create({
-      data: {
-        userId: assignment.userId,
-        routineId: assignment.routineId,
-      }
-    });
+    const execution = {
+      id: randomUUID(),
+      userId: assignment.userId,
+      routineId: assignment.routineId,
+      startedAt: new Date().toISOString(),
+      totalStars: 0
+    };
+    
+    db.routineExecutions.push(execution);
+    await writeDb(db);
 
     // Broadcast to frontend
     broadcast({
@@ -129,16 +188,14 @@ server.post('/api/hooks/push', async (request, reply) => {
   }
 
   // Try to find Flow
-  const flow = await prisma.flow.findUnique({
-    where: { id }
-  });
+  const flow = db.flows.find(f => f.id === id);
 
   if (flow) {
     broadcast({
       type: 'FLOW_START',
       payload: {
         flowId: flow.id,
-        steps: JSON.parse(flow.steps)
+        steps: flow.steps // Already object
       }
     });
 
@@ -154,57 +211,54 @@ server.post('/api/executions/:executionId/tasks/:taskId/complete', async (reques
   const { executionId, taskId } = request.params as { executionId: string, taskId: string };
   const { duration, isOnTime } = request.body as { duration: number, isOnTime: boolean };
 
+  const db = await readDb();
+
   // Get the task to know how many stars it is worth
-  const task = await prisma.task.findUnique({
-    where: { id: taskId }
-  });
+  const task = db.tasks.find(t => t.id === taskId);
 
   if (!task) {
     return reply.code(404).send({ error: 'Task not found' });
   }
 
   // Create TaskExecution
-  await prisma.taskExecution.create({
-    data: {
-      executionId,
-      taskId,
-      duration,
-      isOnTime,
-      completedAt: new Date()
-    }
+  db.taskExecutions.push({
+    id: randomUUID(),
+    executionId,
+    taskId,
+    duration,
+    isOnTime,
+    completedAt: new Date().toISOString()
   });
 
   // Update User stars
   // First find the execution to get the user
-  const execution = await prisma.routineExecution.findUnique({
-    where: { id: executionId },
-    include: { user: true }
-  });
+  const execution = db.routineExecutions.find(e => e.id === executionId);
 
   if (execution) {
     const starsToAdd = task.stars; // Use the stars from the task definition
     
     // Update user
-    await prisma.user.update({
-      where: { id: execution.userId },
-      data: { stars: { increment: starsToAdd } }
-    });
+    const user = db.users.find(u => u.id === execution.userId);
+    if (user) {
+      user.stars = (user.stars || 0) + starsToAdd;
+    }
 
     // Update routine execution total stars
-    await prisma.routineExecution.update({
-      where: { id: executionId },
-      data: { totalStars: { increment: starsToAdd } }
-    });
+    execution.totalStars = (execution.totalStars || 0) + starsToAdd;
+    
+    await writeDb(db);
     
     // Broadcast update
-    broadcast({
-      type: 'STARS_AWARDED',
-      payload: {
-        userId: execution.userId,
-        amount: starsToAdd,
-        totalStars: execution.user.stars + starsToAdd
-      }
-    });
+    if (user) {
+      broadcast({
+        type: 'STARS_AWARDED',
+        payload: {
+          userId: execution.userId,
+          amount: starsToAdd,
+          totalStars: user.stars
+        }
+      });
+    }
 
     return { success: true, starsAwarded: starsToAdd };
   }

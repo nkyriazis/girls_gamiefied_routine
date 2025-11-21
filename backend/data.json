@@ -1,0 +1,180 @@
+{
+  "tasks": [
+    {
+      "id": "t-brush",
+      "title": "Πλύσιμο Δοντιών",
+      "icon": "🪥",
+      "stars": 10
+    },
+    {
+      "id": "t-wash",
+      "title": "Πλύσιμο Προσώπου",
+      "icon": "🧼",
+      "stars": 10
+    },
+    {
+      "id": "t-dress",
+      "title": "Ντύσιμο",
+      "icon": "👗",
+      "stars": 10
+    },
+    {
+      "id": "t-breakfast",
+      "title": "Πρωινό",
+      "icon": "🥞",
+      "stars": 10
+    },
+    {
+      "id": "t-pajamas",
+      "title": "Πιτζάμες",
+      "icon": "👚",
+      "stars": 10
+    },
+    {
+      "id": "t-story",
+      "title": "Παραμύθι",
+      "icon": "📖",
+      "stars": 10
+    }
+  ],
+  "routines": [
+    {
+      "id": "r-morning",
+      "title": "Πρωινή Ρουτίνα",
+      "themeColor": "var(--color-primary)",
+      "icon": "☀️"
+    },
+    {
+      "id": "r-evening",
+      "title": "Βραδινή Ρουτίνα",
+      "themeColor": "var(--color-secondary)",
+      "icon": "🌙"
+    }
+  ],
+  "routineTasks": [
+    {
+      "id": "rt-1",
+      "routineId": "r-morning",
+      "taskId": "t-brush",
+      "order": 1,
+      "durationSeconds": 120
+    },
+    {
+      "id": "rt-2",
+      "routineId": "r-morning",
+      "taskId": "t-wash",
+      "order": 2,
+      "durationSeconds": 60
+    },
+    {
+      "id": "rt-3",
+      "routineId": "r-morning",
+      "taskId": "t-dress",
+      "order": 3,
+      "durationSeconds": 300
+    },
+    {
+      "id": "rt-4",
+      "routineId": "r-morning",
+      "taskId": "t-breakfast",
+      "order": 4,
+      "durationSeconds": 600
+    },
+    {
+      "id": "rt-5",
+      "routineId": "r-evening",
+      "taskId": "t-pajamas",
+      "order": 1,
+      "durationSeconds": 180
+    },
+    {
+      "id": "rt-6",
+      "routineId": "r-evening",
+      "taskId": "t-brush",
+      "order": 2,
+      "durationSeconds": 120
+    },
+    {
+      "id": "rt-7",
+      "routineId": "r-evening",
+      "taskId": "t-story",
+      "order": 3,
+      "durationSeconds": 600
+    }
+  ],
+  "users": [
+    {
+      "id": "u1",
+      "name": "Ηλέκτρα",
+      "avatar": "🦄",
+      "color": "var(--color-accent)",
+      "stars": 1250
+    },
+    {
+      "id": "u2",
+      "name": "Ιφιγένεια",
+      "avatar": "🦊",
+      "color": "var(--color-secondary)",
+      "stars": 850
+    }
+  ],
+  "routineAssignments": [
+    {
+      "id": "u1-assign-morning",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "scheduleTime": "07:00"
+    },
+    {
+      "id": "u1-assign-evening",
+      "userId": "u1",
+      "routineId": "r-evening",
+      "scheduleTime": "20:00"
+    },
+    {
+      "id": "u2-assign-morning",
+      "userId": "u2",
+      "routineId": "r-morning",
+      "scheduleTime": "07:30"
+    }
+  ],
+  "flows": [
+    {
+      "id": "morning-flow",
+      "triggerTime": "07:00",
+      "steps": [
+        {
+          "type": "alarm",
+          "props": {
+            "sound": "melody"
+          }
+        },
+        {
+          "type": "parallel",
+          "actions": [
+            {
+              "type": "routine",
+              "userId": "u1",
+              "routineId": "u1-assign-morning"
+            },
+            {
+              "type": "routine",
+              "userId": "u2",
+              "routineId": "u2-assign-morning"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "routineExecutions": [
+    {
+      "id": "339abf8b-a770-4963-8c64-bbd672a26cf9",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-21T20:32:55.963Z",
+      "totalStars": 0
+    }
+  ],
+  "taskExecutions": []
+}
