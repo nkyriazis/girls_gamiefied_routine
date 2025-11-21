@@ -7,6 +7,8 @@ import { randomUUID } from 'crypto';
 import cron from 'node-cron';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cronParser = require('cron-parser');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { DateTime } = require('luxon');
 
 const DATA_FILE = path.join(process.cwd(), 'data.json');
 const STATE_FILE = path.join(process.cwd(), 'state.json');
@@ -68,6 +70,7 @@ interface Db {
   routineAssignments: any[];
   flows: any[];
   schedules: any[];
+  settings?: { timezone: string };
   routineExecutions: any[];
   taskExecutions: any[];
 }
@@ -88,6 +91,7 @@ async function readDb(): Promise<Db> {
       ...data,
       users,
       schedules: data.schedules || [],
+      settings: data.settings || { timezone: 'Europe/Athens' },
       routineExecutions: globalState.routineExecutions,
       taskExecutions: globalState.taskExecutions
     };
@@ -185,24 +189,25 @@ async function triggerAction(id: string, db: Db) {
 async function checkSchedules(date: Date) {
   console.log('Checking schedules for:', date.toISOString());
   const db = await readDb();
+  const timezone = db.settings?.timezone || 'Europe/Athens';
   
   for (const schedule of db.schedules) {
     try {
       // Check if the schedule matches the current minute
       // We go back 1 second to ensure 'next' returns the current minute if it matches exactly
       const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
-        currentDate: new Date(date.getTime() - 1000)
+        currentDate: new Date(date.getTime() - 1000),
+        tz: timezone
       });
       
       const next = interval.next().toDate();
       
       // Check if 'next' is in the same minute as 'date'
-      const isMatch = 
-        next.getFullYear() === date.getFullYear() &&
-        next.getMonth() === date.getMonth() &&
-        next.getDate() === date.getDate() &&
-        next.getHours() === date.getHours() &&
-        next.getMinutes() === date.getMinutes();
+      // We must compare in the same timezone or just compare timestamps if we trust the parser
+      // But 'next' is a JS Date (absolute). 'date' is a JS Date (absolute).
+      // If they are within the same minute, it's a match.
+      const diff = Math.abs(next.getTime() - date.getTime());
+      const isMatch = diff < 60000 && next.getMinutes() === date.getMinutes();
 
       if (isMatch) {
         console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
@@ -367,7 +372,10 @@ server.post('/api/hooks/push', async (request, reply) => {
     if (schedule) {
       // Found a schedule! Let's simulate the time.
       // Calculate next occurrence from now
-      const interval = cronParser.CronExpressionParser.parse(schedule.cron);
+      const timezone = db.settings?.timezone || 'Europe/Athens';
+      const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
+        tz: timezone
+      });
       const nextTime = interval.next().toDate();
       
       request.log.info(`[Hook] Found schedule for ${id}: ${schedule.cron}. Simulating time: ${nextTime.toISOString()}`);
@@ -464,14 +472,21 @@ server.post('/api/debug/time', async (request, reply) => {
   const { time } = request.body as { time: string };
   if (!time) return reply.code(400).send({ error: 'Missing time (ISO string or HH:mm)' });
 
+  const db = await readDb();
+  const timezone = db.settings?.timezone || 'Europe/Athens';
+
   let date: Date;
   if (time.includes('T')) {
     date = new Date(time);
   } else {
-    // Handle HH:mm by using today's date
+    // Handle HH:mm by using today's date in the target timezone
     const [hours, minutes] = time.split(':').map(Number);
-    date = new Date();
-    date.setHours(hours, minutes, 0, 0);
+    
+    // Create a date in the target timezone
+    const now = DateTime.now().setZone(timezone);
+    const target = now.set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+    
+    date = target.toJSDate();
   }
 
   if (isNaN(date.getTime())) return reply.code(400).send({ error: 'Invalid time format' });

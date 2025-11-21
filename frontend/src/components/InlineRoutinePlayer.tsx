@@ -28,6 +28,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   const [isActive, setIsActive] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [justEarnedStars, setJustEarnedStars] = useState<number | null>(null);
+  const [taskStartTime, setTaskStartTime] = useState<number>(() => Date.now());
 
   const currentTask = routine?.tasks[currentTaskIndex];
   const totalTasks = routine?.tasks.length || 0;
@@ -35,12 +36,13 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   useEffect(() => {
     if (currentTask) {
       setTimeLeft(currentTask.durationSeconds);
+      setTaskStartTime(Date.now());
       setIsActive(true);
     }
   }, [currentTask]);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval>;
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -58,7 +60,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
     // Complete current task
     if (executionId && currentTask) {
        try {
-         const duration = currentTask.durationSeconds - timeLeft; // Approximate
+         const duration = Math.round((Date.now() - taskStartTime) / 1000);
          const isOnTime = timeLeft > 0;
          const result = await api.completeTask(executionId, currentTask.id, duration, isOnTime);
          if (result.success) {

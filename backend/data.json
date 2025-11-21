@@ -116,6 +116,9 @@
       "color": "var(--color-secondary)"
     }
   ],
+  "settings": {
+    "timezone": "Europe/Athens"
+  },
   "routineAssignments": [
     {
       "id": "u1-assign-morning",
