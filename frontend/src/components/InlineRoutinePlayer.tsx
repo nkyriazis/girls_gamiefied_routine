@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type User, type Routine } from '../data/mockData';
+import { type User, type Routine } from '../types';
 import { RewardOverlay } from './RewardOverlay';
 import { useAppSounds } from '../hooks/useAppSounds';
+import { api } from '../api';
 
 interface InlineRoutinePlayerProps {
   user: User;
   routine: Routine;
+  executionId?: string;
   onComplete: () => void;
   onExit: () => void;
 }
@@ -14,6 +16,7 @@ interface InlineRoutinePlayerProps {
 export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({ 
   user, 
   routine, 
+  executionId,
   onComplete,
   onExit
 }) => {
@@ -24,6 +27,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [justEarnedStars, setJustEarnedStars] = useState<number | null>(null);
 
   const currentTask = routine?.tasks[currentTaskIndex];
   const totalTasks = routine?.tasks.length || 0;
@@ -48,8 +52,24 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
     return () => clearInterval(interval);
   }, [isActive, timeLeft, playAlarm]);
 
-  const handleNextTask = () => {
+  const handleNextTask = async () => {
     playClick();
+
+    // Complete current task
+    if (executionId && currentTask) {
+       try {
+         const duration = currentTask.durationSeconds - timeLeft; // Approximate
+         const isOnTime = timeLeft > 0;
+         const result = await api.completeTask(executionId, currentTask.id, duration, isOnTime);
+         if (result.success) {
+            setJustEarnedStars(result.starsAwarded);
+            setTimeout(() => setJustEarnedStars(null), 2000);
+         }
+       } catch (err) {
+         console.error('Failed to complete task:', err);
+       }
+    }
+
     if (currentTaskIndex < totalTasks - 1) {
       setCurrentTaskIndex(prev => prev + 1);
     } else {
@@ -91,6 +111,20 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
             starsEarned={50} 
             onClose={handleRewardClose} 
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {justEarnedStars && (
+          <motion.div
+            className="floating-stars"
+            initial={{ opacity: 0, y: 0, scale: 0.5 }}
+            animate={{ opacity: 1, y: -100, scale: 1.5 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5 }}
+          >
+            ⭐ +{justEarnedStars}
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -298,6 +332,19 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         @media (max-width: 800px) {
           .task-icon { font-size: 3rem; }
           .timer { font-size: 3rem; }
+        }
+
+        .floating-stars {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 5rem;
+          font-weight: 900;
+          color: #FFD700;
+          text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+          z-index: 100;
+          pointer-events: none;
         }
       `}</style>
     </div>

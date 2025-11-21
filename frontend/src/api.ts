@@ -1,4 +1,4 @@
-import type { User } from './data/mockData';
+import type { User } from './types';
 import type { Flow } from './data/flows';
 
 const API_URL = '/api';
@@ -31,5 +31,19 @@ export const api = {
     if (!response.ok) {
       throw new Error('Failed to push');
     }
+  },
+  
+  completeTask: async (executionId: string, taskId: string, duration: number, isOnTime: boolean): Promise<{ success: boolean, starsAwarded: number }> => {
+    const response = await fetch(`${API_URL}/executions/${executionId}/tasks/${taskId}/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ duration, isOnTime }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to complete task');
+    }
+    return response.json();
   }
 };

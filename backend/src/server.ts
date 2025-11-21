@@ -108,7 +108,7 @@ server.post('/api/hooks/push', async (request, reply) => {
 
   if (assignment) {
     // Create execution record
-    await prisma.routineExecution.create({
+    const execution = await prisma.routineExecution.create({
       data: {
         userId: assignment.userId,
         routineId: assignment.routineId,
@@ -120,7 +120,8 @@ server.post('/api/hooks/push', async (request, reply) => {
       type: 'ROUTINE_START',
       payload: {
         userId: assignment.userId,
-        routineId: assignment.id // Use assignment ID as routineId for frontend
+        routineId: assignment.id, // Use assignment ID as routineId for frontend
+        executionId: execution.id
       }
     });
 
@@ -146,6 +147,69 @@ server.post('/api/hooks/push', async (request, reply) => {
 
   // Not found
   return reply.code(404).send({ error: 'Entity not found' });
+});
+
+// Task completion endpoint
+server.post('/api/executions/:executionId/tasks/:taskId/complete', async (request, reply) => {
+  const { executionId, taskId } = request.params as { executionId: string, taskId: string };
+  const { duration, isOnTime } = request.body as { duration: number, isOnTime: boolean };
+
+  // Get the task to know how many stars it is worth
+  const task = await prisma.task.findUnique({
+    where: { id: taskId }
+  });
+
+  if (!task) {
+    return reply.code(404).send({ error: 'Task not found' });
+  }
+
+  // Create TaskExecution
+  await prisma.taskExecution.create({
+    data: {
+      executionId,
+      taskId,
+      duration,
+      isOnTime,
+      completedAt: new Date()
+    }
+  });
+
+  // Update User stars
+  // First find the execution to get the user
+  const execution = await prisma.routineExecution.findUnique({
+    where: { id: executionId },
+    include: { user: true }
+  });
+
+  if (execution) {
+    const starsToAdd = task.stars; // Use the stars from the task definition
+    
+    // Update user
+    await prisma.user.update({
+      where: { id: execution.userId },
+      data: { stars: { increment: starsToAdd } }
+    });
+
+    // Update routine execution total stars
+    await prisma.routineExecution.update({
+      where: { id: executionId },
+      data: { totalStars: { increment: starsToAdd } }
+    });
+    
+    // Broadcast update
+    broadcast({
+      type: 'STARS_AWARDED',
+      payload: {
+        userId: execution.userId,
+        amount: starsToAdd,
+        totalStars: execution.user.stars + starsToAdd
+      }
+    });
+
+    return { success: true, starsAwarded: starsToAdd };
+  }
+
+  return { success: false, error: 'Execution not found' };
 });
 
 // WebSocket for real-time events

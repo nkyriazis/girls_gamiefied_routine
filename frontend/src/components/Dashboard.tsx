@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type User } from '../data/mockData';
+import { type User } from '../types';
 import { type Flow } from '../data/flows';
 import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
@@ -19,7 +19,7 @@ export const Dashboard: React.FC = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   
   // Active Routines (triggered by flow)
-  const [activeRoutines, setActiveRoutines] = useState<{userId: string, routineId: string}[]>([]);
+  const [activeRoutines, setActiveRoutines] = useState<{userId: string, routineId: string, executionId?: string}[]>([]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [ws, setWs] = useState<WebSocket | null>(null);
 
@@ -60,8 +60,8 @@ export const Dashboard: React.FC = () => {
         setActiveFlow(alarmFlow as any);
         setCurrentStepIndex(0);
       } else if (message.type === 'ROUTINE_START') {
-        const { userId, routineId } = message.payload;
-        setActiveRoutines(prev => [...prev, { userId, routineId }]);
+        const { userId, routineId, executionId } = message.payload;
+        setActiveRoutines(prev => [...prev, { userId, routineId, executionId }]);
       } else if (message.type === 'FLOW_START') {
         const { flowId, steps } = message.payload;
         const flow = flows.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
@@ -191,6 +191,7 @@ export const Dashboard: React.FC = () => {
               <InlineRoutinePlayer 
                 user={user}
                 routine={routine}
+                executionId={ar.executionId}
                 onComplete={() => handleRoutineComplete(ar.userId)}
                 onExit={() => handleRoutineExit(ar.userId)}
               />
