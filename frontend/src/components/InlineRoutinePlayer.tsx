@@ -39,20 +39,25 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
       setTaskStartTime(Date.now());
       setIsActive(true);
     }
-  }, [currentTask]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTask?.id]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
-    if (isActive && timeLeft > 0) {
+    if (isActive) {
       interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        const elapsedSeconds = Math.floor((Date.now() - taskStartTime) / 1000);
+        const remaining = Math.max(0, (currentTask?.durationSeconds || 0) - elapsedSeconds);
+        setTimeLeft(remaining);
+        
+        if (remaining === 0) {
+           setIsActive(false);
+           playAlarm();
+        }
       }, 1000);
-    } else if (timeLeft === 0 && isActive) {
-      setIsActive(false);
-      playAlarm();
     }
     return () => clearInterval(interval);
-  }, [isActive, timeLeft, playAlarm]);
+  }, [isActive, taskStartTime, currentTask?.durationSeconds, playAlarm]);
 
   const handleNextTask = async () => {
     playClick();

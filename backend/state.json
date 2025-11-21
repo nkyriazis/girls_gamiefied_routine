@@ -1,6 +1,6 @@
 {
   "userStars": {
-    "u1": 1300,
+    "u1": 1330,
     "u2": 890
   },
   "routineExecutions": [
@@ -45,6 +45,13 @@
       "routineId": "r-morning",
       "startedAt": "2025-11-21T21:19:49.573Z",
       "totalStars": 40
+    },
+    {
+      "id": "724be8ff-504c-4bd1-8e63-41dd8ef419fe",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-21T21:22:45.466Z",
+      "totalStars": 30
     }
   ],
   "taskExecutions": [
@@ -119,6 +126,30 @@
       "duration": 10,
       "isOnTime": true,
       "completedAt": "2025-11-21T21:20:17.194Z"
+    },
+    {
+      "id": "74c133ee-9ece-4dda-8ce2-1e8e4307af76",
+      "executionId": "724be8ff-504c-4bd1-8e63-41dd8ef419fe",
+      "taskId": "t-brush",
+      "duration": 6,
+      "isOnTime": true,
+      "completedAt": "2025-11-21T21:22:51.885Z"
+    },
+    {
+      "id": "e4848bd7-66da-4630-bb6c-f75bbbeeaaa3",
+      "executionId": "724be8ff-504c-4bd1-8e63-41dd8ef419fe",
+      "taskId": "t-wash",
+      "duration": 6,
+      "isOnTime": true,
+      "completedAt": "2025-11-21T21:22:58.345Z"
+    },
+    {
+      "id": "ff9b35f6-c376-4316-9252-fbd143573fef",
+      "executionId": "724be8ff-504c-4bd1-8e63-41dd8ef419fe",
+      "taskId": "t-dress",
+      "duration": 11,
+      "isOnTime": true,
+      "completedAt": "2025-11-21T21:23:09.009Z"
     }
   ]
 }
