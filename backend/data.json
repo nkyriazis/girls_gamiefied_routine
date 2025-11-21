@@ -107,41 +107,35 @@
       "id": "u1",
       "name": "Ηλέκτρα",
       "avatar": "🦄",
-      "color": "var(--color-accent)",
-      "stars": 1250
+      "color": "var(--color-accent)"
     },
     {
       "id": "u2",
       "name": "Ιφιγένεια",
       "avatar": "🦊",
-      "color": "var(--color-secondary)",
-      "stars": 850
+      "color": "var(--color-secondary)"
     }
   ],
   "routineAssignments": [
     {
       "id": "u1-assign-morning",
       "userId": "u1",
-      "routineId": "r-morning",
-      "scheduleTime": "07:00"
+      "routineId": "r-morning"
     },
     {
       "id": "u1-assign-evening",
       "userId": "u1",
-      "routineId": "r-evening",
-      "scheduleTime": "20:00"
+      "routineId": "r-evening"
     },
     {
       "id": "u2-assign-morning",
       "userId": "u2",
-      "routineId": "r-morning",
-      "scheduleTime": "07:30"
+      "routineId": "r-morning"
     }
   ],
   "flows": [
     {
       "id": "morning-flow",
-      "triggerTime": "07:00",
       "steps": [
         {
           "type": "alarm",
@@ -167,14 +161,18 @@
       ]
     }
   ],
-  "routineExecutions": [
+  "schedules": [
     {
-      "id": "339abf8b-a770-4963-8c64-bbd672a26cf9",
-      "userId": "u1",
-      "routineId": "r-morning",
-      "startedAt": "2025-11-21T20:32:55.963Z",
-      "totalStars": 0
+      "id": "sch-morning",
+      "cron": "0 7 * * *",
+      "type": "flow",
+      "targetId": "morning-flow"
+    },
+    {
+      "id": "sch-evening",
+      "cron": "0 20 * * *",
+      "type": "routine",
+      "targetId": "u1-assign-evening"
     }
-  ],
-  "taskExecutions": []
+  ]
 }
