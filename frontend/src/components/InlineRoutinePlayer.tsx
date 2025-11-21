@@ -14,9 +14,9 @@ interface InlineRoutinePlayerProps {
   onExit: () => void;
 }
 
-export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({ 
-  user, 
-  routine, 
+export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
+  user,
+  routine,
   executionId,
   onComplete,
   onExit
@@ -50,10 +50,10 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         const elapsedSeconds = Math.floor((Date.now() - taskStartTime) / 1000);
         const remaining = Math.max(0, (currentTask?.durationSeconds || 0) - elapsedSeconds);
         setTimeLeft(remaining);
-        
+
         if (remaining === 0) {
-           setIsActive(false);
-           playAlarm();
+          setIsActive(false);
+          playAlarm();
         }
       }, 1000);
     }
@@ -65,17 +65,17 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
 
     // Complete current task
     if (executionId && currentTask) {
-       try {
-         const duration = Math.round((Date.now() - taskStartTime) / 1000);
-         const isOnTime = timeLeft > 0;
-         const result = await api.completeTask(executionId, currentTask.id, duration, isOnTime);
-         if (result.success) {
-            setJustEarnedStars(result.starsAwarded);
-            setTimeout(() => setJustEarnedStars(null), 2000);
-         }
-       } catch (err) {
-         console.error('Failed to complete task:', err);
-       }
+      try {
+        const duration = Math.round((Date.now() - taskStartTime) / 1000);
+        const isOnTime = timeLeft > 0;
+        const result = await api.completeTask(executionId, currentTask.id, duration, isOnTime);
+        if (result.success) {
+          setJustEarnedStars(result.starsAwarded);
+          setTimeout(() => setJustEarnedStars(null), 2000);
+        }
+      } catch (err) {
+        console.error('Failed to complete task:', err);
+      }
     }
 
     if (currentTaskIndex < totalTasks - 1) {
@@ -115,9 +115,9 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
     <div className="inline-player" style={{ '--theme-color': routine.themeColor } as React.CSSProperties}>
       <AnimatePresence>
         {isCompleted && (
-          <RewardOverlay 
-            starsEarned={50} 
-            onClose={handleRewardClose} 
+          <RewardOverlay
+            starsEarned={50}
+            onClose={handleRewardClose}
           />
         )}
       </AnimatePresence>
@@ -145,7 +145,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         </div>
         <div className="progress-container">
           <div className="progress-bar">
-            <motion.div 
+            <motion.div
               className="progress-fill"
               initial={{ width: 0 }}
               animate={{ width: `${((currentTaskIndex) / totalTasks) * 100}%` }}
@@ -158,7 +158,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
       <div className="player-body">
         {/* Timeline (Compact) */}
         <div className="timeline-compact">
-           {routine.tasks.map((task, index) => {
+          {routine.tasks.map((task, index) => {
             const status = index < currentTaskIndex ? 'past' : index === currentTaskIndex ? 'current' : 'future';
             return (
               <div key={task.id} className={`dot ${status}`} />
@@ -168,7 +168,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
 
         <AnimatePresence mode='wait'>
           {!isCompleted && (
-            <motion.div 
+            <motion.div
               key={currentTask?.id}
               className="active-task-container"
               initial={{ opacity: 0, scale: 0.9 }}

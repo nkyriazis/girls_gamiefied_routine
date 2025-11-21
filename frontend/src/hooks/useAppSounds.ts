@@ -25,7 +25,6 @@ export const useAppSounds = () => {
 
   const playSuccess = useCallback(() => {
     // Play a major triad arpeggio
-    const now = 0;
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     
     [440, 554, 659, 880].forEach((freq, i) => {

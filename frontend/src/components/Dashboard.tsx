@@ -13,13 +13,13 @@ export const Dashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [users, setUsers] = useState<User[]>([]);
   const [flows, setFlows] = useState<Flow[]>([]);
-  
+
   // Flow State
   const [activeFlow, setActiveFlow] = useState<Flow | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  
+
   // Active Routines (triggered by flow)
-  const [activeRoutines, setActiveRoutines] = useState<{userId: string, routineId: string, executionId?: string}[]>([]);
+  const [activeRoutines, setActiveRoutines] = useState<{ userId: string, routineId: string, executionId?: string }[]>([]);
   const [hasInteracted, setHasInteracted] = useState(false);
 
   // Fetch Data
@@ -97,18 +97,18 @@ export const Dashboard: React.FC = () => {
 
   const handleStepComplete = () => {
     if (!activeFlow) return;
-    
+
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < activeFlow.steps.length) {
       setCurrentStepIndex(nextIndex);
-      
+
       // Execute next step actions immediately if it's a parallel routine step
       const nextStep = activeFlow.steps[nextIndex];
       if (nextStep.type === 'parallel' && nextStep.actions) {
         const newRoutines = nextStep.actions
           .filter(a => a.type === 'routine')
           .map(a => ({ userId: a.userId, routineId: a.routineId }));
-        
+
         setActiveRoutines(prev => [...prev, ...newRoutines]);
       }
     } else {
@@ -153,7 +153,7 @@ export const Dashboard: React.FC = () => {
       <div className={`stage ${viewMode.toLowerCase()}`}>
         <AnimatePresence>
           {activeCount === 0 && (
-            <motion.div 
+            <motion.div
               className="clock-container"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -173,11 +173,11 @@ export const Dashboard: React.FC = () => {
         {activeRoutines.map((ar) => {
           const user = users.find(u => u.id === ar.userId);
           const routine = user?.routines.find(r => r.id === ar.routineId);
-          
+
           if (!user || !routine) return null;
 
           return (
-            <motion.div 
+            <motion.div
               key={`${ar.userId}-${ar.routineId}`}
               className="routine-slot"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -185,7 +185,7 @@ export const Dashboard: React.FC = () => {
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ type: "spring", bounce: 0.3 }}
             >
-              <InlineRoutinePlayer 
+              <InlineRoutinePlayer
                 user={user}
                 routine={routine}
                 executionId={ar.executionId}
@@ -199,13 +199,13 @@ export const Dashboard: React.FC = () => {
 
       {/* Dock (Inactive Users) */}
       {activeCount === 0 && (
-        <motion.div 
+        <motion.div
           className="dock"
           initial={{ y: 100 }}
           animate={{ y: 0 }}
         >
           {users.map(user => (
-            <motion.div 
+            <motion.div
               key={user.id}
               className="dock-item"
               whileHover={{ scale: 1.1, y: -10 }}

@@ -10,8 +10,8 @@ const cronParser = require('cron-parser');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { DateTime } = require('luxon');
 
-const DATA_FILE = path.join(process.cwd(), 'data.json');
-const STATE_FILE = path.join(process.cwd(), 'state.json');
+const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
+const STATE_FILE = process.env.STATE_FILE || path.join(process.cwd(), 'state.json');
 console.log('Using data file:', DATA_FILE);
 console.log('Using state file:', STATE_FILE);
 
