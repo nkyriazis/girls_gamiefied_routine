@@ -4,6 +4,7 @@ import { type User, type Routine } from '../types';
 import { RewardOverlay } from './RewardOverlay';
 import { useAppSounds } from '../hooks/useAppSounds';
 import { api } from '../api';
+import { SmartIcon } from './SmartIcon';
 
 interface InlineRoutinePlayerProps {
   user: User;
@@ -137,7 +138,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
 
       <div className="player-header">
         <div className="user-badge" style={{ background: user.color }}>
-          {user.avatar}
+          <SmartIcon value={user.avatar} />
         </div>
         <div className="user-name-header">
           {user.name}
@@ -175,7 +176,9 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ type: "spring", bounce: 0.3 }}
             >
-              <div className="task-icon">{currentTask?.icon}</div>
+              <div className="task-icon">
+                {currentTask && <SmartIcon value={currentTask.icon} />}
+              </div>
               <h2 className="task-name">{currentTask?.title}</h2>
               <div className={`timer ${timeLeft < 10 ? 'warning' : ''}`}>
                 {formatTime(timeLeft)}

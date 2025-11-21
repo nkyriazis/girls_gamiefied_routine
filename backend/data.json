@@ -3,37 +3,37 @@
     {
       "id": "t-brush",
       "title": "Πλύσιμο Δοντιών",
-      "icon": "🪥",
+      "icon": { "type": "emoji", "value": "🪥" },
       "stars": 10
     },
     {
       "id": "t-wash",
       "title": "Πλύσιμο Προσώπου",
-      "icon": "🧼",
+      "icon": { "type": "emoji", "value": "🧼" },
       "stars": 10
     },
     {
       "id": "t-dress",
       "title": "Ντύσιμο",
-      "icon": "👗",
+      "icon": { "type": "emoji", "value": "👗" },
       "stars": 10
     },
     {
       "id": "t-breakfast",
       "title": "Πρωινό",
-      "icon": "🥞",
+      "icon": { "type": "emoji", "value": "🥞" },
       "stars": 10
     },
     {
       "id": "t-pajamas",
       "title": "Πιτζάμες",
-      "icon": "👚",
+      "icon": { "type": "emoji", "value": "👚" },
       "stars": 10
     },
     {
       "id": "t-story",
       "title": "Παραμύθι",
-      "icon": "📖",
+      "icon": { "type": "emoji", "value": "📖" },
       "stars": 10
     }
   ],
@@ -42,13 +42,13 @@
       "id": "r-morning",
       "title": "Πρωινή Ρουτίνα",
       "themeColor": "var(--color-primary)",
-      "icon": "☀️"
+      "icon": { "type": "emoji", "value": "☀️" }
     },
     {
       "id": "r-evening",
       "title": "Βραδινή Ρουτίνα",
       "themeColor": "var(--color-secondary)",
-      "icon": "🌙"
+      "icon": { "type": "emoji", "value": "🌙" }
     }
   ],
   "routineTasks": [
@@ -106,13 +106,13 @@
     {
       "id": "u1",
       "name": "Ηλέκτρα",
-      "avatar": "🦄",
+      "avatar": { "type": "emoji", "value": "🦄" },
       "color": "var(--color-accent)"
     },
     {
       "id": "u2",
       "name": "Ιφιγένεια",
-      "avatar": "🦊",
+      "avatar": { "type": "emoji", "value": "🦊" },
       "color": "var(--color-secondary)"
     }
   ],

@@ -7,12 +7,12 @@ import { type Flow } from '../data/flows';
 import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
+import { SmartIcon } from './SmartIcon';
 
 export const Dashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [users, setUsers] = useState<User[]>([]);
   const [flows, setFlows] = useState<Flow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   
   // Flow State
   const [activeFlow, setActiveFlow] = useState<Flow | null>(null);
@@ -21,7 +21,6 @@ export const Dashboard: React.FC = () => {
   // Active Routines (triggered by flow)
   const [activeRoutines, setActiveRoutines] = useState<{userId: string, routineId: string, executionId?: string}[]>([]);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [ws, setWs] = useState<WebSocket | null>(null);
 
   // Fetch Data
   useEffect(() => {
@@ -35,8 +34,6 @@ export const Dashboard: React.FC = () => {
         setFlows(flowsData);
       } catch (err) {
         console.error('Failed to load data:', err);
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchData();
@@ -73,7 +70,7 @@ export const Dashboard: React.FC = () => {
         }
       }
     };
-    setWs(websocket);
+    // setWs(websocket);
 
     // Check for URL push parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -222,7 +219,7 @@ export const Dashboard: React.FC = () => {
               }}
             >
               <div className="dock-avatar" style={{ background: user.color }}>
-                {user.avatar}
+                <SmartIcon value={user.avatar} />
               </div>
               <span className="dock-name">{user.name}</span>
             </motion.div>

@@ -87,6 +87,13 @@
       "routineId": "r-morning",
       "startedAt": "2025-11-21T21:52:14.264Z",
       "totalStars": 10
+    },
+    {
+      "id": "1474e416-83e4-4a2f-b77f-56dc85f92da9",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-21T22:03:04.352Z",
+      "totalStars": 0
     }
   ],
   "taskExecutions": [
