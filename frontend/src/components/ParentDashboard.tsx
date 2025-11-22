@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../api';
 import { SmartIcon } from './SmartIcon';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { useGame } from '../context/GameContext';
 
-const JsonEditor = ({ title, loadFn, saveFn }: { title: string, loadFn: () => Promise<any>, saveFn: (data: any) => Promise<void> }) => {
+type ToastType = 'success' | 'error' | 'info';
+
+interface Toast {
+    id: number;
+    message: string;
+    type: ToastType;
+}
+
+const JsonEditor = ({ title, loadFn, saveFn, onToast }: {
+    title: string,
+    loadFn: () => Promise<any>,
+    saveFn: (data: any) => Promise<void>,
+    onToast: (message: string, type: ToastType) => void
+}) => {
     const [json, setJson] = useState('');
     const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +32,7 @@ const JsonEditor = ({ title, loadFn, saveFn }: { title: string, loadFn: () => Pr
             const parsed = JSON.parse(json);
             await saveFn(parsed);
             setError(null);
-            alert('Saved!');
+            onToast('Saved!', 'success');
         } catch (err) {
             setError((err as Error).message);
         }
@@ -46,13 +60,25 @@ const JsonEditor = ({ title, loadFn, saveFn }: { title: string, loadFn: () => Pr
 export const ParentDashboard: React.FC = () => {
     const { users, spendings, flows } = useGame();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'state'>('dashboard');
+    const [toasts, setToasts] = useState<Toast[]>([]);
+    const [nextToastId, setNextToastId] = useState(0);
+
+    const showToast = (message: string, type: ToastType = 'info') => {
+        const id = nextToastId;
+        setNextToastId(id + 1);
+        setToasts(prev => [...prev, { id, message, type }]);
+        setTimeout(() => {
+            setToasts(prev => prev.filter(t => t.id !== id));
+        }, 3000);
+    };
 
     const handleMarkDone = async (id: string) => {
         try {
             await api.markSpendingDone(id);
+            showToast('Marked as done', 'success');
         } catch (err) {
             console.error(err);
-            alert('Failed to update');
+            showToast('Failed to update', 'error');
         }
     };
 
@@ -60,9 +86,10 @@ export const ParentDashboard: React.FC = () => {
         if (!confirm('Are you sure you want to revoke this spending? Stars will be refunded.')) return;
         try {
             await api.revokeSpending(id);
+            showToast('Spending revoked', 'success');
         } catch (err) {
             console.error(err);
-            alert('Failed to revoke');
+            showToast('Failed to revoke', 'error');
         }
     };
 
@@ -71,25 +98,45 @@ export const ParentDashboard: React.FC = () => {
         const file = e.target.files[0];
         try {
             const result = await api.uploadFile(file);
-            alert(`Uploaded: ${result.url}`);
+            showToast(`Uploaded: ${result.url}`, 'success');
+            navigator.clipboard.writeText(result.url);
+            setTimeout(() => showToast('URL copied to clipboard', 'info'), 500);
         } catch (err) {
             console.error(err);
-            alert('Upload failed');
+            showToast('Upload failed', 'error');
         }
     };
 
     const handleTrigger = async (id: string) => {
         try {
             await api.pushNow(id);
-            alert('Triggered!');
+            showToast('Triggered!', 'success');
         } catch (err) {
             console.error(err);
-            alert('Failed to trigger');
+            showToast('Failed to trigger', 'error');
         }
     };
 
     return (
         <div className="parent-dashboard">
+            <AnimatePresence>
+                {toasts.map(toast => (
+                    <motion.div
+                        key={toast.id}
+                        className={`toast toast-${toast.type}`}
+                        initial={{ opacity: 0, y: -50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: -50, x: '-50%' }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {toast.type === 'success' && '✓ '}
+                        {toast.type === 'error' && '✗ '}
+                        {toast.type === 'info' && 'ℹ '}
+                        {toast.message}
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+
             <header>
                 <h1>Γονείς & Διαχείριση</h1>
                 <div className="tabs">
@@ -195,6 +242,7 @@ export const ParentDashboard: React.FC = () => {
                             title="Configuration (data.json)"
                             loadFn={api.getRawData}
                             saveFn={api.saveRawData}
+                            onToast={showToast}
                         />
                     </section>
                 )}
@@ -205,6 +253,7 @@ export const ParentDashboard: React.FC = () => {
                             title="State (state.json)"
                             loadFn={api.getRawState}
                             saveFn={api.saveRawState}
+                            onToast={showToast}
                         />
                     </section>
                 )}
@@ -371,6 +420,35 @@ export const ParentDashboard: React.FC = () => {
 
         .history .spending-row {
           opacity: 0.5;
+        }
+
+        .toast {
+          position: fixed;
+          top: 2rem;
+          left: 50%;
+          transform: translateX(-50%);
+          padding: 1rem 2rem;
+          border-radius: 0.5rem;
+          font-weight: 600;
+          z-index: 9999;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          min-width: 200px;
+          text-align: center;
+        }
+
+        .toast-success {
+          background: #2ecc71;
+          color: white;
+        }
+
+        .toast-error {
+          background: #e74c3c;
+          color: white;
+        }
+
+        .toast-info {
+          background: #3498db;
+          color: white;
         }
       `}</style>
         </div>
