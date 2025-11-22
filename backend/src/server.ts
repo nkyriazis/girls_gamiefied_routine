@@ -1,10 +1,18 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import cron from 'node-cron';
+import { pipeline } from 'stream';
+import util from 'util';
+import { createWriteStream } from 'fs';
+
+const pump = util.promisify(pipeline);
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cronParser = require('cron-parser');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -12,18 +20,26 @@ const { DateTime } = require('luxon');
 
 const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
 const STATE_FILE = process.env.STATE_FILE || path.join(process.cwd(), 'state.json');
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+
+// Ensure uploads dir exists
+fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(console.error);
+
 console.log('Using data file:', DATA_FILE);
 console.log('Using state file:', STATE_FILE);
+console.log('Using uploads dir:', UPLOADS_DIR);
 
 // In-memory state cache
 let globalState: {
   userStars: Record<string, number>;
   routineExecutions: any[];
   taskExecutions: any[];
+  spendings: any[];
 } = {
   userStars: {},
   routineExecutions: [],
-  taskExecutions: []
+  taskExecutions: [],
+  spendings: []
 };
 
 // Load state from disk at startup
@@ -34,7 +50,8 @@ async function loadState() {
     globalState = {
       userStars: loaded.userStars || {},
       routineExecutions: loaded.routineExecutions || [],
-      taskExecutions: loaded.taskExecutions || []
+      taskExecutions: loaded.taskExecutions || [],
+      spendings: loaded.spendings || []
     };
     console.log('State loaded into memory');
   } catch (error) {
@@ -70,9 +87,11 @@ interface Db {
   routineAssignments: any[];
   flows: any[];
   schedules: any[];
+  rewards: any[];
   settings?: { timezone: string };
   routineExecutions: any[];
   taskExecutions: any[];
+  spendings: any[];
 }
 
 async function readDb(): Promise<Db> {
@@ -90,16 +109,19 @@ async function readDb(): Promise<Db> {
     return {
       ...data,
       users,
+      rewards: data.rewards || [],
       schedules: data.schedules || [],
       settings: data.settings || { timezone: 'Europe/Athens' },
       routineExecutions: globalState.routineExecutions,
-      taskExecutions: globalState.taskExecutions
+      taskExecutions: globalState.taskExecutions,
+      spendings: globalState.spendings
     };
   } catch (error) {
     console.error("Error reading DB:", error);
     return {
       users: [], routines: [], tasks: [], routineTasks: [], 
-      routineAssignments: [], flows: [], schedules: [], routineExecutions: [], taskExecutions: []
+      routineAssignments: [], flows: [], schedules: [], rewards: [],
+      routineExecutions: [], taskExecutions: [], spendings: []
     };
   }
 }
@@ -114,7 +136,8 @@ async function writeDb(data: Db) {
   globalState = {
     userStars,
     routineExecutions: data.routineExecutions,
-    taskExecutions: data.taskExecutions
+    taskExecutions: data.taskExecutions,
+    spendings: data.spendings
   };
 
   // Schedule persist
@@ -228,6 +251,15 @@ server.register(cors, {
 
 // Enable WebSocket
 server.register(websocket);
+
+// Enable Multipart
+server.register(multipart);
+
+// Enable Static for Uploads
+server.register(fastifyStatic, {
+  root: UPLOADS_DIR,
+  prefix: '/uploads/',
+});
 
 // Health check
 server.get('/health', async () => {
@@ -355,6 +387,129 @@ server.get('/api/flows', async (request, reply) => {
     request.log.error(error);
     return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
   }
+});
+
+// Rewards routes
+server.get('/api/rewards', async (request, reply) => {
+  try {
+    const db = await readDb();
+    return db.rewards;
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
+  }
+});
+
+// Spendings routes
+server.get('/api/spendings', async (request, reply) => {
+  try {
+    const db = await readDb();
+    // Enrich spendings with user and reward details
+    const enriched = db.spendings.map(s => {
+      const user = db.users.find(u => u.id === s.userId);
+      const reward = db.rewards.find(r => r.id === s.rewardId);
+      return { ...s, user, reward };
+    });
+    return enriched.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
+  }
+});
+
+server.post('/api/spendings', async (request, reply) => {
+  const { userId, rewardId } = request.body as { userId: string, rewardId: string };
+  
+  const db = await readDb();
+  const user = db.users.find(u => u.id === userId);
+  const reward = db.rewards.find(r => r.id === rewardId);
+
+  if (!user || !reward) {
+    return reply.code(404).send({ error: 'User or Reward not found' });
+  }
+
+  if (user.stars < reward.cost) {
+    return reply.code(400).send({ error: 'Not enough stars' });
+  }
+
+  // Deduct stars
+  user.stars -= reward.cost;
+
+  // Create spending record
+  const spending = {
+    id: randomUUID(),
+    userId,
+    rewardId,
+    cost: reward.cost,
+    createdAt: new Date().toISOString(),
+    status: 'pending' // pending, done
+  };
+
+  db.spendings.push(spending);
+  await writeDb(db);
+
+  broadcast({
+    type: 'SYNC_STATE',
+    payload: {
+      userStars: globalState.userStars,
+      spendings: globalState.spendings
+    }
+  });
+
+  return spending;
+});
+
+server.put('/api/spendings/:id', async (request, reply) => {
+  const { id } = request.params as { id: string };
+  const { status } = request.body as { status: string };
+
+  const db = await readDb();
+  const spending = db.spendings.find(s => s.id === id);
+
+  if (!spending) {
+    return reply.code(404).send({ error: 'Spending not found' });
+  }
+
+  // If revoking, refund stars
+  if (status === 'revoked' && spending.status !== 'revoked') {
+    const user = db.users.find(u => u.id === spending.userId);
+    if (user) {
+      user.stars += spending.cost;
+    }
+  }
+
+  spending.status = status;
+  await writeDb(db);
+
+  broadcast({
+    type: 'SYNC_STATE',
+    payload: {
+      userStars: globalState.userStars,
+      spendings: globalState.spendings
+    }
+  });
+
+  return spending;
+});
+
+// Admin: Upload file
+server.post('/api/admin/upload', async (request, reply) => {
+  const data = await request.file();
+  if (!data) {
+    return reply.code(400).send({ error: 'No file uploaded' });
+  }
+
+  const filename = `${Date.now()}-${data.filename}`;
+  const filepath = path.join(UPLOADS_DIR, filename);
+  
+  await pump(data.file, createWriteStream(filepath));
+
+  // Return the URL
+  const protocol = request.protocol;
+  const host = request.hostname;
+  const url = `${protocol}://${host}/uploads/${filename}`;
+
+  return { success: true, url, filename };
 });
 
 // Push hook endpoint
@@ -497,11 +652,73 @@ server.post('/api/debug/time', async (request, reply) => {
   return { success: true, simulatedTime: date.toISOString() };
 });
 
+// Admin: Get raw data.json
+server.get('/api/admin/data', async (request, reply) => {
+  try {
+    const data = await fs.readFile(DATA_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    return reply.code(500).send({ error: 'Failed to read data file' });
+  }
+});
+
+// Admin: Update data.json
+server.post('/api/admin/data', async (request, reply) => {
+  try {
+    const newData = request.body;
+    // Basic validation: ensure it's valid JSON (Fastify does this)
+    
+    await fs.writeFile(DATA_FILE, JSON.stringify(newData, null, 2));
+    
+    broadcast({ type: 'CONFIG_UPDATED' });
+    
+    return { success: true };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Failed to save data file' });
+  }
+});
+
+// Admin: Get raw state
+server.get('/api/admin/state', async (request, reply) => {
+  return globalState;
+});
+
+// Admin: Update state
+server.post('/api/admin/state', async (request, reply) => {
+  try {
+    const newState = request.body as any;
+    globalState = newState;
+    scheduleSave();
+    
+    broadcast({
+      type: 'SYNC_STATE',
+      payload: {
+        userStars: globalState.userStars,
+        spendings: globalState.spendings
+      }
+    });
+    
+    return { success: true };
+  } catch (error) {
+    return reply.code(500).send({ error: 'Failed to update state' });
+  }
+});
+
 // WebSocket for real-time events
 server.register(async (fastify) => {
   fastify.get('/ws', { websocket: true }, (connection: any, req) => {
     fastify.log.info('Client connected via WebSocket');
     wsConnections.add(connection);
+
+    // Send initial state sync
+    connection.send(JSON.stringify({
+      type: 'SYNC_STATE',
+      payload: {
+        userStars: globalState.userStars,
+        spendings: globalState.spendings
+      }
+    }));
 
     connection.on('message', (message: any) => {
       const data = JSON.parse(message.toString());

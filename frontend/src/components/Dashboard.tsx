@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,11 +8,17 @@ import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
 import { SmartIcon } from './SmartIcon';
+import { StoreModal } from './StoreModal';
 
 export const Dashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [users, setUsers] = useState<User[]>([]);
   const [flows, setFlows] = useState<Flow[]>([]);
+  const [rewards, setRewards] = useState<any[]>([]);
+  
+  // Store State
+  const [storeUserId, setStoreUserId] = useState<string | null>(null);
+  const storeUser = users.find(u => u.id === storeUserId) || null;
 
   // Flow State
   const [activeFlow, setActiveFlow] = useState<Flow | null>(null);
@@ -22,16 +28,30 @@ export const Dashboard: React.FC = () => {
   const [activeRoutines, setActiveRoutines] = useState<{ userId: string, routineId: string, executionId?: string }[]>([]);
   const [hasInteracted, setHasInteracted] = useState(false);
 
+  // Refs for state access in callbacks
+  const flowsRef = useRef<Flow[]>([]);
+  const usersRef = useRef<User[]>([]);
+
+  useEffect(() => {
+    flowsRef.current = flows;
+  }, [flows]);
+
+  useEffect(() => {
+    usersRef.current = users;
+  }, [users]);
+
   // Fetch Data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [usersData, flowsData] = await Promise.all([
+        const [usersData, flowsData, rewardsData] = await Promise.all([
           api.getUsers(),
-          api.getFlows()
+          api.getFlows(),
+          api.getRewards()
         ]);
         setUsers(usersData);
         setFlows(flowsData);
+        setRewards(rewardsData);
       } catch (err) {
         console.error('Failed to load data:', err);
       }
@@ -39,15 +59,24 @@ export const Dashboard: React.FC = () => {
     fetchData();
 
     // WebSocket connection
-    const websocket = new WebSocket(`ws://${window.location.host}/ws`);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const websocket = new WebSocket(`${protocol}//${window.location.host}/ws`);
+    
     websocket.onopen = () => {
       console.log('WebSocket connected');
     };
+    
     websocket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       console.log('WebSocket message:', message);
 
-      if (message.type === 'ALARM_START') {
+      if (message.type === 'SYNC_STATE') {
+        const { userStars } = message.payload;
+        setUsers(prev => prev.map(u => ({
+          ...u,
+          stars: userStars[u.id] ?? u.stars
+        })));
+      } else if (message.type === 'ALARM_START') {
         // Trigger alarm by creating a temporary flow
         const alarmFlow = {
           id: 'temp-alarm',
@@ -61,16 +90,21 @@ export const Dashboard: React.FC = () => {
         setActiveRoutines(prev => [...prev, { userId, routineId, executionId }]);
       } else if (message.type === 'FLOW_START') {
         const { flowId, steps } = message.payload;
-        const flow = flows.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
+        // Use ref to get latest flows
+        const flow = flowsRef.current.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
         setActiveFlow(flow);
         setCurrentStepIndex(0);
-        // Execute first step if it's an alarm
-        if (steps[0]?.type === 'alarm') {
-          // Alarm will be shown by the component
-        }
+      } else if (message.type === 'STARS_AWARDED') {
+        const { userId, totalStars } = message.payload;
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, stars: totalStars } : u));
+      } else if (message.type === 'CONFIG_UPDATED') {
+        console.log('Config updated, reloading...');
+        // Re-fetch data
+        api.getUsers().then(setUsers);
+        api.getFlows().then(setFlows);
+        api.getRewards().then(setRewards);
       }
     };
-    // setWs(websocket);
 
     // Check for URL push parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -146,6 +180,16 @@ export const Dashboard: React.FC = () => {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {storeUser && (
+          <StoreModal 
+            user={storeUser} 
+            rewards={rewards} 
+            onClose={() => setStoreUserId(null)} 
+          />
+        )}
+      </AnimatePresence>
+
       {/* Background Animation */}
       <div className="bg-gradient" />
 
@@ -210,18 +254,13 @@ export const Dashboard: React.FC = () => {
               className="dock-item"
               whileHover={{ scale: 1.1, y: -10 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                // Trigger the user's first routine assignment
-                const firstRoutine = user.routines[0];
-                if (firstRoutine) {
-                  api.pushNow(firstRoutine.id).catch(err => console.error('Push failed:', err));
-                }
-              }}
+              onClick={() => setStoreUserId(user.id)}
             >
               <div className="dock-avatar" style={{ background: user.color }}>
                 <SmartIcon value={user.avatar} />
               </div>
               <span className="dock-name">{user.name}</span>
+              <span className="dock-stars">⭐ {user.stars}</span>
             </motion.div>
           ))}
         </motion.div>
@@ -356,6 +395,11 @@ export const Dashboard: React.FC = () => {
         .dock-name {
           font-size: 1rem;
           font-weight: 600;
+        }
+        
+        .dock-stars {
+          font-size: 0.9rem;
+          color: gold;
         }
       `}</style>
     </div>

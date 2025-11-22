@@ -177,5 +177,31 @@
       "type": "routine",
       "targetId": "u1-assign-evening"
     }
+  ],
+  "rewards": [
+    {
+      "id": "rew-tv",
+      "title": "1 Ώρα Τηλεόραση",
+      "icon": { "type": "emoji", "value": "📺" },
+      "cost": 50
+    },
+    {
+      "id": "rew-sweet",
+      "title": "Γλυκό",
+      "icon": { "type": "emoji", "value": "🍬" },
+      "cost": 30
+    },
+    {
+      "id": "rew-park",
+      "title": "Βόλτα στο Πάρκο",
+      "icon": { "type": "emoji", "value": "🌳" },
+      "cost": 100
+    },
+    {
+      "id": "rew-toy",
+      "title": "Μικρό Παιχνίδι",
+      "icon": { "type": "emoji", "value": "🧸" },
+      "cost": 200
+    }
   ]
 }
