@@ -1,10 +1,11 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { api } from '../api';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import type { User, Reward, Spending } from '@shared/types';
+import { useAppSounds } from '../hooks/useAppSounds';
 
 interface StoreModalProps {
   user: User;
@@ -14,17 +15,35 @@ interface StoreModalProps {
 }
 
 export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings, onClose }) => {
+  const { playClick, playSuccess } = useAppSounds();
+  const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [justPurchased, setJustPurchased] = useState<{ reward: Reward; cost: number } | null>(null);
+
   const mySpendings = spendings.filter((s) => s.userId === user.id);
   const pendingSpendings = mySpendings.filter(s => s.status === 'pending');
   const historySpendings = mySpendings.filter(s => s.status === 'done');
 
   const handleBuy = async (reward: Reward) => {
     if (user.stars < reward.cost) return;
+
+    setPurchasingId(reward.id);
+    playClick();
+
     try {
       await api.spendStars(user.id, reward.id);
+
+      // Show purchase animation
+      setJustPurchased({ reward, cost: reward.cost });
+      playSuccess();
+
+      setTimeout(() => {
+        setJustPurchased(null);
+      }, 2000);
     } catch (err) {
       console.error(err);
       alert('Error spending stars');
+    } finally {
+      setPurchasingId(null);
     }
   };
 
@@ -36,6 +55,35 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
+      <AnimatePresence>
+        {justPurchased && (
+          <motion.div
+            className="purchase-celebration"
+            initial={{ opacity: 0, scale: 0.5, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 1.5, y: -100 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div
+              className="celebration-icon"
+              animate={{
+                rotate: [0, -10, 10, -10, 10, 0],
+                scale: [1, 1.2, 1, 1.2, 1]
+              }}
+              transition={{ duration: 0.5 }}
+            >
+              <SmartIcon value={justPurchased.reward.icon} />
+            </motion.div>
+            <div className="celebration-text">
+              {justPurchased.reward.title}
+            </div>
+            <div className="celebration-cost">
+              -⭐ {justPurchased.cost}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div
         className="store-card"
         initial={{ scale: 0.8, y: 50 }}
@@ -44,9 +92,15 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
       >
         <div className="store-header">
           <h2>Κατάστημα του {user.name}</h2>
-          <div className="user-balance">
+          <motion.div
+            className="user-balance"
+            key={user.stars}
+            initial={{ scale: 1 }}
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 0.3 }}
+          >
             ⭐ {user.stars}
-          </div>
+          </motion.div>
         </div>
 
         <div className="store-content">
@@ -55,20 +109,35 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
             <div className="rewards-grid">
               {rewards.map(reward => {
                 const canAfford = user.stars >= reward.cost;
+                const isPurchasing = purchasingId === reward.id;
                 return (
-                  <div
+                  <motion.div
                     key={reward.id}
-                    className={`reward-item ${!canAfford ? 'disabled' : ''}`}
-                    onClick={() => canAfford && handleBuy(reward)}
+                    className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''}`}
+                    onClick={() => canAfford && !isPurchasing && handleBuy(reward)}
+                    whileHover={canAfford && !isPurchasing ? { scale: 1.05 } : {}}
+                    whileTap={canAfford && !isPurchasing ? { scale: 0.95 } : {}}
+                    animate={isPurchasing ? {
+                      scale: [1, 1.1, 0.9, 1],
+                      rotate: [0, -5, 5, 0]
+                    } : {}}
+                    transition={{ duration: 0.3 }}
                   >
-                    <div className="reward-icon">
+                    <motion.div
+                      className="reward-icon"
+                      animate={isPurchasing ? {
+                        scale: [1, 1.3, 1],
+                        rotate: [0, 360]
+                      } : {}}
+                      transition={{ duration: 0.5 }}
+                    >
                       <SmartIcon value={reward.icon} />
-                    </div>
+                    </motion.div>
                     <div className="reward-info">
                       <span className="reward-title">{reward.title}</span>
                       <span className="reward-cost">⭐ {reward.cost}</span>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -140,6 +209,41 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           align-items: center;
           justify-content: center;
           backdrop-filter: blur(5px);
+        }
+
+        .purchase-celebration {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 3000;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+          background: rgba(0,0,0,0.9);
+          padding: 3rem;
+          border-radius: 2rem;
+          border: 3px solid gold;
+          box-shadow: 0 0 50px rgba(255,215,0,0.5);
+        }
+
+        .celebration-icon {
+          font-size: 6rem;
+          filter: drop-shadow(0 0 20px gold);
+        }
+
+        .celebration-text {
+          font-size: 2rem;
+          font-weight: bold;
+          color: white;
+          text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        .celebration-cost {
+          font-size: 1.5rem;
+          color: gold;
+          font-weight: bold;
         }
 
         .store-card {
@@ -244,9 +348,14 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           border: 1px solid transparent;
         }
 
-        .reward-item:hover {
+        .reward-item:hover:not(.disabled):not(.purchasing) {
           background: rgba(255,255,255,0.1);
-          transform: translateY(-2px);
+        }
+
+        .reward-item.purchasing {
+          background: rgba(255,215,0,0.2);
+          border-color: gold;
+          pointer-events: none;
         }
 
         .reward-item.disabled {
