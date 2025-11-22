@@ -7,7 +7,7 @@ This project uses a **Docker Compose** setup with a "Base + Override" pattern to
 Use this mode for day-to-day coding. It features hot-reloading, local file mounting, and full debugging capabilities.
 
 ```powershell
-docker-compose up
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
 - **Frontend**: [http://localhost:5173](http://localhost:5173)
@@ -21,34 +21,45 @@ docker-compose up
 Use this mode to test the optimized build or deploy the application. It uses Nginx and pre-compiled Node.js code.
 
 ```powershell
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+docker-compose up --build
 ```
 
-- **Frontend**: [http://localhost](http://localhost) (Port 80)
+- **Frontend**: [http://localhost](http://localhost) (Default Port 80, configurable via `.env`)
 - **Backend**: Internal (proxied via Nginx)
 - **Performance**: Optimized assets, no file watchers, native file system speed.
 
 > **Note**: To stop the production server, press `Ctrl+C`. To run it in the background, add `-d` to the end of the command.
 
+### Customizing the Port
+
+To change the production frontend port, create a `.env` file in the project root:
+
+```bash
+FRONTEND_PORT=8080
+```
+
+Then restart the containers. The frontend will be accessible at the port you specified.
+
 ---
 
 ## 🛠️ Architecture Guide
 
-We use three Docker Compose files to manage configuration:
+We use two Docker Compose files to manage configuration:
 
 1.  **`docker-compose.yml` (Base)**
     -   Defines the *shared* infrastructure (Service names, Networks, Timezone).
     -   *Edit this when:* You add a new service (e.g., a database) or change a shared environment variable.
 
-2.  **`docker-compose.override.yml` (Dev Plugin)**
+2.  **`docker-compose.override.yml` (Production Override)**
     -   *Automatically loaded by `docker-compose up`.*
-    -   Configures development tools: `nodemon`, `vite`, volume mounts.
-    -   *Edit this when:* You need to change dev server ports or dev-specific flags.
-
-3.  **`docker-compose.prod.yml` (Prod Plugin)**
-    -   *Must be explicitly loaded with `-f`.*
     -   Configures production builds: `Dockerfile` builds, Nginx, Restart policies.
+    -   Uses environment variables from `.env` for port configuration.
     -   *Edit this when:* You change how the app is built or deployed.
+
+3.  **`docker-compose.dev.yml` (Development Override)**
+    -   *Explicitly load with `-f` for development mode.*
+    -   Configures development tools: `nodemon`, `vite`, volume mounts, file watchers.
+    -   *Edit this when:* You need to change dev server ports or dev-specific flags.
 
 ## 📦 Common Tasks
 
@@ -79,7 +90,7 @@ docker-compose exec backend npm install <package-name>
 -   Ensure you aren't relying on dev-only dependencies in your production code.
 
 **"Port already in use"**
--   Dev uses port `5173`. Prod uses port `80`.
+-   Dev uses port `5173`. Prod uses port `80` by default (configurable via `.env`).
 -   Ensure no other service is running on these ports.
 
 ## 🍓 Raspberry Pi 4 Deployment
@@ -92,11 +103,12 @@ Yes, this project is fully compatible with Raspberry Pi 4 (ARM64).
 
 **How to deploy on Pi:**
 1.  Clone the repo on your Pi.
-2.  Run the **Production** command:
+2.  (Optional) Create a `.env` file to customize the port (default is 80).
+3.  Run the **Production** command:
     ```bash
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+    docker-compose up --build -d
     ```
     *(Note: The first build might take 5-10 minutes on the Pi's CPU. Subsequent starts will be instant.)*
 
 **Performance Tip:**
-Do **not** use the Development mode (`docker-compose up`) on the Pi if you can avoid it. The file-watching mechanism (`CHOKIDAR_USEPOLLING`) consumes a lot of CPU on low-power devices. Always use Production mode for the Pi.
+Do **not** use the Development mode (`docker-compose -f docker-compose.yml -f docker-compose.dev.yml up`) on the Pi if you can avoid it. The file-watching mechanism (`CHOKIDAR_USEPOLLING`) consumes a lot of CPU on low-power devices. Always use Production mode for the Pi.
