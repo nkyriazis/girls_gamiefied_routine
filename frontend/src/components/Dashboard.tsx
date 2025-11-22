@@ -9,10 +9,12 @@ import { GlobalAlarm } from './GlobalAlarm';
 import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
 import { useGame } from '../context/GameContext';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 
 export const Dashboard: React.FC = () => {
   const { users, flows, rewards, spendings, lastEvent } = useGame();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { isInstallable, promptInstall } = useInstallPrompt();
 
   // Store State
   const [storeUserId, setStoreUserId] = useState<string | null>(null);
@@ -50,7 +52,11 @@ export const Dashboard: React.FC = () => {
       setCurrentStepIndex(0);
     } else if (type === 'ROUTINE_START') {
       const { userId, routineId, executionId } = payload;
-      setActiveRoutines(prev => [...prev, { userId, routineId, executionId }]);
+      setActiveRoutines(prev => {
+        // Prevent duplicates - remove any existing routine for this user
+        const filtered = prev.filter(r => !(r.userId === userId && r.routineId === routineId));
+        return [...filtered, { userId, routineId, executionId }];
+      });
     } else if (type === 'FLOW_START') {
       const { flowId, steps } = payload;
       // Use ref to get latest flows
@@ -87,12 +93,13 @@ export const Dashboard: React.FC = () => {
     if (nextIndex < activeFlow.steps.length) {
       setCurrentStepIndex(nextIndex);
 
-      // Execute next step actions immediately if it's a parallel routine step
+      // Execute next step actions if it's a parallel routine step
       const nextStep = activeFlow.steps[nextIndex];
       if (nextStep.type === 'parallel' && nextStep.actions) {
         nextStep.actions
           .filter(a => a.type === 'routine')
           .forEach(a => {
+            // Push the routine assignment ID to trigger it
             api.pushNow(a.routineId).catch(console.error);
           });
       }
@@ -192,6 +199,20 @@ export const Dashboard: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Install PWA Button */}
+      {isInstallable && (
+        <motion.button
+          className="install-pwa-btn"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={promptInstall}
+        >
+          📲 Install App
+        </motion.button>
+      )}
 
       {/* Dock (Inactive Users) */}
       {activeCount === 0 && (
@@ -363,8 +384,27 @@ export const Dashboard: React.FC = () => {
         }
         
         .dock-stars {
-          font-size: 0.9rem;
+          font-size: 0.8rem;
           color: gold;
+        }
+
+        .install-pwa-btn {
+          position: fixed;
+          top: 1rem;
+          right: 1rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 2rem;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
       `}</style>
     </div>
