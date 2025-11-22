@@ -1,15 +1,28 @@
 import { useCallback, useRef } from 'react';
 
 export const useAppSounds = () => {
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const getAudioContext = () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    // Resume context if suspended (browser autoplay policy)
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+    return audioContextRef.current;
+  };
+
   const playTone = (freq: number, type: OscillatorType, duration: number) => {
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioCtx = getAudioContext();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
     
-    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
 
     oscillator.connect(gainNode);
@@ -25,14 +38,14 @@ export const useAppSounds = () => {
 
   const playSuccess = useCallback(() => {
     // Play a major triad arpeggio
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const ctx = getAudioContext();
     
     [440, 554, 659, 880].forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.1, ctx.currentTime + i * 0.1);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.1);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.1 + 0.5);
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -53,7 +66,7 @@ export const useAppSounds = () => {
     if (alarmIntervalRef.current) return;
 
     const playMelody = () => {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = getAudioContext();
       const now = ctx.currentTime;
       // Simple "Morning" melody: C4 E4 G4 C5
       [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
@@ -62,7 +75,7 @@ export const useAppSounds = () => {
         osc.type = 'sine';
         osc.frequency.value = freq;
         
-        gain.gain.setValueAtTime(0.1, now + i * 0.2);
+        gain.gain.setValueAtTime(0.15, now + i * 0.2);
         gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.4);
         
         osc.connect(gain);
