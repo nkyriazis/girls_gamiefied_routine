@@ -365,6 +365,307 @@ Dashboard
 
 ---
 
+## Dashboard State Machine (FSM) Analysis
+
+### State Overview
+
+The Dashboard component manages a complex finite state machine with multiple orthogonal (independent) substates:
+
+```
+Dashboard State = {
+  flowState: { activeFlow, currentStepIndex },
+  routineState: { activeRoutines[] },
+  uiState: { storeUserId, hasInteracted, isInstallable },
+  viewMode: IDLE | SINGLE | DUAL | GRID
+}
+```
+
+### Primary State Machine: Flow Execution
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Initial Load
+    Idle --> FlowActive: FLOW_START event
+    FlowActive --> AlarmStep: step[0].type === 'alarm'
+    FlowActive --> ParallelStep: step[0].type === 'parallel'
+    AlarmStep --> ParallelStep: User dismisses alarm (handleStepComplete)
+    ParallelStep --> FlowComplete: No more steps
+    ParallelStep --> NextStep: More steps exist
+    NextStep --> AlarmStep: step[n].type === 'alarm'
+    NextStep --> ParallelStep: step[n].type === 'parallel'
+    FlowComplete --> Idle: activeFlow = null
+    
+    note right of ParallelStep
+        Frontend calls api.pushNow()
+        for each routine in actions[]
+        Backend broadcasts ROUTINE_START events
+    end note
+```
+
+**State Variables:**
+- `activeFlow: Flow | null` - Currently executing flow
+- `currentStepIndex: number` - Position in flow.steps[]
+
+**Transitions:**
+1. `FLOW_START` event → Set `activeFlow`, reset `currentStepIndex` to 0
+2. User completes step (e.g., dismisses alarm) → Increment `currentStepIndex`
+3. Parallel step entered → Frontend triggers backend API calls for each routine
+4. Last step completed → Clear `activeFlow`, reset `currentStepIndex`
+
+### Secondary State Machine: Routine Execution
+
+```mermaid
+stateDiagram-v2
+    [*] --> NoRoutines: activeRoutines.length === 0
+    NoRoutines --> SingleRoutine: ROUTINE_START event (count=1)
+    NoRoutines --> MultiRoutines: ROUTINE_START event (count≥2)
+    SingleRoutine --> MultiRoutines: Another ROUTINE_START
+    MultiRoutines --> SingleRoutine: routineComplete/routineExit (count→1)
+    SingleRoutine --> NoRoutines: routineComplete/routineExit (count→0)
+    MultiRoutines --> NoRoutines: All complete (count→0)
+    
+    NoRoutines: View = IDLE (Clock)
+    SingleRoutine: View = SINGLE (Fullscreen)
+    MultiRoutines: View = DUAL/GRID (Split)
+```
+
+**State Variables:**
+- `activeRoutines: Array<{ userId, routineId, executionId }>` - Running routines
+
+**Transitions:**
+1. `ROUTINE_START` event → Add to array (with deduplication by userId+routineId)
+2. User exits routine → Remove from array
+3. User completes routine → Remove from array
+
+**Derived State:**
+- `viewMode = activeRoutines.length === 0 ? 'IDLE' : length === 1 ? 'SINGLE' : length === 2 ? 'DUAL' : 'GRID'`
+
+### Event Processing Pipeline
+
+**GameContext** receives WebSocket events → Updates `lastEvent` → Dashboard `useEffect` reacts:
+
+```typescript
+useEffect(() => {
+  if (!lastEvent) return;
+  
+  switch (lastEvent.type) {
+    case 'ALARM_START':
+      // Create synthetic flow with alarm step
+      setActiveFlow({ id: 'temp-alarm', steps: [{ type: 'alarm', props: {...} }] });
+      setCurrentStepIndex(0);
+      break;
+      
+    case 'ROUTINE_START':
+      // Add to activeRoutines with deduplication
+      setActiveRoutines(prev => {
+        const filtered = prev.filter(r => !(r.userId === userId && r.routineId === routineId));
+        return [...filtered, { userId, routineId, executionId }];
+      });
+      break;
+      
+    case 'FLOW_START':
+      // Load flow, reset step index
+      setActiveFlow(flowsRef.current.find(f => f.id === flowId) || payload);
+      setCurrentStepIndex(0);
+      break;
+  }
+}, [lastEvent]);
+```
+
+### Critical Race Conditions & Pitfalls
+
+#### 1. **Duplicate Routine Triggers** ⚠️ FIXED
+**Symptom:** Same routine appears multiple times on screen
+
+**Root Cause:**
+- Backend broadcasts `ROUTINE_START` immediately when flow starts
+- Frontend `handleStepComplete()` calls `api.pushNow()` for parallel routines
+- If both fire, duplicate events are processed
+
+**Mitigation (Implemented):**
+```typescript
+// Deduplication by userId+routineId composite key
+setActiveRoutines(prev => {
+  const filtered = prev.filter(r => !(r.userId === userId && r.routineId === routineId));
+  return [...filtered, { userId, routineId, executionId }];
+});
+```
+
+**Design Decision:**
+- Backend should NOT auto-trigger routines in parallel steps
+- Backend only broadcasts `FLOW_START` with step definitions
+- Frontend is responsible for executing `api.pushNow()` for each parallel action
+- This ensures single source of trigger logic
+
+#### 2. **Flow Step Index Out of Sync**
+**Symptom:** Flow gets stuck or skips steps
+
+**Scenario:**
+```typescript
+// User dismisses alarm quickly
+handleStepComplete(); // currentStepIndex++
+// But activeFlow was just cleared by another event?
+```
+
+**Mitigation:**
+- Always check `if (!activeFlow) return;` at start of handlers
+- Use functional updates: `setCurrentStepIndex(prev => prev + 1)`
+- Reset stepIndex to 0 when setting new activeFlow
+
+#### 3. **Stale Flow Reference in Parallel Execution**
+**Symptom:** Wrong routines triggered when flow data changes
+
+**Scenario:**
+```typescript
+// Flow data changes in GameContext
+flows = [...newFlows];
+
+// But activeFlow is a stale copy
+activeFlow.steps[1].actions.forEach(a => api.pushNow(a.routineId));
+```
+
+**Mitigation (Implemented):**
+```typescript
+const flowsRef = useRef<Flow[]>([]);
+useEffect(() => { flowsRef.current = flows; }, [flows]);
+
+// On FLOW_START, always fetch fresh flow
+const flow = flowsRef.current.find(f => f.id === flowId) || payload;
+```
+
+#### 4. **WebSocket Reconnection State Loss**
+**Symptom:** Dashboard doesn't show active routines after reconnect
+
+**Scenario:**
+- WebSocket disconnects during active routine
+- Reconnects → GameContext refreshes data
+- But `activeRoutines` state is local to Dashboard, not persisted
+
+**Current Behavior:** State is lost ❌
+
+**Potential Fix:**
+```typescript
+// On reconnect, query backend for active executions
+useEffect(() => {
+  if (isConnected) {
+    api.getActiveExecutions().then(executions => {
+      setActiveRoutines(executions.map(e => ({
+        userId: e.userId,
+        routineId: e.routineId,
+        executionId: e.id
+      })));
+    });
+  }
+}, [isConnected]);
+```
+
+**Note:** Backend currently doesn't expose `GET /api/executions/active` endpoint
+
+#### 5. **Multiple Flow Instances**
+**Symptom:** Alarm shows, then another alarm shows on top
+
+**Scenario:**
+- Flow A is active (on alarm step)
+- Parent triggers Flow B (also starts with alarm)
+- Both flows render `<GlobalAlarm>` components simultaneously
+
+**Current Behavior:** Only one alarm renders (latest wins via `activeFlow` replacement) ✅
+
+**Consideration:** Should multiple flows queue? Current design assumes single active flow at a time.
+
+#### 6. **Routine Exit vs Complete Semantics**
+**Symptom:** Incomplete routines leave orphaned execution records
+
+**Scenario:**
+- User starts routine (execution record created in backend)
+- User clicks "X" to exit early
+- Frontend removes from `activeRoutines` but backend still has open execution
+
+**Current Behavior:**
+- `handleRoutineExit()` only updates frontend state
+- Backend execution remains incomplete (no `completedAt` timestamp)
+- Stars earned from completed tasks persist
+
+**Design Question:** Should early exit:
+1. Keep partial stars? (Current)
+2. Forfeit all stars?
+3. Mark execution as "abandoned"?
+
+#### 7. **Flow State vs Routine State Independence**
+**Symptom:** Flow completes but routines still running
+
+**Scenario:**
+```
+Flow: [Alarm] → [Parallel: Routine1, Routine2]
+User dismisses alarm → parallel routines trigger
+Flow state: activeFlow = null (complete)
+Routine state: activeRoutines = [Routine1, Routine2] (still running)
+```
+
+**Current Behavior:** This is correct! Flow and routine lifecycles are independent ✅
+
+**Implication:**
+- Flow orchestrates START only
+- Routines run independently until user completes them
+- Flow does not block on routine completion
+
+### State Consistency Guarantees
+
+**Strong Guarantees:**
+1. ✅ `activeRoutines` cannot have duplicates for same userId+routineId
+2. ✅ `currentStepIndex` is always valid (0 ≤ index < steps.length or flow is null)
+3. ✅ `viewMode` always matches `activeRoutines.length`
+
+**Weak Guarantees (Eventually Consistent):**
+1. ⚠️ User star counts sync via WebSocket (may lag by ~100ms)
+2. ⚠️ Spending status updates require full data refresh
+3. ⚠️ Active routine state lost on reconnect (not persisted)
+
+**No Guarantees:**
+1. ❌ Execution records in backend may not match frontend active routines
+2. ❌ Flow step progression is client-side only (no backend tracking)
+3. ❌ Multiple clients can have different `activeFlow` states (no conflict resolution)
+
+### Recommended Improvements
+
+1. **Add Backend Execution State Tracking:**
+   ```typescript
+   // Track which executions are still active
+   globalState.activeExecutions = [
+     { id: 'exec-123', userId: 'u1', routineId: 'r-morning', startedAt: '...' }
+   ];
+   
+   // Broadcast on completion
+   broadcast({ type: 'EXECUTION_COMPLETE', payload: { executionId } });
+   ```
+
+2. **Add Flow State Persistence:**
+   ```typescript
+   globalState.activeFlows = [
+     { flowId: 'morning-flow', currentStepIndex: 1, startedAt: '...' }
+   ];
+   ```
+
+3. **Add Explicit Exit API:**
+   ```typescript
+   // POST /api/executions/:id/exit
+   // Mark execution as abandoned, optionally forfeit stars
+   ```
+
+4. **Add Idempotency Keys:**
+   ```typescript
+   // Prevent duplicate routine triggers
+   api.pushNow(routineId, { idempotencyKey: `${flowId}-${stepIndex}-${routineId}` });
+   ```
+
+5. **Add State Recovery on Reconnect:**
+   ```typescript
+   // GET /api/state/snapshot
+   // Returns: { activeExecutions, activeFlows, lastEventTimestamp }
+   ```
+
+---
+
 ## I/O Patterns & Data Flow
 
 ### Initial Page Load
