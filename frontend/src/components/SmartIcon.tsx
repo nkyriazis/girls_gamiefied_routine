@@ -1,5 +1,5 @@
 import React from 'react';
-import { type IconValue } from '../types';
+import { type IconValue } from '@shared/types';
 
 interface SmartIconProps {
     value: IconValue;

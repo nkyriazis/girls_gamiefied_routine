@@ -3,251 +3,214 @@ import { api } from '../api';
 import { SmartIcon } from './SmartIcon';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
+import { useGame } from '../context/GameContext';
 
 const JsonEditor = ({ title, loadFn, saveFn }: { title: string, loadFn: () => Promise<any>, saveFn: (data: any) => Promise<void> }) => {
-  const [json, setJson] = useState('');
-  const [error, setError] = useState<string | null>(null);
+    const [json, setJson] = useState('');
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadFn().then(data => setJson(JSON.stringify(data, null, 2)));
-  }, []);
+    useEffect(() => {
+        loadFn().then(data => setJson(JSON.stringify(data, null, 2)));
+    }, []);
 
-  const handleSave = async () => {
-    try {
-      const parsed = JSON.parse(json);
-      await saveFn(parsed);
-      setError(null);
-      alert('Saved!');
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  };
+    const handleSave = async () => {
+        try {
+            const parsed = JSON.parse(json);
+            await saveFn(parsed);
+            setError(null);
+            alert('Saved!');
+        } catch (err) {
+            setError((err as Error).message);
+        }
+    };
 
-  return (
-    <div className="json-editor">
-      <h3>{title}</h3>
-      <textarea 
-        value={json} 
-        onChange={e => setJson(e.target.value)}
-        spellCheck={false}
-      />
-      {error && <div className="error">{error}</div>}
-      <button onClick={handleSave}>Save {title}</button>
-      <style>{`
+    return (
+        <div className="json-editor">
+            <h3>{title}</h3>
+            <textarea
+                value={json}
+                onChange={e => setJson(e.target.value)}
+                spellCheck={false}
+            />
+            {error && <div className="error">{error}</div>}
+            <button onClick={handleSave}>Save {title}</button>
+            <style>{`
         .json-editor { display: flex; flex-direction: column; gap: 1rem; height: 500px; }
         textarea { flex: 1; background: #111; color: #0f0; font-family: monospace; padding: 1rem; border: 1px solid #333; }
         .error { color: red; }
       `}</style>
-    </div>
-  );
+        </div>
+    );
 };
 
 export const ParentDashboard: React.FC = () => {
-  const [users, setUsers] = useState<any[]>([]);
-  const [spendings, setSpendings] = useState<any[]>([]);
-  const [flows, setFlows] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'state'>('dashboard');
+    const { users, spendings, flows } = useGame();
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'state'>('dashboard');
 
-  const fetchData = async () => {
-    try {
-      const [u, s, f] = await Promise.all([
-        api.getUsers(),
-        api.getSpendings(),
-        api.getFlows()
-      ]);
-      setUsers(u);
-      setSpendings(s);
-      setFlows(f);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 5000); // Poll every 5s for updates
-    
-    // Also listen for websocket updates to refresh
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const websocket = new WebSocket(`${protocol}//${window.location.host}/ws`);
-    websocket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'CONFIG_UPDATED' || message.type === 'SYNC_STATE') {
-        fetchData();
-      }
+    const handleMarkDone = async (id: string) => {
+        try {
+            await api.markSpendingDone(id);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update');
+        }
     };
 
-    return () => {
-      clearInterval(interval);
-      websocket.close();
+    const handleRevoke = async (id: string) => {
+        if (!confirm('Are you sure you want to revoke this spending? Stars will be refunded.')) return;
+        try {
+            await api.revokeSpending(id);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to revoke');
+        }
     };
-  }, []);
 
-  const handleMarkDone = async (id: string) => {
-    try {
-      await api.markSpendingDone(id);
-      fetchData();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to update');
-    }
-  };
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        try {
+            const result = await api.uploadFile(file);
+            alert(`Uploaded: ${result.url}`);
+        } catch (err) {
+            console.error(err);
+            alert('Upload failed');
+        }
+    };
 
-  const handleRevoke = async (id: string) => {
-    if (!confirm('Are you sure you want to revoke this spending? Stars will be refunded.')) return;
-    try {
-      await api.revokeSpending(id);
-      fetchData();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to revoke');
-    }
-  };
+    const handleTrigger = async (id: string) => {
+        try {
+            await api.pushNow(id);
+            alert('Triggered!');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to trigger');
+        }
+    };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    try {
-      const result = await api.uploadFile(file);
-      alert(`Uploaded: ${result.url}`);
-    } catch (err) {
-      console.error(err);
-      alert('Upload failed');
-    }
-  };
+    return (
+        <div className="parent-dashboard">
+            <header>
+                <h1>Γονείς & Διαχείριση</h1>
+                <div className="tabs">
+                    <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
+                    <button className={activeTab === 'config' ? 'active' : ''} onClick={() => setActiveTab('config')}>Config (data.json)</button>
+                    <button className={activeTab === 'state' ? 'active' : ''} onClick={() => setActiveTab('state')}>State (state.json)</button>
+                </div>
+            </header>
 
-  const handleTrigger = async (id: string) => {
-    try {
-      await api.pushNow(id);
-      alert('Triggered!');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to trigger');
-    }
-  };
+            <main>
+                {activeTab === 'dashboard' && (
+                    <>
+                        <section className="card">
+                            <h2>Παιδιά & Αστέρια</h2>
+                            <div className="user-list">
+                                {users.map(user => (
+                                    <div key={user.id} className="user-row">
+                                        <div className="user-info">
+                                            <SmartIcon value={user.avatar} />
+                                            <span>{user.name}</span>
+                                        </div>
+                                        <div className="stars">⭐ {user.stars}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
 
-  if (loading) return <div className="p-8 text-white">Loading...</div>;
+                        <section className="card">
+                            <h2>Εξαργυρώσεις (Pending)</h2>
+                            <div className="spending-list">
+                                {spendings.filter(s => s.status === 'pending').length === 0 && (
+                                    <p className="empty">Καμία εκκρεμότητα</p>
+                                )}
+                                {spendings.filter(s => s.status === 'pending').map(s => (
+                                    <div key={s.id} className="spending-row">
+                                        <div className="spending-info">
+                                            <span className="spending-user">{s.user?.name}</span>
+                                            <span className="spending-reward">
+                                                {s.reward ? (
+                                                    <>
+                                                        <SmartIcon value={s.reward.icon} /> {s.reward.title}
+                                                    </>
+                                                ) : (
+                                                    <span>Unknown Reward</span>
+                                                )}
+                                            </span>
+                                            <span className="spending-date">
+                                                {format(new Date(s.createdAt), 'd MMM HH:mm', { locale: el })}
+                                            </span>
+                                        </div>
+                                        <button onClick={() => handleMarkDone(s.id)}>Ολοκληρώθηκε</button>
+                                        <button className="danger" onClick={() => handleRevoke(s.id)}>Ακύρωση</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
 
-  return (
-    <div className="parent-dashboard">
-      <header>
-        <h1>Γονείς & Διαχείριση</h1>
-        <div className="tabs">
-          <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
-          <button className={activeTab === 'config' ? 'active' : ''} onClick={() => setActiveTab('config')}>Config (data.json)</button>
-          <button className={activeTab === 'state' ? 'active' : ''} onClick={() => setActiveTab('state')}>State (state.json)</button>
-        </div>
-      </header>
+                        <section className="card">
+                            <h2>Uploads</h2>
+                            <div className="upload-section">
+                                <input type="file" onChange={handleFileUpload} />
+                                <p className="hint">Upload images for icons/avatars. Copy the URL from the alert to use in data.json.</p>
+                            </div>
+                        </section>
 
-      <main>
-        {activeTab === 'dashboard' && (
-          <>
-            <section className="card">
-              <h2>Παιδιά & Αστέρια</h2>
-              <div className="user-list">
-                {users.map(user => (
-                  <div key={user.id} className="user-row">
-                    <div className="user-info">
-                      <SmartIcon value={user.avatar} />
-                      <span>{user.name}</span>
-                    </div>
-                    <div className="stars">⭐ {user.stars}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                        <section className="card">
+                            <h2>Ιστορικό Εξαργυρώσεων</h2>
+                            <div className="spending-list history">
+                                {spendings.filter(s => s.status === 'done').slice(0, 10).map(s => (
+                                    <div key={s.id} className="spending-row done">
+                                        <div className="spending-info">
+                                            <span>{s.user?.name}</span>
+                                            <span>{s.reward?.title}</span>
+                                            <span className="date">{format(new Date(s.createdAt), 'd MMM HH:mm', { locale: el })}</span>
+                                        </div>
+                                        <span className="status">Done</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
 
-            <section className="card">
-              <h2>Εξαργυρώσεις (Pending)</h2>
-              <div className="spending-list">
-                {spendings.filter(s => s.status === 'pending').length === 0 && (
-                  <p className="empty">Καμία εκκρεμότητα</p>
+                        <section className="card">
+                            <h2>Trigger Routines (Test)</h2>
+                            <div className="trigger-list">
+                                {flows.map(f => (
+                                    <button key={f.id} onClick={() => handleTrigger(f.id)}>
+                                        Start Flow: {f.id}
+                                    </button>
+                                ))}
+                                {users.map(u => u.routines.map((r: any) => (
+                                    <button key={r.id} onClick={() => handleTrigger(r.id)}>
+                                        Start {u.name}: {r.title}
+                                    </button>
+                                )))}
+                            </div>
+                        </section>
+                    </>
                 )}
-                {spendings.filter(s => s.status === 'pending').map(s => (
-                  <div key={s.id} className="spending-row">
-                    <div className="spending-info">
-                      <span className="spending-user">{s.user?.name}</span>
-                      <span className="spending-reward">
-                        <SmartIcon value={s.reward?.icon} /> {s.reward?.title}
-                      </span>
-                      <span className="spending-date">
-                        {format(new Date(s.createdAt), 'd MMM HH:mm', { locale: el })}
-                      </span>
-                    </div>
-                    <button onClick={() => handleMarkDone(s.id)}>Ολοκληρώθηκε</button>
-                    <button className="danger" onClick={() => handleRevoke(s.id)}>Ακύρωση</button>
-                  </div>
-                ))}
-              </div>
-            </section>
 
-            <section className="card">
-              <h2>Uploads</h2>
-              <div className="upload-section">
-                <input type="file" onChange={handleFileUpload} />
-                <p className="hint">Upload images for icons/avatars. Copy the URL from the alert to use in data.json.</p>
-              </div>
-            </section>
+                {activeTab === 'config' && (
+                    <section className="card full-width">
+                        <JsonEditor
+                            title="Configuration (data.json)"
+                            loadFn={api.getRawData}
+                            saveFn={api.saveRawData}
+                        />
+                    </section>
+                )}
 
-            <section className="card">
-              <h2>Ιστορικό Εξαργυρώσεων</h2>
-              <div className="spending-list history">
-                {spendings.filter(s => s.status === 'done').slice(0, 5).map(s => (
-                  <div key={s.id} className="spending-row done">
-                    <div className="spending-info">
-                      <span>{s.user?.name}</span>
-                      <span>{s.reward?.title}</span>
-                      <span className="date">{format(new Date(s.createdAt), 'd MMM', { locale: el })}</span>
-                    </div>
-                    <span className="status">Done</span>
-                  </div>
-                ))}
-              </div>
-            </section>
+                {activeTab === 'state' && (
+                    <section className="card full-width">
+                        <JsonEditor
+                            title="State (state.json)"
+                            loadFn={api.getRawState}
+                            saveFn={api.saveRawState}
+                        />
+                    </section>
+                )}
+            </main>
 
-            <section className="card">
-              <h2>Trigger Routines (Test)</h2>
-              <div className="trigger-list">
-                {flows.map(f => (
-                  <button key={f.id} onClick={() => handleTrigger(f.id)}>
-                    Start Flow: {f.id}
-                  </button>
-                ))}
-                {users.map(u => u.routines.map((r: any) => (
-                  <button key={r.id} onClick={() => handleTrigger(r.id)}>
-                    Start {u.name}: {r.title}
-                  </button>
-                )))}
-              </div>
-            </section>
-          </>
-        )}
-
-        {activeTab === 'config' && (
-          <section className="card full-width">
-            <JsonEditor 
-              title="Configuration (data.json)" 
-              loadFn={api.getRawData} 
-              saveFn={api.saveRawData} 
-            />
-          </section>
-        )}
-
-        {activeTab === 'state' && (
-          <section className="card full-width">
-            <JsonEditor 
-              title="State (state.json)" 
-              loadFn={api.getRawState} 
-              saveFn={api.saveRawState} 
-            />
-          </section>
-        )}
-      </main>
-
-      <style>{`
+            <style>{`
         .parent-dashboard {
           min-height: 100vh;
           background: #1a1a2e;
@@ -310,6 +273,11 @@ export const ParentDashboard: React.FC = () => {
           letter-spacing: 1px;
         }
 
+        .user-list {
+          max-height: 300px;
+          overflow-y: auto;
+        }
+
         .user-row {
           display: flex;
           justify-content: space-between;
@@ -335,6 +303,8 @@ export const ParentDashboard: React.FC = () => {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
+          max-height: 400px;
+          overflow-y: auto;
         }
 
         .spending-row {
@@ -403,6 +373,6 @@ export const ParentDashboard: React.FC = () => {
           opacity: 0.5;
         }
       `}</style>
-    </div>
-  );
+        </div>
+    );
 };

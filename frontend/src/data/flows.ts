@@ -1,14 +1,4 @@
-export interface FlowStep {
-  type: 'alarm' | 'parallel';
-  props?: any;
-  actions?: { type: 'routine'; userId: string; routineId: string }[];
-}
-
-export interface Flow {
-  id: string;
-  triggerTime: string;
-  steps: FlowStep[];
-}
+import type { Flow } from '@shared/types';
 
 export const MOCK_FLOWS: Flow[] = [
   {

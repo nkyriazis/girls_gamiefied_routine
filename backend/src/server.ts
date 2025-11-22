@@ -10,6 +10,7 @@ import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
+import { User, Routine, Task, Flow, Reward, Spending } from '../../shared/types';
 
 const pump = util.promisify(pipeline);
 
@@ -34,7 +35,7 @@ let globalState: {
   userStars: Record<string, number>;
   routineExecutions: any[];
   taskExecutions: any[];
-  spendings: any[];
+  spendings: Spending[];
 } = {
   userStars: {},
   routineExecutions: [],
@@ -80,18 +81,18 @@ function scheduleSave() {
 }
 
 interface Db {
-  users: any[];
-  routines: any[];
-  tasks: any[];
+  users: User[];
+  routines: Routine[];
+  tasks: Task[];
   routineTasks: any[];
   routineAssignments: any[];
-  flows: any[];
+  flows: Flow[];
   schedules: any[];
-  rewards: any[];
+  rewards: Reward[];
   settings?: { timezone: string };
   routineExecutions: any[];
   taskExecutions: any[];
-  spendings: any[];
+  spendings: Spending[];
 }
 
 async function readDb(): Promise<Db> {
@@ -104,12 +105,12 @@ async function readDb(): Promise<Db> {
     const users = data.users.map((u: any) => ({
       ...u,
       stars: globalState.userStars[u.id] || 0
-    }));
+    })) as User[];
 
     return {
       ...data,
       users,
-      rewards: data.rewards || [],
+      rewards: (data.rewards || []) as Reward[],
       schedules: data.schedules || [],
       settings: data.settings || { timezone: 'Europe/Athens' },
       routineExecutions: globalState.routineExecutions,
@@ -242,6 +243,15 @@ async function checkSchedules(date: Date) {
       console.error(`Error checking schedule ${schedule.id}:`, err);
     }
   }
+}
+
+async function getEnrichedSpendings() {
+  const db = await readDb();
+  return db.spendings.map(s => {
+    const user = db.users.find(u => u.id === s.userId);
+    const reward = db.rewards.find(r => r.id === s.rewardId);
+    return { ...s, user, reward };
+  }).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 // Enable CORS
@@ -403,14 +413,8 @@ server.get('/api/rewards', async (request, reply) => {
 // Spendings routes
 server.get('/api/spendings', async (request, reply) => {
   try {
-    const db = await readDb();
-    // Enrich spendings with user and reward details
-    const enriched = db.spendings.map(s => {
-      const user = db.users.find(u => u.id === s.userId);
-      const reward = db.rewards.find(r => r.id === s.rewardId);
-      return { ...s, user, reward };
-    });
-    return enriched.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const enriched = await getEnrichedSpendings();
+    return enriched;
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
@@ -436,7 +440,7 @@ server.post('/api/spendings', async (request, reply) => {
   user.stars -= reward.cost;
 
   // Create spending record
-  const spending = {
+  const spending: Spending = {
     id: randomUUID(),
     userId,
     rewardId,
@@ -448,11 +452,13 @@ server.post('/api/spendings', async (request, reply) => {
   db.spendings.push(spending);
   await writeDb(db);
 
+  const enrichedSpendings = await getEnrichedSpendings();
+
   broadcast({
     type: 'SYNC_STATE',
     payload: {
       userStars: globalState.userStars,
-      spendings: globalState.spendings
+      spendings: enrichedSpendings
     }
   });
 
@@ -461,7 +467,7 @@ server.post('/api/spendings', async (request, reply) => {
 
 server.put('/api/spendings/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
-  const { status } = request.body as { status: string };
+  const { status } = request.body as { status: 'pending' | 'done' | 'revoked' };
 
   const db = await readDb();
   const spending = db.spendings.find(s => s.id === id);
@@ -481,11 +487,13 @@ server.put('/api/spendings/:id', async (request, reply) => {
   spending.status = status;
   await writeDb(db);
 
+  const enrichedSpendings = await getEnrichedSpendings();
+
   broadcast({
     type: 'SYNC_STATE',
     payload: {
       userStars: globalState.userStars,
-      spendings: globalState.spendings
+      spendings: enrichedSpendings
     }
   });
 
@@ -593,7 +601,7 @@ server.post('/api/executions/:executionId/tasks/:taskId/complete', async (reques
   const execution = db.routineExecutions.find(e => e.id === executionId);
 
   if (execution) {
-    const starsToAdd = task.stars; // Use the stars from the task definition
+    const starsToAdd = task.stars || 0; // Use the stars from the task definition
     
     // Update user
     const user = db.users.find(u => u.id === execution.userId);
@@ -691,11 +699,13 @@ server.post('/api/admin/state', async (request, reply) => {
     globalState = newState;
     scheduleSave();
     
+    const enrichedSpendings = await getEnrichedSpendings();
+
     broadcast({
       type: 'SYNC_STATE',
       payload: {
         userStars: globalState.userStars,
-        spendings: globalState.spendings
+        spendings: enrichedSpendings
       }
     });
     
@@ -707,16 +717,18 @@ server.post('/api/admin/state', async (request, reply) => {
 
 // WebSocket for real-time events
 server.register(async (fastify) => {
-  fastify.get('/ws', { websocket: true }, (connection: any, req) => {
+  fastify.get('/ws', { websocket: true }, async (connection: any, req) => {
     fastify.log.info('Client connected via WebSocket');
     wsConnections.add(connection);
+
+    const enrichedSpendings = await getEnrichedSpendings();
 
     // Send initial state sync
     connection.send(JSON.stringify({
       type: 'SYNC_STATE',
       payload: {
         userStars: globalState.userStars,
-        spendings: globalState.spendings
+        spendings: enrichedSpendings
       }
     }));
 

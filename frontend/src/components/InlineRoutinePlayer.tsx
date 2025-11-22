@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type User, type Routine } from '../types';
+import { type User, type Routine } from '@shared/types';
 import { RewardOverlay } from './RewardOverlay';
 import { useAppSounds } from '../hooks/useAppSounds';
 import { api } from '../api';
@@ -63,15 +63,23 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   const handleNextTask = async () => {
     playClick();
 
+    if (!executionId) {
+      console.error('Missing executionId');
+      // alert('Debug: Missing executionId'); // Uncomment for debugging
+    }
+
     // Complete current task
     if (executionId && currentTask) {
       try {
         const duration = Math.round((Date.now() - taskStartTime) / 1000);
         const isOnTime = timeLeft > 0;
         const result = await api.completeTask(executionId, currentTask.id, duration, isOnTime);
+        
         if (result.success) {
           setJustEarnedStars(result.starsAwarded);
           setTimeout(() => setJustEarnedStars(null), 2000);
+        } else {
+          console.error('Complete task failed:', result);
         }
       } catch (err) {
         console.error('Failed to complete task:', err);
@@ -266,6 +274,8 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           justify-content: center;
           padding: 1rem;
           position: relative;
+          overflow-y: auto;
+          min-height: 0;
         }
 
         .timeline-compact {

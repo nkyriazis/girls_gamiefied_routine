@@ -19,6 +19,7 @@ export interface Routine {
   themeColor: string;
   icon: IconValue;
   scheduleTime?: string; // HH:mm format (24h)
+  cronExpression?: string;
 }
 
 export interface User {
@@ -30,10 +31,18 @@ export interface User {
   routines: Routine[];
 }
 
+export type FlowAction = 
+  | { type: 'routine'; userId: string; routineId: string };
+
+export type FlowStep = 
+  | { type: 'alarm'; props: { sound: string } }
+  | { type: 'routine'; routineId: string }
+  | { type: 'parallel'; actions: FlowAction[] };
+
 export interface Flow {
   id: string;
   triggerTime: string;
-  steps: any[];
+  steps: FlowStep[];
 }
 
 export interface Reward {

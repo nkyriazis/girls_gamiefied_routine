@@ -1,7 +1,7 @@
 {
   "userStars": {
-    "u1": 1370,
-    "u2": 890
+    "u1": 120,
+    "u2": 390
   },
   "routineExecutions": [
     {
@@ -108,6 +108,62 @@
       "routineId": "r-morning",
       "startedAt": "2025-11-22T06:56:27.741Z",
       "totalStars": 0
+    },
+    {
+      "id": "84803933-3982-4a92-80fa-7bd3476b62df",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-22T09:08:35.778Z",
+      "totalStars": 20
+    },
+    {
+      "id": "c671af82-e78e-4ee2-ba67-b8a84d9d3f1b",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-22T09:08:35.823Z",
+      "totalStars": 0
+    },
+    {
+      "id": "2a8ed2f7-951a-4ae3-bfd0-888e4b1e9857",
+      "userId": "u2",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-22T09:08:35.840Z",
+      "totalStars": 0
+    },
+    {
+      "id": "a35018a2-1aba-4a09-a398-638f38906cf8",
+      "userId": "u1",
+      "routineId": "r-evening",
+      "startedAt": "2025-11-22T09:08:35.960Z",
+      "totalStars": 0
+    },
+    {
+      "id": "39dd4883-beba-4f52-909e-27f71c65dbe8",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-22T09:08:39.381Z",
+      "totalStars": 0
+    },
+    {
+      "id": "9138967c-623f-44b9-a2a1-1457a5c7b0a1",
+      "userId": "u2",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-22T09:08:39.476Z",
+      "totalStars": 0
+    },
+    {
+      "id": "08ae5763-0bed-4643-8d4e-8f72cc56e685",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-22T09:13:45.230Z",
+      "totalStars": 40
+    },
+    {
+      "id": "0eff341b-2d43-43a1-9e95-83421ff5f4c0",
+      "userId": "u2",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-22T09:13:45.240Z",
+      "totalStars": 30
     }
   ],
   "taskExecutions": [
@@ -254,6 +310,78 @@
       "duration": 3,
       "isOnTime": true,
       "completedAt": "2025-11-21T22:17:29.376Z"
+    },
+    {
+      "id": "3cc37a20-5021-4a89-af30-c6acc65c1ab8",
+      "executionId": "84803933-3982-4a92-80fa-7bd3476b62df",
+      "taskId": "t-brush",
+      "duration": 5,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:08:41.732Z"
+    },
+    {
+      "id": "8eea6382-d1d7-4c9c-b2b8-da15d2aa8f68",
+      "executionId": "84803933-3982-4a92-80fa-7bd3476b62df",
+      "taskId": "t-wash",
+      "duration": 3,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:08:45.274Z"
+    },
+    {
+      "id": "5c6d821d-d441-433d-8145-206fe6fdf7dd",
+      "executionId": "08ae5763-0bed-4643-8d4e-8f72cc56e685",
+      "taskId": "t-brush",
+      "duration": 2,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:13:47.446Z"
+    },
+    {
+      "id": "76dee30b-c2d2-45e3-b8ab-ce2cdc23d5ab",
+      "executionId": "08ae5763-0bed-4643-8d4e-8f72cc56e685",
+      "taskId": "t-wash",
+      "duration": 6,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:13:53.971Z"
+    },
+    {
+      "id": "af3ea7e4-b633-489c-9695-6f12e3e16874",
+      "executionId": "08ae5763-0bed-4643-8d4e-8f72cc56e685",
+      "taskId": "t-dress",
+      "duration": 4,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:13:57.888Z"
+    },
+    {
+      "id": "5f6c1ccb-be72-4130-9da8-8a169045eb1b",
+      "executionId": "08ae5763-0bed-4643-8d4e-8f72cc56e685",
+      "taskId": "t-breakfast",
+      "duration": 4,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:14:02.086Z"
+    },
+    {
+      "id": "010f84eb-c382-4516-a838-b58a85d3e3f9",
+      "executionId": "0eff341b-2d43-43a1-9e95-83421ff5f4c0",
+      "taskId": "t-brush",
+      "duration": 22,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:14:07.576Z"
+    },
+    {
+      "id": "f5142a5f-3f55-41f0-ab76-66089db0952a",
+      "executionId": "0eff341b-2d43-43a1-9e95-83421ff5f4c0",
+      "taskId": "t-wash",
+      "duration": 3,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:14:10.491Z"
+    },
+    {
+      "id": "f999be25-ce9d-4732-813e-3d8bb1cf1af6",
+      "executionId": "0eff341b-2d43-43a1-9e95-83421ff5f4c0",
+      "taskId": "t-dress",
+      "duration": 3,
+      "isOnTime": true,
+      "completedAt": "2025-11-22T09:14:13.747Z"
     }
   ],
   "spendings": [
@@ -296,6 +424,214 @@
       "cost": 30,
       "createdAt": "2025-11-22T07:08:50.347Z",
       "status": "revoked"
+    },
+    {
+      "id": "09bdbd5d-9127-47cf-ad58-82e8a0b8087e",
+      "userId": "u1",
+      "rewardId": "rew-toy",
+      "cost": 200,
+      "createdAt": "2025-11-22T07:30:38.847Z",
+      "status": "revoked"
+    },
+    {
+      "id": "9d5ce759-b9e9-4dc3-86b2-4a9064c220d3",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T07:30:39.022Z",
+      "status": "revoked"
+    },
+    {
+      "id": "bb15899e-6a06-4918-b667-112fc913c614",
+      "userId": "u1",
+      "rewardId": "rew-sweet",
+      "cost": 30,
+      "createdAt": "2025-11-22T07:30:45.513Z",
+      "status": "revoked"
+    },
+    {
+      "id": "fc2b73e5-d8b1-4d12-93dc-a7a5690778c0",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T07:33:50.735Z",
+      "status": "revoked"
+    },
+    {
+      "id": "129e1f5f-8eb1-4168-8696-3a017c1ab2fa",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T07:36:14.599Z",
+      "status": "revoked"
+    },
+    {
+      "id": "3e9bf9bf-e769-4744-83b5-f2dd39fa5917",
+      "userId": "u1",
+      "rewardId": "rew-sweet",
+      "cost": 30,
+      "createdAt": "2025-11-22T07:36:22.606Z",
+      "status": "done"
+    },
+    {
+      "id": "f5e5ad2b-6634-4025-9bf4-e2e972ba7922",
+      "userId": "u1",
+      "rewardId": "rew-toy",
+      "cost": 200,
+      "createdAt": "2025-11-22T07:36:28.423Z",
+      "status": "done"
+    },
+    {
+      "id": "a157a73e-6902-4c61-a4a4-ca64ea4bf89b",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T07:36:37.984Z",
+      "status": "done"
+    },
+    {
+      "id": "6252ee62-4818-4cc2-8ce6-98e7dc71d8c1",
+      "userId": "u1",
+      "rewardId": "rew-tv",
+      "cost": 50,
+      "createdAt": "2025-11-22T07:36:43.105Z",
+      "status": "done"
+    },
+    {
+      "id": "f507d0ff-3c3e-4f66-9ecb-ff588a5e9324",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T07:36:50.647Z",
+      "status": "done"
+    },
+    {
+      "id": "990e9ba2-64de-4ba4-becb-d10dafb1b259",
+      "userId": "u1",
+      "rewardId": "rew-tv",
+      "cost": 50,
+      "createdAt": "2025-11-22T07:36:54.461Z",
+      "status": "done"
+    },
+    {
+      "id": "17008207-5bec-40dd-b1c6-a04d8b5edc47",
+      "userId": "u1",
+      "rewardId": "rew-toy",
+      "cost": 200,
+      "createdAt": "2025-11-22T07:37:49.657Z",
+      "status": "revoked"
+    },
+    {
+      "id": "a8f9065e-a2ff-4c68-bec5-4dc35e92af2c",
+      "userId": "u1",
+      "rewardId": "rew-tv",
+      "cost": 50,
+      "createdAt": "2025-11-22T07:37:55.236Z",
+      "status": "revoked"
+    },
+    {
+      "id": "08a1e230-79e4-4c75-a38a-5fbc10e6ea61",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T08:06:38.649Z",
+      "status": "revoked"
+    },
+    {
+      "id": "08217870-756d-48e5-a3a4-2aca155cd419",
+      "userId": "u1",
+      "rewardId": "rew-toy",
+      "cost": 200,
+      "createdAt": "2025-11-22T08:06:46.079Z",
+      "status": "done"
+    },
+    {
+      "id": "45c6589f-4a3c-41ee-b30c-31c51a817cf5",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T08:11:18.639Z",
+      "status": "done"
+    },
+    {
+      "id": "2ff19704-dcc6-4613-9be9-352341a44785",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T08:15:19.779Z",
+      "status": "pending"
+    },
+    {
+      "id": "c709c451-c5c1-4a13-b278-b4b95b179b3e",
+      "userId": "u1",
+      "rewardId": "rew-toy",
+      "cost": 200,
+      "createdAt": "2025-11-22T08:15:22.067Z",
+      "status": "pending"
+    },
+    {
+      "id": "5740a153-0c57-478e-9ff9-66acc124f462",
+      "userId": "u1",
+      "rewardId": "rew-tv",
+      "cost": 50,
+      "createdAt": "2025-11-22T08:15:23.926Z",
+      "status": "pending"
+    },
+    {
+      "id": "3fc1ffa8-8012-4e69-861d-8e81297c5ff7",
+      "userId": "u1",
+      "rewardId": "rew-sweet",
+      "cost": 30,
+      "createdAt": "2025-11-22T08:15:32.182Z",
+      "status": "pending"
+    },
+    {
+      "id": "31984717-91cd-42f5-be70-e2207371e165",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T08:17:53.015Z",
+      "status": "revoked"
+    },
+    {
+      "id": "b4ee7c47-30c0-4fb0-9be8-e6e71708d029",
+      "userId": "u2",
+      "rewardId": "rew-toy",
+      "cost": 200,
+      "createdAt": "2025-11-22T08:20:12.816Z",
+      "status": "pending"
+    },
+    {
+      "id": "1aa38e09-d3cb-4ccd-ba8a-19e988305598",
+      "userId": "u2",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T08:45:27.924Z",
+      "status": "pending"
+    },
+    {
+      "id": "4f1d119c-2a2c-47b7-901f-096c8530504e",
+      "userId": "u2",
+      "rewardId": "rew-sweet",
+      "cost": 30,
+      "createdAt": "2025-11-22T08:45:53.338Z",
+      "status": "pending"
+    },
+    {
+      "id": "3a66f4f0-2b8c-4f0f-8ef9-7284b3e9d1aa",
+      "userId": "u2",
+      "rewardId": "rew-toy",
+      "cost": 200,
+      "createdAt": "2025-11-22T08:45:54.570Z",
+      "status": "pending"
+    },
+    {
+      "id": "3e063b7d-510a-4c31-bdd6-a89178cb94e4",
+      "userId": "u1",
+      "rewardId": "rew-park",
+      "cost": 100,
+      "createdAt": "2025-11-22T09:14:38.792Z",
+      "status": "pending"
     }
   ]
 }

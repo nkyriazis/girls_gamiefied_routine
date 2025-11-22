@@ -7,8 +7,9 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": ".."
   },
-  "include": ["src/**/*", "prisma/**/*"],
+  "include": ["src/**/*", "../shared/**/*"],
   "exclude": ["node_modules"]
 }

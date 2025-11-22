@@ -2,20 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type User } from '../types';
-import { type Flow } from '../data/flows';
+import { type Flow } from '@shared/types';
 import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
 import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
+import { useGame } from '../context/GameContext';
 
 export const Dashboard: React.FC = () => {
+  const { users, flows, rewards, spendings, lastEvent } = useGame();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [users, setUsers] = useState<User[]>([]);
-  const [flows, setFlows] = useState<Flow[]>([]);
-  const [rewards, setRewards] = useState<any[]>([]);
-  
+
   // Store State
   const [storeUserId, setStoreUserId] = useState<string | null>(null);
   const storeUser = users.find(u => u.id === storeUserId) || null;
@@ -30,83 +28,40 @@ export const Dashboard: React.FC = () => {
 
   // Refs for state access in callbacks
   const flowsRef = useRef<Flow[]>([]);
-  const usersRef = useRef<User[]>([]);
 
   useEffect(() => {
     flowsRef.current = flows;
   }, [flows]);
 
+  // Handle Game Events
   useEffect(() => {
-    usersRef.current = users;
-  }, [users]);
+    if (!lastEvent) return;
 
-  // Fetch Data
+    const { type, payload } = lastEvent;
+
+    if (type === 'ALARM_START') {
+      // Trigger alarm by creating a temporary flow
+      const alarmFlow = {
+        id: 'temp-alarm',
+        triggerTime: '',
+        steps: [{ type: 'alarm' as const, props: { sound: 'melody' } }]
+      };
+      setActiveFlow(alarmFlow as any);
+      setCurrentStepIndex(0);
+    } else if (type === 'ROUTINE_START') {
+      const { userId, routineId, executionId } = payload;
+      setActiveRoutines(prev => [...prev, { userId, routineId, executionId }]);
+    } else if (type === 'FLOW_START') {
+      const { flowId, steps } = payload;
+      // Use ref to get latest flows
+      const flow = flowsRef.current.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
+      setActiveFlow(flow);
+      setCurrentStepIndex(0);
+    }
+  }, [lastEvent]);
+
+  // Check for URL push parameter
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [usersData, flowsData, rewardsData] = await Promise.all([
-          api.getUsers(),
-          api.getFlows(),
-          api.getRewards()
-        ]);
-        setUsers(usersData);
-        setFlows(flowsData);
-        setRewards(rewardsData);
-      } catch (err) {
-        console.error('Failed to load data:', err);
-      }
-    };
-    fetchData();
-
-    // WebSocket connection
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const websocket = new WebSocket(`${protocol}//${window.location.host}/ws`);
-    
-    websocket.onopen = () => {
-      console.log('WebSocket connected');
-    };
-    
-    websocket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log('WebSocket message:', message);
-
-      if (message.type === 'SYNC_STATE') {
-        const { userStars } = message.payload;
-        setUsers(prev => prev.map(u => ({
-          ...u,
-          stars: userStars[u.id] ?? u.stars
-        })));
-      } else if (message.type === 'ALARM_START') {
-        // Trigger alarm by creating a temporary flow
-        const alarmFlow = {
-          id: 'temp-alarm',
-          triggerTime: '',
-          steps: [{ type: 'alarm' as const, props: { sound: 'melody' } }]
-        };
-        setActiveFlow(alarmFlow as any);
-        setCurrentStepIndex(0);
-      } else if (message.type === 'ROUTINE_START') {
-        const { userId, routineId, executionId } = message.payload;
-        setActiveRoutines(prev => [...prev, { userId, routineId, executionId }]);
-      } else if (message.type === 'FLOW_START') {
-        const { flowId, steps } = message.payload;
-        // Use ref to get latest flows
-        const flow = flowsRef.current.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
-        setActiveFlow(flow);
-        setCurrentStepIndex(0);
-      } else if (message.type === 'STARS_AWARDED') {
-        const { userId, totalStars } = message.payload;
-        setUsers(prev => prev.map(u => u.id === userId ? { ...u, stars: totalStars } : u));
-      } else if (message.type === 'CONFIG_UPDATED') {
-        console.log('Config updated, reloading...');
-        // Re-fetch data
-        api.getUsers().then(setUsers);
-        api.getFlows().then(setFlows);
-        api.getRewards().then(setRewards);
-      }
-    };
-
-    // Check for URL push parameter
     const urlParams = new URLSearchParams(window.location.search);
     const pushId = urlParams.get('push');
     if (pushId) {
@@ -114,10 +69,6 @@ export const Dashboard: React.FC = () => {
       // Clear the URL parameter
       window.history.replaceState({}, '', window.location.pathname);
     }
-
-    return () => {
-      websocket.close();
-    };
   }, []);
 
   // Clock
@@ -139,11 +90,11 @@ export const Dashboard: React.FC = () => {
       // Execute next step actions immediately if it's a parallel routine step
       const nextStep = activeFlow.steps[nextIndex];
       if (nextStep.type === 'parallel' && nextStep.actions) {
-        const newRoutines = nextStep.actions
+        nextStep.actions
           .filter(a => a.type === 'routine')
-          .map(a => ({ userId: a.userId, routineId: a.routineId }));
-
-        setActiveRoutines(prev => [...prev, ...newRoutines]);
+          .forEach(a => {
+            api.pushNow(a.routineId).catch(console.error);
+          });
       }
     } else {
       // Flow Complete
@@ -182,10 +133,11 @@ export const Dashboard: React.FC = () => {
 
       <AnimatePresence>
         {storeUser && (
-          <StoreModal 
-            user={storeUser} 
-            rewards={rewards} 
-            onClose={() => setStoreUserId(null)} 
+          <StoreModal
+            user={storeUser}
+            rewards={rewards}
+            spendings={spendings}
+            onClose={() => setStoreUserId(null)}
           />
         )}
       </AnimatePresence>
@@ -252,7 +204,7 @@ export const Dashboard: React.FC = () => {
             <motion.div
               key={user.id}
               className="dock-item"
-              whileHover={{ scale: 1.1, y: -10 }}
+              whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setStoreUserId(user.id)}
             >
@@ -323,6 +275,7 @@ export const Dashboard: React.FC = () => {
           padding: 2rem;
           gap: 2rem;
           position: relative;
+          z-index: 0;
         }
 
         .stage.single .routine-slot { width: 100%; height: 100%; max-width: 600px; }
@@ -336,7 +289,6 @@ export const Dashboard: React.FC = () => {
 
         .clock-container {
           text-align: center;
-          z-index: 1;
         }
 
         .time-display {
@@ -370,7 +322,15 @@ export const Dashboard: React.FC = () => {
           align-items: center;
           justify-content: center;
           gap: 3rem;
-          padding-bottom: 1rem;
+          padding: 0 2rem;
+          overflow-x: auto;
+          width: 100%;
+          z-index: 100;
+          position: relative;
+        }
+
+        .dock::-webkit-scrollbar {
+          display: none;
         }
 
         .dock-item {
@@ -379,11 +339,12 @@ export const Dashboard: React.FC = () => {
           align-items: center;
           gap: 0.5rem;
           cursor: pointer;
+          padding: 10px 0;
         }
 
         .dock-avatar {
-          width: 60px;
-          height: 60px;
+          width: 50px;
+          height: 50px;
           border-radius: 50%;
           display: flex;
           align-items: center;

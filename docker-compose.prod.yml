@@ -1,6 +1,8 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     volumes:
       - ./backend:/data
     environment:
@@ -9,7 +11,9 @@ services:
     restart: always
 
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     ports:
       - "80:80"
     restart: always

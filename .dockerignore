@@ -1,0 +1,9 @@
+node_modules
+.git
+.vscode
+backend/node_modules
+frontend/node_modules
+backend/dist
+frontend/dist
+frontend/dev-dist
+*.log

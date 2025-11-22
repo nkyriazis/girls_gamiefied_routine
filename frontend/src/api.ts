@@ -1,11 +1,10 @@
-import type { User } from './types';
-import type { Flow } from './data/flows';
+import type { User, Flow, Reward, Spending } from '@shared/types';
 
 const API_URL = '/api';
 
 export const api = {
   getUsers: async (): Promise<User[]> => {
-    const response = await fetch(`${API_URL}/users`);
+    const response = await fetch(`${API_URL}/users`, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error('Failed to fetch users');
     }
@@ -13,7 +12,7 @@ export const api = {
   },
 
   getFlows: async (): Promise<Flow[]> => {
-    const response = await fetch(`${API_URL}/flows`);
+    const response = await fetch(`${API_URL}/flows`, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error('Failed to fetch flows');
     }
@@ -47,14 +46,14 @@ export const api = {
     return response.json();
   },
 
-  getRewards: async (): Promise<any[]> => {
-    const response = await fetch(`${API_URL}/rewards`);
+  getRewards: async (): Promise<Reward[]> => {
+    const response = await fetch(`${API_URL}/rewards`, { cache: 'no-store' });
     if (!response.ok) throw new Error('Failed to fetch rewards');
     return response.json();
   },
 
-  getSpendings: async (): Promise<any[]> => {
-    const response = await fetch(`${API_URL}/spendings`);
+  getSpendings: async (): Promise<Spending[]> => {
+    const response = await fetch(`${API_URL}/spendings`, { cache: 'no-store' });
     if (!response.ok) throw new Error('Failed to fetch spendings');
     return response.json();
   },
