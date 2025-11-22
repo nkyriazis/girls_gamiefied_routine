@@ -7,127 +7,127 @@ import { el } from 'date-fns/locale';
 import type { User, Reward, Spending } from '@shared/types';
 
 interface StoreModalProps {
-    user: User;
-    rewards: Reward[];
-    spendings: Spending[];
-    onClose: () => void;
+  user: User;
+  rewards: Reward[];
+  spendings: Spending[];
+  onClose: () => void;
 }
 
 export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings, onClose }) => {
-    const mySpendings = spendings.filter((s) => s.userId === user.id);
-    const pendingSpendings = mySpendings.filter(s => s.status === 'pending');
-    const historySpendings = mySpendings.filter(s => s.status === 'done');
+  const mySpendings = spendings.filter((s) => s.userId === user.id);
+  const pendingSpendings = mySpendings.filter(s => s.status === 'pending');
+  const historySpendings = mySpendings.filter(s => s.status === 'done');
 
-    const handleBuy = async (reward: Reward) => {
-        if (user.stars < reward.cost) return;
-        try {
-            await api.spendStars(user.id, reward.id);
-        } catch (err) {
-            console.error(err);
-            alert('Error spending stars');
-        }
-    };
+  const handleBuy = async (reward: Reward) => {
+    if (user.stars < reward.cost) return;
+    try {
+      await api.spendStars(user.id, reward.id);
+    } catch (err) {
+      console.error(err);
+      alert('Error spending stars');
+    }
+  };
 
-    return (
-        <motion.div
-            className="store-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-        >
-            <motion.div
-                className="store-card"
-                initial={{ scale: 0.8, y: 50 }}
-                animate={{ scale: 1, y: 0 }}
-                onClick={e => e.stopPropagation()}
-            >
-                <div className="store-header">
-                    <h2>Κατάστημα του {user.name}</h2>
-                    <div className="user-balance">
-                        ⭐ {user.stars}
+  return (
+    <motion.div
+      className="store-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="store-card"
+        initial={{ scale: 0.8, y: 50 }}
+        animate={{ scale: 1, y: 0 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="store-header">
+          <h2>Κατάστημα του {user.name}</h2>
+          <div className="user-balance">
+            ⭐ {user.stars}
+          </div>
+        </div>
+
+        <div className="store-content">
+          <div className="rewards-section">
+            <h3>Εξαργύρωση</h3>
+            <div className="rewards-grid">
+              {rewards.map(reward => {
+                const canAfford = user.stars >= reward.cost;
+                return (
+                  <div
+                    key={reward.id}
+                    className={`reward-item ${!canAfford ? 'disabled' : ''}`}
+                    onClick={() => canAfford && handleBuy(reward)}
+                  >
+                    <div className="reward-icon">
+                      <SmartIcon value={reward.icon} />
                     </div>
+                    <div className="reward-info">
+                      <span className="reward-title">{reward.title}</span>
+                      <span className="reward-cost">⭐ {reward.cost}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pending-section">
+            <h3>Δραστηριότητα</h3>
+
+            {mySpendings.length === 0 && (
+              <div className="empty-state">Καμία δραστηριότητα</div>
+            )}
+
+            {pendingSpendings.length > 0 && (
+              <div className="pending-list">
+                {pendingSpendings.map(spending => (
+                  <div key={spending.id} className="pending-item">
+                    <div className="pending-icon">
+                      <SmartIcon value={spending.reward?.icon || '❓'} />
+                    </div>
+                    <div className="pending-info">
+                      <span className="pending-title">{spending.reward?.title}</span>
+                      <span className="pending-date">
+                        {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
+                      </span>
+                    </div>
+                    <div className="pending-status">⏳</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {historySpendings.length > 0 && (
+              <>
+                <h4 style={{ marginTop: '1rem', opacity: 0.7, margin: '1rem 0 0.5rem 0' }}>Ιστορικό</h4>
+                <div className="pending-list history">
+                  {historySpendings.slice(0, 5).map(spending => (
+                    <div key={spending.id} className="pending-item done">
+                      <div className="pending-icon">
+                        <SmartIcon value={spending.reward?.icon || '❓'} />
+                      </div>
+                      <div className="pending-info">
+                        <span className="pending-title">{spending.reward?.title}</span>
+                        <span className="pending-date">
+                          {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
+                        </span>
+                      </div>
+                      <div className="pending-status">✅</div>
+                    </div>
+                  ))}
                 </div>
+              </>
+            )}
+          </div>
+        </div>
 
-                <div className="store-content">
-                    <div className="rewards-section">
-                        <h3>Εξαργύρωση</h3>
-                        <div className="rewards-grid">
-                            {rewards.map(reward => {
-                                const canAfford = user.stars >= reward.cost;
-                                return (
-                                    <div
-                                        key={reward.id}
-                                        className={`reward-item ${!canAfford ? 'disabled' : ''}`}
-                                        onClick={() => canAfford && handleBuy(reward)}
-                                    >
-                                        <div className="reward-icon">
-                                            <SmartIcon value={reward.icon} />
-                                        </div>
-                                        <div className="reward-info">
-                                            <span className="reward-title">{reward.title}</span>
-                                            <span className="reward-cost">⭐ {reward.cost}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+        <button className="close-btn" onClick={onClose}>Κλείσιμο</button>
+      </motion.div>
 
-                    <div className="pending-section">
-                        <h3>Δραστηριότητα</h3>
-
-                        {mySpendings.length === 0 && (
-                            <div className="empty-state">Καμία δραστηριότητα</div>
-                        )}
-
-                        {pendingSpendings.length > 0 && (
-                            <div className="pending-list">
-                                {pendingSpendings.map(spending => (
-                                    <div key={spending.id} className="pending-item">
-                                        <div className="pending-icon">
-                                            <SmartIcon value={spending.reward?.icon || '❓'} />
-                                        </div>
-                                        <div className="pending-info">
-                                            <span className="pending-title">{spending.reward?.title}</span>
-                                            <span className="pending-date">
-                                                {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
-                                            </span>
-                                        </div>
-                                        <div className="pending-status">⏳</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {historySpendings.length > 0 && (
-                            <>
-                                <h4 style={{ marginTop: '1rem', opacity: 0.7, margin: '1rem 0 0.5rem 0' }}>Ιστορικό</h4>
-                                <div className="pending-list history">
-                                    {historySpendings.slice(0, 5).map(spending => (
-                                        <div key={spending.id} className="pending-item done">
-                                            <div className="pending-icon">
-                                                <SmartIcon value={spending.reward?.icon || '❓'} />
-                                            </div>
-                                            <div className="pending-info">
-                                                <span className="pending-title">{spending.reward?.title}</span>
-                                                <span className="pending-date">
-                                                    {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
-                                                </span>
-                                            </div>
-                                            <div className="pending-status">✅</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                <button className="close-btn" onClick={onClose}>Κλείσιμο</button>
-            </motion.div>
-
-            <style>{`
+      <style>{`
         .store-overlay {
           position: fixed;
           top: 0;
@@ -342,6 +342,6 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           }
         }
       `}</style>
-        </motion.div>
-    );
+    </motion.div>
+  );
 };

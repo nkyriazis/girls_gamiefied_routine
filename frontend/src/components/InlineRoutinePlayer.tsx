@@ -74,7 +74,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         const duration = Math.round((Date.now() - taskStartTime) / 1000);
         const isOnTime = timeLeft > 0;
         const result = await api.completeTask(executionId, currentTask.id, duration, isOnTime);
-        
+
         if (result.success) {
           setJustEarnedStars(result.starsAwarded);
           setTimeout(() => setJustEarnedStars(null), 2000);
