@@ -228,6 +228,7 @@ export const Dashboard: React.FC = () => {
           display: flex;
           flex-direction: column;
           color: white;
+          isolation: isolate;
         }
 
         .interaction-overlay {
@@ -275,7 +276,7 @@ export const Dashboard: React.FC = () => {
           padding: 2rem;
           gap: 2rem;
           position: relative;
-          z-index: 0;
+          overflow: visible;
         }
 
         .stage.single .routine-slot { width: 100%; height: 100%; max-width: 600px; }
@@ -289,6 +290,7 @@ export const Dashboard: React.FC = () => {
 
         .clock-container {
           text-align: center;
+          z-index: 1;
         }
 
         .time-display {
@@ -323,7 +325,7 @@ export const Dashboard: React.FC = () => {
           justify-content: center;
           gap: 3rem;
           padding: 0 2rem;
-          overflow-x: auto;
+          overflow: visible;
           width: 100%;
           z-index: 100;
           position: relative;
@@ -340,6 +342,8 @@ export const Dashboard: React.FC = () => {
           gap: 0.5rem;
           cursor: pointer;
           padding: 10px 0;
+          z-index: 101;
+          position: relative;
         }
 
         .dock-avatar {
