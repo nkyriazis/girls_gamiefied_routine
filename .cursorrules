@@ -1,6 +1,276 @@
-# Agent Behavior Rules
+# Girls Gamified Routine - Cursor AI Rules
+
+## Agent Behavior Rules
 
 1. **No Host Modifications**: Do not affect the host system directly. Avoid installing global dependencies, modifying system configuration, or writing outside the project directories.
 2. **Docker Preference**: Always resort to Docker for any special setup requirements, databases, or services. Use the existing `docker-compose.yml` or propose updates to it rather than installing local tools.
 3. **Database Recreation**: During the design phase, always recreate the database from scratch using mock data instead of running migrations. Delete the existing database and reseed with fresh mock data unless explicitly told otherwise.
 4. **Git Safety**: When committing, regardless of confidence level, always check `git status` and `git diff` before staging files. Avoid `git add .` unless explicitly verified. Chunk commits into logical sections and use neat commit messages.
+
+## Project Context
+
+This is a real-time gamified task management system for children with:
+- **Backend**: Node.js + Fastify + TypeScript + WebSockets + node-cron
+- **Frontend**: React 19 + Vite + TypeScript + Framer Motion
+- **Data**: File-based persistence (data.json for config, state.json for runtime state)
+- **Infrastructure**: Docker Compose with dev/prod separation
+
+## Code Style & Conventions
+
+### TypeScript
+- **Strict mode enabled**: No implicit `any`, null checks required
+- **Shared types**: Import from `@shared/types` for cross-boundary types
+- **Interface over type**: Use `interface` for object shapes, `type` for unions/intersections
+- **Explicit return types**: Always specify return types for functions
+
+### File Structure
+- Backend files: `backend/src/*.ts`
+- Frontend files: `frontend/src/**/*.tsx` or `.ts`
+- Shared types: `shared/types.ts` (imported by both)
+- Config: `backend/data.json` (static, hot-reloadable)
+- State: `backend/state.json` (dynamic, auto-generated)
+
+### Naming Conventions
+- **Components**: PascalCase (e.g., `InlineRoutinePlayer.tsx`)
+- **Files**: PascalCase for components, camelCase for utilities
+- **Variables**: camelCase for locals, UPPER_SNAKE_CASE for constants
+- **API routes**: `/api/resource` pattern, RESTful where possible
+
+## Architecture Rules
+
+### State Management
+1. **Backend is source of truth**: All state changes originate from backend
+2. **In-memory cache**: `globalState` holds runtime state, synced to disk with 10s debounce
+3. **Frontend mirrors state**: GameContext receives updates via WebSocket events
+4. **Hot-reload config**: `data.json` is read fresh on each API call (no restart needed)
+
+### Data Flow Patterns
+- **Initial load**: REST API (`GET /api/users`, `/api/flows`, etc.)
+- **Real-time updates**: WebSocket events (`SYNC_STATE`, `ROUTINE_START`, `STARS_AWARDED`)
+- **User actions**: REST API → Backend updates → WebSocket broadcast to all clients
+- **Scheduled actions**: Cron → `checkSchedules()` → `triggerAction()` → WebSocket broadcast
+
+### WebSocket Events
+- Always include `type` field (e.g., `SYNC_STATE`, `ROUTINE_START`)
+- Include `payload` object with event-specific data
+- Broadcast to all connected clients (no per-user filtering)
+- Frontend filters events as needed based on userId
+
+## Development Guidelines
+
+### Adding New Features
+
+#### New API Endpoint
+```typescript
+// backend/src/server.ts
+server.get('/api/resource', async (request, reply) => {
+  try {
+    const db = await readDb();
+    // ... logic
+    return result;
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error' });
+  }
+});
+```
+
+#### New WebSocket Event
+```typescript
+// Backend: Broadcast event
+broadcast({
+  type: 'EVENT_NAME',
+  payload: { /* data */ }
+});
+
+// Frontend: Handle in GameContext
+if (message.type === 'EVENT_NAME') {
+  const { /* data */ } = message.payload;
+  // Update state
+}
+```
+
+#### New Component
+```tsx
+// frontend/src/components/NewComponent.tsx
+import React from 'react';
+import type { SomeType } from '@shared/types';
+
+interface NewComponentProps {
+  data: SomeType;
+  onAction: () => void;
+}
+
+export const NewComponent: React.FC<NewComponentProps> = ({ data, onAction }) => {
+  return (
+    <div className="new-component">
+      {/* JSX */}
+      <style>{`
+        .new-component { /* CSS */ }
+      `}</style>
+    </div>
+  );
+};
+```
+
+### Modifying Configuration
+
+#### Adding a User
+```json
+// backend/data.json → users array
+{
+  "id": "u3",
+  "name": "New Child",
+  "avatar": { "type": "emoji", "value": "🐻" },
+  "color": "var(--color-primary)"
+}
+```
+
+#### Adding a Schedule
+```json
+// backend/data.json → schedules array
+{
+  "id": "sch-custom",
+  "cron": "30 15 * * *",  // 3:30 PM daily
+  "type": "routine",       // or "flow"
+  "targetId": "assignment-id-or-flow-id"
+}
+```
+
+## Testing & Debugging
+
+### Manual Testing
+- **Trigger routine**: `http://localhost:5173/?push=morning-flow`
+- **Parent dashboard**: `http://localhost:5173/parent`
+- **Backend health**: `http://localhost:3000/health`
+- **WebSocket test**: Browser DevTools → Network → WS filter
+
+### Common Issues
+- **"Module not found"**: Check `@shared` alias in `vite.config.ts`
+- **WebSocket not connecting**: Check nginx.conf has `Upgrade` headers
+- **Hot reload not working**: Ensure `CHOKIDAR_USEPOLLING=true` in docker-compose
+- **State not persisting**: Check `STATE_FILE` env var points to correct path
+
+## Security Considerations
+
+⚠️ **Current Limitations** (TODOs for production):
+- No authentication on `/api/admin/*` endpoints
+- No input validation on POST bodies
+- File upload accepts any file type
+- WebSocket connections are unauthenticated
+
+When adding features:
+- Validate all user input (IDs, JSON structure, file types)
+- Use parameterized queries if migrating to SQL
+- Sanitize data before broadcasting via WebSocket
+- Add rate limiting for API endpoints
+
+## Code Review Checklist
+
+Before committing:
+- [ ] No `any` types (use proper interfaces)
+- [ ] Error handling in all API routes
+- [ ] TypeScript compiles without errors (`npm run build`)
+- [ ] Shared types updated if data model changed
+- [ ] WebSocket events documented in index.md if new
+- [ ] CSS styles are scoped (inline `<style>` or CSS modules)
+- [ ] No console.logs in production code (use Fastify logger)
+- [ ] State changes trigger debounced persist (use `writeDb()`)
+
+## Docker Commands
+
+```powershell
+# Development
+docker-compose up
+
+# Production
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+
+# Rebuild single service
+docker-compose up --build backend
+
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Clean restart
+docker-compose down
+docker-compose up --build
+```
+
+## Git Workflow
+
+### Commit Message Format
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types**: feat, fix, docs, style, refactor, test, chore  
+**Scopes**: backend, frontend, shared, docker, config  
+**Examples**:
+- `feat(backend): add reward redemption undo endpoint`
+- `fix(frontend): prevent duplicate routine triggers`
+- `docs(index): update WebSocket event documentation`
+- `refactor(shared): extract common type interfaces`
+
+### Branch Strategy
+- `master`: Production-ready code
+- `dev`: Integration branch (if using)
+- `feature/*`: New features
+- `fix/*`: Bug fixes
+
+## Performance Considerations
+
+### Backend
+- Use `readDb()` for full data reads (includes hot-reload)
+- Use `globalState` for frequent reads (in-memory)
+- Debounce writes (already implemented with 10s delay)
+- Avoid synchronous file operations in request handlers
+
+### Frontend
+- Memoize expensive computations with `useMemo`
+- Use `useCallback` for event handlers passed to children
+- Lazy load components with `React.lazy()` if needed
+- Optimize re-renders (check with React DevTools Profiler)
+
+### WebSocket
+- Batch multiple state changes into single `SYNC_STATE` event
+- Avoid sending large payloads (>100KB)
+- Use `ws.readyState === 1` check before sending
+
+## Useful Resources
+
+- **Fastify Docs**: https://fastify.dev
+- **React 19 Docs**: https://react.dev
+- **Framer Motion**: https://www.framer.com/motion
+- **Cron Syntax**: https://crontab.guru
+- **Mermaid Diagrams**: https://mermaid.js.org
+- **Docker Compose**: https://docs.docker.com/compose
+
+## Project-Specific Notes
+
+### Why File-Based Persistence?
+- Simple deployment (no DB setup)
+- Easy backups (copy 2 files)
+- Human-readable config (parents can edit JSON)
+- Sufficient for 2-4 users, low write frequency
+
+### When to Migrate to Database?
+- More than 10 users
+- Concurrent writes become frequent
+- Need for complex queries/relationships
+- Require ACID transactions
+
+### PWA Considerations
+- Service worker caches static assets
+- Offline mode shows stale data (acceptable for this use case)
+- Manifest allows tablet installation
+- Background sync not implemented (future enhancement)
+
+---
+
+*Last Updated: November 22, 2025*
