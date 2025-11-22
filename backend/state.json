@@ -1,6 +1,6 @@
 {
   "userStars": {
-    "u1": 1390,
+    "u1": 1370,
     "u2": 890
   },
   "routineExecutions": [
@@ -101,6 +101,13 @@
       "routineId": "r-morning",
       "startedAt": "2025-11-21T22:17:19.248Z",
       "totalStars": 20
+    },
+    {
+      "id": "a301ede5-011b-40e5-86c5-69251484cd2a",
+      "userId": "u1",
+      "routineId": "r-morning",
+      "startedAt": "2025-11-22T06:56:27.741Z",
+      "totalStars": 0
     }
   ],
   "taskExecutions": [
@@ -247,6 +254,48 @@
       "duration": 3,
       "isOnTime": true,
       "completedAt": "2025-11-21T22:17:29.376Z"
+    }
+  ],
+  "spendings": [
+    {
+      "id": "f94dcb50-b858-496c-9d58-ce4c8f746de5",
+      "userId": "u1",
+      "rewardId": "rew-tv",
+      "cost": 50,
+      "createdAt": "2025-11-22T06:56:58.794Z",
+      "status": "revoked"
+    },
+    {
+      "id": "f7d4e88d-3031-409f-abef-5c8a6e0fd88f",
+      "userId": "u1",
+      "rewardId": "rew-sweet",
+      "cost": 30,
+      "createdAt": "2025-11-22T06:57:05.085Z",
+      "status": "revoked"
+    },
+    {
+      "id": "a88636de-b0ea-4723-86a4-2a53697a82d5",
+      "userId": "u1",
+      "rewardId": "rew-tv",
+      "cost": 50,
+      "createdAt": "2025-11-22T07:08:39.347Z",
+      "status": "revoked"
+    },
+    {
+      "id": "753cc8c2-7fb3-45e1-a9fe-ef9502ed3b1c",
+      "userId": "u1",
+      "rewardId": "rew-toy",
+      "cost": 200,
+      "createdAt": "2025-11-22T07:08:47.548Z",
+      "status": "revoked"
+    },
+    {
+      "id": "0f62e895-46d3-4dc0-9d17-f466fe4056de",
+      "userId": "u1",
+      "rewardId": "rew-sweet",
+      "cost": 30,
+      "createdAt": "2025-11-22T07:08:50.347Z",
+      "status": "revoked"
     }
   ]
 }
