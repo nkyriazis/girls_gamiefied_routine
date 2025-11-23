@@ -59,181 +59,181 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
         exit={{ opacity: 0 }}
         onClick={onClose}
       >
-      <AnimatePresence>
-        {justPurchased && (
-          <motion.div
-            className="purchase-celebration"
-            initial={{ opacity: 0, scale: 0.5, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 1.5, y: -100 }}
-            transition={{ duration: 0.5 }}
-          >
+        <AnimatePresence>
+          {justPurchased && (
             <motion.div
-              className="celebration-icon"
-              animate={{
-                rotate: [0, -10, 10, -10, 10, 0],
-                scale: [1, 1.2, 1, 1.2, 1]
-              }}
+              className="purchase-celebration"
+              initial={{ opacity: 0, scale: 0.5, y: 50 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.5, y: -100 }}
               transition={{ duration: 0.5 }}
             >
-              <SmartIcon value={justPurchased.reward.icon} />
+              <motion.div
+                className="celebration-icon"
+                animate={{
+                  rotate: [0, -10, 10, -10, 10, 0],
+                  scale: [1, 1.2, 1, 1.2, 1]
+                }}
+                transition={{ duration: 0.5 }}
+              >
+                <SmartIcon value={justPurchased.reward.icon} />
+              </motion.div>
+              <div className="celebration-text">
+                {justPurchased.reward.title}
+              </div>
+              <div className="celebration-cost">
+                -⭐ {justPurchased.cost}
+              </div>
             </motion.div>
-            <div className="celebration-text">
-              {justPurchased.reward.title}
-            </div>
-            <div className="celebration-cost">
-              -⭐ {justPurchased.cost}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
 
-      <motion.div
-        className="store-card"
-        initial={{ scale: 0.8, y: 50 }}
-        animate={{ scale: 1, y: 0 }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="store-header">
-          <h2>{user.name}</h2>
-          <motion.div
-            className="user-balance"
-            key={user.stars}
-            initial={{ scale: 1 }}
-            animate={{ scale: [1, 1.3, 1] }}
-            transition={{ duration: 0.3 }}
-          >
-            ⭐ {user.stars}
-          </motion.div>
-        </div>
+        <motion.div
+          className="store-card"
+          initial={{ scale: 0.8, y: 50 }}
+          animate={{ scale: 1, y: 0 }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="store-header">
+            <h2>{user.name}</h2>
+            <motion.div
+              className="user-balance"
+              key={user.stars}
+              initial={{ scale: 1 }}
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 0.3 }}
+            >
+              ⭐ {user.stars}
+            </motion.div>
+          </div>
 
-        <div className="store-content">
-          <div className="rewards-section">
-            <div className="rewards-header">
-              <h3>Εξαργύρωση</h3>
-              {mySpendings.length > 0 && (
-                <button 
-                  className="activity-toggle-btn"
-                  onClick={() => setShowActivity(!showActivity)}
-                >
-                  📋 Δραστηριότητα ({mySpendings.length})
-                </button>
-              )}
-            </div>
-            <div className="rewards-grid">
-              {rewards.map(reward => {
-                const canAfford = user.stars >= reward.cost;
-                const isPurchasing = purchasingId === reward.id;
-                return (
-                  <motion.div
-                    key={reward.id}
-                    className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''}`}
-                    onClick={() => canAfford && !isPurchasing && handleBuy(reward)}
-                    whileHover={!isTouchDevice && canAfford && !isPurchasing ? { scale: 1.05 } : {}}
-                    whileTap={canAfford && !isPurchasing ? { scale: 0.95 } : {}}
-                    animate={isPurchasing ? {
-                      scale: [1, 1.1, 0.9, 1],
-                      rotate: [0, -5, 5, 0]
-                    } : {}}
-                    transition={{ duration: 0.3 }}
+          <div className="store-content">
+            <div className="rewards-section">
+              <div className="rewards-header">
+                <h3>Εξαργύρωση</h3>
+                {mySpendings.length > 0 && (
+                  <button
+                    className="activity-toggle-btn"
+                    onClick={() => setShowActivity(!showActivity)}
                   >
+                    📋 Δραστηριότητα ({mySpendings.length})
+                  </button>
+                )}
+              </div>
+              <div className="rewards-grid">
+                {rewards.map(reward => {
+                  const canAfford = user.stars >= reward.cost;
+                  const isPurchasing = purchasingId === reward.id;
+                  return (
                     <motion.div
-                      className="reward-icon"
+                      key={reward.id}
+                      className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''}`}
+                      onClick={() => canAfford && !isPurchasing && handleBuy(reward)}
+                      whileHover={!isTouchDevice && canAfford && !isPurchasing ? { scale: 1.05 } : {}}
+                      whileTap={canAfford && !isPurchasing ? { scale: 0.95 } : {}}
                       animate={isPurchasing ? {
-                        scale: [1, 1.3, 1],
-                        rotate: [0, 360]
+                        scale: [1, 1.1, 0.9, 1],
+                        rotate: [0, -5, 5, 0]
                       } : {}}
-                      transition={{ duration: 0.5 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <SmartIcon value={reward.icon} />
+                      <motion.div
+                        className="reward-icon"
+                        animate={isPurchasing ? {
+                          scale: [1, 1.3, 1],
+                          rotate: [0, 360]
+                        } : {}}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <SmartIcon value={reward.icon} />
+                      </motion.div>
+                      <div className="reward-info">
+                        <span className="reward-title">{reward.title}</span>
+                        <span className="reward-cost">⭐ {reward.cost}</span>
+                      </div>
                     </motion.div>
-                    <div className="reward-info">
-                      <span className="reward-title">{reward.title}</span>
-                      <span className="reward-cost">⭐ {reward.cost}</span>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
 
-        <button className="close-btn" onClick={onClose}>Κλείσιμο</button>
-      </motion.div>
+          <button className="close-btn" onClick={onClose}>Κλείσιμο</button>
+        </motion.div>
 
-      {/* Activity Popup */}
-      <AnimatePresence>
-        {showActivity && (
-          <motion.div
-            className="activity-popup-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowActivity(false)}
-          >
+        {/* Activity Popup */}
+        <AnimatePresence>
+          {showActivity && (
             <motion.div
-              className="activity-popup"
-              initial={{ scale: 0.8, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 50 }}
-              onClick={e => e.stopPropagation()}
+              className="activity-popup-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowActivity(false)}
             >
-              <div className="activity-popup-header">
-                <h3>Δραστηριότητα</h3>
-                <button className="popup-close-btn" onClick={() => setShowActivity(false)}>✕</button>
-              </div>
+              <motion.div
+                className="activity-popup"
+                initial={{ scale: 0.8, y: 50 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.8, y: 50 }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="activity-popup-header">
+                  <h3>Δραστηριότητα</h3>
+                  <button className="popup-close-btn" onClick={() => setShowActivity(false)}>✕</button>
+                </div>
 
-              {mySpendings.length === 0 && (
-                <div className="empty-state">Καμία δραστηριότητα</div>
-              )}
+                {mySpendings.length === 0 && (
+                  <div className="empty-state">Καμία δραστηριότητα</div>
+                )}
 
-              {pendingSpendings.length > 0 && (
-                <>
-                  <h4>Σε εκκρεμότητα</h4>
-                  <div className="pending-list">
-                    {pendingSpendings.map(spending => (
-                      <div key={spending.id} className="pending-item">
-                        <div className="pending-icon">
-                          <SmartIcon value={spending.reward?.icon || '❓'} />
+                {pendingSpendings.length > 0 && (
+                  <>
+                    <h4>Σε εκκρεμότητα</h4>
+                    <div className="pending-list">
+                      {pendingSpendings.map(spending => (
+                        <div key={spending.id} className="pending-item">
+                          <div className="pending-icon">
+                            <SmartIcon value={spending.reward?.icon || '❓'} />
+                          </div>
+                          <div className="pending-info">
+                            <span className="pending-title">{spending.reward?.title}</span>
+                            <span className="pending-date">
+                              {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
+                            </span>
+                          </div>
+                          <div className="pending-status">⏳</div>
                         </div>
-                        <div className="pending-info">
-                          <span className="pending-title">{spending.reward?.title}</span>
-                          <span className="pending-date">
-                            {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
-                          </span>
-                        </div>
-                        <div className="pending-status">⏳</div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+                      ))}
+                    </div>
+                  </>
+                )}
 
-              {historySpendings.length > 0 && (
-                <>
-                  <h4 style={{ marginTop: '1.5rem' }}>Ιστορικό</h4>
-                  <div className="pending-list history">
-                    {historySpendings.slice(0, 10).map(spending => (
-                      <div key={spending.id} className="pending-item done">
-                        <div className="pending-icon">
-                          <SmartIcon value={spending.reward?.icon || '❓'} />
+                {historySpendings.length > 0 && (
+                  <>
+                    <h4 style={{ marginTop: '1.5rem' }}>Ιστορικό</h4>
+                    <div className="pending-list history">
+                      {historySpendings.slice(0, 10).map(spending => (
+                        <div key={spending.id} className="pending-item done">
+                          <div className="pending-icon">
+                            <SmartIcon value={spending.reward?.icon || '❓'} />
+                          </div>
+                          <div className="pending-info">
+                            <span className="pending-title">{spending.reward?.title}</span>
+                            <span className="pending-date">
+                              {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
+                            </span>
+                          </div>
+                          <div className="pending-status">✅</div>
                         </div>
-                        <div className="pending-info">
-                          <span className="pending-title">{spending.reward?.title}</span>
-                          <span className="pending-date">
-                            {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
-                          </span>
-                        </div>
-                        <div className="pending-status">✅</div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+                      ))}
+                    </div>
+                  </>
+                )}
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       <style>{`

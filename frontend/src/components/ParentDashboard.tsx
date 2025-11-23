@@ -62,7 +62,7 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
 
     const handleEditorDidMount = async (editor: any, monaco: any) => {
         editorRef.current = editor;
-        
+
         // Store monaco globally for schema updates
         (window as any).monaco = monaco;
 

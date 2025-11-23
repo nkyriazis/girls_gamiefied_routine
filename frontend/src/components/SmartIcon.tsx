@@ -36,11 +36,11 @@ export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style, s
                 ? value.value
                 : `/uploads/${value.value}`;
             return (
-                <img 
-                    src={src} 
-                    alt="icon" 
-                    className={className} 
-                    style={{ ...baseStyle, objectFit: 'contain' }} 
+                <img
+                    src={src}
+                    alt="icon"
+                    className={className}
+                    style={{ ...baseStyle, objectFit: 'contain' }}
                 />
             );
         }
@@ -71,11 +71,11 @@ export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style, s
         // Check if it's a URL (starts with http, /, or data:)
         if (value.startsWith('http') || value.startsWith('/') || value.startsWith('data:')) {
             return (
-                <img 
-                    src={value} 
-                    alt="icon" 
-                    className={className} 
-                    style={{ ...baseStyle, objectFit: 'contain' }} 
+                <img
+                    src={value}
+                    alt="icon"
+                    className={className}
+                    style={{ ...baseStyle, objectFit: 'contain' }}
                 />
             );
         }
