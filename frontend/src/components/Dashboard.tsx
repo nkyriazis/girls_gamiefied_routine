@@ -152,6 +152,48 @@ export const Dashboard: React.FC = () => {
   const totalActiveCount = activeAlarms.length + activeRoutines.length;
   const viewMode = totalActiveCount === 0 ? 'IDLE' : totalActiveCount === 1 ? 'SINGLE' : totalActiveCount === 2 ? 'DUAL' : 'GRID';
 
+  // Combine and sort active items for consistent "lanes"
+  const sortedActiveItems = React.useMemo(() => {
+    const items: Array<{
+      type: 'alarm' | 'routine',
+      key: string,
+      userId: string | null,
+      data: any
+    }> = [];
+
+    // Add Alarms
+    activeAlarms.forEach(af => {
+      const userId = af.flowId.match(/^(u\d+)-/)?.[1] || null;
+      items.push({
+        type: 'alarm',
+        key: `alarm-${af.flowId}`,
+        userId,
+        data: af
+      });
+    });
+
+    // Add Routines
+    activeRoutines.forEach(ar => {
+      items.push({
+        type: 'routine',
+        key: `routine-${ar.userId}-${ar.routineId}`,
+        userId: ar.userId,
+        data: ar
+      });
+    });
+
+    // Sort by User Index (Global items first)
+    return items.sort((a, b) => {
+      if (!a.userId && b.userId) return -1;
+      if (a.userId && !b.userId) return 1;
+      if (!a.userId && !b.userId) return 0;
+
+      const userIndexA = users.findIndex(u => u.id === a.userId);
+      const userIndexB = users.findIndex(u => u.id === b.userId);
+      return userIndexA - userIndexB;
+    });
+  }, [activeAlarms, activeRoutines, users]);
+
   return (
     <div className="dashboard">
       {!hasInteracted && (
@@ -194,55 +236,53 @@ export const Dashboard: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Active Alarms - rendered inline in stage */}
-        {activeAlarms.map((af) => {
-          // Extract userId from flowId (e.g., "u1-morning-flow" -> "u1")
-          const userId = af.flowId.match(/^(u\d+)-/)?.[1];
-          const user = users.find(u => u.id === userId) || null;
+        {/* Active Items (Alarms & Routines) Sorted by User Lane */}
+        {sortedActiveItems.map((item) => {
+          if (item.type === 'alarm') {
+            const af = item.data;
+            const user = users.find(u => u.id === item.userId) || null;
+            return (
+              <motion.div
+                key={item.key}
+                className="routine-slot"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: "spring", bounce: 0.3 }}
+              >
+                <GlobalAlarm
+                  flowId={af.flowId}
+                  user={user}
+                  onDismiss={handleStepComplete}
+                />
+              </motion.div>
+            );
+          } else {
+            const ar = item.data;
+            const user = users.find(u => u.id === ar.userId);
+            const routine = user?.routines.find(r => r.id === ar.routineId);
 
-          return (
-            <motion.div
-              key={`alarm-${af.flowId}`}
-              className="routine-slot"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ type: "spring", bounce: 0.3 }}
-            >
-              <GlobalAlarm
-                flowId={af.flowId}
-                user={user}
-                onDismiss={handleStepComplete}
-              />
-            </motion.div>
-          );
-        })}
+            if (!user || !routine) return null;
 
-        {/* Active Routines Grid */}
-        {activeRoutines.map((ar) => {
-          const user = users.find(u => u.id === ar.userId);
-          const routine = user?.routines.find(r => r.id === ar.routineId);
-
-          if (!user || !routine) return null;
-
-          return (
-            <motion.div
-              key={`${ar.userId}-${ar.routineId}`}
-              className="routine-slot"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ type: "spring", bounce: 0.3 }}
-            >
-              <InlineRoutinePlayer
-                user={user}
-                routine={routine}
-                executionId={ar.executionId}
-                onComplete={() => handleRoutineComplete(ar.userId)}
-                onExit={() => handleRoutineExit(ar.userId)}
-              />
-            </motion.div>
-          );
+            return (
+              <motion.div
+                key={item.key}
+                className="routine-slot"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: "spring", bounce: 0.3 }}
+              >
+                <InlineRoutinePlayer
+                  user={user}
+                  routine={routine}
+                  executionId={ar.executionId}
+                  onComplete={() => handleRoutineComplete(ar.userId)}
+                  onExit={() => handleRoutineExit(ar.userId)}
+                />
+              </motion.div>
+            );
+          }
         })}
       </div>
 

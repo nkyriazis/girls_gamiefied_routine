@@ -73,6 +73,7 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, onDismis
           color: white;
           box-shadow: 0 0 40px rgba(255, 0, 85, 0.6);
           animation: pulse-glow 2s infinite;
+          container-type: size;
         }
 
         @keyframes pulse-glow {
@@ -85,37 +86,43 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, onDismis
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 1.5rem;
-          padding: 2rem;
+          justify-content: center;
+          gap: 2cqmin;
+          padding: 4cqmin;
+          width: 100%;
+          height: 100%;
         }
 
         .alarm-icon {
-          font-size: 8rem;
+          font-size: 20cqmin;
           filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
+          line-height: 1;
         }
 
         .global-alarm-container h1 {
-          font-size: 3.5rem;
+          font-size: 8cqmin;
           margin: 0;
           text-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
           font-weight: 900;
+          line-height: 1.2;
         }
 
         .alarm-user-info {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 1rem;
+          gap: 1cqmin;
         }
 
         .user-avatar-emoji {
-          font-size: 6rem;
+          font-size: 18cqmin;
           filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+          line-height: 1;
         }
 
         .user-avatar-img {
-          width: 8rem;
-          height: 8rem;
+          width: 20cqmin;
+          height: 20cqmin;
           border-radius: 50%;
           object-fit: cover;
           border: 4px solid white;
@@ -123,14 +130,14 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, onDismis
         }
 
         .user-name {
-          font-size: 2.5rem;
+          font-size: 6cqmin;
           font-weight: 900;
           margin: 0;
           text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
         .global-alarm-container p {
-          font-size: 1.8rem;
+          font-size: 5cqmin;
           opacity: 0.9;
           margin: 0;
         }
@@ -138,15 +145,15 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, onDismis
         .btn-dismiss-global {
           background: rgba(255, 255, 255, 0.95);
           color: #ff0055;
-          font-size: 2rem;
-          padding: 1.2rem 3.5rem;
-          border-radius: 2.5rem;
+          font-size: 5cqmin;
+          padding: 2cqmin 6cqmin;
+          border-radius: 100px;
           font-weight: 900;
           border: none;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
           cursor: pointer;
           transition: all 0.2s;
-          margin-top: 1rem;
+          margin-top: 1cqmin;
         }
 
         .btn-dismiss-global:hover {
@@ -156,22 +163,6 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, onDismis
 
         .btn-dismiss-global:active {
           transform: scale(0.95);
-        }
-
-        @media (max-width: 768px) {
-          .alarm-icon {
-            font-size: 5rem;
-          }
-          .global-alarm-container h1 {
-            font-size: 2.5rem;
-          }
-          .global-alarm-container p {
-            font-size: 1.3rem;
-          }
-          .btn-dismiss-global {
-            font-size: 1.5rem;
-            padding: 1rem 2.5rem;
-          }
         }
       `}</style>
     </div>
