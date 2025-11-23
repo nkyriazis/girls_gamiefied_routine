@@ -238,7 +238,6 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           font-weight: 900;
           color: white;
           margin-right: 1rem;
-          text-transform: uppercase;
           letter-spacing: 1px;
           text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }

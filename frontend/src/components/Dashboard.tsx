@@ -230,7 +230,7 @@ export const Dashboard: React.FC = () => {
               onClick={() => setStoreUserId(user.id)}
             >
               <div className="dock-avatar" style={{ background: user.color }}>
-                <SmartIcon value={user.avatar} />
+                <SmartIcon value={user.avatar} size={80} />
               </div>
               <span className="dock-name">{user.name}</span>
               <span className="dock-stars">⭐ {user.stars}</span>
@@ -274,7 +274,6 @@ export const Dashboard: React.FC = () => {
           padding: 2rem 4rem;
           border: 4px solid white;
           border-radius: 2rem;
-          text-transform: uppercase;
           letter-spacing: 4px;
           animation: pulse 2s infinite;
         }
@@ -368,13 +367,13 @@ export const Dashboard: React.FC = () => {
         }
 
         .dock-avatar {
-          width: 50px;
-          height: 50px;
+          width: 100px;
+          height: 100px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 2rem;
+          font-size: 4rem;
           box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 

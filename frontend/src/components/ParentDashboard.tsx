@@ -60,7 +60,7 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
         }
     }, [schema, schemaUri]);
 
-    const handleEditorDidMount = (editor: any, monaco: any) => {
+    const handleEditorDidMount = async (editor: any, monaco: any) => {
         editorRef.current = editor;
         
         // Store monaco globally for schema updates
@@ -76,6 +76,56 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
                     schema: schema
                 }]
             });
+        }
+
+        // Add custom completion provider for uploaded files (config editor only)
+        if (title.includes('Configuration')) {
+            try {
+                // Fetch list of uploaded files
+                const response = await fetch('/api/admin/uploads/list');
+                const uploadedFiles: string[] = await response.json();
+
+                // Register completion provider for icon values
+                monaco.languages.registerCompletionItemProvider('json', {
+                    provideCompletionItems: (model: any, position: any) => {
+                        const textUntilPosition = model.getValueInRange({
+                            startLineNumber: 1,
+                            startColumn: 1,
+                            endLineNumber: position.lineNumber,
+                            endColumn: position.column
+                        });
+
+                        // Check if we're in an icon/avatar value context
+                        const iconValuePattern = /"(icon|avatar)"\s*:\s*\{[^}]*"type"\s*:\s*"image"[^}]*"value"\s*:\s*"[^"]*$/;
+                        const inIconValue = iconValuePattern.test(textUntilPosition);
+
+                        if (inIconValue && uploadedFiles.length > 0) {
+                            const word = model.getWordUntilPosition(position);
+                            const range = {
+                                startLineNumber: position.lineNumber,
+                                endLineNumber: position.lineNumber,
+                                startColumn: word.startColumn,
+                                endColumn: word.endColumn
+                            };
+
+                            return {
+                                suggestions: uploadedFiles.map((file) => ({
+                                    label: file,
+                                    kind: monaco.languages.CompletionItemKind.File,
+                                    insertText: file,
+                                    range: range,
+                                    detail: 'Uploaded file',
+                                    documentation: `/uploads/${file}`
+                                }))
+                            };
+                        }
+
+                        return { suggestions: [] };
+                    }
+                });
+            } catch (err) {
+                console.error('Failed to load uploaded files for autocomplete:', err);
+            }
         }
     };
 
@@ -458,7 +508,6 @@ export const ParentDashboard: React.FC = () => {
           font-size: 1.2rem;
           color: #aaa;
           margin-bottom: 1rem;
-          text-transform: uppercase;
           letter-spacing: 1px;
         }
 
