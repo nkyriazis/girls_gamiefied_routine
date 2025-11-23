@@ -41,7 +41,6 @@
           },
           "startedAt": {
             "type": "string",
-            "format": "date-time",
             "description": "ISO timestamp when routine started"
           },
           "totalStars": {
@@ -51,7 +50,6 @@
           },
           "completedAt": {
             "type": "string",
-            "format": "date-time",
             "description": "ISO timestamp when routine completed"
           }
         }
@@ -90,7 +88,6 @@
           },
           "completedAt": {
             "type": "string",
-            "format": "date-time",
             "description": "ISO timestamp when task completed"
           }
         }
@@ -124,7 +121,6 @@
           },
           "createdAt": {
             "type": "string",
-            "format": "date-time",
             "description": "ISO timestamp when reward was requested"
           },
           "status": {

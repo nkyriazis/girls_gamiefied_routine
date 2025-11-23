@@ -43,8 +43,28 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
         }
     }, [schemaUri]);
 
+    // Configure Monaco schema when schema loads
+    useEffect(() => {
+        if (schema && editorRef.current) {
+            const monaco = (window as any).monaco;
+            if (monaco) {
+                monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                    validate: true,
+                    schemas: [{
+                        uri: schemaUri || 'http://internal/schema.json',
+                        fileMatch: ['*'],
+                        schema: schema
+                    }]
+                });
+            }
+        }
+    }, [schema, schemaUri]);
+
     const handleEditorDidMount = (editor: any, monaco: any) => {
         editorRef.current = editor;
+        
+        // Store monaco globally for schema updates
+        (window as any).monaco = monaco;
 
         if (schema) {
             // Configure Monaco to use the schema for validation
@@ -67,7 +87,6 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
             if (enableValidation && validateFn) {
                 const result = await validateFn(parsed);
                 if (!result.valid) {
-                    setValidationErrors(result.errors || []);
                     setError('Cannot save: Validation failed');
                     onToast('Cannot save invalid configuration', 'error');
                     return;
