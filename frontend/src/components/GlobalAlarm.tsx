@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAppSounds } from '../hooks/useAppSounds';
+import { type User } from '@shared/types';
 
 interface GlobalAlarmProps {
   flowId: string;
+  user: User | null;
   onDismiss: (flowId: string) => void;
 }
 
-export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, onDismiss }) => {
+export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, onDismiss }) => {
   const { playWakeUpLoop, stopWakeUpLoop, playClick } = useAppSounds();
 
   useEffect(() => {
@@ -40,6 +42,16 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, onDismiss }) =
         </motion.div>
 
         <h1>Ώρα για ξύπνημα!</h1>
+        {user && (
+          <div className="alarm-user-info">
+            {user.avatar.type === 'emoji' ? (
+              <div className="user-avatar-emoji">{user.avatar.value}</div>
+            ) : (
+              <img src={`/uploads/${user.avatar.value}`} alt={user.name} className="user-avatar-img" />
+            )}
+            <p className="user-name" style={{ color: user.color }}>{user.name}</p>
+          </div>
+        )}
         <p>Καλημέρα! ☀️</p>
 
         <button className="btn-dismiss-global" onClick={handleDismiss}>
@@ -85,6 +97,34 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, onDismiss }) =
           margin: 0;
           text-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
           font-weight: 900;
+        }
+
+        .alarm-user-info {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .user-avatar-emoji {
+          font-size: 6rem;
+          filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+        }
+
+        .user-avatar-img {
+          width: 8rem;
+          height: 8rem;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 4px solid white;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-name {
+          font-size: 2.5rem;
+          font-weight: 900;
+          margin: 0;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
         .global-alarm-container p {

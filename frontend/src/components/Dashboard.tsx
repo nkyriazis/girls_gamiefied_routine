@@ -195,19 +195,28 @@ export const Dashboard: React.FC = () => {
         </AnimatePresence>
 
         {/* Active Alarms - rendered inline in stage */}
-        {activeAlarms.map((af) => (
-          <motion.div
-            key={`alarm-${af.flowId}`}
-            className="routine-slot"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: "spring", bounce: 0.3 }}
-          >
-            <GlobalAlarm
-              flowId={af.flowId}
-              onDismiss={handleStepComplete}
-            />
+        {activeAlarms.map((af) => {
+          // Extract userId from flowId (e.g., "u1-morning-flow" -> "u1")
+          const userId = af.flowId.match(/^(u\d+)-/)?.[1];
+          const user = users.find(u => u.id === userId) || null;
+          
+          return (
+            <motion.div
+              key={`alarm-${af.flowId}`}
+              className="routine-slot"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", bounce: 0.3 }}
+            >
+              <GlobalAlarm
+                flowId={af.flowId}
+                user={user}
+                onDismiss={handleStepComplete}
+              />
+            </motion.div>
+          );
+        })}
           </motion.div>
         ))}
 
