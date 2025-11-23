@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import type { User, Reward, Spending } from '@shared/types';
 import { useAppSounds } from '../hooks/useAppSounds';
+import { useTouchDevice } from '../hooks/useTouchDevice';
 
 interface StoreModalProps {
   user: User;
@@ -16,6 +17,7 @@ interface StoreModalProps {
 
 export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings, onClose }) => {
   const { playClick, playSuccess } = useAppSounds();
+  const isTouchDevice = useTouchDevice();
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   const [justPurchased, setJustPurchased] = useState<{ reward: Reward; cost: number } | null>(null);
   const [showActivity, setShowActivity] = useState(false);
@@ -127,7 +129,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                     key={reward.id}
                     className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''}`}
                     onClick={() => canAfford && !isPurchasing && handleBuy(reward)}
-                    whileHover={canAfford && !isPurchasing ? { scale: 1.05 } : {}}
+                    whileHover={!isTouchDevice && canAfford && !isPurchasing ? { scale: 1.05 } : {}}
                     whileTap={canAfford && !isPurchasing ? { scale: 0.95 } : {}}
                     animate={isPurchasing ? {
                       scale: [1, 1.1, 0.9, 1],
@@ -346,15 +348,20 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           background: rgba(255,255,255,0.1);
           border: 1px solid rgba(255,255,255,0.2);
           color: white;
-          padding: 0.5rem 1rem;
+          padding: 0.75rem 1.25rem;
           border-radius: 0.5rem;
           font-size: 0.9rem;
           cursor: pointer;
           transition: all 0.2s;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+          user-select: none;
         }
 
-        .activity-toggle-btn:hover {
-          background: rgba(255,255,255,0.2);
+        @media (hover: hover) and (pointer: fine) {
+          .activity-toggle-btn:hover {
+            background: rgba(255,255,255,0.2);
+          }
         }
 
         .activity-popup-overlay {
@@ -456,10 +463,16 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           cursor: pointer;
           transition: all 0.2s;
           border: 1px solid transparent;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+          user-select: none;
+          min-height: 140px;
         }
 
-        .reward-item:hover:not(.disabled):not(.purchasing) {
-          background: rgba(255,255,255,0.1);
+        @media (hover: hover) and (pointer: fine) {
+          .reward-item:hover:not(.disabled):not(.purchasing) {
+            background: rgba(255,255,255,0.1);
+          }
         }
 
         .reward-item.purchasing {
@@ -546,10 +559,16 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           font-size: 1rem;
           cursor: pointer;
           transition: background 0.2s;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+          user-select: none;
+          min-height: 48px;
         }
 
-        .close-btn:hover {
-          background: rgba(255,255,255,0.2);
+        @media (hover: hover) and (pointer: fine) {
+          .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+          }
         }
 
         @media (max-width: 768px) {

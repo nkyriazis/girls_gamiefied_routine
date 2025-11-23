@@ -10,9 +10,11 @@ import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
 import { useGame } from '../context/GameContext';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import { useTouchDevice } from '../hooks/useTouchDevice';
 
 export const Dashboard: React.FC = () => {
   const { users, flows, rewards, spendings, lastEvent } = useGame();
+  const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
   const { isInstallable, promptInstall } = useInstallPrompt();
 
@@ -206,7 +208,7 @@ export const Dashboard: React.FC = () => {
           className="install-pwa-btn"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.05 }}
+          whileHover={!isTouchDevice ? { scale: 1.05 } : {}}
           whileTap={{ scale: 0.95 }}
           onClick={promptInstall}
         >
@@ -225,7 +227,7 @@ export const Dashboard: React.FC = () => {
             <motion.div
               key={user.id}
               className="dock-item"
-              whileHover={{ scale: 1.05, y: -5 }}
+              whileHover={!isTouchDevice ? { scale: 1.05, y: -5 } : {}}
               whileTap={{ scale: 0.95 }}
               onClick={() => setStoreUserId(user.id)}
             >
@@ -364,6 +366,9 @@ export const Dashboard: React.FC = () => {
           padding: 10px 0;
           z-index: 101;
           position: relative;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+          user-select: none;
         }
 
         .dock-avatar {
@@ -404,6 +409,9 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 0.5rem;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+          user-select: none;
         }
       `}</style>
     </div>
