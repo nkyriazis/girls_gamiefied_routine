@@ -45,7 +45,7 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
 
     const handleEditorDidMount = (editor: any, monaco: any) => {
         editorRef.current = editor;
-        
+
         if (schema) {
             // Configure Monaco to use the schema for validation
             monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
@@ -62,7 +62,7 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
     const handleSave = async () => {
         try {
             const parsed = JSON.parse(json);
-            
+
             // Auto-validate before save if validation is enabled
             if (enableValidation && validateFn) {
                 const result = await validateFn(parsed);
@@ -73,14 +73,14 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
                     return;
                 }
             }
-            
+
             await saveFn(parsed);
             setError(null);
             onToast('Saved!', 'success');
         } catch (err) {
             const message = (err as Error).message;
             setError(message);
-            
+
             // Try to parse validation errors from backend response
             if (message.includes('Validation failed')) {
                 onToast('Validation failed - check inline errors', 'error');
