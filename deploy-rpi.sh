@@ -12,6 +12,11 @@ if [ -d .git ]; then
     git pull
 fi
 
+# Ensure uploads directory exists with correct permissions
+echo "📁 Ensuring uploads directory exists..."
+mkdir -p backend/uploads
+chmod 755 backend/uploads
+
 # Pull pre-built images
 echo "🐳 Pulling Docker images..."
 docker-compose -f docker-compose.yml -f docker-compose.release.yml pull

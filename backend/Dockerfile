@@ -16,5 +16,7 @@ COPY backend/data.json ./
 COPY backend/data.schema.json ./
 COPY backend/state.schema.json ./
 # state.json will be mounted
+# Create uploads directory with proper permissions
+RUN mkdir -p uploads && chown node:node uploads
 EXPOSE 3000
 CMD ["npm", "start"]
