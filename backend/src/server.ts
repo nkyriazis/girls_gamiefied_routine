@@ -583,22 +583,27 @@ server.put('/api/spendings/:id', async (request, reply) => {
 
 // Admin: Upload file
 server.post('/api/admin/upload', async (request, reply) => {
-  const data = await request.file();
-  if (!data) {
-    return reply.code(400).send({ error: 'No file uploaded' });
+  try {
+    const data = await request.file();
+    if (!data) {
+      return reply.code(400).send({ error: 'No file uploaded' });
+    }
+
+    const filename = `${Date.now()}-${data.filename}`;
+    const filepath = path.join(UPLOADS_DIR, filename);
+    
+    await pump(data.file, createWriteStream(filepath));
+
+    // Return the URL
+    const protocol = request.protocol;
+    const host = request.hostname;
+    const url = `${protocol}://${host}/uploads/${filename}`;
+
+    return reply.code(200).send({ success: true, url, filename });
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Upload failed' });
   }
-
-  const filename = `${Date.now()}-${data.filename}`;
-  const filepath = path.join(UPLOADS_DIR, filename);
-  
-  await pump(data.file, createWriteStream(filepath));
-
-  // Return the URL
-  const protocol = request.protocol;
-  const host = request.hostname;
-  const url = `${protocol}://${host}/uploads/${filename}`;
-
-  return { success: true, url, filename };
 });
 
 // Push hook endpoint
