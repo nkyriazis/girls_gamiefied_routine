@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Editor from '@monaco-editor/react';
 import { api } from '../api';
 import { SmartIcon } from './SmartIcon';
 import { format } from 'date-fns';
@@ -14,70 +15,47 @@ interface Toast {
     type: ToastType;
 }
 
-const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, validateFn }: {
+const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, validateFn, schemaUri }: {
     title: string,
     loadFn: () => Promise<any>,
     saveFn: (data: any) => Promise<void>,
     onToast: (message: string, type: ToastType) => void,
     enableValidation?: boolean,
-    validateFn?: (data: any) => Promise<{ valid: boolean, errors?: any[] }>
+    validateFn?: (data: any) => Promise<{ valid: boolean, errors?: any[] }>,
+    schemaUri?: string
 }) => {
     const [json, setJson] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [validationErrors, setValidationErrors] = useState<any[] | null>(null);
-    const [isValidating, setIsValidating] = useState(false);
-    const [liveValidationEnabled, setLiveValidationEnabled] = useState(false);
+    const [schema, setSchema] = useState<any>(null);
+    const editorRef = useRef<any>(null);
 
     useEffect(() => {
         loadFn().then(data => setJson(JSON.stringify(data, null, 2)));
     }, []);
 
-    // Live validation on text change (debounced)
+    // Load schema if provided
     useEffect(() => {
-        if (!enableValidation || !validateFn || !liveValidationEnabled) return;
+        if (schemaUri) {
+            fetch(schemaUri)
+                .then(res => res.json())
+                .then(schema => setSchema(schema))
+                .catch(err => console.error('Failed to load schema:', err));
+        }
+    }, [schemaUri]);
+
+    const handleEditorDidMount = (editor: any, monaco: any) => {
+        editorRef.current = editor;
         
-        const timer = setTimeout(async () => {
-            try {
-                const parsed = JSON.parse(json);
-                const result = await validateFn(parsed);
-                
-                if (result.valid) {
-                    setValidationErrors(null);
-                    setError(null);
-                } else {
-                    setValidationErrors(result.errors || []);
-                    setError('Validation errors detected');
-                }
-            } catch (err) {
-                // JSON parse error - don't show validation errors yet
-                setError('Invalid JSON syntax');
-                setValidationErrors(null);
-            }
-        }, 1000); // 1 second debounce
-
-        return () => clearTimeout(timer);
-    }, [json, enableValidation, validateFn, liveValidationEnabled]);
-
-    const handleValidate = async () => {
-        if (!validateFn) return;
-        try {
-            setIsValidating(true);
-            const parsed = JSON.parse(json);
-            const result = await validateFn(parsed);
-            
-            if (result.valid) {
-                setValidationErrors(null);
-                setError(null);
-                onToast('✓ Valid configuration', 'success');
-            } else {
-                setValidationErrors(result.errors || []);
-                setError('Validation failed - see errors below');
-            }
-        } catch (err) {
-            setError((err as Error).message);
-            setValidationErrors(null);
-        } finally {
-            setIsValidating(false);
+        if (schema) {
+            // Configure Monaco to use the schema for validation
+            monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                validate: true,
+                schemas: [{
+                    uri: schemaUri || 'http://internal/schema.json',
+                    fileMatch: ['*'],
+                    schema: schema
+                }]
+            });
         }
     };
 
@@ -98,7 +76,6 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
             
             await saveFn(parsed);
             setError(null);
-            setValidationErrors(null);
             onToast('Saved!', 'success');
         } catch (err) {
             const message = (err as Error).message;
@@ -106,74 +83,56 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
             
             // Try to parse validation errors from backend response
             if (message.includes('Validation failed')) {
-                onToast('Validation failed - check errors below', 'error');
+                onToast('Validation failed - check inline errors', 'error');
             }
         }
-    };
-
-    const formatValidationError = (err: any) => {
-        const path = err.instancePath || '/';
-        const message = err.message || 'Unknown error';
-        const params = err.params ? ` (${JSON.stringify(err.params)})` : '';
-        return `${path}: ${message}${params}`;
     };
 
     return (
         <div className="json-editor">
             <div className="editor-header">
                 <h3>{title}</h3>
-                {enableValidation && (
-                    <label className="live-validation-toggle">
-                        <input 
-                            type="checkbox" 
-                            checked={liveValidationEnabled}
-                            onChange={e => setLiveValidationEnabled(e.target.checked)}
-                        />
-                        <span>Live validation</span>
-                    </label>
+                {enableValidation && schema && (
+                    <span className="validation-status">✓ Live validation enabled</span>
                 )}
             </div>
-            <textarea
-                value={json}
-                onChange={e => setJson(e.target.value)}
-                spellCheck={false}
-            />
-            {error && <div className="error">{error}</div>}
-            {validationErrors && validationErrors.length > 0 && (
-                <div className="validation-errors">
-                    <strong>Validation Errors ({validationErrors.length}):</strong>
-                    <ul>
-                        {validationErrors.map((err, idx) => (
-                            <li key={idx}>{formatValidationError(err)}</li>
-                        ))}
-                    </ul>
+            <div className="editor-container">
+                <Editor
+                    height="100%"
+                    defaultLanguage="json"
+                    value={json}
+                    onChange={(value) => setJson(value || '')}
+                    theme="vs-dark"
+                    onMount={handleEditorDidMount}
+                    options={{
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        fontSize: 13,
+                        lineNumbers: 'on',
+                        renderValidationDecorations: 'on',
+                        automaticLayout: true,
+                        formatOnPaste: true,
+                        formatOnType: false,
+                        tabSize: 2,
+                    }}
+                />
+            </div>
+            <div className="editor-footer">
+                {error && <div className="error">{error}</div>}
+                <div className="button-group">
+                    <button onClick={handleSave}>Save {title}</button>
                 </div>
-            )}
-            <div className="button-group">
-                {enableValidation && (
-                    <button onClick={handleValidate} disabled={isValidating} className="secondary">
-                        {isValidating ? 'Validating...' : 'Validate'}
-                    </button>
-                )}
-                <button onClick={handleSave}>Save {title}</button>
             </div>
             <style>{`
-        .json-editor { display: flex; flex-direction: column; gap: 1rem; height: 500px; }
+        .json-editor { display: flex; flex-direction: column; gap: 0.5rem; height: 600px; }
         .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
         .editor-header h3 { margin: 0; }
-        .live-validation-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; user-select: none; }
-        .live-validation-toggle input[type="checkbox"] { cursor: pointer; }
-        .live-validation-toggle span { color: #aaa; }
-        textarea { flex: 1; background: #111; color: #0f0; font-family: monospace; padding: 1rem; border: 1px solid #333; }
-        .error { color: red; font-weight: bold; padding: 0.5rem; background: rgba(255, 0, 0, 0.1); border-radius: 4px; }
-        .validation-errors { color: orange; padding: 0.5rem; background: rgba(255, 165, 0, 0.1); border-radius: 4px; max-height: 200px; overflow-y: auto; }
-        .validation-errors ul { margin: 0.5rem 0 0 1.5rem; padding: 0; }
-        .validation-errors li { margin: 0.25rem 0; font-family: monospace; font-size: 0.9em; }
+        .validation-status { color: #4cc9f0; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem; }
+        .editor-container { flex: 1; min-height: 0; border: 1px solid #333; border-radius: 4px; overflow: hidden; }
+        .editor-footer { display: flex; flex-direction: column; gap: 0.5rem; }
+        .error { color: red; font-weight: bold; padding: 0.5rem; background: rgba(255, 0, 0, 0.1); border-radius: 4px; font-size: 0.9rem; max-height: 80px; overflow-y: auto; }
         .button-group { display: flex; gap: 0.5rem; }
-        .button-group button { flex: 1; }
-        .button-group button.secondary { background: #444; }
-        .button-group button.secondary:hover { background: #555; }
-        .button-group button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .button-group button { flex: 1; padding: 0.75rem; }
       `}</style>
         </div>
     );
@@ -401,6 +360,7 @@ export const ParentDashboard: React.FC = () => {
                             onToast={showToast}
                             enableValidation={true}
                             validateFn={api.validateConfig}
+                            schemaUri="/api/admin/schema/data"
                         />
                     </section>
                 )}
@@ -414,6 +374,7 @@ export const ParentDashboard: React.FC = () => {
                             onToast={showToast}
                             enableValidation={true}
                             validateFn={api.validateState}
+                            schemaUri="/api/admin/schema/state"
                         />
                     </section>
                 )}

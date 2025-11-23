@@ -843,6 +843,30 @@ server.get('/api/admin/validation-status', async (request, reply) => {
   };
 });
 
+// Admin: Get data schema
+server.get('/api/admin/schema/data', async (request, reply) => {
+  try {
+    const schemaPath = path.join(__dirname, '../data.schema.json');
+    const schema = JSON.parse(await fs.readFile(schemaPath, 'utf-8'));
+    return schema;
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Failed to load data schema' });
+  }
+});
+
+// Admin: Get state schema
+server.get('/api/admin/schema/state', async (request, reply) => {
+  try {
+    const schemaPath = path.join(__dirname, '../state.schema.json');
+    const schema = JSON.parse(await fs.readFile(schemaPath, 'utf-8'));
+    return schema;
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Failed to load state schema' });
+  }
+});
+
 // Admin: Get raw state
 server.get('/api/admin/state', async (request, reply) => {
   return globalState;
