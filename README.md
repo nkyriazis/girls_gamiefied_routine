@@ -95,20 +95,37 @@ docker-compose exec backend npm install <package-name>
 
 ## 🍓 Raspberry Pi 4 Deployment
 
-Yes, this project is fully compatible with Raspberry Pi 4 (ARM64).
+Deploy using pre-built images (no building on RPi):
 
-**Why it works:**
--   We use `node:20-alpine` and `nginx:alpine` base images, which support ARM64 out of the box.
--   Production mode is extremely lightweight (Nginx + Node.js) and runs great on 2GB+ RAM models.
+**One-time setup:**
+See [GITHUB_TOKEN.md](GITHUB_TOKEN.md) to create and save your GitHub token.
 
-**How to deploy on Pi:**
-1.  Clone the repo on your Pi.
-2.  (Optional) Create a `.env` file to customize the port (default is 80).
-3.  Run the **Production** command:
-    ```bash
-    docker-compose up --build -d
-    ```
-    *(Note: The first build might take 5-10 minutes on the Pi's CPU. Subsequent starts will be instant.)*
+**On your development machine:**
+```powershell
+# Trigger CI/CD build (uses Docker, no local tools needed)
+.\build.ps1
+
+# Wait ~5-10 minutes for build to complete
+```
+
+**On your Raspberry Pi:**
+```bash
+# First time setup
+git clone https://github.com/nkyriazis/girls_gamiefied_routine.git
+cd girls_gamiefied_routine
+chmod +x deploy-rpi.sh
+
+# Deploy (pulls pre-built images in ~30 seconds)
+./deploy-rpi.sh
+```
+
+**Note:** See [GITHUB_TOKEN.md](GITHUB_TOKEN.md) for one-time authentication setup.
+
+**Alternative - Build locally on RPi:**
+If you prefer building on the Pi itself (takes 10-15 minutes):
+```bash
+docker-compose up --build -d
+```
 
 **Performance Tip:**
-Do **not** use the Development mode (`docker-compose -f docker-compose.yml -f docker-compose.dev.yml up`) on the Pi if you can avoid it. The file-watching mechanism (`CHOKIDAR_USEPOLLING`) consumes a lot of CPU on low-power devices. Always use Production mode for the Pi.
+Do **not** use Development mode on the Pi. The file-watching mechanism consumes too much CPU on low-power devices.
