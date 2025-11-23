@@ -1,8 +1,8 @@
 export type IconValue = 
   | string 
-  | { type: 'emoji'; value: string }
-  | { type: 'image'; src: string }
-  | { type: 'vector'; content: string };
+  | { type: 'emoji'; value: string }  // Unicode emoji character
+  | { type: 'image'; value: string }  // Uploaded filename (auto-resolves to /uploads/)
+  | { type: 'vector'; content: string };  // Legacy: inline SVG
 
 export interface Task {
   id: string;

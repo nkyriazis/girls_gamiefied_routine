@@ -92,6 +92,10 @@ export default defineConfig({
         target: 'ws://backend:3000',
         ws: true,
       },
+      '/uploads': {
+        target: 'http://backend:3000',
+        changeOrigin: true,
+      },
     },
   },
 })

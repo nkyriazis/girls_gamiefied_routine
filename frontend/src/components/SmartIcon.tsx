@@ -5,22 +5,50 @@ interface SmartIconProps {
     value: IconValue;
     className?: string;
     style?: React.CSSProperties;
+    size?: number; // Size in pixels (default: 48)
 }
 
-export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style }) => {
+export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style, size = 48 }) => {
+    // Base style with consistent sizing and circular cropping
+    const baseStyle: React.CSSProperties = {
+        width: size,
+        height: size,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        overflow: 'hidden',
+        ...style
+    };
+
     // 1. Handle Object format
     if (typeof value === 'object' && value !== null) {
         if (value.type === 'emoji') {
-            return <span className={className} style={style}>{value.value}</span>;
+            return (
+                <span className={className} style={{ ...baseStyle, fontSize: size * 0.75 }}>
+                    {value.value}
+                </span>
+            );
         }
         if (value.type === 'image') {
-            return <img src={value.src} alt="icon" className={className} style={{ ...style, objectFit: 'contain' }} />;
+            // Auto-resolve uploaded filenames to /uploads/ path
+            const src = value.value?.startsWith('http') || value.value?.startsWith('/') || value.value?.startsWith('data:')
+                ? value.value
+                : `/uploads/${value.value}`;
+            return (
+                <img 
+                    src={src} 
+                    alt="icon" 
+                    className={className} 
+                    style={{ ...baseStyle, objectFit: 'contain' }} 
+                />
+            );
         }
         if (value.type === 'vector') {
             return (
                 <div
                     className={className}
-                    style={style}
+                    style={baseStyle}
                     dangerouslySetInnerHTML={{ __html: value.content }}
                 />
             );
@@ -34,7 +62,7 @@ export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style })
             return (
                 <div
                     className={className}
-                    style={style}
+                    style={baseStyle}
                     dangerouslySetInnerHTML={{ __html: value }}
                 />
             );
@@ -42,11 +70,22 @@ export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style })
 
         // Check if it's a URL (starts with http, /, or data:)
         if (value.startsWith('http') || value.startsWith('/') || value.startsWith('data:')) {
-            return <img src={value} alt="icon" className={className} style={{ ...style, objectFit: 'contain' }} />;
+            return (
+                <img 
+                    src={value} 
+                    alt="icon" 
+                    className={className} 
+                    style={{ ...baseStyle, objectFit: 'contain' }} 
+                />
+            );
         }
 
         // Default to Emoji/Text
-        return <span className={className} style={style}>{value}</span>;
+        return (
+            <span className={className} style={{ ...baseStyle, fontSize: size * 0.75 }}>
+                {value}
+            </span>
+        );
     }
 
     return null;

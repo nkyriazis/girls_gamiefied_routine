@@ -867,6 +867,17 @@ server.get('/api/admin/schema/state', async (request, reply) => {
   }
 });
 
+// Admin: List uploaded files
+server.get('/api/admin/uploads/list', async (request, reply) => {
+  try {
+    const files = await fs.readdir(UPLOADS_DIR);
+    return files.filter(f => !f.startsWith('.')); // Filter hidden files
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Failed to list uploads' });
+  }
+});
+
 // Admin: Get raw state
 server.get('/api/admin/state', async (request, reply) => {
   return globalState;

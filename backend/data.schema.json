@@ -31,8 +31,8 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["emoji", "icon"],
-                "description": "Icon type"
+                "enum": ["emoji", "image"],
+                "description": "Icon type: emoji (Unicode character) or image (uploaded file from /uploads)"
               },
               "value": {
                 "type": "string",
@@ -78,11 +78,13 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["emoji", "icon"]
+                "enum": ["emoji", "image"],
+                "description": "Icon type: emoji or image (uploaded filename)"
               },
               "value": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "description": "Emoji character or uploaded filename (auto-resolves to /uploads/)"
               }
             }
           }
@@ -148,11 +150,13 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["emoji", "icon"]
+                "enum": ["emoji", "image"],
+                "description": "Avatar type: emoji or image (uploaded filename)"
               },
               "value": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "description": "Emoji character or uploaded filename (auto-resolves to /uploads/)"
               }
             }
           },
@@ -334,11 +338,13 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["emoji", "icon"]
+                "enum": ["emoji", "image"],
+                "description": "Icon type: emoji or image (uploaded filename)"
               },
               "value": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "description": "Emoji character or uploaded filename (auto-resolves to /uploads/)"
               }
             }
           },
