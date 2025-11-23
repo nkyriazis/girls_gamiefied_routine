@@ -44,11 +44,13 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, onDismis
         <h1>Ώρα για ξύπνημα!</h1>
         {user && (
           <div className="alarm-user-info">
-            {user.avatar.type === 'emoji' ? (
+            {typeof user.avatar === 'string' ? (
+              <div className="user-avatar-emoji">{user.avatar}</div>
+            ) : user.avatar.type === 'emoji' ? (
               <div className="user-avatar-emoji">{user.avatar.value}</div>
-            ) : (
+            ) : user.avatar.type === 'image' ? (
               <img src={`/uploads/${user.avatar.value}`} alt={user.name} className="user-avatar-img" />
-            )}
+            ) : null}
             <p className="user-name" style={{ color: user.color }}>{user.name}</p>
           </div>
         )}

@@ -199,7 +199,7 @@ export const Dashboard: React.FC = () => {
           // Extract userId from flowId (e.g., "u1-morning-flow" -> "u1")
           const userId = af.flowId.match(/^(u\d+)-/)?.[1];
           const user = users.find(u => u.id === userId) || null;
-          
+
           return (
             <motion.div
               key={`alarm-${af.flowId}`}
@@ -217,8 +217,6 @@ export const Dashboard: React.FC = () => {
             </motion.div>
           );
         })}
-          </motion.div>
-        ))}
 
         {/* Active Routines Grid */}
         {activeRoutines.map((ar) => {
