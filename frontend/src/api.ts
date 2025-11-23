@@ -164,6 +164,18 @@ export const api = {
     return response.json();
   },
 
+  getScheduleDebug: async (): Promise<any> => {
+    const response = await fetch(`${API_URL}/debug/schedule`);
+    if (!response.ok) throw new Error('Failed to fetch schedule debug info');
+    return response.json();
+  },
+
+  getDebugLogs: async (): Promise<any[]> => {
+    const response = await fetch(`${API_URL}/debug/logs`);
+    if (!response.ok) throw new Error('Failed to fetch debug logs');
+    return response.json();
+  },
+
   saveRawState: async (data: any): Promise<void> => {
     const response = await fetch(`${API_URL}/admin/state`, {
       method: 'POST',

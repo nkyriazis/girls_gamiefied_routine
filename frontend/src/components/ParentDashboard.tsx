@@ -209,11 +209,13 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
 
 export const ParentDashboard: React.FC = () => {
     const { users, spendings, flows, lastEvent } = useGame();
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'state'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'state' | 'debug' | 'logs'>('dashboard');
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [nextToastId, setNextToastId] = useState(0);
     const [validationErrors, setValidationErrors] = useState<{ config?: any, state?: any }>({});
     const [db, setDb] = useState<any>(null);
+    const [debugInfo, setDebugInfo] = useState<any>(null);
+    const [logs, setLogs] = useState<any[]>([]);
 
     const showToast = (message: string, type: ToastType = 'info') => {
         const id = nextToastId;
@@ -228,6 +230,22 @@ export const ParentDashboard: React.FC = () => {
     React.useEffect(() => {
         api.getRawData().then(setDb).catch(console.error);
     }, [lastEvent]);
+
+    // Load debug info when tab is active
+    React.useEffect(() => {
+        if (activeTab === 'debug') {
+            api.getScheduleDebug().then(setDebugInfo).catch((err: any) => {
+                console.error(err);
+                showToast('Failed to load debug info', 'error');
+            });
+        }
+        if (activeTab === 'logs') {
+            api.getDebugLogs().then(setLogs).catch((err: any) => {
+                console.error(err);
+                showToast('Failed to load logs', 'error');
+            });
+        }
+    }, [activeTab]);
 
     // Listen for validation errors from WebSocket
     React.useEffect(() => {
@@ -313,6 +331,8 @@ export const ParentDashboard: React.FC = () => {
                     <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
                     <button className={activeTab === 'config' ? 'active' : ''} onClick={() => setActiveTab('config')}>Config (data.json)</button>
                     <button className={activeTab === 'state' ? 'active' : ''} onClick={() => setActiveTab('state')}>State (state.json)</button>
+                    <button className={activeTab === 'debug' ? 'active' : ''} onClick={() => setActiveTab('debug')}>Debug Time</button>
+                    <button className={activeTab === 'logs' ? 'active' : ''} onClick={() => setActiveTab('logs')}>Logs</button>
                 </div>
             </header>
 
@@ -473,6 +493,104 @@ export const ParentDashboard: React.FC = () => {
                             validateFn={api.validateState}
                             schemaUri="/api/admin/schema/state"
                         />
+                    </section>
+                )}
+
+                {activeTab === 'debug' && (
+                    <section className="card full-width">
+                        <h2>Time & Schedule Debug</h2>
+                        <div className="debug-info">
+                            <button onClick={() => api.getScheduleDebug().then(setDebugInfo)}>Refresh</button>
+
+                            {debugInfo ? (
+                                <div className="debug-grid">
+                                    <div className="debug-item">
+                                        <label>Server Time (ISO):</label>
+                                        <code>{debugInfo.serverTime}</code>
+                                    </div>
+                                    <div className="debug-item">
+                                        <label>Server Timezone:</label>
+                                        <code>{debugInfo.timezone}</code>
+                                    </div>
+                                    <div className="debug-item">
+                                        <label>Server Time (Local):</label>
+                                        <code>{debugInfo.serverTimeLocal}</code>
+                                    </div>
+
+                                    <h3>Schedules</h3>
+                                    <table className="debug-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Cron</th>
+                                                <th>Target</th>
+                                                <th>Next Run (ISO)</th>
+                                                <th>Next Run (Local)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {debugInfo.schedules.map((s: any) => (
+                                                <tr key={s.id}>
+                                                    <td>{s.id}</td>
+                                                    <td>{s.cron}</td>
+                                                    <td>{s.targetId}</td>
+                                                    <td>{s.nextRun}</td>
+                                                    <td>{s.nextRunLocal}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p>Loading...</p>
+                            )}
+                        </div>
+                    </section>
+                )}
+
+                {activeTab === 'logs' && (
+                    <section className="card full-width">
+                        <div className="editor-header">
+                            <h2>Server Action Logs</h2>
+                            <button onClick={() => api.getDebugLogs().then(setLogs)}>Refresh</button>
+                        </div>
+                        <div className="logs-container">
+                            <table className="debug-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Type</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {logs.map((log) => (
+                                        <tr key={log.id}>
+                                            <td className="whitespace-nowrap">
+                                                {format(new Date(log.timestamp), 'HH:mm:ss')}
+                                            </td>
+                                            <td>
+                                                <span className={`log-type type-${log.type.split('_')[0].toLowerCase()}`}>
+                                                    {log.type}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <pre className="log-details">
+                                                    {JSON.stringify(log.details, null, 2)}
+                                                </pre>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {logs.length === 0 && (
+                                        <tr>
+                                            <td colSpan={3} style={{ textAlign: 'center', padding: '2rem' }}>
+                                                No logs available
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </section>
                 )}
             </main>
@@ -735,6 +853,73 @@ export const ParentDashboard: React.FC = () => {
         .banner-error button:hover {
           background: rgba(255,255,255,0.3);
         }
+
+        .debug-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .debug-item {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .debug-item label {
+            font-weight: bold;
+            color: #aaa;
+            width: 150px;
+        }
+        
+        .debug-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .debug-table th, .debug-table td {
+            text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .debug-table th {
+            color: #4cc9f0;
+        }
+
+        .logs-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .log-details {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #aaa;
+            white-space: pre-wrap;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .whitespace-nowrap {
+            white-space: nowrap;
+        }
+
+        .log-type {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .type-trigger { background: rgba(76, 201, 240, 0.2); color: #4cc9f0; }
+        .type-schedule { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+        .type-push { background: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+        .type-spend { background: rgba(241, 196, 15, 0.2); color: #f1c40f; }
+        .type-task { background: rgba(230, 126, 34, 0.2); color: #e67e22; }
+        .type-alarm { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
       `}</style>
         </div>
     );

@@ -28,6 +28,7 @@ export const Dashboard: React.FC = () => {
   // Active Routines (triggered by flow)
   const [activeRoutines, setActiveRoutines] = useState<{ userId: string, routineId: string, executionId?: string }[]>([]);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [timeWarning, setTimeWarning] = useState<string | null>(null);
 
   // Refs for state access in callbacks
   const flowsRef = useRef<Flow[]>([]);
@@ -94,6 +95,32 @@ export const Dashboard: React.FC = () => {
       // Clear the URL parameter
       window.history.replaceState({}, '', window.location.pathname);
     }
+  }, []);
+
+  // Check time synchronization
+  useEffect(() => {
+    const checkTime = async () => {
+      try {
+        const debug = await api.getScheduleDebug();
+        const serverTime = new Date(debug.serverTime);
+        const clientTime = new Date();
+        const diff = Math.abs(serverTime.getTime() - clientTime.getTime());
+
+        console.log(`[TimeSync] Server: ${serverTime.toISOString()} | Client: ${clientTime.toISOString()} | Diff: ${diff}ms`);
+
+        // If difference is more than 2 minutes
+        if (diff > 2 * 60 * 1000) {
+          const diffMinutes = Math.round(diff / 60000);
+          const msg = `Time mismatch: Server is ${diffMinutes}m ${serverTime > clientTime ? 'ahead' : 'behind'}`;
+          setTimeWarning(msg);
+          console.warn(`[TimeSync] ${msg}`);
+        }
+      } catch (e) {
+        console.error('Failed to check time sync', e);
+      }
+    };
+
+    checkTime();
   }, []);
 
   // Clock
@@ -196,6 +223,12 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
+      {timeWarning && (
+        <div className="time-warning">
+          ⚠️ {timeWarning}
+        </div>
+      )}
+
       {!hasInteracted && (
         <div className="interaction-overlay" onClick={() => setHasInteracted(true)}>
           <div className="start-btn">Click to Start</div>
@@ -325,6 +358,18 @@ export const Dashboard: React.FC = () => {
         </motion.div>
       )}
 
+      {/* Time Sync Warning */}
+      {timeWarning && (
+        <motion.div
+          className="time-warning"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        >
+          {timeWarning}
+        </motion.div>
+      )}
+
       <style>{`
         .dashboard {
           height: 100vh; /* Fallback */
@@ -411,6 +456,27 @@ export const Dashboard: React.FC = () => {
           font-size: 3rem;
           opacity: 0.7;
           text-transform: capitalize;
+        }
+
+        .time-warning {
+          position: fixed;
+          top: 1rem;
+          left: 1rem;
+          background: rgba(255, 50, 50, 0.9);
+          color: white;
+          padding: 0.75rem 1.25rem;
+          border-radius: 0.5rem;
+          z-index: 2000;
+          font-weight: bold;
+          backdrop-filter: blur(5px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.2);
+          animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+          from { transform: translateY(-100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
 
         @media (max-width: 768px) {

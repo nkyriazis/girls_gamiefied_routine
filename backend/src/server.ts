@@ -29,6 +29,31 @@ const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 // Ensure uploads dir exists
 fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(console.error);
 
+// Action Logging
+interface ActionLog {
+  id: string;
+  timestamp: string;
+  type: string;
+  details: any;
+}
+
+const actionLogs: ActionLog[] = [];
+const MAX_LOGS = 200;
+
+function logAction(type: string, details: any) {
+  const log = {
+    id: randomUUID(),
+    timestamp: new Date().toISOString(),
+    type,
+    details
+  };
+  actionLogs.unshift(log); // Add to beginning
+  if (actionLogs.length > MAX_LOGS) {
+    actionLogs.pop();
+  }
+  console.log(`[ACTION:${type}]`, JSON.stringify(details));
+}
+
 console.log('Using data file:', DATA_FILE);
 console.log('Using state file:', STATE_FILE);
 console.log('Using schema file:', SCHEMA_FILE);
@@ -242,11 +267,12 @@ function broadcast(message: any) {
 }
 
 // Helper to trigger an action (Routine or Flow)
-async function triggerAction(id: string, db: Db) {
+async function triggerAction(id: string, db: Db, source: string = 'unknown') {
   // Try to find RoutineAssignment
   const assignment = db.routineAssignments.find(a => a.id === id);
 
   if (assignment) {
+    logAction('TRIGGER_ROUTINE', { id, userId: assignment.userId, routineId: assignment.routineId, source });
     // Create execution record
     const execution = {
       id: randomUUID(),
@@ -276,6 +302,7 @@ async function triggerAction(id: string, db: Db) {
   const flow = db.flows.find(f => f.id === id);
 
   if (flow) {
+    logAction('TRIGGER_FLOW', { id, flowId: flow.id, source });
     broadcast({
       type: 'FLOW_START',
       payload: {
@@ -287,6 +314,7 @@ async function triggerAction(id: string, db: Db) {
     return { success: true, type: 'flow', id };
   }
 
+  logAction('TRIGGER_FAILED', { id, source, reason: 'Not found' });
   return null;
 }
 
@@ -318,10 +346,12 @@ async function checkSchedules(date: Date) {
 
       if (isMatch) {
         console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
-        await triggerAction(schedule.targetId, db);
+        logAction('SCHEDULE_MATCH', { scheduleId: schedule.id, targetId: schedule.targetId, cron: schedule.cron, time: localTime });
+        await triggerAction(schedule.targetId, db, `schedule:${schedule.id}`);
       }
     } catch (err) {
       console.error(`Error checking schedule ${schedule.id}:`, err);
+      logAction('SCHEDULE_ERROR', { scheduleId: schedule.id, error: (err as Error).message });
     }
   }
 }
@@ -520,6 +550,8 @@ server.post('/api/spendings', async (request, reply) => {
   // Deduct stars
   user.stars -= reward.cost;
 
+  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance: user.stars });
+
   // Create spending record
   const spending: Spending = {
     id: randomUUID(),
@@ -615,6 +647,8 @@ server.post('/api/hooks/push', async (request, reply) => {
       return reply.code(400).send({ error: 'Missing id' });
     }
 
+    logAction('PUSH_HOOK', { id });
+
     const db = await readDb();
 
     // 1. Try to find a schedule for this ID
@@ -640,11 +674,12 @@ server.post('/api/hooks/push', async (request, reply) => {
     // 2. Fallback: Special case for alarm (if not scheduled)
     if (id === 'alarm') {
       broadcast({ type: 'ALARM_START' });
+      logAction('ALARM_MANUAL', { source: 'push' });
       return { success: true, type: 'alarm' };
     }
 
     // 3. Fallback: Try to trigger directly if no schedule exists
-    const result = await triggerAction(id, db);
+    const result = await triggerAction(id, db, 'push_hook');
 
     if (result) {
       return result;
@@ -700,6 +735,8 @@ server.post('/api/executions/:executionId/tasks/:taskId/complete', async (reques
     
     await writeDb(db);
     
+    logAction('TASK_COMPLETE', { executionId, taskId, starsAwarded: starsToAdd, userId: execution.userId });
+
     // Broadcast update
     if (user) {
       broadcast({
@@ -744,6 +781,47 @@ server.post('/api/debug/time', async (request, reply) => {
 
   await checkSchedules(date);
   return { success: true, simulatedTime: date.toISOString() };
+});
+
+// Debug endpoint to check schedule status
+server.get('/api/debug/schedule', async (request, reply) => {
+  const db = await readDb();
+  const timezone = db.settings?.timezone || 'Europe/Athens';
+  const now = new Date();
+  
+  const localTime = DateTime.fromJSDate(now).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
+  
+  const schedules = db.schedules.map((s: any) => {
+    try {
+      const interval = cronParser.CronExpressionParser.parse(s.cron, {
+        currentDate: now,
+        tz: timezone
+      });
+      const next = interval.next().toDate();
+      const nextLocal = DateTime.fromJSDate(next).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
+      
+      return {
+        id: s.id,
+        cron: s.cron,
+        targetId: s.targetId,
+        nextRun: next.toISOString(),
+        nextRunLocal: nextLocal
+      };
+    } catch (e) {
+      return {
+        id: s.id,
+        cron: s.cron,
+        error: (e as Error).message
+      };
+    }
+  });
+
+  return {
+    serverTime: now.toISOString(),
+    timezone,
+    serverTimeLocal: localTime,
+    schedules
+  };
 });
 
 // Admin: Get raw data.json
@@ -846,6 +924,11 @@ server.get('/api/admin/validation-status', async (request, reply) => {
     config: lastConfigError,
     state: lastStateError
   };
+});
+
+// Admin: Get action logs
+server.get('/api/debug/logs', async (request, reply) => {
+  return actionLogs;
 });
 
 // Admin: Get data schema
