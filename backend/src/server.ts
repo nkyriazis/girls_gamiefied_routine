@@ -10,6 +10,7 @@ import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
+import Ajv from 'ajv';
 import { User, Routine, Task, Flow, Reward, Spending } from '../../shared/types';
 
 const pump = util.promisify(pipeline);
@@ -21,6 +22,8 @@ const { DateTime } = require('luxon');
 
 const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
 const STATE_FILE = process.env.STATE_FILE || path.join(process.cwd(), 'state.json');
+const SCHEMA_FILE = path.join(process.cwd(), 'data.schema.json');
+const STATE_SCHEMA_FILE = path.join(process.cwd(), 'state.schema.json');
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
 // Ensure uploads dir exists
@@ -28,7 +31,42 @@ fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(console.error);
 
 console.log('Using data file:', DATA_FILE);
 console.log('Using state file:', STATE_FILE);
+console.log('Using schema file:', SCHEMA_FILE);
+console.log('Using state schema file:', STATE_SCHEMA_FILE);
 console.log('Using uploads dir:', UPLOADS_DIR);
+
+// Initialize JSON schema validator
+// Don't validate formats strictly since we don't have ajv-formats installed
+const ajv = new Ajv({ allErrors: true, validateFormats: false });
+let validateConfig: any = null;
+let validateState: any = null;
+
+// Track validation errors for client reporting
+let lastConfigError: { message: string, errors: any[] } | null = null;
+let lastStateError: { message: string, errors: any[] } | null = null;
+
+// Load schemas at startup
+async function loadSchema() {
+  try {
+    const schemaStr = await fs.readFile(SCHEMA_FILE, 'utf-8');
+    const schema = JSON.parse(schemaStr);
+    validateConfig = ajv.compile(schema);
+    console.log('Config schema loaded successfully');
+  } catch (error) {
+    console.error('Failed to load config schema:', error);
+    console.log('Config validation will be disabled');
+  }
+  
+  try {
+    const stateSchemaStr = await fs.readFile(STATE_SCHEMA_FILE, 'utf-8');
+    const stateSchema = JSON.parse(stateSchemaStr);
+    validateState = ajv.compile(stateSchema);
+    console.log('State schema loaded successfully');
+  } catch (error) {
+    console.error('Failed to load state schema:', error);
+    console.log('State validation will be disabled');
+  }
+}
 
 // In-memory state cache
 let globalState: {
@@ -48,6 +86,33 @@ async function loadState() {
   try {
     const str = await fs.readFile(STATE_FILE, 'utf-8');
     const loaded = JSON.parse(str);
+    
+    // Validate state if validator is available
+    if (validateState) {
+      const valid = validateState(loaded);
+      if (!valid) {
+        console.error('State file validation failed:', validateState.errors);
+        console.log('Starting with empty state due to validation errors');
+        lastStateError = {
+          message: 'State file validation failed on load',
+          errors: validateState.errors
+        };
+        broadcast({
+          type: 'STATE_ERROR',
+          payload: lastStateError
+        });
+        globalState = {
+          userStars: {},
+          routineExecutions: [],
+          taskExecutions: [],
+          spendings: []
+        };
+        return;
+      } else {
+        lastStateError = null; // Clear error on successful load
+      }
+    }
+    
     globalState = {
       userStars: loaded.userStars || {},
       routineExecutions: loaded.routineExecutions || [],
@@ -100,6 +165,22 @@ async function readDb(): Promise<Db> {
     // Read static config fresh every time (allows hot-reloading config)
     const dataStr = await fs.readFile(DATA_FILE, 'utf-8');
     const data = JSON.parse(dataStr);
+
+    // Validate config if validator is available
+    if (validateConfig) {
+      const valid = validateConfig(data);
+      if (!valid) {
+        console.error('Config file validation failed:', validateConfig.errors);
+        broadcast({
+          type: 'CONFIG_ERROR',
+          payload: {
+            message: 'Configuration file validation failed',
+            errors: validateConfig.errors
+          }
+        });
+        throw new Error('Invalid configuration file');
+      }
+    }
 
     // Merge with in-memory state
     const users = data.users.map((u: any) => ({
@@ -670,14 +751,81 @@ server.get('/api/admin/data', async (request, reply) => {
   }
 });
 
+// Admin: Validate config against schema
+server.post('/api/admin/validate', async (request, reply) => {
+  try {
+    const data = request.body;
+    
+    if (!validateConfig) {
+      return reply.code(503).send({ 
+        valid: false, 
+        error: 'Schema validation not available' 
+      });
+    }
+    
+    const valid = validateConfig(data);
+    
+    if (!valid) {
+      return { 
+        valid: false, 
+        errors: validateConfig.errors 
+      };
+    }
+    
+    return { valid: true };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
+  }
+});
+
+// Admin: Validate state against schema
+server.post('/api/admin/validate-state', async (request, reply) => {
+  try {
+    const data = request.body;
+    
+    if (!validateState) {
+      return reply.code(503).send({ 
+        valid: false, 
+        error: 'State schema validation not available' 
+      });
+    }
+    
+    const valid = validateState(data);
+    
+    if (!valid) {
+      return { 
+        valid: false, 
+        errors: validateState.errors 
+      };
+    }
+    
+    return { valid: true };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
+  }
+});
+
 // Admin: Update data.json
 server.post('/api/admin/data', async (request, reply) => {
   try {
     const newData = request.body;
-    // Basic validation: ensure it's valid JSON (Fastify does this)
+    
+    // Validate against schema if available
+    if (validateConfig) {
+      const valid = validateConfig(newData);
+      if (!valid) {
+        return reply.code(400).send({ 
+          error: 'Validation failed', 
+          errors: validateConfig.errors 
+        });
+      }
+    }
     
     await fs.writeFile(DATA_FILE, JSON.stringify(newData, null, 2));
     
+    lastConfigError = null; // Clear error on successful save
     broadcast({ type: 'CONFIG_UPDATED' });
     
     return { success: true };
@@ -685,6 +833,14 @@ server.post('/api/admin/data', async (request, reply) => {
     request.log.error(error);
     return reply.code(500).send({ error: 'Failed to save data file' });
   }
+});
+
+// Admin: Get validation status
+server.get('/api/admin/validation-status', async (request, reply) => {
+  return {
+    config: lastConfigError,
+    state: lastStateError
+  };
 });
 
 // Admin: Get raw state
@@ -696,9 +852,22 @@ server.get('/api/admin/state', async (request, reply) => {
 server.post('/api/admin/state', async (request, reply) => {
   try {
     const newState = request.body as any;
+    
+    // Validate against schema if available
+    if (validateState) {
+      const valid = validateState(newState);
+      if (!valid) {
+        return reply.code(400).send({ 
+          error: 'State validation failed', 
+          errors: validateState.errors 
+        });
+      }
+    }
+    
     globalState = newState;
     scheduleSave();
     
+    lastStateError = null; // Clear error on successful save
     const enrichedSpendings = await getEnrichedSpendings();
 
     broadcast({
@@ -760,6 +929,7 @@ process.on('SIGINT', async () => {
 
 const start = async () => {
   try {
+    await loadSchema();
     await loadState();
     
     // Start the real scheduler (checks every minute)

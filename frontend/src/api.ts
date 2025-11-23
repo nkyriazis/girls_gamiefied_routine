@@ -2,6 +2,19 @@ import type { User, Flow, Reward, Spending } from '@shared/types';
 
 const API_URL = '/api';
 
+export interface ValidationError {
+  instancePath: string;
+  schemaPath: string;
+  keyword: string;
+  params: Record<string, any>;
+  message: string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors?: ValidationError[];
+}
+
 export const api = {
   getUsers: async (): Promise<User[]> => {
     const response = await fetch(`${API_URL}/users`, { cache: 'no-store' });
@@ -107,18 +120,47 @@ export const api = {
     return response.json();
   },
 
+  validateConfig: async (data: any): Promise<ValidationResult> => {
+    const response = await fetch(`${API_URL}/admin/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to validate config');
+    return response.json();
+  },
+
+  validateState: async (data: any): Promise<ValidationResult> => {
+    const response = await fetch(`${API_URL}/admin/validate-state`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to validate state');
+    return response.json();
+  },
+
   saveRawData: async (data: any): Promise<void> => {
     const response = await fetch(`${API_URL}/admin/data`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('Failed to save data');
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to save data');
+    }
   },
 
   getRawState: async (): Promise<any> => {
     const response = await fetch(`${API_URL}/admin/state`);
     if (!response.ok) throw new Error('Failed to fetch state');
+    return response.json();
+  },
+
+  getValidationStatus: async (): Promise<{ config: any, state: any }> => {
+    const response = await fetch(`${API_URL}/admin/validation-status`);
+    if (!response.ok) throw new Error('Failed to fetch validation status');
     return response.json();
   },
 
@@ -128,6 +170,9 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('Failed to save state');
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to save state');
+    }
   }
 };

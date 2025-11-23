@@ -14,54 +14,177 @@ interface Toast {
     type: ToastType;
 }
 
-const JsonEditor = ({ title, loadFn, saveFn, onToast }: {
+const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, validateFn }: {
     title: string,
     loadFn: () => Promise<any>,
     saveFn: (data: any) => Promise<void>,
-    onToast: (message: string, type: ToastType) => void
+    onToast: (message: string, type: ToastType) => void,
+    enableValidation?: boolean,
+    validateFn?: (data: any) => Promise<{ valid: boolean, errors?: any[] }>
 }) => {
     const [json, setJson] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<any[] | null>(null);
+    const [isValidating, setIsValidating] = useState(false);
+    const [liveValidationEnabled, setLiveValidationEnabled] = useState(false);
 
     useEffect(() => {
         loadFn().then(data => setJson(JSON.stringify(data, null, 2)));
     }, []);
 
+    // Live validation on text change (debounced)
+    useEffect(() => {
+        if (!enableValidation || !validateFn || !liveValidationEnabled) return;
+        
+        const timer = setTimeout(async () => {
+            try {
+                const parsed = JSON.parse(json);
+                const result = await validateFn(parsed);
+                
+                if (result.valid) {
+                    setValidationErrors(null);
+                    setError(null);
+                } else {
+                    setValidationErrors(result.errors || []);
+                    setError('Validation errors detected');
+                }
+            } catch (err) {
+                // JSON parse error - don't show validation errors yet
+                setError('Invalid JSON syntax');
+                setValidationErrors(null);
+            }
+        }, 1000); // 1 second debounce
+
+        return () => clearTimeout(timer);
+    }, [json, enableValidation, validateFn, liveValidationEnabled]);
+
+    const handleValidate = async () => {
+        if (!validateFn) return;
+        try {
+            setIsValidating(true);
+            const parsed = JSON.parse(json);
+            const result = await validateFn(parsed);
+            
+            if (result.valid) {
+                setValidationErrors(null);
+                setError(null);
+                onToast('✓ Valid configuration', 'success');
+            } else {
+                setValidationErrors(result.errors || []);
+                setError('Validation failed - see errors below');
+            }
+        } catch (err) {
+            setError((err as Error).message);
+            setValidationErrors(null);
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
     const handleSave = async () => {
         try {
             const parsed = JSON.parse(json);
+            
+            // Auto-validate before save if validation is enabled
+            if (enableValidation && validateFn) {
+                const result = await validateFn(parsed);
+                if (!result.valid) {
+                    setValidationErrors(result.errors || []);
+                    setError('Cannot save: Validation failed');
+                    onToast('Cannot save invalid configuration', 'error');
+                    return;
+                }
+            }
+            
             await saveFn(parsed);
             setError(null);
+            setValidationErrors(null);
             onToast('Saved!', 'success');
         } catch (err) {
-            setError((err as Error).message);
+            const message = (err as Error).message;
+            setError(message);
+            
+            // Try to parse validation errors from backend response
+            if (message.includes('Validation failed')) {
+                onToast('Validation failed - check errors below', 'error');
+            }
         }
+    };
+
+    const formatValidationError = (err: any) => {
+        const path = err.instancePath || '/';
+        const message = err.message || 'Unknown error';
+        const params = err.params ? ` (${JSON.stringify(err.params)})` : '';
+        return `${path}: ${message}${params}`;
     };
 
     return (
         <div className="json-editor">
-            <h3>{title}</h3>
+            <div className="editor-header">
+                <h3>{title}</h3>
+                {enableValidation && (
+                    <label className="live-validation-toggle">
+                        <input 
+                            type="checkbox" 
+                            checked={liveValidationEnabled}
+                            onChange={e => setLiveValidationEnabled(e.target.checked)}
+                        />
+                        <span>Live validation</span>
+                    </label>
+                )}
+            </div>
             <textarea
                 value={json}
                 onChange={e => setJson(e.target.value)}
                 spellCheck={false}
             />
             {error && <div className="error">{error}</div>}
-            <button onClick={handleSave}>Save {title}</button>
+            {validationErrors && validationErrors.length > 0 && (
+                <div className="validation-errors">
+                    <strong>Validation Errors ({validationErrors.length}):</strong>
+                    <ul>
+                        {validationErrors.map((err, idx) => (
+                            <li key={idx}>{formatValidationError(err)}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+            <div className="button-group">
+                {enableValidation && (
+                    <button onClick={handleValidate} disabled={isValidating} className="secondary">
+                        {isValidating ? 'Validating...' : 'Validate'}
+                    </button>
+                )}
+                <button onClick={handleSave}>Save {title}</button>
+            </div>
             <style>{`
         .json-editor { display: flex; flex-direction: column; gap: 1rem; height: 500px; }
+        .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .editor-header h3 { margin: 0; }
+        .live-validation-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; user-select: none; }
+        .live-validation-toggle input[type="checkbox"] { cursor: pointer; }
+        .live-validation-toggle span { color: #aaa; }
         textarea { flex: 1; background: #111; color: #0f0; font-family: monospace; padding: 1rem; border: 1px solid #333; }
-        .error { color: red; }
+        .error { color: red; font-weight: bold; padding: 0.5rem; background: rgba(255, 0, 0, 0.1); border-radius: 4px; }
+        .validation-errors { color: orange; padding: 0.5rem; background: rgba(255, 165, 0, 0.1); border-radius: 4px; max-height: 200px; overflow-y: auto; }
+        .validation-errors ul { margin: 0.5rem 0 0 1.5rem; padding: 0; }
+        .validation-errors li { margin: 0.25rem 0; font-family: monospace; font-size: 0.9em; }
+        .button-group { display: flex; gap: 0.5rem; }
+        .button-group button { flex: 1; }
+        .button-group button.secondary { background: #444; }
+        .button-group button.secondary:hover { background: #555; }
+        .button-group button:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
         </div>
     );
 };
 
 export const ParentDashboard: React.FC = () => {
-    const { users, spendings, flows } = useGame();
+    const { users, spendings, flows, lastEvent } = useGame();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'state'>('dashboard');
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [nextToastId, setNextToastId] = useState(0);
+    const [validationErrors, setValidationErrors] = useState<{ config?: any, state?: any }>({});
 
     const showToast = (message: string, type: ToastType = 'info') => {
         const id = nextToastId;
@@ -71,6 +194,19 @@ export const ParentDashboard: React.FC = () => {
             setToasts(prev => prev.filter(t => t.id !== id));
         }, 3000);
     };
+
+    // Listen for validation errors from WebSocket
+    React.useEffect(() => {
+        if (lastEvent?.type === 'CONFIG_ERROR') {
+            showToast('⚠️ Config validation error detected!', 'error');
+            setValidationErrors(prev => ({ ...prev, config: lastEvent.payload }));
+        } else if (lastEvent?.type === 'STATE_ERROR') {
+            showToast('⚠️ State validation error detected!', 'error');
+            setValidationErrors(prev => ({ ...prev, state: lastEvent.payload }));
+        } else if (lastEvent?.type === 'CONFIG_UPDATED') {
+            setValidationErrors(prev => ({ ...prev, config: null }));
+        }
+    }, [lastEvent]);
 
     const handleMarkDone = async (id: string) => {
         try {
@@ -145,6 +281,26 @@ export const ParentDashboard: React.FC = () => {
                     <button className={activeTab === 'state' ? 'active' : ''} onClick={() => setActiveTab('state')}>State (state.json)</button>
                 </div>
             </header>
+
+            {(validationErrors.config || validationErrors.state) && (
+                <div className="validation-banner">
+                    <div className="banner-icon">⚠️</div>
+                    <div className="banner-content">
+                        {validationErrors.config && (
+                            <div className="banner-error">
+                                <strong>Config Validation Error:</strong> {validationErrors.config.message}
+                                <button onClick={() => setValidationErrors(prev => ({ ...prev, config: null }))}>Dismiss</button>
+                            </div>
+                        )}
+                        {validationErrors.state && (
+                            <div className="banner-error">
+                                <strong>State Validation Error:</strong> {validationErrors.state.message}
+                                <button onClick={() => setValidationErrors(prev => ({ ...prev, state: null }))}>Dismiss</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <main>
                 {activeTab === 'dashboard' && (
@@ -243,6 +399,8 @@ export const ParentDashboard: React.FC = () => {
                             loadFn={api.getRawData}
                             saveFn={api.saveRawData}
                             onToast={showToast}
+                            enableValidation={true}
+                            validateFn={api.validateConfig}
                         />
                     </section>
                 )}
@@ -254,6 +412,8 @@ export const ParentDashboard: React.FC = () => {
                             loadFn={api.getRawState}
                             saveFn={api.saveRawState}
                             onToast={showToast}
+                            enableValidation={true}
+                            validateFn={api.validateState}
                         />
                     </section>
                 )}
@@ -449,6 +609,55 @@ export const ParentDashboard: React.FC = () => {
         .toast-info {
           background: #3498db;
           color: white;
+        }
+
+        .validation-banner {
+          background: #ff6b6b;
+          border-left: 4px solid #c92a2a;
+          padding: 1rem;
+          margin: 0 2rem 1rem 2rem;
+          border-radius: 4px;
+          display: flex;
+          gap: 1rem;
+          align-items: flex-start;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .banner-icon {
+          font-size: 1.5rem;
+          flex-shrink: 0;
+        }
+
+        .banner-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .banner-error {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .banner-error strong {
+          font-weight: 600;
+        }
+
+        .banner-error button {
+          background: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.3);
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.85rem;
+        }
+
+        .banner-error button:hover {
+          background: rgba(255,255,255,0.3);
         }
       `}</style>
         </div>

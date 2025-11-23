@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "State Schema",
+  "description": "Schema for state.json runtime state file",
+  "type": "object",
+  "required": ["userStars", "routineExecutions", "taskExecutions", "spendings"],
+  "additionalProperties": false,
+  "properties": {
+    "userStars": {
+      "type": "object",
+      "description": "Map of user IDs to their current star balance",
+      "patternProperties": {
+        "^[a-zA-Z0-9-_]+$": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Star balance for user"
+        }
+      },
+      "additionalProperties": false
+    },
+    "routineExecutions": {
+      "type": "array",
+      "description": "History of routine execution sessions",
+      "items": {
+        "type": "object",
+        "required": ["id", "userId", "routineId", "startedAt", "totalStars"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "description": "UUID of the execution"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Reference to user ID"
+          },
+          "routineId": {
+            "type": "string",
+            "description": "Reference to routine ID"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp when routine started"
+          },
+          "totalStars": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total stars earned in this routine"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp when routine completed"
+          }
+        }
+      }
+    },
+    "taskExecutions": {
+      "type": "array",
+      "description": "History of individual task completions",
+      "items": {
+        "type": "object",
+        "required": ["id", "executionId", "taskId", "duration", "isOnTime", "completedAt"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "description": "UUID of the task execution"
+          },
+          "executionId": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "description": "Reference to routine execution ID"
+          },
+          "taskId": {
+            "type": "string",
+            "description": "Reference to task ID"
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Time taken in seconds"
+          },
+          "isOnTime": {
+            "type": "boolean",
+            "description": "Whether task was completed within time limit"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp when task completed"
+          }
+        }
+      }
+    },
+    "spendings": {
+      "type": "array",
+      "description": "History of reward redemptions",
+      "items": {
+        "type": "object",
+        "required": ["id", "userId", "rewardId", "cost", "createdAt", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "description": "UUID of the spending"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Reference to user ID"
+          },
+          "rewardId": {
+            "type": "string",
+            "description": "Reference to reward ID"
+          },
+          "cost": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Star cost of the reward"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp when reward was requested"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "done", "revoked"],
+            "description": "Current status of the spending"
+          }
+        }
+      }
+    }
+  }
+}

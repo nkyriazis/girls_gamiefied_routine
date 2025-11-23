@@ -113,6 +113,12 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
                     } else if (message.type === 'CONFIG_UPDATED') {
                         console.log('Config updated, reloading...');
                         refreshData();
+                    } else if (message.type === 'CONFIG_ERROR') {
+                        console.error('Config validation error:', message.payload);
+                        // Error will be passed to subscribers via lastEvent
+                    } else if (message.type === 'STATE_ERROR') {
+                        console.error('State validation error:', message.payload);
+                        // Error will be passed to subscribers via lastEvent
                     }
 
                     // Pass all events to subscribers via lastEvent

@@ -13,6 +13,8 @@ COPY backend/package*.json ./
 RUN npm install --production
 COPY --from=builder /app/backend/dist ./dist
 COPY backend/data.json ./
+COPY backend/data.schema.json ./
+COPY backend/state.schema.json ./
 # state.json will be mounted
 EXPOSE 3000
 CMD ["npm", "start"]
