@@ -4,6 +4,7 @@ services:
     image: ghcr.io/nkyriazis/routine-backend:latest
     volumes:
       - ./backend:/data
+      - ./backend/uploads:/app/uploads
     environment:
       - DATA_FILE=/data/data.json
       - STATE_FILE=/data/state.json

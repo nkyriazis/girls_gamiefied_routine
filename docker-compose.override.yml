@@ -5,6 +5,7 @@ services:
       dockerfile: backend/Dockerfile
     volumes:
       - ./backend:/data
+      - ./backend/uploads:/app/uploads
     environment:
       - DATA_FILE=/data/data.json
       - STATE_FILE=/data/state.json
