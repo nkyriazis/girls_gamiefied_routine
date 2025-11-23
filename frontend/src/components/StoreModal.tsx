@@ -18,6 +18,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   const { playClick, playSuccess } = useAppSounds();
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   const [justPurchased, setJustPurchased] = useState<{ reward: Reward; cost: number } | null>(null);
+  const [showActivity, setShowActivity] = useState(false);
 
   const mySpendings = spendings.filter((s) => s.userId === user.id);
   const pendingSpendings = mySpendings.filter(s => s.status === 'pending');
@@ -48,13 +49,14 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   };
 
   return (
-    <motion.div
-      className="store-overlay"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-    >
+    <>
+      <motion.div
+        className="store-overlay"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      >
       <AnimatePresence>
         {justPurchased && (
           <motion.div
@@ -91,7 +93,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
         onClick={e => e.stopPropagation()}
       >
         <div className="store-header">
-          <h2>Κατάστημα του {user.name}</h2>
+          <h2>{user.name}</h2>
           <motion.div
             className="user-balance"
             key={user.stars}
@@ -105,7 +107,17 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
         <div className="store-content">
           <div className="rewards-section">
-            <h3>Εξαργύρωση</h3>
+            <div className="rewards-header">
+              <h3>Εξαργύρωση</h3>
+              {mySpendings.length > 0 && (
+                <button 
+                  className="activity-toggle-btn"
+                  onClick={() => setShowActivity(!showActivity)}
+                >
+                  📋 Δραστηριότητα ({mySpendings.length})
+                </button>
+              )}
+            </div>
             <div className="rewards-grid">
               {rewards.map(reward => {
                 const canAfford = user.stars >= reward.cost;
@@ -142,58 +154,84 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
               })}
             </div>
           </div>
-
-          <div className="pending-section">
-            <h3>Δραστηριότητα</h3>
-
-            {mySpendings.length === 0 && (
-              <div className="empty-state">Καμία δραστηριότητα</div>
-            )}
-
-            {pendingSpendings.length > 0 && (
-              <div className="pending-list">
-                {pendingSpendings.map(spending => (
-                  <div key={spending.id} className="pending-item">
-                    <div className="pending-icon">
-                      <SmartIcon value={spending.reward?.icon || '❓'} />
-                    </div>
-                    <div className="pending-info">
-                      <span className="pending-title">{spending.reward?.title}</span>
-                      <span className="pending-date">
-                        {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
-                      </span>
-                    </div>
-                    <div className="pending-status">⏳</div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {historySpendings.length > 0 && (
-              <>
-                <h4 style={{ marginTop: '1rem', opacity: 0.7, margin: '1rem 0 0.5rem 0' }}>Ιστορικό</h4>
-                <div className="pending-list history">
-                  {historySpendings.slice(0, 5).map(spending => (
-                    <div key={spending.id} className="pending-item done">
-                      <div className="pending-icon">
-                        <SmartIcon value={spending.reward?.icon || '❓'} />
-                      </div>
-                      <div className="pending-info">
-                        <span className="pending-title">{spending.reward?.title}</span>
-                        <span className="pending-date">
-                          {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
-                        </span>
-                      </div>
-                      <div className="pending-status">✅</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
         </div>
 
         <button className="close-btn" onClick={onClose}>Κλείσιμο</button>
+      </motion.div>
+
+      {/* Activity Popup */}
+      <AnimatePresence>
+        {showActivity && (
+          <motion.div
+            className="activity-popup-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowActivity(false)}
+          >
+            <motion.div
+              className="activity-popup"
+              initial={{ scale: 0.8, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 50 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="activity-popup-header">
+                <h3>Δραστηριότητα</h3>
+                <button className="popup-close-btn" onClick={() => setShowActivity(false)}>✕</button>
+              </div>
+
+              {mySpendings.length === 0 && (
+                <div className="empty-state">Καμία δραστηριότητα</div>
+              )}
+
+              {pendingSpendings.length > 0 && (
+                <>
+                  <h4>Σε εκκρεμότητα</h4>
+                  <div className="pending-list">
+                    {pendingSpendings.map(spending => (
+                      <div key={spending.id} className="pending-item">
+                        <div className="pending-icon">
+                          <SmartIcon value={spending.reward?.icon || '❓'} />
+                        </div>
+                        <div className="pending-info">
+                          <span className="pending-title">{spending.reward?.title}</span>
+                          <span className="pending-date">
+                            {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
+                          </span>
+                        </div>
+                        <div className="pending-status">⏳</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {historySpendings.length > 0 && (
+                <>
+                  <h4 style={{ marginTop: '1.5rem' }}>Ιστορικό</h4>
+                  <div className="pending-list history">
+                    {historySpendings.slice(0, 10).map(spending => (
+                      <div key={spending.id} className="pending-item done">
+                        <div className="pending-icon">
+                          <SmartIcon value={spending.reward?.icon || '❓'} />
+                        </div>
+                        <div className="pending-info">
+                          <span className="pending-title">{spending.reward?.title}</span>
+                          <span className="pending-date">
+                            {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
+                          </span>
+                        </div>
+                        <div className="pending-status">✅</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       </motion.div>
 
       <style>{`
@@ -258,6 +296,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           flex-direction: column;
           gap: 1.5rem;
           max-height: 90vh;
+          overflow: hidden;
         }
 
         .store-header {
@@ -284,29 +323,101 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
         .store-content {
           display: flex;
-          gap: 2rem;
+          flex-direction: column;
           overflow: hidden;
           flex: 1;
         }
 
         .rewards-section {
-          flex: 2;
+          flex: 1;
           display: flex;
           flex-direction: column;
           gap: 1rem;
           overflow: hidden;
         }
 
-        .pending-section {
-          flex: 1;
+        .rewards-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .activity-toggle-btn {
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .activity-toggle-btn:hover {
+          background: rgba(255,255,255,0.2);
+        }
+
+        .activity-popup-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          z-index: 3000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .activity-popup {
+          background: #2a2a4a;
+          width: 90%;
+          max-width: 500px;
+          max-height: 80vh;
+          border-radius: 1.5rem;
+          padding: 1.5rem;
+          border: 2px solid rgba(255,255,255,0.1);
+          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
           display: flex;
           flex-direction: column;
           gap: 1rem;
-          background: rgba(0,0,0,0.2);
-          border-radius: 1rem;
-          padding: 1rem;
-          min-width: 250px;
           overflow: hidden;
+        }
+
+        .activity-popup-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          padding-bottom: 0.75rem;
+        }
+
+        .activity-popup-header h3 {
+          margin: 0;
+        }
+
+        .popup-close-btn {
+          background: transparent;
+          border: none;
+          color: white;
+          font-size: 1.5rem;
+          cursor: pointer;
+          padding: 0.25rem 0.5rem;
+          line-height: 1;
+          opacity: 0.7;
+          transition: opacity 0.2s;
+        }
+
+        .popup-close-btn:hover {
+          opacity: 1;
+        }
+
+        .activity-popup h4 {
+          margin: 0;
+          font-size: 0.9rem;
+          opacity: 0.7;
+          letter-spacing: 0.5px;
         }
 
         .empty-state {
@@ -320,7 +431,6 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           margin: 0;
           font-size: 1.1rem;
           opacity: 0.8;
-          text-transform: uppercase;
           letter-spacing: 1px;
         }
 
@@ -443,14 +553,20 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
         }
 
         @media (max-width: 768px) {
-          .store-content {
-            flex-direction: column;
+          .store-card {
+            width: 95%;
+            padding: 1.5rem;
           }
-          .pending-section {
-            max-height: 200px;
+          .rewards-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+          }
+          .activity-popup {
+            width: 95%;
+            max-height: 85vh;
           }
         }
       `}</style>
-    </motion.div>
+    </>
   );
 };
