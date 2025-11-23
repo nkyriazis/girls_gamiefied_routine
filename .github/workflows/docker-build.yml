@@ -42,9 +42,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_PREFIX }}/routine-backend
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push backend
         uses: docker/build-push-action@v5
@@ -64,9 +62,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_PREFIX }}/routine-frontend
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push frontend
         uses: docker/build-push-action@v5
