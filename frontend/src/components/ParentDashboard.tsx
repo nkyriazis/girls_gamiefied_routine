@@ -213,6 +213,7 @@ export const ParentDashboard: React.FC = () => {
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [nextToastId, setNextToastId] = useState(0);
     const [validationErrors, setValidationErrors] = useState<{ config?: any, state?: any }>({});
+    const [db, setDb] = useState<any>(null);
 
     const showToast = (message: string, type: ToastType = 'info') => {
         const id = nextToastId;
@@ -222,6 +223,11 @@ export const ParentDashboard: React.FC = () => {
             setToasts(prev => prev.filter(t => t.id !== id));
         }, 3000);
     };
+
+    // Load full database for trigger list
+    React.useEffect(() => {
+        api.getRawData().then(setDb).catch(console.error);
+    }, [lastEvent]);
 
     // Listen for validation errors from WebSocket
     React.useEffect(() => {
@@ -403,19 +409,41 @@ export const ParentDashboard: React.FC = () => {
                         </section>
 
                         <section className="card">
-                            <h2>Trigger Routines (Test)</h2>
-                            <div className="trigger-list">
-                                {flows.map(f => (
-                                    <button key={f.id} onClick={() => handleTrigger(f.id)}>
-                                        Start Flow: {f.id}
-                                    </button>
-                                ))}
-                                {users.map(u => u.routines.map((r: any) => (
-                                    <button key={r.id} onClick={() => handleTrigger(r.id)}>
-                                        Start {u.name}: {r.title}
-                                    </button>
-                                )))}
-                            </div>
+                            <h2>Trigger Actions (Test)</h2>
+                            {!db ? (
+                                <p className="empty">Loading...</p>
+                            ) : (
+                                <div className="trigger-list">
+                                    <div className="trigger-section">
+                                        <h3>Schedules</h3>
+                                        {db.schedules?.map((s: any) => (
+                                            <button key={s.id} onClick={() => handleTrigger(s.targetId)}>
+                                                📅 {s.id} ({s.cron})
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="trigger-section">
+                                        <h3>Flows</h3>
+                                        {flows.map(f => (
+                                            <button key={f.id} onClick={() => handleTrigger(f.id)}>
+                                                🔄 {f.id}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="trigger-section">
+                                        <h3>Routine Assignments</h3>
+                                        {db.routineAssignments?.map((ra: any) => {
+                                            const user = users.find(u => u.id === ra.userId);
+                                            const routine = db.routines?.find((r: any) => r.id === ra.routineId);
+                                            return (
+                                                <button key={ra.id} onClick={() => handleTrigger(ra.id)}>
+                                                    👤 {user?.name}: {routine?.title || ra.routineId}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </section>
                     </>
                 )}
@@ -598,8 +626,27 @@ export const ParentDashboard: React.FC = () => {
 
         .trigger-list {
           display: flex;
-          flex-wrap: wrap;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .trigger-section h3 {
+          margin: 0 0 0.5rem 0;
+          font-size: 1rem;
+          opacity: 0.7;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .trigger-section {
+          display: flex;
+          flex-direction: column;
           gap: 0.5rem;
+        }
+
+        .trigger-section button {
+          justify-content: flex-start;
+          text-align: left;
         }
 
         .empty {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type Flow } from '@shared/types';
+import { type Flow, type FlowInstance } from '@shared/types';
 import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
@@ -22,9 +22,8 @@ export const Dashboard: React.FC = () => {
   const [storeUserId, setStoreUserId] = useState<string | null>(null);
   const storeUser = users.find(u => u.id === storeUserId) || null;
 
-  // Flow State
-  const [activeFlow, setActiveFlow] = useState<Flow | null>(null);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  // Flow State - supports multiple simultaneous flows
+  const [activeFlows, setActiveFlows] = useState<FlowInstance[]>([]);
 
   // Active Routines (triggered by flow)
   const [activeRoutines, setActiveRoutines] = useState<{ userId: string, routineId: string, executionId?: string }[]>([]);
@@ -50,8 +49,11 @@ export const Dashboard: React.FC = () => {
         triggerTime: '',
         steps: [{ type: 'alarm' as const, props: { sound: 'melody' } }]
       };
-      setActiveFlow(alarmFlow as any);
-      setCurrentStepIndex(0);
+      setActiveFlows(prev => {
+        // Prevent duplicates - remove any existing flow with this ID
+        const filtered = prev.filter(f => f.flowId !== 'temp-alarm');
+        return [...filtered, { flowId: 'temp-alarm', flow: alarmFlow as any, stepIndex: 0 }];
+      });
     } else if (type === 'ROUTINE_START') {
       const { userId, routineId, executionId } = payload;
       setActiveRoutines(prev => {
@@ -63,8 +65,23 @@ export const Dashboard: React.FC = () => {
       const { flowId, steps } = payload;
       // Use ref to get latest flows
       const flow = flowsRef.current.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
-      setActiveFlow(flow);
-      setCurrentStepIndex(0);
+      setActiveFlows(prev => {
+        // Prevent duplicates - remove any existing flow with this ID
+        const filtered = prev.filter(f => f.flowId !== flowId);
+        return [...filtered, { flowId, flow, stepIndex: 0 }];
+      });
+
+      // Execute the first step if it's a parallel step
+      const firstStep = steps[0];
+      if (firstStep && firstStep.type === 'parallel' && firstStep.actions) {
+        firstStep.actions.forEach((a: any) => {
+          if (a.type === 'routine') {
+            api.pushNow(a.routineId).catch(console.error);
+          } else if (a.type === 'flow') {
+            api.pushNow(a.flowId).catch(console.error);
+          }
+        });
+      }
     }
   }, [lastEvent]);
 
@@ -88,28 +105,38 @@ export const Dashboard: React.FC = () => {
   // Flow Trigger Logic (Test Mode: Trigger after 3s) - REMOVED
   // Real implementation will listen to WebSockets or manual triggers
 
-  const handleStepComplete = () => {
-    if (!activeFlow) return;
+  const handleStepComplete = (flowId: string) => {
+    setActiveFlows(prev => {
+      const flowInstance = prev.find(f => f.flowId === flowId);
+      if (!flowInstance) return prev;
 
-    const nextIndex = currentStepIndex + 1;
-    if (nextIndex < activeFlow.steps.length) {
-      setCurrentStepIndex(nextIndex);
+      const nextIndex = flowInstance.stepIndex + 1;
+      if (nextIndex < flowInstance.flow.steps.length) {
+        // Advance to next step
+        const updatedFlows = prev.map(f =>
+          f.flowId === flowId ? { ...f, stepIndex: nextIndex } : f
+        );
 
-      // Execute next step actions if it's a parallel routine step
-      const nextStep = activeFlow.steps[nextIndex];
-      if (nextStep.type === 'parallel' && nextStep.actions) {
-        nextStep.actions
-          .filter(a => a.type === 'routine')
-          .forEach(a => {
-            // Push the routine assignment ID to trigger it
-            api.pushNow(a.routineId).catch(console.error);
+        // Execute next step actions if it's a parallel step
+        const nextStep = flowInstance.flow.steps[nextIndex];
+        if (nextStep.type === 'parallel' && nextStep.actions) {
+          nextStep.actions.forEach(a => {
+            if (a.type === 'routine') {
+              // Push the routine assignment ID to trigger it
+              api.pushNow(a.routineId).catch(console.error);
+            } else if (a.type === 'flow') {
+              // Push the flow ID to trigger it
+              api.pushNow(a.flowId).catch(console.error);
+            }
           });
+        }
+
+        return updatedFlows;
+      } else {
+        // Flow Complete - remove from array
+        return prev.filter(f => f.flowId !== flowId);
       }
-    } else {
-      // Flow Complete
-      setActiveFlow(null);
-      setCurrentStepIndex(0);
-    }
+    });
   };
 
   const handleRoutineExit = (userId: string) => {
@@ -120,11 +147,10 @@ export const Dashboard: React.FC = () => {
     handleRoutineExit(userId);
   };
 
-  // Determine View Mode
-  const activeCount = activeRoutines.length;
-  const viewMode = activeCount === 0 ? 'IDLE' : activeCount === 1 ? 'SINGLE' : activeCount === 2 ? 'DUAL' : 'GRID';
-
-  const currentStep = activeFlow?.steps[currentStepIndex];
+  // Determine View Mode - count both alarms and routines
+  const activeAlarms = activeFlows.filter(af => af.flow.steps[af.stepIndex]?.type === 'alarm');
+  const totalActiveCount = activeAlarms.length + activeRoutines.length;
+  const viewMode = totalActiveCount === 0 ? 'IDLE' : totalActiveCount === 1 ? 'SINGLE' : totalActiveCount === 2 ? 'DUAL' : 'GRID';
 
   return (
     <div className="dashboard">
@@ -133,12 +159,6 @@ export const Dashboard: React.FC = () => {
           <div className="start-btn">Click to Start</div>
         </div>
       )}
-
-      <AnimatePresence>
-        {activeFlow && currentStep?.type === 'alarm' && (
-          <GlobalAlarm onDismiss={handleStepComplete} />
-        )}
-      </AnimatePresence>
 
       <AnimatePresence>
         {storeUser && (
@@ -157,7 +177,7 @@ export const Dashboard: React.FC = () => {
       {/* Main Stage */}
       <div className={`stage ${viewMode.toLowerCase()}`}>
         <AnimatePresence>
-          {activeCount === 0 && (
+          {totalActiveCount === 0 && (
             <motion.div
               className="clock-container"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -173,6 +193,23 @@ export const Dashboard: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Active Alarms - rendered inline in stage */}
+        {activeAlarms.map((af) => (
+          <motion.div
+            key={`alarm-${af.flowId}`}
+            className="routine-slot"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: "spring", bounce: 0.3 }}
+          >
+            <GlobalAlarm
+              flowId={af.flowId}
+              onDismiss={handleStepComplete}
+            />
+          </motion.div>
+        ))}
 
         {/* Active Routines Grid */}
         {activeRoutines.map((ar) => {
@@ -217,7 +254,7 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* Dock (Inactive Users) */}
-      {activeCount === 0 && (
+      {totalActiveCount === 0 && (
         <motion.div
           className="dock"
           initial={{ y: 100 }}

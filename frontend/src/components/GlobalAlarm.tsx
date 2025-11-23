@@ -3,10 +3,11 @@ import { motion } from 'framer-motion';
 import { useAppSounds } from '../hooks/useAppSounds';
 
 interface GlobalAlarmProps {
-  onDismiss: () => void;
+  flowId: string;
+  onDismiss: (flowId: string) => void;
 }
 
-export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ onDismiss }) => {
+export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, onDismiss }) => {
   const { playWakeUpLoop, stopWakeUpLoop, playClick } = useAppSounds();
 
   useEffect(() => {
@@ -16,25 +17,20 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ onDismiss }) => {
 
   const handleDismiss = () => {
     playClick();
-    onDismiss();
+    onDismiss(flowId);
   };
 
   return (
-    <motion.div 
-      className="global-alarm-overlay"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <motion.div 
+    <div className="global-alarm-container">
+      <motion.div
         className="alarm-content"
         initial={{ scale: 0.8 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", bounce: 0.5 }}
       >
-        <motion.div 
+        <motion.div
           className="alarm-icon"
-          animate={{ 
+          animate={{
             rotate: [0, -10, 10, -10, 10, 0],
             scale: [1, 1.1, 1, 1.1, 1]
           }}
@@ -42,9 +38,9 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ onDismiss }) => {
         >
           ⏰
         </motion.div>
-        
+
         <h1>Ώρα για ξύπνημα!</h1>
-        <p>Καλημέρα κορίτσια! ☀️</p>
+        <p>Καλημέρα! ☀️</p>
 
         <button className="btn-dismiss-global" onClick={handleDismiss}>
           Ξυπνήσαμε!
@@ -52,19 +48,22 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ onDismiss }) => {
       </motion.div>
 
       <style>{`
-        .global-alarm-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background: rgba(0,0,0,0.9);
-          backdrop-filter: blur(10px);
-          z-index: 1000;
+        .global-alarm-container {
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #ff0055, #ff5500, #ffa500);
+          border-radius: 2rem;
           display: flex;
           align-items: center;
           justify-content: center;
           color: white;
+          box-shadow: 0 0 40px rgba(255, 0, 85, 0.6);
+          animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+          0%, 100% { box-shadow: 0 0 40px rgba(255, 0, 85, 0.6); }
+          50% { box-shadow: 0 0 80px rgba(255, 0, 85, 0.9); }
         }
 
         .alarm-content {
@@ -72,43 +71,67 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ onDismiss }) => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 2rem;
+          gap: 1.5rem;
+          padding: 2rem;
         }
 
         .alarm-icon {
-          font-size: 10rem;
-          filter: drop-shadow(0 0 30px gold);
+          font-size: 8rem;
+          filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
         }
 
-        h1 {
-          font-size: 5rem;
+        .global-alarm-container h1 {
+          font-size: 3.5rem;
           margin: 0;
-          text-shadow: 0 0 20px rgba(255,255,255,0.5);
+          text-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+          font-weight: 900;
         }
 
-        p {
-          font-size: 2rem;
-          opacity: 0.8;
+        .global-alarm-container p {
+          font-size: 1.8rem;
+          opacity: 0.9;
+          margin: 0;
         }
 
         .btn-dismiss-global {
-          background: linear-gradient(45deg, #ff0055, #ff5500);
-          color: white;
-          font-size: 2.5rem;
-          padding: 1.5rem 5rem;
-          border-radius: 3rem;
+          background: rgba(255, 255, 255, 0.95);
+          color: #ff0055;
+          font-size: 2rem;
+          padding: 1.2rem 3.5rem;
+          border-radius: 2.5rem;
           font-weight: 900;
           border: none;
-          box-shadow: 0 0 50px rgba(255, 0, 85, 0.5);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
           cursor: pointer;
-          transition: transform 0.1s;
-          margin-top: 2rem;
+          transition: all 0.2s;
+          margin-top: 1rem;
+        }
+
+        .btn-dismiss-global:hover {
+          transform: scale(1.05);
+          box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
         }
 
         .btn-dismiss-global:active {
           transform: scale(0.95);
         }
+
+        @media (max-width: 768px) {
+          .alarm-icon {
+            font-size: 5rem;
+          }
+          .global-alarm-container h1 {
+            font-size: 2.5rem;
+          }
+          .global-alarm-container p {
+            font-size: 1.3rem;
+          }
+          .btn-dismiss-global {
+            font-size: 1.5rem;
+            padding: 1rem 2.5rem;
+          }
+        }
       `}</style>
-    </motion.div>
+    </div>
   );
 };

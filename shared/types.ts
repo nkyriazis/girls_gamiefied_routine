@@ -32,7 +32,8 @@ export interface User {
 }
 
 export type FlowAction = 
-  | { type: 'routine'; userId: string; routineId: string };
+  | { type: 'routine'; userId: string; routineId: string }
+  | { type: 'flow'; flowId: string };
 
 export type FlowStep = 
   | { type: 'alarm'; props: { sound: string } }
@@ -43,6 +44,12 @@ export interface Flow {
   id: string;
   triggerTime: string;
   steps: FlowStep[];
+}
+
+export interface FlowInstance {
+  flowId: string;
+  flow: Flow;
+  stepIndex: number;
 }
 
 export interface Reward {

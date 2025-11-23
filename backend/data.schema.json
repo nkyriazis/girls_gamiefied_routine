@@ -256,23 +256,42 @@
                       "type": "array",
                       "minItems": 1,
                       "items": {
-                        "type": "object",
-                        "required": ["type", "userId", "routineId"],
-                        "additionalProperties": false,
-                        "properties": {
-                          "type": {
-                            "type": "string",
-                            "enum": ["routine"]
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "required": ["type", "userId", "routineId"],
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": ["routine"]
+                              },
+                              "userId": {
+                                "type": "string",
+                                "description": "Reference to user ID"
+                              },
+                              "routineId": {
+                                "type": "string",
+                                "description": "Reference to routine assignment ID"
+                              }
+                            }
                           },
-                          "userId": {
-                            "type": "string",
-                            "description": "Reference to user ID"
-                          },
-                          "routineId": {
-                            "type": "string",
-                            "description": "Reference to routine assignment ID"
+                          {
+                            "type": "object",
+                            "required": ["type", "flowId"],
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": ["flow"]
+                              },
+                              "flowId": {
+                                "type": "string",
+                                "description": "Reference to flow ID"
+                              }
+                            }
                           }
-                        }
+                        ]
                       }
                     }
                   }
