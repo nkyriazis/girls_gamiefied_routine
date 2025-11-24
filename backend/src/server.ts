@@ -22,6 +22,7 @@ const { DateTime } = require('luxon');
 
 const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
 const STATE_FILE = process.env.STATE_FILE || path.join(process.cwd(), 'state.json');
+const LOGS_FILE = process.env.LOGS_FILE || path.join(process.cwd(), 'logs.jsonl');
 const SCHEMA_FILE = path.join(process.cwd(), 'data.schema.json');
 const STATE_SCHEMA_FILE = path.join(process.cwd(), 'state.schema.json');
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
@@ -30,14 +31,6 @@ const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(console.error);
 
 // Action Logging
-interface ActionLog {
-  id: string;
-  timestamp: string;
-  type: string;
-  details: any;
-}
-
-const actionLogs: ActionLog[] = [];
 const MAX_LOGS = 200;
 
 function logAction(type: string, details: any) {
@@ -47,15 +40,18 @@ function logAction(type: string, details: any) {
     type,
     details
   };
-  actionLogs.unshift(log); // Add to beginning
-  if (actionLogs.length > MAX_LOGS) {
-    actionLogs.pop();
-  }
+  
   console.log(`[ACTION:${type}]`, JSON.stringify(details));
+  
+  // Append to file (Oldest -> Newest)
+  fs.appendFile(LOGS_FILE, JSON.stringify(log) + '\n').catch(err => 
+    console.error('Failed to write log to disk:', err)
+  );
 }
 
 console.log('Using data file:', DATA_FILE);
 console.log('Using state file:', STATE_FILE);
+console.log('Using logs file:', LOGS_FILE);
 console.log('Using schema file:', SCHEMA_FILE);
 console.log('Using state schema file:', STATE_SCHEMA_FILE);
 console.log('Using uploads dir:', UPLOADS_DIR);
@@ -926,9 +922,53 @@ server.get('/api/admin/validation-status', async (request, reply) => {
   };
 });
 
+// Helper to read last N lines from a file efficiently
+async function readLastLogs(filePath: string, maxLines: number): Promise<any[]> {
+  try {
+    try {
+      await fs.access(filePath);
+    } catch {
+      return [];
+    }
+
+    const stats = await fs.stat(filePath);
+    const fileSize = stats.size;
+    // Read last 100KB (approx 200-500 lines depending on size)
+    const bufferSize = Math.min(fileSize, 100 * 1024);
+    
+    if (bufferSize <= 0) return [];
+    
+    const start = fileSize - bufferSize;
+    const fileHandle = await fs.open(filePath, 'r');
+    const buffer = Buffer.alloc(bufferSize);
+    await fileHandle.read(buffer, 0, bufferSize, start);
+    await fileHandle.close();
+    
+    const content = buffer.toString('utf-8');
+    const lines = content.split('\n');
+    
+    // If we started from the middle of the file, the first line is likely partial
+    if (start > 0) {
+      lines.shift();
+    }
+    
+    return lines
+      .filter(line => line.trim())
+      .map(line => {
+        try { return JSON.parse(line); } catch { return null; }
+      })
+      .filter(l => l !== null)
+      .slice(-maxLines)
+      .reverse();
+  } catch (error) {
+    console.error('Error reading logs:', error);
+    return [];
+  }
+}
+
 // Admin: Get action logs
 server.get('/api/debug/logs', async (request, reply) => {
-  return actionLogs;
+  return readLastLogs(LOGS_FILE, MAX_LOGS);
 });
 
 // Admin: Get data schema
