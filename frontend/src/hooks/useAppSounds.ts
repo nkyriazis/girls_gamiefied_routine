@@ -97,11 +97,43 @@ export const useAppSounds = () => {
     }
   }, []);
 
+  // Audio element for MP3 playback
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+
+  const playCustomSound = useCallback((filename: string, loop: boolean = false) => {
+    // Stop any existing audio
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current.currentTime = 0;
+    }
+
+    const audio = new Audio(`/uploads/${filename}`);
+    audio.loop = loop;
+    audio.volume = 0.7;
+    audioElementRef.current = audio;
+
+    audio.play().catch(err => {
+      console.error('Failed to play custom sound:', err);
+    });
+
+    return audio;
+  }, []);
+
+  const stopCustomSound = useCallback(() => {
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current.currentTime = 0;
+      audioElementRef.current = null;
+    }
+  }, []);
+
   return {
     playClick,
     playSuccess,
     playAlarm,
     playWakeUpLoop,
-    stopWakeUpLoop
+    stopWakeUpLoop,
+    playCustomSound,
+    stopCustomSound
   };
 };

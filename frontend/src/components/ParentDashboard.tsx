@@ -407,8 +407,12 @@ export const ParentDashboard: React.FC = () => {
                         <section className="card">
                             <h2>Uploads</h2>
                             <div className="upload-section">
-                                <input type="file" onChange={handleFileUpload} />
-                                <p className="hint">Upload images for icons/avatars. Copy the URL from the alert to use in data.json.</p>
+                                <input type="file" accept="image/*,audio/*" onChange={handleFileUpload} />
+                                <p className="hint">
+                                    <strong>Images:</strong> Upload for icons/avatars (PNG, JPG, GIF)<br/>
+                                    <strong>Audio:</strong> Upload MP3 files for custom alarm sounds<br/>
+                                    The filename will be copied to clipboard after upload.
+                                </p>
                             </div>
                         </section>
 
@@ -774,6 +778,38 @@ export const ParentDashboard: React.FC = () => {
 
         .history .spending-row {
           opacity: 0.5;
+        }
+
+        .upload-section {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .upload-section input[type="file"] {
+          padding: 0.75rem;
+          border: 2px dashed rgba(76, 201, 240, 0.3);
+          border-radius: 0.5rem;
+          background: rgba(0,0,0,0.2);
+          cursor: pointer;
+          transition: all 0.2s;
+          color: white;
+        }
+
+        .upload-section input[type="file"]:hover {
+          border-color: rgba(76, 201, 240, 0.6);
+          background: rgba(76, 201, 240, 0.1);
+        }
+
+        .upload-section .hint {
+          margin: 0;
+          font-size: 0.9rem;
+          opacity: 0.7;
+          line-height: 1.5;
+        }
+
+        .upload-section .hint strong {
+          color: #4cc9f0;
         }
 
         .toast {

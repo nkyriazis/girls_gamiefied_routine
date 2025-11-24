@@ -286,6 +286,7 @@ export const Dashboard: React.FC = () => {
                 <GlobalAlarm
                   flowId={af.flowId}
                   user={user}
+                  sound={af.flow.steps[af.stepIndex].props?.sound}
                   onDismiss={handleStepComplete}
                 />
               </motion.div>

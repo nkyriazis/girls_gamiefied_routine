@@ -6,16 +6,29 @@ import { type User } from '@shared/types';
 interface GlobalAlarmProps {
   flowId: string;
   user: User | null;
+  sound?: string | { type: 'upload'; value: string };
   onDismiss: (flowId: string) => void;
 }
 
-export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, onDismiss }) => {
-  const { playWakeUpLoop, stopWakeUpLoop, playClick } = useAppSounds();
+export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, sound = 'melody', onDismiss }) => {
+  const { playWakeUpLoop, stopWakeUpLoop, playClick, playCustomSound, stopCustomSound } = useAppSounds();
 
   useEffect(() => {
-    playWakeUpLoop();
-    return () => stopWakeUpLoop();
-  }, [playWakeUpLoop, stopWakeUpLoop]);
+    // Determine which sound to play
+    if (typeof sound === 'object' && sound.type === 'upload') {
+      // Play custom uploaded MP3 in loop
+      playCustomSound(sound.value, true);
+      return () => stopCustomSound();
+    } else if (sound === 'melody' || !sound) {
+      // Play built-in melody
+      playWakeUpLoop();
+      return () => stopWakeUpLoop();
+    } else if (sound === 'beep') {
+      // Play simple beep alarm (you could add playAlarm in a loop if needed)
+      playWakeUpLoop(); // For now, fallback to melody
+      return () => stopWakeUpLoop();
+    }
+  }, [sound, playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound]);
 
   const handleDismiss = () => {
     playClick();

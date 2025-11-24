@@ -236,8 +236,30 @@
                       "additionalProperties": false,
                       "properties": {
                         "sound": {
-                          "type": "string",
-                          "description": "Sound to play"
+                          "oneOf": [
+                            {
+                              "type": "string",
+                              "enum": ["melody", "beep"],
+                              "description": "Built-in sound: melody (wake-up tune) or beep (simple alarm)"
+                            },
+                            {
+                              "type": "object",
+                              "required": ["type", "value"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": ["upload"],
+                                  "description": "Custom uploaded audio file"
+                                },
+                                "value": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "Uploaded filename (from /uploads/)"
+                                }
+                              }
+                            }
+                          ]
                         }
                       }
                     }
