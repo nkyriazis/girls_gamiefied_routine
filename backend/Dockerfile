@@ -15,6 +15,9 @@ COPY --from=builder /app/backend/dist ./dist
 COPY backend/data.json ./
 COPY backend/data.schema.json ./
 COPY backend/state.schema.json ./
+# Copy schemas to dist directory for admin endpoints
+COPY backend/data.schema.json ./dist/backend/
+COPY backend/state.schema.json ./dist/backend/
 # state.json will be mounted
 # Create uploads directory with proper permissions
 RUN mkdir -p uploads && chown node:node uploads
