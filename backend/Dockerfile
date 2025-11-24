@@ -1,16 +1,16 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
+COPY shared/ ./shared/
 COPY backend/package*.json ./backend/
 WORKDIR /app/backend
-RUN npm install
+RUN npm ci --prefer-offline --no-audit
 COPY backend/ .
-COPY shared/ ../shared/
 RUN npm run build
 
 FROM node:20-alpine
 WORKDIR /app
 COPY backend/package*.json ./
-RUN npm install --production
+RUN npm ci --omit=dev --prefer-offline --no-audit
 COPY --from=builder /app/backend/dist ./dist
 COPY backend/data.json ./
 COPY backend/data.schema.json ./

@@ -409,8 +409,8 @@ export const ParentDashboard: React.FC = () => {
                             <div className="upload-section">
                                 <input type="file" accept="image/*,audio/*" onChange={handleFileUpload} />
                                 <p className="hint">
-                                    <strong>Images:</strong> Upload for icons/avatars (PNG, JPG, GIF)<br/>
-                                    <strong>Audio:</strong> Upload MP3 files for custom alarm sounds<br/>
+                                    <strong>Images:</strong> Upload for icons/avatars (PNG, JPG, GIF)<br />
+                                    <strong>Audio:</strong> Upload MP3 files for custom alarm sounds<br />
                                     The filename will be copied to clipboard after upload.
                                 </p>
                             </div>
