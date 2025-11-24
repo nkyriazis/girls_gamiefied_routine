@@ -4,3 +4,11 @@ dist
 .gitignore
 Dockerfile
 *.log
+*.logs
+logs.json
+logs.jsonl
+.DS_Store
+*.md
+test-*.js
+test-*.json
+verify_api.js

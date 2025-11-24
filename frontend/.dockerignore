@@ -5,3 +5,7 @@ dev-dist
 .gitignore
 Dockerfile
 *.log
+.DS_Store
+*.md
+build_log.txt
+certs
