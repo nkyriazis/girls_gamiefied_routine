@@ -8,6 +8,7 @@ services:
     environment:
       - DATA_FILE=/data/data.json
       - STATE_FILE=/data/state.json
+      - LOGS_FILE=/data/logs.jsonl
     restart: always
 
   frontend:
