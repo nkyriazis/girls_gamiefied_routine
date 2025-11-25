@@ -1,17 +1,25 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAppSounds } from '../hooks/useAppSounds';
-import { type User } from '@shared/types';
+import { type User, type AlarmProps } from '@shared/types';
 
 interface GlobalAlarmProps {
   flowId: string;
   user: User | null;
-  sound?: string | { type: 'upload'; value: string };
+  alarmProps?: AlarmProps;
   onDismiss: (flowId: string) => void;
 }
 
-export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, sound = 'melody', onDismiss }) => {
+export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmProps = {}, onDismiss }) => {
   const { playWakeUpLoop, stopWakeUpLoop, playClick, playCustomSound, stopCustomSound } = useAppSounds();
+
+  const {
+    sound = 'melody',
+    title = 'Ειδοποίηση',
+    message,
+    icon = '🔔',
+    dismissText = 'OK'
+  } = alarmProps;
 
   useEffect(() => {
     // Determine which sound to play
@@ -51,10 +59,10 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, sound = 
           }}
           transition={{ repeat: Infinity, duration: 1 }}
         >
-          ⏰
+          {icon}
         </motion.div>
 
-        <h1>Ώρα για ξύπνημα!</h1>
+        <h1>{title}</h1>
         {user && (
           <div className="alarm-user-info">
             {typeof user.avatar === 'string' ? (
@@ -67,10 +75,10 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, sound = 
             <p className="user-name" style={{ color: user.color }}>{user.name}</p>
           </div>
         )}
-        <p>Καλημέρα! ☀️</p>
+        {message && <p>{message}</p>}
 
         <button className="btn-dismiss-global" onClick={handleDismiss}>
-          Ξυπνήσαμε!
+          {dismissText}
         </button>
       </motion.div>
 

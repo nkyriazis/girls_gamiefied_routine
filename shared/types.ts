@@ -10,6 +10,7 @@ export interface Task {
   durationSeconds: number;
   icon: IconValue; // Emoji, URL, SVG, or Object
   stars?: number;
+  lateStars?: number; // Stars awarded if completed after time runs out (default: 0)
 }
 
 export interface Routine {
@@ -35,8 +36,16 @@ export type FlowAction =
   | { type: 'routine'; userId: string; routineId: string }
   | { type: 'flow'; flowId: string };
 
+export interface AlarmProps {
+  sound?: string | { type: 'upload'; value: string };
+  title?: string;
+  message?: string;
+  icon?: string;
+  dismissText?: string;
+}
+
 export type FlowStep = 
-  | { type: 'alarm'; props: { sound: string } }
+  | { type: 'alarm'; props: AlarmProps }
   | { type: 'routine'; routineId: string }
   | { type: 'parallel'; actions: FlowAction[] };
 

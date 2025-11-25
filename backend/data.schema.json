@@ -44,7 +44,12 @@
           "stars": {
             "type": "integer",
             "minimum": 0,
-            "description": "Star reward for completing task"
+            "description": "Star reward for completing task on time"
+          },
+          "lateStars": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Star reward for completing task after time runs out (default: 0)"
           }
         }
       }
@@ -232,7 +237,6 @@
                     },
                     "props": {
                       "type": "object",
-                      "required": ["sound"],
                       "additionalProperties": false,
                       "properties": {
                         "sound": {
@@ -260,6 +264,25 @@
                               }
                             }
                           ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Alarm title text"
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "Optional message below title"
+                        },
+                        "icon": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Emoji icon for the alarm"
+                        },
+                        "dismissText": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Text for the dismiss button"
                         }
                       }
                     }

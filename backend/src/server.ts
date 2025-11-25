@@ -718,7 +718,8 @@ server.post('/api/executions/:executionId/tasks/:taskId/complete', async (reques
   const execution = db.routineExecutions.find(e => e.id === executionId);
 
   if (execution) {
-    const starsToAdd = task.stars || 0; // Use the stars from the task definition
+    // Use full stars if on time, lateStars (default 0) if late
+    const starsToAdd = isOnTime ? (task.stars || 0) : (task.lateStars ?? 0);
     
     // Update user
     const user = db.users.find(u => u.id === execution.userId);

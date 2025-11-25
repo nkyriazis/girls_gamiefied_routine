@@ -191,7 +191,14 @@
         {
           "type": "alarm",
           "props": {
-            "sound": "melody"
+            "sound": {
+              "type": "upload",
+              "value": "1764012149103-rooster-crow-1-281011.mp3"
+            },
+            "title": "Ώρα για ξύπνημα!",
+            "message": "Καλημέρα! ☀️",
+            "icon": "⏰",
+            "dismissText": "Ξυπνήσαμε!"
           }
         },
         {
@@ -212,7 +219,14 @@
         {
           "type": "alarm",
           "props": {
-            "sound": "melody"
+            "sound": {
+              "type": "upload",
+              "value": "1764012149103-rooster-crow-1-281011.mp3"
+            },
+            "title": "Ώρα για ξύπνημα!",
+            "message": "Καλημέρα! ☀️",
+            "icon": "⏰",
+            "dismissText": "Ξυπνήσαμε!"
           }
         },
         {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type Flow, type FlowInstance } from '@shared/types';
+import { type Flow, type FlowAction, type FlowInstance } from '@shared/types';
 import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
@@ -190,11 +190,20 @@ export const Dashboard: React.FC = () => {
 
     // Add Alarms
     activeAlarms.forEach(af => {
-      const userId = af.flowId.match(/^(u\d+)-/)?.[1] || null;
+      // Extract userId from the flow's actions
+      const userId = af.flow.steps
+        .flatMap(step => (step.type === 'parallel' && step.actions) ? step.actions : [])
+        .find((action): action is FlowAction & { userId: string } => 'userId' in action)
+        ?.userId;
+
+      if (!userId) {
+        console.error(`[Dashboard] Failed to extract userId from flow ${af.flowId}`, af.flow);
+      }
+
       items.push({
         type: 'alarm',
         key: `alarm-${af.flowId}`,
-        userId,
+        userId: userId ?? null,
         data: af
       });
     });
@@ -286,7 +295,7 @@ export const Dashboard: React.FC = () => {
                 <GlobalAlarm
                   flowId={af.flowId}
                   user={user}
-                  sound={af.flow.steps[af.stepIndex].props?.sound}
+                  alarmProps={af.flow.steps[af.stepIndex].props}
                   onDismiss={handleStepComplete}
                 />
               </motion.div>
