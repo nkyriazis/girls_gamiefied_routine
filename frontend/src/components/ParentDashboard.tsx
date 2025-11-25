@@ -207,9 +207,36 @@ const JsonEditor = ({ title, loadFn, saveFn, onToast, enableValidation = false, 
     );
 };
 
+// Helper to parse cron expressions to human-readable format
+const parseCronToReadable = (cron: string): string => {
+    const parts = cron.split(' ');
+    if (parts.length !== 5) return cron;
+    const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+    
+    const time = `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+    
+    if (dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        return `${time} κάθε μέρα`;
+    }
+    if (dayOfMonth === '*' && month === '*' && dayOfWeek !== '*') {
+        const days = ['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'];
+        const dayNums = dayOfWeek.split(',').map(d => days[parseInt(d)] || d);
+        return `${time} (${dayNums.join(', ')})`;
+    }
+    return `${time}`;
+};
+
+// Helper to format duration
+const formatDuration = (seconds: number): string => {
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+};
+
 export const ParentDashboard: React.FC = () => {
     const { users, spendings, flows, lastEvent } = useGame();
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'state' | 'debug' | 'logs'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'config' | 'state' | 'debug' | 'logs'>('dashboard');
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [nextToastId, setNextToastId] = useState(0);
     const [validationErrors, setValidationErrors] = useState<{ config?: any, state?: any }>({});
@@ -329,6 +356,7 @@ export const ParentDashboard: React.FC = () => {
                 <h1>Γονείς & Διαχείριση</h1>
                 <div className="tabs">
                     <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
+                    <button className={activeTab === 'schedule' ? 'active' : ''} onClick={() => setActiveTab('schedule')}>📅 Schedule</button>
                     <button className={activeTab === 'config' ? 'active' : ''} onClick={() => setActiveTab('config')}>Config (data.json)</button>
                     <button className={activeTab === 'state' ? 'active' : ''} onClick={() => setActiveTab('state')}>State (state.json)</button>
                     <button className={activeTab === 'debug' ? 'active' : ''} onClick={() => setActiveTab('debug')}>Debug Time</button>
@@ -483,6 +511,252 @@ export const ParentDashboard: React.FC = () => {
                             validateFn={api.validateConfig}
                             schemaUri="/api/admin/schema/data"
                         />
+                    </section>
+                )}
+
+                {activeTab === 'schedule' && db && (
+                    <section className="card full-width schedule-view">
+                        <h2>📅 Ημερήσιο Πρόγραμμα</h2>
+                        <p className="schedule-subtitle">Αναλυτική προβολή του data.json</p>
+                        
+                        <div className="schedule-container">
+                            {db.schedules?.sort((a: any, b: any) => {
+                                // Sort by cron time (hour:minute)
+                                const getTime = (cron: string) => {
+                                    const parts = cron.split(' ');
+                                    return parseInt(parts[1]) * 60 + parseInt(parts[0]);
+                                };
+                                return getTime(a.cron) - getTime(b.cron);
+                            }).map((schedule: any) => {
+                                // Resolve what this schedule triggers
+                                const isFlow = schedule.type === 'flow';
+                                const flow = isFlow ? db.flows?.find((f: any) => f.id === schedule.targetId) : null;
+                                const routineAssignment = !isFlow ? db.routineAssignments?.find((ra: any) => ra.id === schedule.targetId) : null;
+                                
+                                // Get involved users and routines
+                                const getRoutineDetails = (routineId: string) => {
+                                    const routine = db.routines?.find((r: any) => r.id === routineId);
+                                    if (!routine) return null;
+                                    const tasks = db.routineTasks
+                                        ?.filter((rt: any) => rt.routineId === routineId)
+                                        .sort((a: any, b: any) => a.order - b.order)
+                                        .map((rt: any) => {
+                                            const task = db.tasks?.find((t: any) => t.id === rt.taskId);
+                                            return { ...rt, task };
+                                        }) || [];
+                                    return { routine, tasks };
+                                };
+
+                                const getFlowParticipants = (flowObj: any): { userId: string; routineId: string; assignmentId: string }[] => {
+                                    const participants: { userId: string; routineId: string; assignmentId: string }[] = [];
+                                    
+                                    const processSteps = (steps: any[]) => {
+                                        for (const step of steps) {
+                                            if (step.type === 'parallel') {
+                                                for (const action of step.actions || []) {
+                                                    if (action.type === 'routine') {
+                                                        // Find the routine assignment
+                                                        const ra = db.routineAssignments?.find((r: any) => r.id === action.routineId);
+                                                        if (ra) {
+                                                            participants.push({ userId: ra.userId, routineId: ra.routineId, assignmentId: ra.id });
+                                                        }
+                                                    } else if (action.type === 'flow') {
+                                                        const nestedFlow = db.flows?.find((f: any) => f.id === action.flowId);
+                                                        if (nestedFlow) {
+                                                            processSteps(nestedFlow.steps || []);
+                                                        }
+                                                    }
+                                                }
+                                            } else if (step.type === 'routine') {
+                                                const ra = db.routineAssignments?.find((r: any) => r.id === step.routineId);
+                                                if (ra) {
+                                                    participants.push({ userId: ra.userId, routineId: ra.routineId, assignmentId: ra.id });
+                                                }
+                                            }
+                                        }
+                                    };
+                                    
+                                    processSteps(flowObj?.steps || []);
+                                    return participants;
+                                };
+
+                                const getFlowAlarms = (flowObj: any): any[] => {
+                                    const alarms: any[] = [];
+                                    const processSteps = (steps: any[]) => {
+                                        for (const step of steps) {
+                                            if (step.type === 'alarm') {
+                                                alarms.push(step.props);
+                                            } else if (step.type === 'parallel') {
+                                                for (const action of step.actions || []) {
+                                                    if (action.type === 'flow') {
+                                                        const nestedFlow = db.flows?.find((f: any) => f.id === action.flowId);
+                                                        if (nestedFlow) processSteps(nestedFlow.steps || []);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    };
+                                    processSteps(flowObj?.steps || []);
+                                    return alarms;
+                                };
+
+                                // Determine schedule icon based on time
+                                const cronParts = schedule.cron.split(' ');
+                                const hour = parseInt(cronParts[1]);
+                                const scheduleIcon = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
+
+                                return (
+                                    <div key={schedule.id} className="schedule-block">
+                                        <div className="schedule-header">
+                                            <span className="schedule-icon">{scheduleIcon}</span>
+                                            <span className="schedule-time">{parseCronToReadable(schedule.cron)}</span>
+                                            <span className="schedule-title">
+                                                {isFlow ? (flow?.id || schedule.targetId) : 
+                                                    (() => {
+                                                        const routine = db.routines?.find((r: any) => r.id === routineAssignment?.routineId);
+                                                        return routine?.title || schedule.targetId;
+                                                    })()
+                                                }
+                                            </span>
+                                        </div>
+
+                                        {/* Show alarms if this is a flow */}
+                                        {isFlow && flow && getFlowAlarms(flow).length > 0 && (
+                                            <div className="schedule-alarms">
+                                                {getFlowAlarms(flow).map((alarm, idx) => (
+                                                    <div key={idx} className="alarm-item">
+                                                        <span className="alarm-icon">⏰</span>
+                                                        <span className="alarm-text">{alarm.title || 'Alarm'}</span>
+                                                        {alarm.message && <span className="alarm-message">{alarm.message}</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Show participants */}
+                                        <div className="schedule-participants">
+                                            {isFlow && flow ? (
+                                                getFlowParticipants(flow).map((p, idx) => {
+                                                    const user = db.users?.find((u: any) => u.id === p.userId);
+                                                    const details = getRoutineDetails(p.routineId);
+                                                    if (!details) return null;
+                                                    
+                                                    const totalDuration = details.tasks.reduce((sum: number, t: any) => sum + (t.durationSeconds || 0), 0);
+                                                    const totalStars = details.tasks.reduce((sum: number, t: any) => sum + (t.task?.stars || 0), 0);
+
+                                                    return (
+                                                        <div key={idx} className="participant-block">
+                                                            <div className="participant-header">
+                                                                <SmartIcon value={user?.avatar} />
+                                                                <span className="participant-name">{user?.name || p.userId}</span>
+                                                                <span className="routine-name">
+                                                                    <SmartIcon value={details.routine.icon} />
+                                                                    {details.routine.title}
+                                                                </span>
+                                                            </div>
+                                                            <div className="task-list">
+                                                                {details.tasks.map((t: any, tidx: number) => (
+                                                                    <div key={tidx} className="task-item">
+                                                                        <span className="task-order">{tidx + 1}.</span>
+                                                                        <SmartIcon value={t.task?.icon} />
+                                                                        <span className="task-title">{t.task?.title || t.taskId}</span>
+                                                                        <span className="task-duration">{formatDuration(t.durationSeconds)}</span>
+                                                                        <span className="task-stars">⭐{t.task?.stars || 0}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <div className="participant-summary">
+                                                                ⏱️ {formatDuration(totalDuration)} · ⭐ {totalStars} αστέρια
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })
+                                            ) : routineAssignment ? (
+                                                (() => {
+                                                    const user = db.users?.find((u: any) => u.id === routineAssignment.userId);
+                                                    const details = getRoutineDetails(routineAssignment.routineId);
+                                                    if (!details) return <p>Routine not found</p>;
+                                                    
+                                                    const totalDuration = details.tasks.reduce((sum: number, t: any) => sum + (t.durationSeconds || 0), 0);
+                                                    const totalStars = details.tasks.reduce((sum: number, t: any) => sum + (t.task?.stars || 0), 0);
+
+                                                    return (
+                                                        <div className="participant-block">
+                                                            <div className="participant-header">
+                                                                <SmartIcon value={user?.avatar} />
+                                                                <span className="participant-name">{user?.name || routineAssignment.userId}</span>
+                                                                <span className="routine-name">
+                                                                    <SmartIcon value={details.routine.icon} />
+                                                                    {details.routine.title}
+                                                                </span>
+                                                            </div>
+                                                            <div className="task-list">
+                                                                {details.tasks.map((t: any, tidx: number) => (
+                                                                    <div key={tidx} className="task-item">
+                                                                        <span className="task-order">{tidx + 1}.</span>
+                                                                        <SmartIcon value={t.task?.icon} />
+                                                                        <span className="task-title">{t.task?.title || t.taskId}</span>
+                                                                        <span className="task-duration">{formatDuration(t.durationSeconds)}</span>
+                                                                        <span className="task-stars">⭐{t.task?.stars || 0}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <div className="participant-summary">
+                                                                ⏱️ {formatDuration(totalDuration)} · ⭐ {totalStars} αστέρια
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()
+                                            ) : (
+                                                <p className="empty">Target not found: {schedule.targetId}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Rewards section */}
+                        <div className="rewards-overview">
+                            <h3>🎁 Διαθέσιμα Δώρα</h3>
+                            <div className="rewards-grid">
+                                {db.rewards?.map((reward: any) => (
+                                    <div key={reward.id} className="reward-card">
+                                        <SmartIcon value={reward.icon} />
+                                        <span className="reward-title">{reward.title}</span>
+                                        <span className="reward-cost">⭐ {reward.cost}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Users overview */}
+                        <div className="users-overview">
+                            <h3>👨‍👩‍👧‍👦 Χρήστες & Ρουτίνες</h3>
+                            <div className="users-grid">
+                                {db.users?.map((user: any) => {
+                                    const assignments = db.routineAssignments?.filter((ra: any) => ra.userId === user.id) || [];
+                                    return (
+                                        <div key={user.id} className="user-card">
+                                            <div className="user-card-header">
+                                                <SmartIcon value={user.avatar} />
+                                                <span>{user.name}</span>
+                                            </div>
+                                            <div className="user-routines">
+                                                {assignments.map((ra: any) => {
+                                                    const routine = db.routines?.find((r: any) => r.id === ra.routineId);
+                                                    return routine ? (
+                                                        <span key={ra.id} className="routine-badge">
+                                                            <SmartIcon value={routine.icon} /> {routine.title}
+                                                        </span>
+                                                    ) : null;
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </section>
                 )}
 
@@ -956,6 +1230,240 @@ export const ParentDashboard: React.FC = () => {
         .type-spend { background: rgba(241, 196, 15, 0.2); color: #f1c40f; }
         .type-task { background: rgba(230, 126, 34, 0.2); color: #e67e22; }
         .type-alarm { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+
+        /* Schedule View Styles */
+        .schedule-view h2 {
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .schedule-subtitle {
+            color: #888;
+            margin: 0 0 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .schedule-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .schedule-block {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border-left: 4px solid #4cc9f0;
+        }
+
+        .schedule-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .schedule-icon {
+            font-size: 1.5rem;
+        }
+
+        .schedule-time {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #4cc9f0;
+            font-family: monospace;
+        }
+
+        .schedule-title {
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+        .schedule-alarms {
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .alarm-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alarm-icon {
+            font-size: 1.2rem;
+        }
+
+        .alarm-text {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .alarm-message {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .schedule-participants {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .participant-block {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+
+        .participant-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .participant-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #4cc9f0;
+        }
+
+        .routine-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #aaa;
+            margin-left: auto;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0.5rem;
+        }
+
+        .task-order {
+            color: #666;
+            font-size: 0.9rem;
+            width: 1.5rem;
+        }
+
+        .task-title {
+            flex: 1;
+        }
+
+        .task-duration {
+            color: #888;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .task-stars {
+            color: gold;
+            font-size: 0.9rem;
+        }
+
+        .participant-summary {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+            font-size: 0.9rem;
+            text-align: right;
+        }
+
+        .rewards-overview, .users-overview {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .rewards-overview h3, .users-overview h3 {
+            margin: 0 0 1rem 0;
+            color: #aaa;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .reward-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: center;
+        }
+
+        .reward-title {
+            font-size: 0.9rem;
+        }
+
+        .reward-cost {
+            color: gold;
+            font-weight: bold;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .user-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+
+        .user-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+        }
+
+        .user-routines {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .routine-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: rgba(76, 201, 240, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+        }
       `}</style>
         </div>
     );
