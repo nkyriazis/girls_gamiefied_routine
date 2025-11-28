@@ -4,12 +4,28 @@ services:
       - routine-net
     environment:
       - TZ=Europe/Athens
+      - MCP_API_KEY=my-secret-key-123
 
   frontend:
     depends_on:
       - backend
     networks:
       - routine-net
+
+  # Tunnel (ngrok) for public MCP endpoint access
+  # The public URL (HTTP & HTTPS) will be printed to logs
+  tunnel:
+    image: ngrok/ngrok:latest
+    command: http --url=${NGROK_DOMAIN} backend:3000
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    depends_on:
+      - backend
+    networks:
+      - routine-net
+    restart: unless-stopped
+    profiles:
+      - mcp  # Only starts with: docker compose --profile mcp up
 
 networks:
   routine-net:
