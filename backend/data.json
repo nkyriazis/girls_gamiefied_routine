@@ -245,7 +245,7 @@
   "schedules": [
     {
       "id": "sch-morning",
-      "cron": "0 7 * * *",
+      "cron": "0 7 * * 1-5",
       "type": "flow",
       "targetId": "morning-flow"
     },

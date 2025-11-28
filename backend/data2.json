@@ -1,0 +1,278 @@
+{
+  "tasks": [
+    {
+      "id": "t-breakfast",
+      "title": "Πρωινό",
+      "icon": {
+        "type": "emoji",
+        "value": "🥞"
+      },
+      "stars": 10
+    },
+    {
+      "id": "t-brush-wash",
+      "title": "Πλύσιμο Δοντιών και Προσώπου",
+      "icon": {
+        "type": "emoji",
+        "value": "🪥"
+      },
+      "stars": 10
+    },
+    {
+      "id": "t-dress",
+      "title": "Ντύσιμο",
+      "icon": {
+        "type": "emoji",
+        "value": "👗"
+      },
+      "stars": 10
+    },
+    {
+      "id": "t-comb",
+      "title": "Χτένισμα",
+      "icon": {
+        "type": "emoji",
+        "value": "💇"
+      },
+      "stars": 10
+    },
+    {
+      "id": "t-shoes",
+      "title": "Παπούτσια",
+      "icon": {
+        "type": "emoji",
+        "value": "👟"
+      },
+      "stars": 10
+    },
+    {
+      "id": "t-bag",
+      "title": "Προετοιμασία Τσάντας",
+      "icon": {
+        "type": "emoji",
+        "value": "🎒"
+      },
+      "stars": 15
+    },
+    {
+      "id": "t-jacket",
+      "title": "Φόρεμα Μπουφάν",
+      "icon": {
+        "type": "emoji",
+        "value": "🧥"
+      },
+      "stars": 5
+    }
+  ],
+  "routines": [
+    {
+      "id": "r-morning-school",
+      "title": "Πρωινή Ρουτίνα για Σχολείο",
+      "themeColor": "var(--color-primary)",
+      "icon": {
+        "type": "emoji",
+        "value": "☀️"
+      }
+    }
+  ],
+  "routineTasks": [
+    {
+      "id": "morning-school-breakfast",
+      "routineId": "r-morning-school",
+      "taskId": "t-breakfast",
+      "order": 1,
+      "durationSeconds": 600
+    },
+    {
+      "id": "morning-school-brush-wash",
+      "routineId": "r-morning-school",
+      "taskId": "t-brush-wash",
+      "order": 2,
+      "durationSeconds": 180
+    },
+    {
+      "id": "morning-school-dress",
+      "routineId": "r-morning-school",
+      "taskId": "t-dress",
+      "order": 3,
+      "durationSeconds": 300
+    },
+    {
+      "id": "morning-school-comb",
+      "routineId": "r-morning-school",
+      "taskId": "t-comb",
+      "order": 4,
+      "durationSeconds": 120
+    },
+    {
+      "id": "morning-school-shoes",
+      "routineId": "r-morning-school",
+      "taskId": "t-shoes",
+      "order": 5,
+      "durationSeconds": 120
+    },
+    {
+      "id": "morning-school-bag",
+      "routineId": "r-morning-school",
+      "taskId": "t-bag",
+      "order": 6,
+      "durationSeconds": 300
+    },
+    {
+      "id": "morning-school-jacket",
+      "routineId": "r-morning-school",
+      "taskId": "t-jacket",
+      "order": 7,
+      "durationSeconds": 60
+    }
+  ],
+  "users": [
+    {
+      "id": "electra",
+      "name": "Ηλέκτρα",
+      "avatar": {
+        "type": "image",
+        "value": "1763904287196-electra.png"
+      },
+      "color": "var(--color-accent)"
+    },
+    {
+      "id": "iphigenia",
+      "name": "Ιφιγένεια",
+      "avatar": {
+        "type": "image",
+        "value": "1763904328406-fifi.png"
+      },
+      "color": "var(--color-secondary)"
+    }
+  ],
+  "settings": {
+    "timezone": "Europe/Athens"
+  },
+  "routineAssignments": [
+    {
+      "id": "electra-morning-school",
+      "userId": "electra",
+      "routineId": "r-morning-school"
+    },
+    {
+      "id": "iphigenia-morning-school",
+      "userId": "iphigenia",
+      "routineId": "r-morning-school"
+    }
+  ],
+  "flows": [
+    {
+      "id": "morning-school-flow",
+      "steps": [
+        {
+          "type": "parallel",
+          "actions": [
+            {
+              "type": "flow",
+              "flowId": "electra-morning-flow"
+            },
+            {
+              "type": "flow",
+              "flowId": "iphigenia-morning-flow"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "electra-morning-flow",
+      "steps": [
+        {
+          "type": "alarm",
+          "props": {
+            "sound": {
+              "type": "upload",
+              "value": "1764014578945-rooster-crow-1-281011.mp3"
+            }
+          }
+        },
+        {
+          "type": "parallel",
+          "actions": [
+            {
+              "type": "routine",
+              "userId": "electra",
+              "routineId": "electra-morning-school"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "iphigenia-morning-flow",
+      "steps": [
+        {
+          "type": "alarm",
+          "props": {
+            "sound": {
+              "type": "upload",
+              "value": "1764014578945-rooster-crow-1-281011.mp3"
+            }
+          }
+        },
+        {
+          "type": "parallel",
+          "actions": [
+            {
+              "type": "routine",
+              "userId": "iphigenia",
+              "routineId": "iphigenia-morning-school"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "schedules": [
+    {
+      "id": "sch-morning-school",
+      "cron": "10 7 * * *",
+      "type": "flow",
+      "targetId": "morning-school-flow"
+    }
+  ],
+  "rewards": [
+    {
+      "id": "rew-tablet-1hr",
+      "title": "1 Ώρα Tablet/Τηλέφωνο",
+      "icon": {
+        "type": "emoji",
+        "value": "📱"
+      },
+      "cost": 175
+    },
+    {
+      "id": "rew-tablet-2hr",
+      "title": "2 Ώρες Tablet/Τηλέφωνο",
+      "icon": {
+        "type": "emoji",
+        "value": "📲"
+      },
+      "cost": 350
+    },
+    {
+      "id": "rew-movie-night",
+      "title": "Βραδιά Ταινίας",
+      "icon": {
+        "type": "emoji",
+        "value": "🎬"
+      },
+      "cost": 175
+    },
+    {
+      "id": "rew-crepes",
+      "title": "Έξοδος για Κρέπες",
+      "icon": {
+        "type": "emoji",
+        "value": "🥞"
+      },
+      "cost": 350
+    }
+  ]
+}
