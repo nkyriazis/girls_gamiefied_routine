@@ -174,11 +174,6 @@ export const Dashboard: React.FC = () => {
     handleRoutineExit(userId);
   };
 
-  // Determine View Mode - count both alarms and routines
-  const activeAlarms = activeFlows.filter(af => af.flow.steps[af.stepIndex]?.type === 'alarm');
-  const totalActiveCount = activeAlarms.length + activeRoutines.length;
-  const viewMode = totalActiveCount === 0 ? 'IDLE' : totalActiveCount === 1 ? 'SINGLE' : totalActiveCount === 2 ? 'DUAL' : 'GRID';
-
   // Combine and sort active items for consistent "lanes"
   const sortedActiveItems = React.useMemo(() => {
     const items: Array<{
@@ -188,7 +183,10 @@ export const Dashboard: React.FC = () => {
       data: any
     }> = [];
 
-    // Add Alarms
+    // Get alarms that are currently active
+    const activeAlarms = activeFlows.filter(af => af.flow.steps[af.stepIndex]?.type === 'alarm');
+
+    // Add Alarms (but skip if user already has an active routine)
     activeAlarms.forEach(af => {
       // Extract userId from the flow's actions
       const userId = af.flow.steps
@@ -198,6 +196,11 @@ export const Dashboard: React.FC = () => {
 
       if (!userId) {
         console.error(`[Dashboard] Failed to extract userId from flow ${af.flowId}`, af.flow);
+      }
+
+      // Skip alarm if user already has an active routine (one routine per user)
+      if (userId && activeRoutines.some(r => r.userId === userId)) {
+        return;
       }
 
       items.push({
@@ -228,7 +231,11 @@ export const Dashboard: React.FC = () => {
       const userIndexB = users.findIndex(u => u.id === b.userId);
       return userIndexA - userIndexB;
     });
-  }, [activeAlarms, activeRoutines, users]);
+  }, [activeFlows, activeRoutines, users]);
+
+  // Determine View Mode based on actual displayed items
+  const totalActiveCount = sortedActiveItems.length;
+  const viewMode = totalActiveCount === 0 ? 'IDLE' : totalActiveCount === 1 ? 'SINGLE' : totalActiveCount === 2 ? 'DUAL' : 'GRID';
 
   return (
     <div className="dashboard">
