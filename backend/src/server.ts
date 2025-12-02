@@ -40,7 +40,16 @@ import {
   lastConfigError,
   lastStateError,
   setLastConfigError,
-  setLastStateError
+  setLastStateError,
+  generateChoreInstances,
+  expireChores,
+  cleanupOldChoreInstances,
+  getChoresWithInstances,
+  claimChore,
+  attemptChore,
+  confirmChore,
+  rejectChore,
+  broadcastChoreState
 } from './db';
 
 // Import MCP server
@@ -74,6 +83,7 @@ async function checkSchedules(date: Date) {
   const localTime = DateTime.fromJSDate(date).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
   console.log(`Checking schedules for: ${localTime} (${timezone})`);
   
+  // Check regular schedules (flows, routines)
   for (const schedule of db.schedules) {
     try {
       const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
@@ -93,6 +103,41 @@ async function checkSchedules(date: Date) {
     } catch (err) {
       console.error(`Error checking schedule ${schedule.id}:`, err);
       logAction('SCHEDULE_ERROR', { scheduleId: schedule.id, error: (err as Error).message });
+    }
+  }
+  
+  // Generate new chore instances based on their cron schedules
+  try {
+    const newInstances = await generateChoreInstances();
+    if (newInstances.length > 0) {
+      console.log(`Generated ${newInstances.length} new chore instance(s)`);
+    }
+  } catch (err) {
+    console.error('Error generating chore instances:', err);
+    logAction('CHORE_GENERATION_ERROR', { error: (err as Error).message });
+  }
+  
+  // Expire overdue chores
+  try {
+    const { expired, notified } = await expireChores();
+    if (expired.length > 0) {
+      console.log(`Expired ${expired.length} chore(s), notified ${notified.length} user(s)`);
+    }
+  } catch (err) {
+    console.error('Error expiring chores:', err);
+    logAction('CHORE_EXPIRATION_ERROR', { error: (err as Error).message });
+  }
+  
+  // Cleanup old instances once per hour (at minute 0)
+  if (new Date().getMinutes() === 0) {
+    try {
+      const removed = await cleanupOldChoreInstances();
+      if (removed > 0) {
+        console.log(`Cleaned up ${removed} old chore instance(s)`);
+      }
+    } catch (err) {
+      console.error('Error cleaning up chore instances:', err);
+      logAction('CHORE_CLEANUP_ERROR', { error: (err as Error).message });
     }
   }
 }
@@ -234,6 +279,100 @@ server.get('/api/rewards', async (request, reply) => {
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
+  }
+});
+
+// Chores routes
+server.get('/api/chores', async (request, reply) => {
+  try {
+    const { userId } = request.query as { userId?: string };
+    const { chores, instances } = await getChoresWithInstances(userId);
+    return { chores, instances };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
+  }
+});
+
+server.post('/api/chores/:instanceId/claim', async (request, reply) => {
+  try {
+    const { instanceId } = request.params as { instanceId: string };
+    const { userId } = request.body as { userId: string };
+    
+    if (!userId) {
+      return reply.code(400).send({ error: 'userId is required' });
+    }
+    
+    const instance = await claimChore(instanceId, userId);
+    return instance;
+  } catch (error) {
+    request.log.error(error);
+    const message = (error as Error).message;
+    if (message.includes('not found')) {
+      return reply.code(404).send({ error: message });
+    }
+    if (message.includes('not available') || message.includes('not eligible') || message.includes('expired')) {
+      return reply.code(400).send({ error: message });
+    }
+    return reply.code(500).send({ error: 'Internal Server Error', details: message });
+  }
+});
+
+server.post('/api/chores/:instanceId/attempt', async (request, reply) => {
+  try {
+    const { instanceId } = request.params as { instanceId: string };
+    
+    const instance = await attemptChore(instanceId);
+    return instance;
+  } catch (error) {
+    request.log.error(error);
+    const message = (error as Error).message;
+    if (message.includes('not found')) {
+      return reply.code(404).send({ error: message });
+    }
+    if (message.includes('must be claimed')) {
+      return reply.code(400).send({ error: message });
+    }
+    return reply.code(500).send({ error: 'Internal Server Error', details: message });
+  }
+});
+
+server.post('/api/chores/:instanceId/confirm', async (request, reply) => {
+  try {
+    const { instanceId } = request.params as { instanceId: string };
+    const { stars } = request.body as { stars?: number };
+    
+    const instance = await confirmChore(instanceId, stars);
+    return instance;
+  } catch (error) {
+    request.log.error(error);
+    const message = (error as Error).message;
+    if (message.includes('not found')) {
+      return reply.code(404).send({ error: message });
+    }
+    if (message.includes('must be attempted') || message.includes('no claimer')) {
+      return reply.code(400).send({ error: message });
+    }
+    return reply.code(500).send({ error: 'Internal Server Error', details: message });
+  }
+});
+
+server.post('/api/chores/:instanceId/reject', async (request, reply) => {
+  try {
+    const { instanceId } = request.params as { instanceId: string };
+    
+    const instance = await rejectChore(instanceId);
+    return instance;
+  } catch (error) {
+    request.log.error(error);
+    const message = (error as Error).message;
+    if (message.includes('not found')) {
+      return reply.code(404).send({ error: message });
+    }
+    if (message.includes('must be attempted')) {
+      return reply.code(400).send({ error: message });
+    }
+    return reply.code(500).send({ error: 'Internal Server Error', details: message });
   }
 });
 
@@ -804,19 +943,22 @@ server.post('/api/admin/state', async (request, reply) => {
     globalState.taskExecutions = newState.taskExecutions || [];
     globalState.spendings = newState.spendings || [];
     globalState.starTransfers = newState.starTransfers || [];
+    globalState.choreInstances = newState.choreInstances || [];
     
     scheduleSave();
     
     setLastStateError(null);
     const enrichedSpendings = await getEnrichedSpendings();
     const enrichedTransfers = await getEnrichedTransfers();
+    const { instances: choreInstances } = await getChoresWithInstances();
 
     broadcast({
       type: 'SYNC_STATE',
       payload: {
         userStars: globalState.userStars,
         spendings: enrichedSpendings,
-        starTransfers: enrichedTransfers
+        starTransfers: enrichedTransfers,
+        choreInstances
       }
     });
     
@@ -881,13 +1023,15 @@ server.register(async (fastify) => {
 
     const enrichedSpendings = await getEnrichedSpendings();
     const enrichedTransfers = await getEnrichedTransfers();
+    const { instances: choreInstances } = await getChoresWithInstances();
 
     connection.send(JSON.stringify({
       type: 'SYNC_STATE',
       payload: {
         userStars: globalState.userStars,
         spendings: enrichedSpendings,
-        starTransfers: enrichedTransfers
+        starTransfers: enrichedTransfers,
+        choreInstances
       }
     }));
 

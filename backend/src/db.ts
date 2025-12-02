@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import Ajv from 'ajv';
-import { User, Routine, Task, Flow, Reward, Spending, StarTransfer } from '../../shared/types';
+import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ChoreInstanceStatus } from '../../shared/types';
 
 // File paths
 export const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
@@ -88,12 +88,14 @@ export let globalState: {
   taskExecutions: any[];
   spendings: Spending[];
   starTransfers: StarTransfer[];
+  choreInstances: ChoreInstance[];
 } = {
   userStars: {},
   routineExecutions: [],
   taskExecutions: [],
   spendings: [],
-  starTransfers: []
+  starTransfers: [],
+  choreInstances: []
 };
 
 // WebSocket connections
@@ -134,7 +136,8 @@ export async function loadState() {
           routineExecutions: [],
           taskExecutions: [],
           spendings: [],
-          starTransfers: []
+          starTransfers: [],
+          choreInstances: []
         };
         return;
       } else {
@@ -147,7 +150,8 @@ export async function loadState() {
       routineExecutions: loaded.routineExecutions || [],
       taskExecutions: loaded.taskExecutions || [],
       spendings: loaded.spendings || [],
-      starTransfers: loaded.starTransfers || []
+      starTransfers: loaded.starTransfers || [],
+      choreInstances: loaded.choreInstances || []
     };
     console.log('State loaded into memory');
   } catch (error) {
@@ -193,11 +197,13 @@ export interface Db {
   flows: Flow[];
   schedules: any[];
   rewards: Reward[];
+  chores: Chore[];
   settings?: { timezone: string };
   routineExecutions: any[];
   taskExecutions: any[];
   spendings: Spending[];
   starTransfers: StarTransfer[];
+  choreInstances: ChoreInstance[];
 }
 
 export async function readDb(): Promise<Db> {
@@ -232,19 +238,24 @@ export async function readDb(): Promise<Db> {
       ...data,
       users,
       rewards: (data.rewards || []) as Reward[],
+      chores: (data.chores || []) as Chore[],
       schedules: data.schedules || [],
       settings: data.settings || { timezone: 'Europe/Athens' },
       routineExecutions: globalState.routineExecutions,
       taskExecutions: globalState.taskExecutions,
       spendings: globalState.spendings,
-      starTransfers: globalState.starTransfers
+      starTransfers: globalState.starTransfers,
+      choreInstances: globalState.choreInstances
     };
   } catch (error) {
     console.error("Error reading DB:", error);
     return {
       users: [], routines: [], tasks: [], routineTasks: [], 
       routineAssignments: [], flows: [], schedules: [], rewards: [],
-      routineExecutions: [], taskExecutions: [], spendings: [], starTransfers: []
+      chores: [],
+      routineExecutions: [], taskExecutions: [], spendings: [],
+      starTransfers: [],
+      choreInstances: []
     };
   }
 }
@@ -261,7 +272,8 @@ export async function writeDb(data: Db) {
     routineExecutions: data.routineExecutions,
     taskExecutions: data.taskExecutions,
     spendings: data.spendings,
-    starTransfers: data.starTransfers
+    starTransfers: data.starTransfers,
+    choreInstances: data.choreInstances
   };
 
   // Schedule persist
@@ -447,7 +459,7 @@ export async function readLastLogs(maxLines: number): Promise<any[]> {
 }
 
 // Award stars to a user
-export async function awardStars(userId: string, amount: number): Promise<{ success: boolean; newTotal: number }> {
+export async function awardStars(userId: string, amount: number, skipBroadcast = false): Promise<{ success: boolean; newTotal: number }> {
   const db = await readDb();
   const user = db.users.find(u => u.id === userId);
   
@@ -460,24 +472,26 @@ export async function awardStars(userId: string, amount: number): Promise<{ succ
   
   logAction('AWARD_STARS', { userId, amount, newBalance: user.stars });
   
-  broadcast({
-    type: 'STARS_AWARDED',
-    payload: {
-      userId,
-      amount,
-      totalStars: user.stars
-    }
-  });
-  
-  // Also broadcast sync state
-  const enrichedSpendings = await getEnrichedSpendings();
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: globalState.userStars,
-      spendings: enrichedSpendings
-    }
-  });
+  if (!skipBroadcast) {
+    broadcast({
+      type: 'STARS_AWARDED',
+      payload: {
+        userId,
+        amount,
+        totalStars: user.stars
+      }
+    });
+    
+    // Also broadcast sync state
+    const enrichedSpendings = await getEnrichedSpendings();
+    broadcast({
+      type: 'SYNC_STATE',
+      payload: {
+        userStars: globalState.userStars,
+        spendings: enrichedSpendings
+      }
+    });
+  }
   
   return { success: true, newTotal: user.stars };
 }
@@ -508,4 +522,400 @@ export async function setUserStars(userId: string, amount: number): Promise<{ su
   });
   
   return { success: true, newTotal: user.stars };
+}
+
+// ============================================
+// CHORES SYSTEM
+// ============================================
+
+// Helper to parse cron expression and check if it matches current time
+function cronMatches(cronExpr: string, date: Date): boolean {
+  const parts = cronExpr.split(' ');
+  if (parts.length !== 5) return false;
+  
+  const [minuteExpr, hourExpr, dayOfMonthExpr, monthExpr, dayOfWeekExpr] = parts;
+  
+  const minute = date.getMinutes();
+  const hour = date.getHours();
+  const dayOfMonth = date.getDate();
+  const month = date.getMonth() + 1;
+  const dayOfWeek = date.getDay(); // 0 = Sunday
+  
+  const matchField = (expr: string, value: number, max: number): boolean => {
+    if (expr === '*') return true;
+    
+    // Handle ranges (e.g., 1-5)
+    if (expr.includes('-')) {
+      const [start, end] = expr.split('-').map(Number);
+      return value >= start && value <= end;
+    }
+    
+    // Handle lists (e.g., 1,3,5)
+    if (expr.includes(',')) {
+      return expr.split(',').map(Number).includes(value);
+    }
+    
+    // Handle step values (e.g., */5)
+    if (expr.includes('/')) {
+      const [range, step] = expr.split('/');
+      const stepNum = parseInt(step, 10);
+      if (range === '*') return value % stepNum === 0;
+      return false;
+    }
+    
+    return parseInt(expr, 10) === value;
+  };
+  
+  return (
+    matchField(minuteExpr, minute, 59) &&
+    matchField(hourExpr, hour, 23) &&
+    matchField(dayOfMonthExpr, dayOfMonth, 31) &&
+    matchField(monthExpr, month, 12) &&
+    matchField(dayOfWeekExpr, dayOfWeek, 6)
+  );
+}
+
+// Generate chore instances when cron matches
+export async function generateChoreInstances(): Promise<ChoreInstance[]> {
+  const db = await readDb();
+  const now = new Date();
+  const newInstances: ChoreInstance[] = [];
+  
+  for (const chore of db.chores) {
+    // Check if cron matches current time
+    if (!cronMatches(chore.availabilityCron, now)) continue;
+    
+    // Check if there's ANY instance for this chore within the current window
+    // (window = from availableAt to expiresAt, regardless of status)
+    // This prevents respawning after claim/reject/confirm/expire
+    const existingInWindow = db.choreInstances.find(ci => {
+      if (ci.choreId !== chore.id) return false;
+      // If expiration hasn't passed, this instance is still in its window
+      return new Date(ci.expiresAt) > now;
+    });
+    
+    if (existingInWindow) continue;
+    
+    // Create new instance
+    const expiresAt = new Date(now.getTime() + chore.expirationHours * 60 * 60 * 1000);
+    const instance: ChoreInstance = {
+      id: randomUUID(),
+      choreId: chore.id,
+      status: 'available',
+      availableAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString()
+    };
+    
+    newInstances.push(instance);
+    db.choreInstances.push(instance);
+    
+    logAction('CHORE_AVAILABLE', { choreId: chore.id, instanceId: instance.id, expiresAt: instance.expiresAt });
+  }
+  
+  if (newInstances.length > 0) {
+    await writeDb(db);
+    await broadcastChoreState();
+    
+    // Broadcast availability event for each new instance
+    for (const instance of newInstances) {
+      const chore = db.chores.find(c => c.id === instance.choreId);
+      broadcast({
+        type: 'CHORE_AVAILABLE',
+        payload: {
+          instanceId: instance.id,
+          choreId: instance.choreId,
+          choreTitle: chore?.title,
+          expiresAt: instance.expiresAt
+        }
+      });
+    }
+  }
+  
+  return newInstances;
+}
+
+// Expire chores that are past their expiration time
+export async function expireChores(): Promise<{ expired: ChoreInstance[], notified: { userId: string, choreTitle: string }[] }> {
+  const db = await readDb();
+  const now = new Date();
+  const expiredInstances: ChoreInstance[] = [];
+  const notified: { userId: string, choreTitle: string }[] = [];
+  
+  for (const instance of db.choreInstances) {
+    // Only expire available or claimed instances
+    if (!['available', 'claimed'].includes(instance.status)) continue;
+    
+    const expiresAt = new Date(instance.expiresAt);
+    if (now < expiresAt) continue;
+    
+    const chore = db.chores.find(c => c.id === instance.choreId);
+    const oldStatus = instance.status;
+    instance.status = 'expired';
+    expiredInstances.push(instance);
+    
+    logAction('CHORE_EXPIRED', { instanceId: instance.id, choreId: instance.choreId, previousStatus: oldStatus, claimedBy: instance.claimedBy });
+    
+    // If it was claimed, notify that user
+    if (oldStatus === 'claimed' && instance.claimedBy) {
+      notified.push({
+        userId: instance.claimedBy,
+        choreTitle: chore?.title || 'Unknown chore'
+      });
+      
+      broadcast({
+        type: 'CHORE_EXPIRED',
+        payload: {
+          instanceId: instance.id,
+          choreId: instance.choreId,
+          choreTitle: chore?.title,
+          userId: instance.claimedBy
+        }
+      });
+    }
+  }
+  
+  if (expiredInstances.length > 0) {
+    await writeDb(db);
+    await broadcastChoreState();
+  }
+  
+  return { expired: expiredInstances, notified };
+}
+
+// Clean up old chore instances to prevent unbounded growth
+export async function cleanupOldChoreInstances(): Promise<number> {
+  const db = await readDb();
+  const now = new Date();
+  // Keep instances for 7 days after their window closes
+  const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  
+  const before = db.choreInstances.length;
+  db.choreInstances = db.choreInstances.filter(ci => {
+    // Always keep active instances
+    if (['available', 'claimed', 'attempted'].includes(ci.status)) return true;
+    // Keep closed instances if their expiresAt is after cutoff
+    return new Date(ci.expiresAt) > cutoff;
+  });
+  
+  const removed = before - db.choreInstances.length;
+  if (removed > 0) {
+    await writeDb(db);
+    logAction('CHORE_CLEANUP', { removed, remaining: db.choreInstances.length });
+  }
+  
+  return removed;
+}
+
+// Get chores with their active instances, optionally filtered by user eligibility
+export async function getChoresWithInstances(userId?: string): Promise<{ chores: Chore[], instances: ChoreInstance[] }> {
+  const db = await readDb();
+  
+  // Filter chores by eligibility if userId provided
+  let chores = db.chores;
+  if (userId) {
+    chores = chores.filter(c => 
+      !c.eligibleUsers || c.eligibleUsers.length === 0 || c.eligibleUsers.includes(userId)
+    );
+  }
+  
+  // Get active instances (not expired/confirmed/rejected more than 24h ago)
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const instances = db.choreInstances.filter(ci => {
+    // Include all active instances
+    if (['available', 'claimed', 'attempted'].includes(ci.status)) return true;
+    
+    // Include recently completed/rejected/expired for display
+    const completedAt = ci.confirmedAt || ci.rejectedAt || ci.expiresAt;
+    return completedAt && completedAt > oneDayAgo;
+  });
+  
+  return { chores, instances };
+}
+
+// Claim a chore instance
+export async function claimChore(instanceId: string, userId: string): Promise<ChoreInstance> {
+  const db = await readDb();
+  const instance = db.choreInstances.find(ci => ci.id === instanceId);
+  
+  if (!instance) {
+    throw new Error(`Chore instance not found: ${instanceId}`);
+  }
+  
+  if (instance.status !== 'available') {
+    throw new Error(`Chore is not available (status: ${instance.status})`);
+  }
+  
+  // Check eligibility
+  const chore = db.chores.find(c => c.id === instance.choreId);
+  if (chore?.eligibleUsers && chore.eligibleUsers.length > 0 && !chore.eligibleUsers.includes(userId)) {
+    throw new Error(`User ${userId} is not eligible for this chore`);
+  }
+  
+  // Check expiration
+  if (new Date(instance.expiresAt) < new Date()) {
+    instance.status = 'expired';
+    await writeDb(db);
+    throw new Error('Chore has expired');
+  }
+  
+  instance.status = 'claimed';
+  instance.claimedBy = userId;
+  instance.claimedAt = new Date().toISOString();
+  
+  await writeDb(db);
+  
+  logAction('CHORE_CLAIMED', { instanceId, choreId: instance.choreId, userId });
+  
+  broadcast({
+    type: 'CHORE_CLAIMED',
+    payload: {
+      instanceId,
+      choreId: instance.choreId,
+      choreTitle: chore?.title,
+      userId
+    }
+  });
+  
+  await broadcastChoreState();
+  
+  return instance;
+}
+
+// Mark chore as attempted (user says "I did it!")
+export async function attemptChore(instanceId: string): Promise<ChoreInstance> {
+  const db = await readDb();
+  const instance = db.choreInstances.find(ci => ci.id === instanceId);
+  
+  if (!instance) {
+    throw new Error(`Chore instance not found: ${instanceId}`);
+  }
+  
+  if (instance.status !== 'claimed') {
+    throw new Error(`Chore must be claimed first (status: ${instance.status})`);
+  }
+  
+  const chore = db.chores.find(c => c.id === instance.choreId);
+  
+  instance.status = 'attempted';
+  instance.attemptedAt = new Date().toISOString();
+  
+  await writeDb(db);
+  
+  logAction('CHORE_ATTEMPTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
+  
+  broadcast({
+    type: 'CHORE_ATTEMPTED',
+    payload: {
+      instanceId,
+      choreId: instance.choreId,
+      choreTitle: chore?.title,
+      userId: instance.claimedBy
+    }
+  });
+  
+  await broadcastChoreState();
+  
+  return instance;
+}
+
+// Confirm chore completion (parent approves)
+export async function confirmChore(instanceId: string, starsOverride?: number): Promise<ChoreInstance> {
+  const db = await readDb();
+  const instance = db.choreInstances.find(ci => ci.id === instanceId);
+  
+  if (!instance) {
+    throw new Error(`Chore instance not found: ${instanceId}`);
+  }
+  
+  if (instance.status !== 'attempted') {
+    throw new Error(`Chore must be attempted first (status: ${instance.status})`);
+  }
+  
+  if (!instance.claimedBy) {
+    throw new Error('Chore has no claimer');
+  }
+  
+  const chore = db.chores.find(c => c.id === instance.choreId);
+  const stars = starsOverride ?? chore?.defaultStars ?? 0;
+  
+  instance.status = 'confirmed';
+  instance.confirmedAt = new Date().toISOString();
+  instance.starsAwarded = stars;
+  
+  await writeDb(db);
+  
+  // Award stars to the user (skip broadcast, we'll do it below)
+  if (stars > 0) {
+    await awardStars(instance.claimedBy, stars, true);
+  }
+  
+  logAction('CHORE_CONFIRMED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy, starsAwarded: stars });
+  
+  // Single broadcast with all updated state
+  broadcast({
+    type: 'CHORE_CONFIRMED',
+    payload: {
+      instanceId,
+      choreId: instance.choreId,
+      choreTitle: chore?.title,
+      userId: instance.claimedBy,
+      starsAwarded: stars
+    }
+  });
+  
+  await broadcastChoreState();
+  
+  return instance;
+}
+
+// Reject chore attempt (parent disapproves)
+export async function rejectChore(instanceId: string): Promise<ChoreInstance> {
+  const db = await readDb();
+  const instance = db.choreInstances.find(ci => ci.id === instanceId);
+  
+  if (!instance) {
+    throw new Error(`Chore instance not found: ${instanceId}`);
+  }
+  
+  if (instance.status !== 'attempted') {
+    throw new Error(`Chore must be attempted first (status: ${instance.status})`);
+  }
+  
+  const chore = db.chores.find(c => c.id === instance.choreId);
+  
+  instance.status = 'rejected';
+  instance.rejectedAt = new Date().toISOString();
+  
+  await writeDb(db);
+  
+  logAction('CHORE_REJECTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
+  
+  broadcast({
+    type: 'CHORE_REJECTED',
+    payload: {
+      instanceId,
+      choreId: instance.choreId,
+      choreTitle: chore?.title,
+      userId: instance.claimedBy
+    }
+  });
+  
+  await broadcastChoreState();
+  
+  return instance;
+}
+
+// Broadcast current chore state to all clients
+export async function broadcastChoreState() {
+  const enrichedSpendings = await getEnrichedSpendings();
+  const { instances } = await getChoresWithInstances();
+  
+  broadcast({
+    type: 'SYNC_STATE',
+    payload: {
+      userStars: globalState.userStars,
+      spendings: enrichedSpendings,
+      choreInstances: instances
+    }
+  });
 }
