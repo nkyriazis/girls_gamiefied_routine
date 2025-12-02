@@ -10,5 +10,6 @@ dev-dist
 
 # Runtime data
 backend/state.json
+backend/logs.jsonl
 backend/uploads/
 backend/test-*.json
