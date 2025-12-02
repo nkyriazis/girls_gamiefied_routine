@@ -288,6 +288,33 @@ export async function triggerAction(id: string, db: Db, source: string = 'unknow
   const assignment = db.routineAssignments.find(a => a.id === id);
 
   if (assignment) {
+    // Check for existing active execution for this user (idempotency)
+    // A user can only be in one routine at a time
+    const existingExecution = db.routineExecutions.find(e => 
+      e.userId === assignment.userId && 
+      !e.completedAt
+    );
+
+    if (existingExecution) {
+      logAction('TRIGGER_ROUTINE_SKIPPED', { 
+        id, 
+        userId: assignment.userId, 
+        routineId: assignment.routineId, 
+        source,
+        existingExecutionId: existingExecution.id 
+      });
+      // Broadcast existing execution instead of creating duplicate
+      broadcast({
+        type: 'ROUTINE_START',
+        payload: {
+          userId: assignment.userId,
+          routineId: assignment.id,
+          executionId: existingExecution.id
+        }
+      });
+      return { success: true, skipped: true, existingExecutionId: existingExecution.id };
+    }
+
     logAction('TRIGGER_ROUTINE', { id, userId: assignment.userId, routineId: assignment.routineId, source });
     // Create execution record
     const execution = {
