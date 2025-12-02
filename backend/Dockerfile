@@ -6,12 +6,16 @@ WORKDIR /app/backend
 RUN npm ci --prefer-offline --no-audit
 COPY backend/ .
 RUN npm run build
+# Copy sdk-proxy.js to dist (it's a plain JS file, not TypeScript, so it's not compiled)
+RUN cp src/sdk-proxy.js dist/backend/src/
 
 FROM node:20-alpine
 WORKDIR /app
 COPY backend/package*.json ./
 RUN npm ci --omit=dev --prefer-offline --no-audit
 COPY --from=builder /app/backend/dist ./dist
+# Create symlink so sdk-proxy.js can find node_modules via relative path (../node_modules)
+RUN ln -s /app/node_modules /app/dist/backend/node_modules
 COPY backend/data.json ./
 COPY backend/data.schema.json ./
 COPY backend/state.schema.json ./
