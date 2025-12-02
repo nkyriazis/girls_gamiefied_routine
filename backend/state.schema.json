@@ -6,6 +6,48 @@
   "required": ["userStars", "routineExecutions", "taskExecutions", "spendings"],
   "additionalProperties": false,
   "properties": {
+    "starTransfers": {
+      "type": "array",
+      "description": "History of star transfers between users",
+      "items": {
+        "type": "object",
+        "required": ["id", "fromUserId", "toUserId", "amount", "createdAt", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "description": "UUID of the transfer"
+          },
+          "fromUserId": {
+            "type": "string",
+            "description": "Reference to sender user ID"
+          },
+          "toUserId": {
+            "type": "string",
+            "description": "Reference to receiver user ID"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of stars to transfer"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO timestamp when transfer was requested"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "approved", "rejected", "cancelled"],
+            "description": "Current status of the transfer"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "description": "ISO timestamp when transfer was resolved (approved/rejected/cancelled)"
+          }
+        }
+      }
+    },
     "userStars": {
       "type": "object",
       "description": "Map of user IDs to their current star balance",

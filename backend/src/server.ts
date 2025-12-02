@@ -10,7 +10,7 @@ import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
-import { Spending } from '../../shared/types';
+import { Spending, StarTransfer } from '../../shared/types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { StreamableHTTPServerTransport } = require('./sdk-proxy');
@@ -30,6 +30,8 @@ import {
   broadcast,
   triggerAction,
   getEnrichedSpendings,
+  getEnrichedTransfers,
+  getAvailableBalance,
   readLastLogs,
   flushPendingSave,
   scheduleSave,
@@ -321,6 +323,127 @@ server.put('/api/spendings/:id', async (request, reply) => {
   });
 
   return spending;
+});
+
+// Star Transfers routes
+server.get('/api/transfers', async (request, reply) => {
+  try {
+    const enriched = await getEnrichedTransfers();
+    return enriched;
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
+  }
+});
+
+server.post('/api/transfers', async (request, reply) => {
+  const { fromUserId, toUserId, amount } = request.body as { fromUserId: string, toUserId: string, amount: number };
+  
+  const db = await readDb();
+  const fromUser = db.users.find(u => u.id === fromUserId);
+  const toUser = db.users.find(u => u.id === toUserId);
+
+  if (!fromUser || !toUser) {
+    return reply.code(404).send({ error: 'User not found' });
+  }
+
+  if (fromUserId === toUserId) {
+    return reply.code(400).send({ error: 'Cannot transfer stars to yourself' });
+  }
+
+  if (amount <= 0) {
+    return reply.code(400).send({ error: 'Amount must be positive' });
+  }
+
+  // Check available balance (total - pending outgoing transfers)
+  const availableBalance = getAvailableBalance(fromUserId);
+  if (availableBalance < amount) {
+    return reply.code(400).send({ error: 'Not enough available stars', availableBalance });
+  }
+
+  const transfer: StarTransfer = {
+    id: randomUUID(),
+    fromUserId,
+    toUserId,
+    amount,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  db.starTransfers.push(transfer);
+  await writeDb(db);
+
+  logAction('TRANSFER_REQUEST', { fromUserId, toUserId, amount, transferId: transfer.id });
+
+  const enrichedTransfers = await getEnrichedTransfers();
+
+  broadcast({
+    type: 'SYNC_STATE',
+    payload: {
+      userStars: globalState.userStars,
+      spendings: await getEnrichedSpendings(),
+      starTransfers: enrichedTransfers
+    }
+  });
+
+  return transfer;
+});
+
+server.put('/api/transfers/:id', async (request, reply) => {
+  const { id } = request.params as { id: string };
+  const { action } = request.body as { action: 'approve' | 'reject' | 'cancel' };
+
+  const db = await readDb();
+  const transfer = db.starTransfers.find(t => t.id === id);
+
+  if (!transfer) {
+    return reply.code(404).send({ error: 'Transfer not found' });
+  }
+
+  if (transfer.status !== 'pending') {
+    return reply.code(400).send({ error: 'Transfer is already resolved' });
+  }
+
+  const fromUser = db.users.find(u => u.id === transfer.fromUserId);
+  const toUser = db.users.find(u => u.id === transfer.toUserId);
+
+  if (!fromUser || !toUser) {
+    return reply.code(404).send({ error: 'User not found' });
+  }
+
+  if (action === 'approve') {
+    // Deduct from sender and add to receiver
+    fromUser.stars -= transfer.amount;
+    toUser.stars += transfer.amount;
+    transfer.status = 'approved';
+    logAction('TRANSFER_APPROVED', { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
+  } else if (action === 'reject') {
+    // Stars stay with sender (they were locked, now unlocked)
+    transfer.status = 'rejected';
+    logAction('TRANSFER_REJECTED', { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
+  } else if (action === 'cancel') {
+    // Stars stay with sender (they were locked, now unlocked)
+    transfer.status = 'cancelled';
+    logAction('TRANSFER_CANCELLED', { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
+  } else {
+    return reply.code(400).send({ error: 'Invalid action' });
+  }
+
+  transfer.resolvedAt = new Date().toISOString();
+  await writeDb(db);
+
+  const enrichedTransfers = await getEnrichedTransfers();
+
+  broadcast({
+    type: 'SYNC_STATE',
+    payload: {
+      userStars: globalState.userStars,
+      spendings: await getEnrichedSpendings(),
+      starTransfers: enrichedTransfers
+    }
+  });
+
+  return transfer;
 });
 
 // Admin: Upload file
@@ -680,17 +803,20 @@ server.post('/api/admin/state', async (request, reply) => {
     globalState.routineExecutions = newState.routineExecutions || [];
     globalState.taskExecutions = newState.taskExecutions || [];
     globalState.spendings = newState.spendings || [];
+    globalState.starTransfers = newState.starTransfers || [];
     
     scheduleSave();
     
     setLastStateError(null);
     const enrichedSpendings = await getEnrichedSpendings();
+    const enrichedTransfers = await getEnrichedTransfers();
 
     broadcast({
       type: 'SYNC_STATE',
       payload: {
         userStars: globalState.userStars,
-        spendings: enrichedSpendings
+        spendings: enrichedSpendings,
+        starTransfers: enrichedTransfers
       }
     });
     
@@ -754,12 +880,14 @@ server.register(async (fastify) => {
     wsConnections.add(connection);
 
     const enrichedSpendings = await getEnrichedSpendings();
+    const enrichedTransfers = await getEnrichedTransfers();
 
     connection.send(JSON.stringify({
       type: 'SYNC_STATE',
       payload: {
         userStars: globalState.userStars,
-        spendings: enrichedSpendings
+        spendings: enrichedSpendings,
+        starTransfers: enrichedTransfers
       }
     }));
 

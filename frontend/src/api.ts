@@ -1,4 +1,4 @@
-import type { User, Flow, Reward, Spending } from '@shared/types';
+import type { User, Flow, Reward, Spending, StarTransfer } from '@shared/types';
 
 const API_URL = '/api';
 
@@ -186,5 +186,54 @@ export const api = {
       const error = await response.json();
       throw new Error(error.error || 'Failed to save state');
     }
+  },
+
+  getTransfers: async (): Promise<StarTransfer[]> => {
+    const response = await fetch(`${API_URL}/transfers`, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Failed to fetch transfers');
+    return response.json();
+  },
+
+  createTransfer: async (fromUserId: string, toUserId: string, amount: number): Promise<StarTransfer> => {
+    const response = await fetch(`${API_URL}/transfers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fromUserId, toUserId, amount }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create transfer');
+    }
+    return response.json();
+  },
+
+  approveTransfer: async (id: string): Promise<StarTransfer> => {
+    const response = await fetch(`${API_URL}/transfers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'approve' }),
+    });
+    if (!response.ok) throw new Error('Failed to approve transfer');
+    return response.json();
+  },
+
+  rejectTransfer: async (id: string): Promise<StarTransfer> => {
+    const response = await fetch(`${API_URL}/transfers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reject' }),
+    });
+    if (!response.ok) throw new Error('Failed to reject transfer');
+    return response.json();
+  },
+
+  cancelTransfer: async (id: string): Promise<StarTransfer> => {
+    const response = await fetch(`${API_URL}/transfers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cancel' }),
+    });
+    if (!response.ok) throw new Error('Failed to cancel transfer');
+    return response.json();
   }
 };
