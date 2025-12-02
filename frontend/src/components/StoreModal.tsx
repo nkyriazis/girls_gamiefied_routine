@@ -45,7 +45,10 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   const otherUsers = allUsers.filter(u => u.id !== user.id);
 
   const handleBuy = async (reward: Reward) => {
-    if (availableBalance < reward.cost) return;
+    if (availableBalance < reward.cost) {
+      alert(`Δεν έχεις αρκετά αστέρια! Χρειάζεσαι ⭐${reward.cost}, έχεις διαθέσιμα ⭐${availableBalance}`);
+      return;
+    }
 
     setPurchasingId(reward.id);
     playClick();
