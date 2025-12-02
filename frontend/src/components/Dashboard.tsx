@@ -58,8 +58,8 @@ export const Dashboard: React.FC = () => {
     } else if (type === 'ROUTINE_START') {
       const { userId, routineId, executionId } = payload;
       setActiveRoutines(prev => {
-        // Prevent duplicates - remove any existing routine for this user
-        const filtered = prev.filter(r => !(r.userId === userId && r.routineId === routineId));
+        // A user can only be in one routine at a time - filter by userId only
+        const filtered = prev.filter(r => r.userId !== userId);
         return [...filtered, { userId, routineId, executionId }];
       });
     } else if (type === 'FLOW_START') {
@@ -317,6 +317,7 @@ export const Dashboard: React.FC = () => {
                 transition={{ type: "spring", bounce: 0.3 }}
               >
                 <InlineRoutinePlayer
+                  key={ar.executionId || `${ar.userId}-${ar.routineId}`}
                   user={user}
                   routine={routine}
                   executionId={ar.executionId}
