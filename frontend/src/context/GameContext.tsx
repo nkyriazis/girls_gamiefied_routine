@@ -1,6 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
-import type { User, Flow, Reward, Spending, StarTransfer } from '@shared/types';
+import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode, useCallback } from 'react';
+import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance } from '@shared/types';
 import { api } from '../api';
+
+// Notification for expired chores
+export interface ChoreNotification {
+    id: string;
+    type: 'expired' | 'confirmed' | 'rejected';
+    choreTitle: string;
+    userId?: string;
+    starsAwarded?: number;
+    timestamp: number;
+}
 
 interface GameState {
     users: User[];
@@ -8,9 +18,14 @@ interface GameState {
     rewards: Reward[];
     spendings: Spending[];
     starTransfers: StarTransfer[];
+    chores: Chore[];
+    choreInstances: ChoreInstance[];
+    choreNotifications: ChoreNotification[];
+    dismissChoreNotification: (id: string) => void;
     isConnected: boolean;
     lastEvent: GameEvent | null;
     refreshData: () => Promise<void>;
+    refreshChores: () => Promise<void>;
 }
 
 interface GameEvent {
@@ -39,8 +54,28 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     const [rewards, setRewards] = useState<Reward[]>([]);
     const [spendings, setSpendings] = useState<Spending[]>([]);
     const [starTransfers, setStarTransfers] = useState<StarTransfer[]>([]);
+    const [chores, setChores] = useState<Chore[]>([]);
+    const [choreInstances, setChoreInstances] = useState<ChoreInstance[]>([]);
+    const [choreNotifications, setChoreNotifications] = useState<ChoreNotification[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [lastEvent, setLastEvent] = useState<GameEvent | null>(null);
+
+    // Track processed message IDs to prevent duplicate notifications
+    const processedMessages = useRef<Set<string>>(new Set());
+
+    const dismissChoreNotification = useCallback((id: string) => {
+        setChoreNotifications(prev => prev.filter(n => n.id !== id));
+    }, []);
+
+    const refreshChores = useCallback(async () => {
+        try {
+            const { chores: choresData, instances } = await api.getChores();
+            setChores(choresData);
+            setChoreInstances(instances);
+        } catch (error) {
+            console.error('Failed to fetch chores:', error);
+        }
+    }, []);
 
     const refreshData = useCallback(async () => {
         try {
@@ -56,10 +91,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             setRewards(rewardsData);
             setSpendings(spendingsData);
             setStarTransfers(transfersData);
+
+            // Also refresh chores
+            await refreshChores();
         } catch (error) {
             console.error('Failed to fetch data:', error);
         }
-    }, []);
+    }, [refreshChores]);
 
     // Initial Fetch
     useEffect(() => {
@@ -101,7 +139,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
                     // Handle Data Sync internally
                     if (message.type === 'SYNC_STATE') {
-                        const { userStars, spendings: newSpendings, starTransfers: newTransfers } = message.payload;
+                        const { userStars, spendings: newSpendings, starTransfers: newTransfers, choreInstances: newChoreInstances } = message.payload;
 
                         setUsers(prev => prev.map(u => ({
                             ...u,
@@ -115,9 +153,77 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
                         if (newTransfers) {
                             setStarTransfers(newTransfers);
                         }
+
+                        if (newChoreInstances) {
+                            setChoreInstances(newChoreInstances);
+                        }
                     } else if (message.type === 'STARS_AWARDED') {
                         const { userId, totalStars } = message.payload;
                         setUsers(prev => prev.map(u => u.id === userId ? { ...u, stars: totalStars } : u));
+                    } else if (message.type === 'CHORE_EXPIRED') {
+                        // Add notification for expired chore
+                        const { choreTitle, userId, instanceId } = message.payload;
+                        const messageKey = `expired-${instanceId || `${choreTitle}-${userId}`}`;
+
+                        // Deduplicate - React StrictMode may cause double invocations
+                        if (!processedMessages.current.has(messageKey)) {
+                            processedMessages.current.add(messageKey);
+                            const notification: ChoreNotification = {
+                                id: messageKey,
+                                type: 'expired',
+                                choreTitle,
+                                userId,
+                                timestamp: Date.now()
+                            };
+                            setChoreNotifications(prev => [...prev, notification]);
+
+                            // Auto-dismiss after 5 seconds and clean up dedup set
+                            setTimeout(() => {
+                                setChoreNotifications(prev => prev.filter(n => n.id !== notification.id));
+                                processedMessages.current.delete(messageKey);
+                            }, 5000);
+                        }
+                    } else if (message.type === 'CHORE_CONFIRMED') {
+                        const { choreTitle, userId, starsAwarded, instanceId } = message.payload;
+                        const messageKey = `confirmed-${instanceId || `${choreTitle}-${userId}`}`;
+
+                        if (!processedMessages.current.has(messageKey)) {
+                            processedMessages.current.add(messageKey);
+                            const notification: ChoreNotification = {
+                                id: messageKey,
+                                type: 'confirmed',
+                                choreTitle,
+                                userId,
+                                starsAwarded,
+                                timestamp: Date.now()
+                            };
+                            setChoreNotifications(prev => [...prev, notification]);
+
+                            setTimeout(() => {
+                                setChoreNotifications(prev => prev.filter(n => n.id !== notification.id));
+                                processedMessages.current.delete(messageKey);
+                            }, 5000);
+                        }
+                    } else if (message.type === 'CHORE_REJECTED') {
+                        const { choreTitle, userId, instanceId } = message.payload;
+                        const messageKey = `rejected-${instanceId || `${choreTitle}-${userId}`}`;
+
+                        if (!processedMessages.current.has(messageKey)) {
+                            processedMessages.current.add(messageKey);
+                            const notification: ChoreNotification = {
+                                id: messageKey,
+                                type: 'rejected',
+                                choreTitle,
+                                userId,
+                                timestamp: Date.now()
+                            };
+                            setChoreNotifications(prev => [...prev, notification]);
+
+                            setTimeout(() => {
+                                setChoreNotifications(prev => prev.filter(n => n.id !== notification.id));
+                                processedMessages.current.delete(messageKey);
+                            }, 5000);
+                        }
                     } else if (message.type === 'CONFIG_UPDATED') {
                         console.log('Config updated, reloading...');
                         refreshData();
@@ -154,9 +260,14 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             rewards,
             spendings,
             starTransfers,
+            chores,
+            choreInstances,
+            choreNotifications,
+            dismissChoreNotification,
             isConnected,
             lastEvent,
-            refreshData
+            refreshData,
+            refreshChores
         }}>
             {children}
         </GameContext.Provider>

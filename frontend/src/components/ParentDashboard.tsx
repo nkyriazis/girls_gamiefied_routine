@@ -212,9 +212,9 @@ const parseCronToReadable = (cron: string): string => {
     const parts = cron.split(' ');
     if (parts.length !== 5) return cron;
     const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
-    
+
     const time = `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
-    
+
     if (dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
         return `${time} κάθε μέρα`;
     }
@@ -235,7 +235,7 @@ const formatDuration = (seconds: number): string => {
 };
 
 export const ParentDashboard: React.FC = () => {
-    const { users, spendings, starTransfers, flows, lastEvent } = useGame();
+    const { users, spendings, starTransfers, flows, chores, choreInstances, lastEvent } = useGame();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'config' | 'state' | 'debug' | 'logs'>('dashboard');
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [nextToastId, setNextToastId] = useState(0);
@@ -243,6 +243,7 @@ export const ParentDashboard: React.FC = () => {
     const [db, setDb] = useState<any>(null);
     const [debugInfo, setDebugInfo] = useState<any>(null);
     const [logs, setLogs] = useState<any[]>([]);
+    const [choreStarsOverride, setChoreStarsOverride] = useState<Record<string, number>>({});
 
     const showToast = (message: string, type: ToastType = 'info') => {
         const id = nextToastId;
@@ -305,6 +306,34 @@ export const ParentDashboard: React.FC = () => {
         } catch (err) {
             console.error(err);
             showToast('Failed to revoke', 'error');
+        }
+    };
+
+    // Chore handlers
+    const handleConfirmChore = async (instanceId: string, defaultStars: number) => {
+        try {
+            const stars = choreStarsOverride[instanceId] ?? defaultStars;
+            await api.confirmChore(instanceId, stars);
+            showToast(`Chore confirmed! +${stars}⭐`, 'success');
+            setChoreStarsOverride(prev => {
+                const next = { ...prev };
+                delete next[instanceId];
+                return next;
+            });
+        } catch (err) {
+            console.error(err);
+            showToast('Failed to confirm chore', 'error');
+        }
+    };
+
+    const handleRejectChore = async (instanceId: string) => {
+        if (!confirm('Are you sure you want to reject this chore? No stars will be awarded.')) return;
+        try {
+            await api.rejectChore(instanceId);
+            showToast('Chore rejected', 'info');
+        } catch (err) {
+            console.error(err);
+            showToast('Failed to reject chore', 'error');
         }
     };
 
@@ -484,6 +513,62 @@ export const ParentDashboard: React.FC = () => {
                         </section>
 
                         <section className="card">
+                            <h2>🧹 Δουλειές (Αναμονή Επιβεβαίωσης)</h2>
+                            <div className="chore-list">
+                                {choreInstances.filter(ci => ci.status === 'attempted').length === 0 && (
+                                    <p className="empty">Καμία δουλειά για επιβεβαίωση</p>
+                                )}
+                                {choreInstances.filter(ci => ci.status === 'attempted').map(ci => {
+                                    const chore = chores.find(c => c.id === ci.choreId);
+                                    const user = users.find(u => u.id === ci.claimedBy);
+                                    const defaultStars = chore?.defaultStars ?? 0;
+                                    const currentStars = choreStarsOverride[ci.id] ?? defaultStars;
+
+                                    return (
+                                        <div key={ci.id} className="chore-row">
+                                            <div className="chore-info">
+                                                <span className="chore-user" style={{ color: user?.color }}>
+                                                    {user?.name}
+                                                </span>
+                                                <span className="chore-title">
+                                                    {chore && <SmartIcon value={chore.icon} />}
+                                                    {chore?.title || 'Unknown Chore'}
+                                                </span>
+                                                <span className="chore-date">
+                                                    {ci.attemptedAt && format(new Date(ci.attemptedAt), 'd MMM HH:mm', { locale: el })}
+                                                </span>
+                                            </div>
+                                            <div className="chore-stars-input">
+                                                <label>⭐</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={currentStars}
+                                                    onChange={(e) => setChoreStarsOverride(prev => ({
+                                                        ...prev,
+                                                        [ci.id]: parseInt(e.target.value) || 0
+                                                    }))}
+                                                />
+                                            </div>
+                                            <button
+                                                className="success"
+                                                onClick={() => handleConfirmChore(ci.id, defaultStars)}
+                                            >
+                                                ✓ Επιβεβαίωση
+                                            </button>
+                                            <button
+                                                className="danger"
+                                                onClick={() => handleRejectChore(ci.id)}
+                                            >
+                                                ✗ Απόρριψη
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        <section className="card">
                             <h2>Uploads</h2>
                             <div className="upload-section">
                                 <input type="file" accept="image/*,audio/*" onChange={handleFileUpload} />
@@ -594,7 +679,7 @@ export const ParentDashboard: React.FC = () => {
                     <section className="card full-width schedule-view">
                         <h2>📅 Ημερήσιο Πρόγραμμα</h2>
                         <p className="schedule-subtitle">Αναλυτική προβολή του data.json</p>
-                        
+
                         <div className="schedule-container">
                             {db.schedules?.sort((a: any, b: any) => {
                                 // Sort by cron time (hour:minute)
@@ -608,7 +693,7 @@ export const ParentDashboard: React.FC = () => {
                                 const isFlow = schedule.type === 'flow';
                                 const flow = isFlow ? db.flows?.find((f: any) => f.id === schedule.targetId) : null;
                                 const routineAssignment = !isFlow ? db.routineAssignments?.find((ra: any) => ra.id === schedule.targetId) : null;
-                                
+
                                 // Get involved users and routines
                                 const getRoutineDetails = (routineId: string) => {
                                     const routine = db.routines?.find((r: any) => r.id === routineId);
@@ -625,7 +710,7 @@ export const ParentDashboard: React.FC = () => {
 
                                 const getFlowParticipants = (flowObj: any): { userId: string; routineId: string; assignmentId: string }[] => {
                                     const participants: { userId: string; routineId: string; assignmentId: string }[] = [];
-                                    
+
                                     const processSteps = (steps: any[]) => {
                                         for (const step of steps) {
                                             if (step.type === 'parallel') {
@@ -651,7 +736,7 @@ export const ParentDashboard: React.FC = () => {
                                             }
                                         }
                                     };
-                                    
+
                                     processSteps(flowObj?.steps || []);
                                     return participants;
                                 };
@@ -687,7 +772,7 @@ export const ParentDashboard: React.FC = () => {
                                             <span className="schedule-icon">{scheduleIcon}</span>
                                             <span className="schedule-time">{parseCronToReadable(schedule.cron)}</span>
                                             <span className="schedule-title">
-                                                {isFlow ? (flow?.id || schedule.targetId) : 
+                                                {isFlow ? (flow?.id || schedule.targetId) :
                                                     (() => {
                                                         const routine = db.routines?.find((r: any) => r.id === routineAssignment?.routineId);
                                                         return routine?.title || schedule.targetId;
@@ -716,7 +801,7 @@ export const ParentDashboard: React.FC = () => {
                                                     const user = db.users?.find((u: any) => u.id === p.userId);
                                                     const details = getRoutineDetails(p.routineId);
                                                     if (!details) return null;
-                                                    
+
                                                     const totalDuration = details.tasks.reduce((sum: number, t: any) => sum + (t.durationSeconds || 0), 0);
                                                     const totalStars = details.tasks.reduce((sum: number, t: any) => sum + (t.task?.stars || 0), 0);
 
@@ -752,7 +837,7 @@ export const ParentDashboard: React.FC = () => {
                                                     const user = db.users?.find((u: any) => u.id === routineAssignment.userId);
                                                     const details = getRoutineDetails(routineAssignment.routineId);
                                                     if (!details) return <p>Routine not found</p>;
-                                                    
+
                                                     const totalDuration = details.tasks.reduce((sum: number, t: any) => sum + (t.durationSeconds || 0), 0);
                                                     const totalStars = details.tasks.reduce((sum: number, t: any) => sum + (t.task?.stars || 0), 0);
 
@@ -1126,6 +1211,78 @@ export const ParentDashboard: React.FC = () => {
 
         .transfer-cancelled {
           border-left: 3px solid #95a5a6;
+        }
+
+        /* Chore styles */
+        .chore-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          max-height: 400px;
+          overflow-y: auto;
+        }
+
+        .chore-row {
+          background: rgba(0,0,0,0.2);
+          padding: 1rem;
+          border-radius: 0.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+
+        .chore-info {
+          display: flex;
+          flex-direction: column;
+          gap: 0.2rem;
+          flex: 1;
+          min-width: 150px;
+        }
+
+        .chore-user {
+          font-weight: bold;
+        }
+
+        .chore-title {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .chore-date {
+          font-size: 0.8rem;
+          opacity: 0.5;
+        }
+
+        .chore-stars-input {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          background: rgba(255,255,255,0.1);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.5rem;
+        }
+
+        .chore-stars-input label {
+          font-size: 1rem;
+        }
+
+        .chore-stars-input input {
+          width: 50px;
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.3);
+          border-radius: 0.25rem;
+          color: white;
+          padding: 0.25rem;
+          font-size: 0.9rem;
+          text-align: center;
+        }
+
+        .chore-stars-input input:focus {
+          outline: none;
+          border-color: #4cc9f0;
         }
 
         .trigger-list {

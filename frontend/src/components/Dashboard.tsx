@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,12 +8,13 @@ import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
 import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
+import { ChoresDrawer } from './ChoresDrawer';
 import { useGame } from '../context/GameContext';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 
 export const Dashboard: React.FC = () => {
-  const { users, flows, rewards, spendings, starTransfers, lastEvent } = useGame();
+  const { users, flows, rewards, spendings, starTransfers, choreInstances, choreNotifications, dismissChoreNotification, lastEvent } = useGame();
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
   const { isInstallable, promptInstall } = useInstallPrompt();
@@ -21,6 +22,9 @@ export const Dashboard: React.FC = () => {
   // Store State
   const [storeUserId, setStoreUserId] = useState<string | null>(null);
   const storeUser = users.find(u => u.id === storeUserId) || null;
+
+  // Chores Drawer State
+  const [choresOpen, setChoresOpen] = useState(false);
 
   // Flow State - supports multiple simultaneous flows
   const [activeFlows, setActiveFlows] = useState<FlowInstance[]>([]);
@@ -36,6 +40,13 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     flowsRef.current = flows;
   }, [flows]);
+
+  // Count active chores (available, claimed, attempted)
+  const activeChoresCount = useMemo(() => {
+    return choreInstances.filter(ci =>
+      ['available', 'claimed', 'attempted'].includes(ci.status)
+    ).length;
+  }, [choreInstances]);
 
   // Handle Game Events
   useEffect(() => {
@@ -264,6 +275,78 @@ export const Dashboard: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Floating Chores Button */}
+      {totalActiveCount === 0 && (
+        <motion.button
+          className="chores-fab"
+          onClick={() => setChoresOpen(true)}
+          initial={{ x: 100 }}
+          animate={{ x: 0 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          🧹
+          {activeChoresCount > 0 && (
+            <span className="chores-fab-badge">
+              {activeChoresCount}
+            </span>
+          )}
+        </motion.button>
+      )}
+
+      {/* Chores Drawer */}
+      <ChoresDrawer
+        isOpen={choresOpen}
+        onClose={() => setChoresOpen(false)}
+      />
+
+      {/* Toast Notifications for Chores */}
+      <div className="toast-container">
+        <AnimatePresence>
+          {choreNotifications.map(notification => {
+            const user = users.find(u => u.id === notification.userId);
+            return (
+              <motion.div
+                key={notification.id}
+                className={`toast toast-${notification.type}`}
+                initial={{ opacity: 0, x: 100, y: 0 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                exit={{ opacity: 0, x: 100 }}
+                onClick={() => dismissChoreNotification(notification.id)}
+              >
+                {notification.type === 'expired' && (
+                  <>
+                    <span className="toast-icon">⏰</span>
+                    <span className="toast-text">
+                      {user ? `${user.name}: ` : ''}
+                      «{notification.choreTitle}» έληξε!
+                    </span>
+                  </>
+                )}
+                {notification.type === 'confirmed' && (
+                  <>
+                    <span className="toast-icon">✓</span>
+                    <span className="toast-text">
+                      {user ? `${user.name}: ` : ''}
+                      «{notification.choreTitle}» +{notification.starsAwarded}⭐
+                    </span>
+                  </>
+                )}
+                {notification.type === 'rejected' && (
+                  <>
+                    <span className="toast-icon">✗</span>
+                    <span className="toast-text">
+                      {user ? `${user.name}: ` : ''}
+                      «{notification.choreTitle}» απορρίφθηκε
+                    </span>
+                  </>
+                )}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
       {/* Background Animation */}
       <div className="bg-gradient" />
 
@@ -366,9 +449,8 @@ export const Dashboard: React.FC = () => {
               className="dock-item"
               whileHover={!isTouchDevice ? { scale: 1.05, y: -5 } : {}}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setStoreUserId(user.id)}
             >
-              <div className="dock-avatar" style={{ background: user.color }}>
+              <div className="dock-avatar" style={{ background: user.color }} onClick={() => setStoreUserId(user.id)}>
                 <SmartIcon value={user.avatar} size={80} />
               </div>
               <span className="dock-name">{user.name}</span>
@@ -560,6 +642,88 @@ export const Dashboard: React.FC = () => {
         .dock-stars {
           font-size: 0.8rem;
           color: gold;
+        }
+
+        /* Floating Chores Button */
+        .chores-fab {
+          position: fixed;
+          right: 1.5rem;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 60px;
+          height: 60px;
+          min-width: 60px;
+          min-height: 60px;
+          padding: 0;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #4cc9f0, #4361ee);
+          border: none;
+          font-size: 2rem;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(76, 201, 240, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
+        }
+
+        .chores-fab-badge {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          background: #ef476f;
+          color: white;
+          font-size: 0.8rem;
+          font-weight: 700;
+          padding: 0.2rem 0.5rem;
+          border-radius: 1rem;
+          min-width: 1.5rem;
+          text-align: center;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+          position: fixed;
+          top: 1rem;
+          right: 1rem;
+          z-index: 1000;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          max-width: 90vw;
+        }
+
+        .toast {
+          background: rgba(26, 26, 46, 0.95);
+          backdrop-filter: blur(10px);
+          border-radius: 0.75rem;
+          padding: 0.75rem 1rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          cursor: pointer;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toast-expired {
+          border-color: rgba(239, 71, 111, 0.5);
+        }
+
+        .toast-confirmed {
+          border-color: rgba(6, 214, 160, 0.5);
+        }
+
+        .toast-rejected {
+          border-color: rgba(239, 71, 111, 0.5);
+        }
+
+        .toast-icon {
+          font-size: 1.25rem;
+        }
+
+        .toast-text {
+          font-size: 0.9rem;
         }
 
         .install-pwa-btn {

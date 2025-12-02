@@ -1,4 +1,4 @@
-import type { User, Flow, Reward, Spending, StarTransfer } from '@shared/types';
+import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance } from '@shared/types';
 
 const API_URL = '/api';
 
@@ -188,6 +188,7 @@ export const api = {
     }
   },
 
+  // Star Transfers API
   getTransfers: async (): Promise<StarTransfer[]> => {
     const response = await fetch(`${API_URL}/transfers`, { cache: 'no-store' });
     if (!response.ok) throw new Error('Failed to fetch transfers');
@@ -234,6 +235,66 @@ export const api = {
       body: JSON.stringify({ action: 'cancel' }),
     });
     if (!response.ok) throw new Error('Failed to cancel transfer');
+    return response.json();
+  },
+
+  // Chores API
+  getChores: async (userId?: string): Promise<{ chores: Chore[], instances: ChoreInstance[] }> => {
+    const url = userId ? `${API_URL}/chores?userId=${userId}` : `${API_URL}/chores`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Failed to fetch chores');
+    return response.json();
+  },
+
+  claimChore: async (instanceId: string, userId: string): Promise<ChoreInstance> => {
+    const response = await fetch(`${API_URL}/chores/${instanceId}/claim`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to claim chore');
+    }
+    return response.json();
+  },
+
+  attemptChore: async (instanceId: string): Promise<ChoreInstance> => {
+    const response = await fetch(`${API_URL}/chores/${instanceId}/attempt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to mark chore as done');
+    }
+    return response.json();
+  },
+
+  confirmChore: async (instanceId: string, stars?: number): Promise<ChoreInstance> => {
+    const response = await fetch(`${API_URL}/chores/${instanceId}/confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stars }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to confirm chore');
+    }
+    return response.json();
+  },
+
+  rejectChore: async (instanceId: string): Promise<ChoreInstance> => {
+    const response = await fetch(`${API_URL}/chores/${instanceId}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to reject chore');
+    }
     return response.json();
   }
 };
