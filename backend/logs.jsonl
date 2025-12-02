@@ -158,3 +158,4 @@
 {"id":"5c6dda16-f0c0-4fa8-8dc2-73f026264a5b","timestamp":"2025-11-27T22:06:41.960Z","type":"AWARD_STARS","details":{"userId":"u1","amount":90,"newBalance":270}}
 {"id":"b289135f-5e7b-4628-aad3-f73ec366728e","timestamp":"2025-11-28T16:11:43.387Z","type":"SET_STARS","details":{"userId":"u1","oldBalance":270,"newBalance":610}}
 {"id":"977533cf-fc1f-4da1-a4ac-a305cc16b772","timestamp":"2025-11-28T16:12:37.817Z","type":"SET_STARS","details":{"userId":"u2","oldBalance":950,"newBalance":610}}
+{"id":"e68dbb12-fa74-4f68-9d53-35f910a7a1c4","timestamp":"2025-12-02T16:00:28.818Z","type":"TRANSFER_REQUEST","details":{"fromUserId":"u1","toUserId":"u2","amount":10,"transferId":"bcf77a00-eefe-484c-83ce-0b42f420f56b"}}

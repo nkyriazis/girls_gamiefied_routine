@@ -1549,5 +1549,15 @@
       "createdAt": "2025-11-23T16:50:05.549Z",
       "status": "pending"
     }
+  ],
+  "starTransfers": [
+    {
+      "id": "bcf77a00-eefe-484c-83ce-0b42f420f56b",
+      "fromUserId": "u1",
+      "toUserId": "u2",
+      "amount": 10,
+      "createdAt": "2025-12-02T16:00:28.818Z",
+      "status": "pending"
+    }
   ]
 }
