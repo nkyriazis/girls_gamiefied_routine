@@ -90,3 +90,35 @@ export interface StarTransfer {
   fromUser?: User;
   toUser?: User;
 }
+
+// Chores System
+export interface Chore {
+  id: string;
+  title: string;
+  icon: IconValue;
+  defaultStars: number;
+  availabilityCron: string; // Cron expression for when chore becomes available (e.g., "0 8 * * *" for 8am daily)
+  expirationHours: number; // Hours after availability when chore expires
+  eligibleUsers?: string[]; // Optional: restrict to specific user IDs. If omitted, all users can claim.
+}
+
+export type ChoreInstanceStatus = 'available' | 'claimed' | 'attempted' | 'confirmed' | 'rejected' | 'expired';
+
+export interface ChoreInstance {
+  id: string;
+  choreId: string;
+  status: ChoreInstanceStatus;
+  availableAt: string; // ISO timestamp when chore became available
+  expiresAt: string; // ISO timestamp when chore expires
+  claimedBy?: string; // User ID who claimed this chore
+  claimedAt?: string; // ISO timestamp
+  attemptedAt?: string; // ISO timestamp when user marked as done
+  confirmedAt?: string; // ISO timestamp when parent confirmed
+  rejectedAt?: string; // ISO timestamp when parent rejected
+  starsAwarded?: number; // Stars awarded (can differ from defaultStars)
+}
+
+// Enriched chore with instance for frontend display
+export interface ChoreWithInstance extends Chore {
+  instance?: ChoreInstance;
+}

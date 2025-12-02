@@ -48,6 +48,64 @@
         }
       }
     },
+    "choreInstances": {
+      "type": "array",
+      "description": "Chore instance lifecycle tracking",
+      "items": {
+        "type": "object",
+        "required": ["id", "choreId", "status", "availableAt", "expiresAt"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "description": "UUID of the chore instance"
+          },
+          "choreId": {
+            "type": "string",
+            "description": "Reference to chore ID"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "claimed", "attempted", "confirmed", "rejected", "expired"],
+            "description": "Current status of the chore instance"
+          },
+          "availableAt": {
+            "type": "string",
+            "description": "ISO timestamp when chore became available"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "ISO timestamp when chore expires"
+          },
+          "claimedBy": {
+            "type": "string",
+            "description": "User ID who claimed this chore"
+          },
+          "claimedAt": {
+            "type": "string",
+            "description": "ISO timestamp when chore was claimed"
+          },
+          "attemptedAt": {
+            "type": "string",
+            "description": "ISO timestamp when user marked chore as done"
+          },
+          "confirmedAt": {
+            "type": "string",
+            "description": "ISO timestamp when parent confirmed completion"
+          },
+          "rejectedAt": {
+            "type": "string",
+            "description": "ISO timestamp when parent rejected attempt"
+          },
+          "starsAwarded": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Stars awarded for this chore (can differ from defaultStars)"
+          }
+        }
+      }
+    },
     "userStars": {
       "type": "object",
       "description": "Map of user IDs to their current star balance",

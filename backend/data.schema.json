@@ -6,6 +6,67 @@
   "required": ["tasks", "routines", "routineTasks", "users", "settings", "routineAssignments", "flows", "schedules", "rewards"],
   "additionalProperties": false,
   "properties": {
+    "chores": {
+      "type": "array",
+      "description": "Household chores that children can claim and complete for stars",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "icon", "defaultStars", "availabilityCron", "expirationHours"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-_]+$",
+            "description": "Unique chore identifier"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name for the chore"
+          },
+          "icon": {
+            "type": "object",
+            "required": ["type", "value"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["emoji", "image"],
+                "description": "Icon type: emoji or image (uploaded filename)"
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Emoji character or uploaded filename (auto-resolves to /uploads/)"
+              }
+            }
+          },
+          "defaultStars": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Default star reward for completing chore"
+          },
+          "availabilityCron": {
+            "type": "string",
+            "pattern": "^[\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+$",
+            "description": "Cron expression for when chore becomes available (5 fields: minute hour day month weekday)"
+          },
+          "expirationHours": {
+            "type": "number",
+            "minimum": 0.5,
+            "description": "Hours after availability when chore expires if not completed"
+          },
+          "eligibleUsers": {
+            "type": "array",
+            "description": "Optional list of user IDs who can claim this chore. If omitted, all users can claim.",
+            "items": {
+              "type": "string",
+              "description": "Reference to user ID"
+            }
+          }
+        }
+      }
+    },
     "tasks": {
       "type": "array",
       "description": "Library of reusable tasks",
