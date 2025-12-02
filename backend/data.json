@@ -1,4 +1,63 @@
 {
+  "chores": [
+    {
+      "id": "chore-dishes",
+      "title": "Πλύσιμο Πιάτων",
+      "icon": {
+        "type": "emoji",
+        "value": "🍽️"
+      },
+      "defaultStars": 20,
+      "availabilityCron": "0 18 * * *",
+      "expirationHours": 4
+    },
+    {
+      "id": "chore-evening-test",
+      "title": "Βραδινή Δουλειά",
+      "icon": {
+        "type": "emoji",
+        "value": "🌙"
+      },
+      "defaultStars": 5,
+      "availabilityCron": "* * * * *",
+      "expirationHours": 1
+    },
+    {
+      "id": "chore-tidy-room",
+      "title": "Τακτοποίηση Δωματίου",
+      "icon": {
+        "type": "emoji",
+        "value": "🛏️"
+      },
+      "defaultStars": 15,
+      "availabilityCron": "0 10 * * 6",
+      "expirationHours": 8,
+      "eligibleUsers": ["u1", "u2"]
+    },
+    {
+      "id": "chore-vacuum",
+      "title": "Σκούπισμα",
+      "icon": {
+        "type": "emoji",
+        "value": "🧹"
+      },
+      "defaultStars": 25,
+      "availabilityCron": "0 11 * * 0",
+      "expirationHours": 6,
+      "eligibleUsers": ["u1"]
+    },
+    {
+      "id": "chore-water-plants",
+      "title": "Πότισμα Φυτών",
+      "icon": {
+        "type": "emoji",
+        "value": "🌱"
+      },
+      "defaultStars": 10,
+      "availabilityCron": "0 9 * * 1,3,5",
+      "expirationHours": 12
+    }
+  ],
   "tasks": [
     {
       "id": "t-brush",
