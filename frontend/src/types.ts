@@ -53,3 +53,15 @@ export interface Spending {
   user?: User;
   reward?: Reward;
 }
+
+export interface StarTransfer {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  amount: number;
+  createdAt: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  resolvedAt?: string;
+  fromUser?: User;
+  toUser?: User;
+}

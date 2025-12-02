@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import Ajv from 'ajv';
-import { User, Routine, Task, Flow, Reward, Spending } from '../../shared/types';
+import { User, Routine, Task, Flow, Reward, Spending, StarTransfer } from '../../shared/types';
 
 // File paths
 export const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
@@ -87,11 +87,13 @@ export let globalState: {
   routineExecutions: any[];
   taskExecutions: any[];
   spendings: Spending[];
+  starTransfers: StarTransfer[];
 } = {
   userStars: {},
   routineExecutions: [],
   taskExecutions: [],
-  spendings: []
+  spendings: [],
+  starTransfers: []
 };
 
 // WebSocket connections
@@ -131,7 +133,8 @@ export async function loadState() {
           userStars: {},
           routineExecutions: [],
           taskExecutions: [],
-          spendings: []
+          spendings: [],
+          starTransfers: []
         };
         return;
       } else {
@@ -143,7 +146,8 @@ export async function loadState() {
       userStars: loaded.userStars || {},
       routineExecutions: loaded.routineExecutions || [],
       taskExecutions: loaded.taskExecutions || [],
-      spendings: loaded.spendings || []
+      spendings: loaded.spendings || [],
+      starTransfers: loaded.starTransfers || []
     };
     console.log('State loaded into memory');
   } catch (error) {
@@ -193,6 +197,7 @@ export interface Db {
   routineExecutions: any[];
   taskExecutions: any[];
   spendings: Spending[];
+  starTransfers: StarTransfer[];
 }
 
 export async function readDb(): Promise<Db> {
@@ -231,14 +236,15 @@ export async function readDb(): Promise<Db> {
       settings: data.settings || { timezone: 'Europe/Athens' },
       routineExecutions: globalState.routineExecutions,
       taskExecutions: globalState.taskExecutions,
-      spendings: globalState.spendings
+      spendings: globalState.spendings,
+      starTransfers: globalState.starTransfers
     };
   } catch (error) {
     console.error("Error reading DB:", error);
     return {
       users: [], routines: [], tasks: [], routineTasks: [], 
       routineAssignments: [], flows: [], schedules: [], rewards: [],
-      routineExecutions: [], taskExecutions: [], spendings: []
+      routineExecutions: [], taskExecutions: [], spendings: [], starTransfers: []
     };
   }
 }
@@ -254,7 +260,8 @@ export async function writeDb(data: Db) {
     userStars,
     routineExecutions: data.routineExecutions,
     taskExecutions: data.taskExecutions,
-    spendings: data.spendings
+    spendings: data.spendings,
+    starTransfers: data.starTransfers
   };
 
   // Schedule persist
@@ -342,6 +349,30 @@ export async function getEnrichedSpendings() {
     const reward = db.rewards.find(r => r.id === s.rewardId);
     return { ...s, user, reward };
   }).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+// Helper to get enriched star transfers
+export async function getEnrichedTransfers() {
+  const db = await readDb();
+  return db.starTransfers.map(t => {
+    const fromUser = db.users.find(u => u.id === t.fromUserId);
+    const toUser = db.users.find(u => u.id === t.toUserId);
+    return { ...t, fromUser, toUser };
+  }).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+// Helper to calculate pending outgoing transfer amount for a user
+export function getPendingOutgoingTransfers(userId: string): number {
+  return globalState.starTransfers
+    .filter(t => t.fromUserId === userId && t.status === 'pending')
+    .reduce((sum, t) => sum + t.amount, 0);
+}
+
+// Helper to calculate available balance (total - pending outgoing transfers)
+export function getAvailableBalance(userId: string): number {
+  const totalStars = globalState.userStars[userId] || 0;
+  const pendingOutgoing = getPendingOutgoingTransfers(userId);
+  return totalStars - pendingOutgoing;
 }
 
 // Helper to read last N lines from logs file

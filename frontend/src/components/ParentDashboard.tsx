@@ -235,7 +235,7 @@ const formatDuration = (seconds: number): string => {
 };
 
 export const ParentDashboard: React.FC = () => {
-    const { users, spendings, flows, lastEvent } = useGame();
+    const { users, spendings, starTransfers, flows, lastEvent } = useGame();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'config' | 'state' | 'debug' | 'logs'>('dashboard');
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [nextToastId, setNextToastId] = useState(0);
@@ -331,6 +331,31 @@ export const ParentDashboard: React.FC = () => {
             showToast('Failed to trigger', 'error');
         }
     };
+
+    const handleApproveTransfer = async (id: string) => {
+        try {
+            await api.approveTransfer(id);
+            showToast('Μεταφορά εγκρίθηκε!', 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('Αποτυχία έγκρισης', 'error');
+        }
+    };
+
+    const handleRejectTransfer = async (id: string) => {
+        if (!confirm('Απόρριψη μεταφοράς; Τα αστέρια θα επιστραφούν στον αποστολέα.')) return;
+        try {
+            await api.rejectTransfer(id);
+            showToast('Μεταφορά απορρίφθηκε', 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('Αποτυχία απόρριψης', 'error');
+        }
+    };
+
+    // Get pending transfers
+    const pendingTransfers = starTransfers.filter(t => t.status === 'pending');
+    const resolvedTransfers = starTransfers.filter(t => t.status !== 'pending');
 
     return (
         <div className="parent-dashboard">
@@ -433,6 +458,32 @@ export const ParentDashboard: React.FC = () => {
                         </section>
 
                         <section className="card">
+                            <h2>🎁 Μεταφορές Αστεριών (Αναμονή έγκρισης)</h2>
+                            <div className="spending-list">
+                                {pendingTransfers.length === 0 && (
+                                    <p className="empty">Καμία εκκρεμής μεταφορά</p>
+                                )}
+                                {pendingTransfers.map(t => (
+                                    <div key={t.id} className="spending-row transfer-row">
+                                        <div className="spending-info">
+                                            <span className="transfer-from-to">
+                                                <strong>{t.fromUser?.name || 'Unknown'}</strong>
+                                                {' → '}
+                                                <strong>{t.toUser?.name || 'Unknown'}</strong>
+                                            </span>
+                                            <span className="transfer-amount">⭐ {t.amount}</span>
+                                            <span className="spending-date">
+                                                {format(new Date(t.createdAt), 'd MMM HH:mm', { locale: el })}
+                                            </span>
+                                        </div>
+                                        <button className="success" onClick={() => handleApproveTransfer(t.id)}>✓ Έγκριση</button>
+                                        <button className="danger" onClick={() => handleRejectTransfer(t.id)}>✗ Απόρριψη</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
+                        <section className="card">
                             <h2>Uploads</h2>
                             <div className="upload-section">
                                 <input type="file" accept="image/*,audio/*" onChange={handleFileUpload} />
@@ -441,6 +492,31 @@ export const ParentDashboard: React.FC = () => {
                                     <strong>Audio:</strong> Upload MP3 files for custom alarm sounds<br />
                                     The filename will be copied to clipboard after upload.
                                 </p>
+                            </div>
+                        </section>
+
+                        <section className="card">
+                            <h2>Ιστορικό Μεταφορών</h2>
+                            <div className="spending-list history">
+                                {resolvedTransfers.slice(0, 10).map(t => (
+                                    <div key={t.id} className={`spending-row done transfer-${t.status}`}>
+                                        <div className="spending-info">
+                                            <span className="transfer-from-to">
+                                                {t.fromUser?.name || 'Unknown'} → {t.toUser?.name || 'Unknown'}
+                                            </span>
+                                            <span className="transfer-amount">⭐ {t.amount}</span>
+                                            <span className="date">{format(new Date(t.createdAt), 'd MMM HH:mm', { locale: el })}</span>
+                                        </div>
+                                        <span className="status">
+                                            {t.status === 'approved' && '✅ Εγκρίθηκε'}
+                                            {t.status === 'rejected' && '❌ Απορρίφθηκε'}
+                                            {t.status === 'cancelled' && '🚫 Ακυρώθηκε'}
+                                        </span>
+                                    </div>
+                                ))}
+                                {resolvedTransfers.length === 0 && (
+                                    <p className="empty">Κανένα ιστορικό</p>
+                                )}
                             </div>
                         </section>
 
@@ -1018,6 +1094,38 @@ export const ParentDashboard: React.FC = () => {
           background: #ff4757;
           color: white;
           margin-left: 0.5rem;
+        }
+
+        button.success {
+          background: #2ecc71;
+          color: white;
+          margin-left: 0.5rem;
+        }
+
+        /* Transfer styles */
+        .transfer-row {
+          border-left: 3px solid #a55eea;
+        }
+
+        .transfer-from-to {
+          color: white;
+        }
+
+        .transfer-amount {
+          color: gold;
+          font-weight: bold;
+        }
+
+        .transfer-approved {
+          border-left: 3px solid #2ecc71;
+        }
+
+        .transfer-rejected {
+          border-left: 3px solid #e74c3c;
+        }
+
+        .transfer-cancelled {
+          border-left: 3px solid #95a5a6;
         }
 
         .trigger-list {

@@ -13,7 +13,7 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 
 export const Dashboard: React.FC = () => {
-  const { users, flows, rewards, spendings, lastEvent } = useGame();
+  const { users, flows, rewards, spendings, starTransfers, lastEvent } = useGame();
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
   const { isInstallable, promptInstall } = useInstallPrompt();
@@ -250,6 +250,8 @@ export const Dashboard: React.FC = () => {
             user={storeUser}
             rewards={rewards}
             spendings={spendings}
+            starTransfers={starTransfers}
+            allUsers={users}
             onClose={() => setStoreUserId(null)}
           />
         )}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
-import type { User, Flow, Reward, Spending } from '@shared/types';
+import type { User, Flow, Reward, Spending, StarTransfer } from '@shared/types';
 import { api } from '../api';
 
 interface GameState {
@@ -7,6 +7,7 @@ interface GameState {
     flows: Flow[];
     rewards: Reward[];
     spendings: Spending[];
+    starTransfers: StarTransfer[];
     isConnected: boolean;
     lastEvent: GameEvent | null;
     refreshData: () => Promise<void>;
@@ -37,21 +38,24 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     const [flows, setFlows] = useState<Flow[]>([]);
     const [rewards, setRewards] = useState<Reward[]>([]);
     const [spendings, setSpendings] = useState<Spending[]>([]);
+    const [starTransfers, setStarTransfers] = useState<StarTransfer[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [lastEvent, setLastEvent] = useState<GameEvent | null>(null);
 
     const refreshData = useCallback(async () => {
         try {
-            const [usersData, flowsData, rewardsData, spendingsData] = await Promise.all([
+            const [usersData, flowsData, rewardsData, spendingsData, transfersData] = await Promise.all([
                 api.getUsers(),
                 api.getFlows(),
                 api.getRewards(),
-                api.getSpendings()
+                api.getSpendings(),
+                api.getTransfers()
             ]);
             setUsers(usersData);
             setFlows(flowsData);
             setRewards(rewardsData);
             setSpendings(spendingsData);
+            setStarTransfers(transfersData);
         } catch (error) {
             console.error('Failed to fetch data:', error);
         }
@@ -97,7 +101,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
                     // Handle Data Sync internally
                     if (message.type === 'SYNC_STATE') {
-                        const { userStars, spendings: newSpendings } = message.payload;
+                        const { userStars, spendings: newSpendings, starTransfers: newTransfers } = message.payload;
 
                         setUsers(prev => prev.map(u => ({
                             ...u,
@@ -106,6 +110,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
                         if (newSpendings) {
                             setSpendings(newSpendings);
+                        }
+
+                        if (newTransfers) {
+                            setStarTransfers(newTransfers);
                         }
                     } else if (message.type === 'STARS_AWARDED') {
                         const { userId, totalStars } = message.payload;
@@ -145,6 +153,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             flows,
             rewards,
             spendings,
+            starTransfers,
             isConnected,
             lastEvent,
             refreshData
