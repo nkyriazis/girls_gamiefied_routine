@@ -70,7 +70,7 @@
         "value": "🍱"
       },
       "defaultStars": 15,
-      "availabilityCron": "0 14 * * 1-5",
+      "availabilityCron": "* * * * *",
       "expirationHours": 6,
       "category": "bonus"
     },

@@ -85,15 +85,15 @@ export default defineConfig({
     host: true, // Listen on all addresses (0.0.0.0)
     proxy: {
       '/api': {
-        target: 'http://backend:3000',
+        target: process.env.API_URL || 'http://localhost:3000',
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://backend:3000',
+        target: process.env.WS_URL || 'ws://localhost:3000',
         ws: true,
       },
       '/uploads': {
-        target: 'http://backend:3000',
+        target: process.env.API_URL || 'http://localhost:3000',
         changeOrigin: true,
       },
     },
