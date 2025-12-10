@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { useGame } from '../context/GameContext';
 import { api } from '../api';
-import type { Chore, ChoreInstance, User } from '@shared/types';
+import type { Chore, ChoreInstance, User, ChoreCategory } from '@shared/types';
 
 interface ChoresDrawerProps {
     isOpen: boolean;
     onClose: () => void;
+    category?: ChoreCategory; // 'chore' for household tasks, 'bonus' for achievements
 }
 
 // Helper to format time remaining
@@ -28,12 +29,12 @@ function formatTimeRemaining(expiresAt: string): string {
 }
 
 // Get status badge info
-function getStatusBadge(status: ChoreInstance['status']): { text: string; color: string } {
+function getStatusBadge(status: ChoreInstance['status'], isBonus: boolean): { text: string; color: string } {
     switch (status) {
         case 'available':
             return { text: 'Διαθέσιμο', color: '#4cc9f0' };
         case 'claimed':
-            return { text: 'Σε εξέλιξη', color: '#ffd60a' };
+            return { text: isBonus ? 'Αναφέρθηκε' : 'Σε εξέλιξη', color: '#ffd60a' };
         case 'attempted':
             return { text: 'Αναμονή επιβεβαίωσης', color: '#fb8500' };
         case 'confirmed':
@@ -54,8 +55,34 @@ interface ChoreWithInstance {
     claimedByUser?: User;
 }
 
-export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose }) => {
+// Get drawer configuration based on category
+function getDrawerConfig(category: ChoreCategory) {
+    if (category === 'bonus') {
+        return {
+            title: '🌟 Bonus Δραστηριότητες',
+            emptyIcon: '🌟',
+            emptyText: 'Δεν υπάρχουν διαθέσιμες bonus δραστηριότητες.',
+            emptyHint: 'Νέες δραστηριότητες εμφανίζονται καθημερινά!',
+            claimQuestion: 'Ποιος το πέτυχε;',
+            doneButtonText: (name: string) => `${name}: Το πέτυχα! 🎉`,
+            gradientColors: ['#667eea', '#764ba2']
+        };
+    }
+    return {
+        title: '🧹 Δουλειές',
+        emptyIcon: '🧹',
+        emptyText: 'Δεν υπάρχουν διαθέσιμες δουλειές αυτή τη στιγμή.',
+        emptyHint: 'Νέες δουλειές εμφανίζονται σύμφωνα με το πρόγραμμα!',
+        claimQuestion: 'Ποιος το αναλαμβάνει;',
+        doneButtonText: (name: string) => `${name}: Το έκανα! ✓`,
+        gradientColors: ['#4cc9f0', '#4361ee']
+    };
+}
+
+export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, category = 'chore' }) => {
     const { users, chores, choreInstances, refreshChores } = useGame();
+    const config = getDrawerConfig(category);
+    const isBonus = category === 'bonus';
 
     // Group active chore instances with their chore definitions
     const activeChores = useMemo(() => {
@@ -67,6 +94,10 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose }) =
 
             const chore = chores.find(c => c.id === instance.choreId);
             if (!chore) continue;
+            
+            // Filter by category (default to 'chore' if not specified)
+            const choreCategory = chore.category || 'chore';
+            if (choreCategory !== category) continue;
 
             // Get eligible users for this chore
             const eligibleUsers = chore.eligibleUsers && chore.eligibleUsers.length > 0
@@ -93,7 +124,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose }) =
         return result.sort((a, b) =>
             (statusOrder[a.instance.status] ?? 99) - (statusOrder[b.instance.status] ?? 99)
         );
-    }, [chores, choreInstances, users]);
+    }, [chores, choreInstances, users, category]);
 
     const handleClaim = async (instanceId: string, userId: string) => {
         try {
@@ -128,28 +159,28 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose }) =
 
                     {/* Drawer */}
                     <motion.div
-                        className="chores-drawer"
+                        className={`chores-drawer ${isBonus ? 'bonus' : ''}`}
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                     >
                         <div className="chores-header">
-                            <h2>🧹 Δουλειές</h2>
+                            <h2>{config.title}</h2>
                             <button className="close-btn" onClick={onClose}>✕</button>
                         </div>
 
                         <div className="chores-content">
                             {activeChores.length === 0 ? (
                                 <div className="empty-state">
-                                    <span className="empty-icon">🧹</span>
-                                    <p>Δεν υπάρχουν διαθέσιμες δουλειές αυτή τη στιγμή.</p>
-                                    <p className="hint">Νέες δουλειές εμφανίζονται σύμφωνα με το πρόγραμμα!</p>
+                                    <span className="empty-icon">{config.emptyIcon}</span>
+                                    <p>{config.emptyText}</p>
+                                    <p className="hint">{config.emptyHint}</p>
                                 </div>
                             ) : (
                                 <div className="chore-list">
                                     {activeChores.map(({ chore, instance, eligibleUsers, claimedByUser }) => {
-                                        const badge = getStatusBadge(instance.status);
+                                        const badge = getStatusBadge(instance.status, isBonus);
                                         const isAvailable = instance.status === 'available';
                                         const isClaimed = instance.status === 'claimed';
                                         const isAttempted = instance.status === 'attempted';
@@ -158,7 +189,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose }) =
                                         return (
                                             <motion.div
                                                 key={instance.id}
-                                                className={`chore-card ${instance.status}`}
+                                                className={`chore-card ${instance.status} ${isBonus ? 'bonus' : ''}`}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                             >
@@ -188,7 +219,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose }) =
                                                 {/* Available: Show user buttons to claim */}
                                                 {isAvailable && (
                                                     <div className="chore-actions">
-                                                        <span className="action-label">Ποιος το αναλαμβάνει;</span>
+                                                        <span className="action-label">{config.claimQuestion}</span>
                                                         <div className="user-buttons">
                                                             {eligibleUsers.map(user => (
                                                                 <button
@@ -209,12 +240,12 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose }) =
                                                 {isClaimed && claimedByUser && (
                                                     <div className="chore-actions">
                                                         <button
-                                                            className="done-btn"
+                                                            className={`done-btn ${isBonus ? 'bonus' : ''}`}
                                                             onClick={() => handleAttempt(instance.id)}
                                                             style={{ '--user-color': claimedByUser.color } as React.CSSProperties}
                                                         >
                                                             <SmartIcon value={claimedByUser.avatar} size={24} />
-                                                            <span>{claimedByUser.name}: Το έκανα! ✓</span>
+                                                            <span>{config.doneButtonText(claimedByUser.name)}</span>
                                                         </button>
                                                     </div>
                                                 )}
@@ -471,6 +502,26 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose }) =
         .empty-state .hint {
           font-size: 0.85rem;
           opacity: 0.7;
+        }
+
+        /* Bonus-specific styles */
+        .chores-drawer.bonus {
+          background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 100%);
+        }
+
+        .chore-card.bonus.available {
+          border-color: rgba(102, 126, 234, 0.4);
+          background: rgba(102, 126, 234, 0.1);
+        }
+
+        .chore-card.bonus.claimed {
+          border-color: rgba(118, 75, 162, 0.4);
+          background: rgba(118, 75, 162, 0.1);
+        }
+
+        .done-btn.bonus {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-color: #764ba2;
         }
       `}</style>
         </AnimatePresence>

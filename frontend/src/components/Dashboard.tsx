@@ -14,7 +14,7 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 
 export const Dashboard: React.FC = () => {
-  const { users, flows, rewards, spendings, starTransfers, choreInstances, choreNotifications, dismissChoreNotification, lastEvent } = useGame();
+  const { users, flows, rewards, spendings, starTransfers, chores, choreInstances, choreNotifications, dismissChoreNotification, lastEvent } = useGame();
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
   const { isInstallable, promptInstall } = useInstallPrompt();
@@ -25,6 +25,9 @@ export const Dashboard: React.FC = () => {
 
   // Chores Drawer State
   const [choresOpen, setChoresOpen] = useState(false);
+  
+  // Bonus Activities Drawer State
+  const [bonusOpen, setBonusOpen] = useState(false);
 
   // Flow State - supports multiple simultaneous flows
   const [activeFlows, setActiveFlows] = useState<FlowInstance[]>([]);
@@ -41,12 +44,23 @@ export const Dashboard: React.FC = () => {
     flowsRef.current = flows;
   }, [flows]);
 
-  // Count active chores (available, claimed, attempted)
+  // Count active chores (available, claimed, attempted) - filtered by category
   const activeChoresCount = useMemo(() => {
-    return choreInstances.filter(ci =>
-      ['available', 'claimed', 'attempted'].includes(ci.status)
-    ).length;
-  }, [choreInstances]);
+    return choreInstances.filter(ci => {
+      if (!['available', 'claimed', 'attempted'].includes(ci.status)) return false;
+      const chore = chores.find(c => c.id === ci.choreId);
+      return chore && (chore.category || 'chore') === 'chore';
+    }).length;
+  }, [choreInstances, chores]);
+
+  // Count active bonus activities
+  const activeBonusCount = useMemo(() => {
+    return choreInstances.filter(ci => {
+      if (!['available', 'claimed', 'attempted'].includes(ci.status)) return false;
+      const chore = chores.find(c => c.id === ci.choreId);
+      return chore && chore.category === 'bonus';
+    }).length;
+  }, [choreInstances, chores]);
 
   // Handle Game Events
   useEffect(() => {
@@ -294,10 +308,37 @@ export const Dashboard: React.FC = () => {
         </motion.button>
       )}
 
+      {/* Floating Bonus Activities Button */}
+      {totalActiveCount === 0 && (
+        <motion.button
+          className="bonus-fab"
+          onClick={() => setBonusOpen(true)}
+          initial={{ x: 100 }}
+          animate={{ x: 0 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          🌟
+          {activeBonusCount > 0 && (
+            <span className="bonus-fab-badge">
+              {activeBonusCount}
+            </span>
+          )}
+        </motion.button>
+      )}
+
       {/* Chores Drawer */}
       <ChoresDrawer
         isOpen={choresOpen}
         onClose={() => setChoresOpen(false)}
+        category="chore"
+      />
+
+      {/* Bonus Activities Drawer */}
+      <ChoresDrawer
+        isOpen={bonusOpen}
+        onClose={() => setBonusOpen(false)}
+        category="bonus"
       />
 
       {/* Toast Notifications for Chores */}
@@ -668,6 +709,43 @@ export const Dashboard: React.FC = () => {
         }
 
         .chores-fab-badge {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          background: #ef476f;
+          color: white;
+          font-size: 0.8rem;
+          font-weight: 700;
+          padding: 0.2rem 0.5rem;
+          border-radius: 1rem;
+          min-width: 1.5rem;
+          text-align: center;
+        }
+
+        /* Floating Bonus Activities Button */
+        .bonus-fab {
+          position: fixed;
+          right: 1.5rem;
+          top: calc(50% + 80px);
+          transform: translateY(-50%);
+          width: 60px;
+          height: 60px;
+          min-width: 60px;
+          min-height: 60px;
+          padding: 0;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          border: none;
+          font-size: 2rem;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
+        }
+
+        .bonus-fab-badge {
           position: absolute;
           top: -5px;
           right: -5px;
