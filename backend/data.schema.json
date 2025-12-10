@@ -8,7 +8,7 @@
   "properties": {
     "chores": {
       "type": "array",
-      "description": "Household chores that children can claim and complete for stars",
+      "description": "Household chores and bonus activities that children can claim and complete for stars",
       "items": {
         "type": "object",
         "required": ["id", "title", "icon", "defaultStars", "availabilityCron", "expirationHours"],
@@ -17,12 +17,12 @@
           "id": {
             "type": "string",
             "pattern": "^[a-zA-Z0-9-_]+$",
-            "description": "Unique chore identifier"
+            "description": "Unique chore/activity identifier"
           },
           "title": {
             "type": "string",
             "minLength": 1,
-            "description": "Display name for the chore"
+            "description": "Display name for the chore/activity"
           },
           "icon": {
             "type": "object",
@@ -44,25 +44,31 @@
           "defaultStars": {
             "type": "integer",
             "minimum": 1,
-            "description": "Default star reward for completing chore"
+            "description": "Default star reward for completing chore/activity"
           },
           "availabilityCron": {
             "type": "string",
             "pattern": "^[\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+$",
-            "description": "Cron expression for when chore becomes available (5 fields: minute hour day month weekday)"
+            "description": "Cron expression for when chore/activity becomes available (5 fields: minute hour day month weekday)"
           },
           "expirationHours": {
             "type": "number",
             "minimum": 0.5,
-            "description": "Hours after availability when chore expires if not completed"
+            "description": "Hours after availability when chore/activity expires if not completed"
           },
           "eligibleUsers": {
             "type": "array",
-            "description": "Optional list of user IDs who can claim this chore. If omitted, all users can claim.",
+            "description": "Optional list of user IDs who can claim this chore/activity. If omitted, all users can claim.",
             "items": {
               "type": "string",
               "description": "Reference to user ID"
             }
+          },
+          "category": {
+            "type": "string",
+            "enum": ["chore", "bonus"],
+            "default": "chore",
+            "description": "Category: 'chore' for household tasks, 'bonus' for school/outside achievements"
           }
         }
       }

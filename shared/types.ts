@@ -91,7 +91,9 @@ export interface StarTransfer {
   toUser?: User;
 }
 
-// Chores System
+// Chores and Bonus Activities System
+export type ChoreCategory = 'chore' | 'bonus';
+
 export interface Chore {
   id: string;
   title: string;
@@ -100,6 +102,7 @@ export interface Chore {
   availabilityCron: string; // Cron expression for when chore becomes available (e.g., "0 8 * * *" for 8am daily)
   expirationHours: number; // Hours after availability when chore expires
   eligibleUsers?: string[]; // Optional: restrict to specific user IDs. If omitted, all users can claim.
+  category?: ChoreCategory; // 'chore' for household tasks (default), 'bonus' for school/outside achievements
 }
 
 export type ChoreInstanceStatus = 'available' | 'claimed' | 'attempted' | 'confirmed' | 'rejected' | 'expired';

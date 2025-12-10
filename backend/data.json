@@ -9,7 +9,8 @@
       },
       "defaultStars": 20,
       "availabilityCron": "0 18 * * *",
-      "expirationHours": 4
+      "expirationHours": 4,
+      "category": "chore"
     },
     {
       "id": "chore-evening-test",
@@ -20,7 +21,8 @@
       },
       "defaultStars": 5,
       "availabilityCron": "* * * * *",
-      "expirationHours": 1
+      "expirationHours": 1,
+      "category": "chore"
     },
     {
       "id": "chore-tidy-room",
@@ -32,7 +34,8 @@
       "defaultStars": 15,
       "availabilityCron": "0 10 * * 6",
       "expirationHours": 8,
-      "eligibleUsers": ["u1", "u2"]
+      "eligibleUsers": ["u1", "u2"],
+      "category": "chore"
     },
     {
       "id": "chore-vacuum",
@@ -44,7 +47,8 @@
       "defaultStars": 25,
       "availabilityCron": "0 11 * * 0",
       "expirationHours": 6,
-      "eligibleUsers": ["u1"]
+      "eligibleUsers": ["u1"],
+      "category": "chore"
     },
     {
       "id": "chore-water-plants",
@@ -55,7 +59,56 @@
       },
       "defaultStars": 10,
       "availabilityCron": "0 9 * * 1,3,5",
-      "expirationHours": 12
+      "expirationHours": 12,
+      "category": "chore"
+    },
+    {
+      "id": "bonus-school-food",
+      "title": "Έφαγα το Φαγητό στο Σχολείο",
+      "icon": {
+        "type": "emoji",
+        "value": "🍱"
+      },
+      "defaultStars": 15,
+      "availabilityCron": "0 14 * * 1-5",
+      "expirationHours": 6,
+      "category": "bonus"
+    },
+    {
+      "id": "bonus-homework-early",
+      "title": "Τέλειωσα τα Μαθήματα στο Σχολείο",
+      "icon": {
+        "type": "emoji",
+        "value": "📚"
+      },
+      "defaultStars": 20,
+      "availabilityCron": "0 14 * * 1-5",
+      "expirationHours": 6,
+      "category": "bonus"
+    },
+    {
+      "id": "bonus-good-behavior",
+      "title": "Καλή Συμπεριφορά στο Σχολείο",
+      "icon": {
+        "type": "emoji",
+        "value": "⭐"
+      },
+      "defaultStars": 25,
+      "availabilityCron": "0 14 * * 1-5",
+      "expirationHours": 6,
+      "category": "bonus"
+    },
+    {
+      "id": "bonus-helped-friend",
+      "title": "Βοήθησα Φίλο/Φίλη",
+      "icon": {
+        "type": "emoji",
+        "value": "🤝"
+      },
+      "defaultStars": 15,
+      "availabilityCron": "0 14 * * 1-5",
+      "expirationHours": 6,
+      "category": "bonus"
     }
   ],
   "tasks": [

@@ -515,10 +515,18 @@ export const ParentDashboard: React.FC = () => {
                         <section className="card">
                             <h2>🧹 Δουλειές (Αναμονή Επιβεβαίωσης)</h2>
                             <div className="chore-list">
-                                {choreInstances.filter(ci => ci.status === 'attempted').length === 0 && (
+                                {choreInstances.filter(ci => {
+                                    if (ci.status !== 'attempted') return false;
+                                    const chore = chores.find(c => c.id === ci.choreId);
+                                    return chore && (chore.category || 'chore') === 'chore';
+                                }).length === 0 && (
                                     <p className="empty">Καμία δουλειά για επιβεβαίωση</p>
                                 )}
-                                {choreInstances.filter(ci => ci.status === 'attempted').map(ci => {
+                                {choreInstances.filter(ci => {
+                                    if (ci.status !== 'attempted') return false;
+                                    const chore = chores.find(c => c.id === ci.choreId);
+                                    return chore && (chore.category || 'chore') === 'chore';
+                                }).map(ci => {
                                     const chore = chores.find(c => c.id === ci.choreId);
                                     const user = users.find(u => u.id === ci.claimedBy);
                                     const defaultStars = chore?.defaultStars ?? 0;
@@ -533,6 +541,70 @@ export const ParentDashboard: React.FC = () => {
                                                 <span className="chore-title">
                                                     {chore && <SmartIcon value={chore.icon} />}
                                                     {chore?.title || 'Unknown Chore'}
+                                                </span>
+                                                <span className="chore-date">
+                                                    {ci.attemptedAt && format(new Date(ci.attemptedAt), 'd MMM HH:mm', { locale: el })}
+                                                </span>
+                                            </div>
+                                            <div className="chore-stars-input">
+                                                <label>⭐</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={currentStars}
+                                                    onChange={(e) => setChoreStarsOverride(prev => ({
+                                                        ...prev,
+                                                        [ci.id]: parseInt(e.target.value) || 0
+                                                    }))}
+                                                />
+                                            </div>
+                                            <button
+                                                className="success"
+                                                onClick={() => handleConfirmChore(ci.id, defaultStars)}
+                                            >
+                                                ✓ Επιβεβαίωση
+                                            </button>
+                                            <button
+                                                className="danger"
+                                                onClick={() => handleRejectChore(ci.id)}
+                                            >
+                                                ✗ Απόρριψη
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        <section className="card bonus-section">
+                            <h2>🌟 Bonus Δραστηριότητες (Αναμονή Επιβεβαίωσης)</h2>
+                            <div className="chore-list">
+                                {choreInstances.filter(ci => {
+                                    if (ci.status !== 'attempted') return false;
+                                    const chore = chores.find(c => c.id === ci.choreId);
+                                    return chore && chore.category === 'bonus';
+                                }).length === 0 && (
+                                    <p className="empty">Καμία bonus δραστηριότητα για επιβεβαίωση</p>
+                                )}
+                                {choreInstances.filter(ci => {
+                                    if (ci.status !== 'attempted') return false;
+                                    const chore = chores.find(c => c.id === ci.choreId);
+                                    return chore && chore.category === 'bonus';
+                                }).map(ci => {
+                                    const chore = chores.find(c => c.id === ci.choreId);
+                                    const user = users.find(u => u.id === ci.claimedBy);
+                                    const defaultStars = chore?.defaultStars ?? 0;
+                                    const currentStars = choreStarsOverride[ci.id] ?? defaultStars;
+
+                                    return (
+                                        <div key={ci.id} className="chore-row bonus-row">
+                                            <div className="chore-info">
+                                                <span className="chore-user" style={{ color: user?.color }}>
+                                                    {user?.name}
+                                                </span>
+                                                <span className="chore-title">
+                                                    {chore && <SmartIcon value={chore.icon} />}
+                                                    {chore?.title || 'Unknown Activity'}
                                                 </span>
                                                 <span className="chore-date">
                                                     {ci.attemptedAt && format(new Date(ci.attemptedAt), 'd MMM HH:mm', { locale: el })}
@@ -1283,6 +1355,19 @@ export const ParentDashboard: React.FC = () => {
         .chore-stars-input input:focus {
           outline: none;
           border-color: #4cc9f0;
+        }
+
+        /* Bonus section styles */
+        .bonus-section {
+          border-left: 3px solid #764ba2;
+        }
+
+        .bonus-section h2 {
+          color: #a78bfa;
+        }
+
+        .bonus-row {
+          border-left: 3px solid #764ba2;
         }
 
         .trigger-list {
