@@ -6,6 +6,170 @@
   "required": ["tasks", "routines", "routineTasks", "users", "settings", "routineAssignments", "flows", "schedules", "rewards"],
   "additionalProperties": false,
   "properties": {
+    "exercises": {
+      "type": "array",
+      "description": "Educational mini-games for earning stars",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "icon", "difficulty", "stars", "content"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-_]+$",
+            "description": "Unique exercise identifier"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name for the exercise"
+          },
+          "icon": {
+            "type": "object",
+            "required": ["type", "value"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["emoji", "image"],
+                "description": "Icon type: emoji or image (uploaded filename)"
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Emoji character or uploaded filename (auto-resolves to /uploads/)"
+              }
+            }
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard"],
+            "description": "Difficulty level of the exercise"
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Star reward for correct completion"
+          },
+          "availabilityCron": {
+            "type": "string",
+            "pattern": "^[\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+ [\\d\\*\\-,/]+$",
+            "description": "Optional cron expression for when exercise becomes available"
+          },
+          "eligibleUsers": {
+            "type": "array",
+            "description": "Optional list of user IDs who can attempt this exercise. If omitted, all users can attempt.",
+            "items": {
+              "type": "string",
+              "description": "Reference to user ID"
+            }
+          },
+          "content": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["type", "word", "hiddenIndices"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["spell-fill"]
+                  },
+                  "word": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The complete word"
+                  },
+                  "hiddenIndices": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "description": "Indices of letters to hide (0-based)"
+                  },
+                  "hint": {
+                    "type": "string",
+                    "description": "Optional hint"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["type", "question", "options", "correctIndex"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["grammar-choice"]
+                  },
+                  "question": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The question text"
+                  },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 2,
+                    "description": "Array of options to choose from"
+                  },
+                  "correctIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Index of the correct answer (0-based)"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["type", "operation", "num1", "num2"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["math-simple"]
+                  },
+                  "operation": {
+                    "type": "string",
+                    "enum": ["+", "-", "*", "/"]
+                  },
+                  "num1": {
+                    "type": "number"
+                  },
+                  "num2": {
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["type", "operation", "num1", "num2"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["math-vertical"]
+                  },
+                  "operation": {
+                    "type": "string",
+                    "enum": ["+", "-"]
+                  },
+                  "num1": {
+                    "type": "number"
+                  },
+                  "num2": {
+                    "type": "number"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
     "chores": {
       "type": "array",
       "description": "Household chores and bonus activities that children can claim and complete for stars",

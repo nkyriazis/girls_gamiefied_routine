@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode, useCallback } from 'react';
-import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance } from '@shared/types';
+import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, Exercise, ExerciseInstance } from '@shared/types';
 import { api } from '../api';
 
 // Notification for expired chores
@@ -21,11 +21,14 @@ interface GameState {
     chores: Chore[];
     choreInstances: ChoreInstance[];
     choreNotifications: ChoreNotification[];
+    exercises: Exercise[];
+    exerciseInstances: ExerciseInstance[];
     dismissChoreNotification: (id: string) => void;
     isConnected: boolean;
     lastEvent: GameEvent | null;
     refreshData: () => Promise<void>;
     refreshChores: () => Promise<void>;
+    refreshExercises: () => Promise<void>;
 }
 
 interface GameEvent {
@@ -57,6 +60,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     const [chores, setChores] = useState<Chore[]>([]);
     const [choreInstances, setChoreInstances] = useState<ChoreInstance[]>([]);
     const [choreNotifications, setChoreNotifications] = useState<ChoreNotification[]>([]);
+    const [exercises, setExercises] = useState<Exercise[]>([]);
+    const [exerciseInstances, setExerciseInstances] = useState<ExerciseInstance[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [lastEvent, setLastEvent] = useState<GameEvent | null>(null);
 
@@ -77,6 +82,16 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         }
     }, []);
 
+    const refreshExercises = useCallback(async () => {
+        try {
+            const { exercises: exercisesData, instances } = await api.getExercises();
+            setExercises(exercisesData);
+            setExerciseInstances(instances);
+        } catch (error) {
+            console.error('Failed to fetch exercises:', error);
+        }
+    }, []);
+
     const refreshData = useCallback(async () => {
         try {
             const [usersData, flowsData, rewardsData, spendingsData, transfersData] = await Promise.all([
@@ -92,12 +107,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             setSpendings(spendingsData);
             setStarTransfers(transfersData);
 
-            // Also refresh chores
+            // Also refresh chores and exercises
             await refreshChores();
+            await refreshExercises();
         } catch (error) {
             console.error('Failed to fetch data:', error);
         }
-    }, [refreshChores]);
+    }, [refreshChores, refreshExercises]);
 
     // Initial Fetch
     useEffect(() => {
@@ -263,11 +279,14 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             chores,
             choreInstances,
             choreNotifications,
+            exercises,
+            exerciseInstances,
             dismissChoreNotification,
             isConnected,
             lastEvent,
             refreshData,
-            refreshChores
+            refreshChores,
+            refreshExercises
         }}>
             {children}
         </GameContext.Provider>

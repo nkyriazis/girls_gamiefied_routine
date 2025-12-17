@@ -1,4 +1,214 @@
 {
+  "exercises": [
+    {
+      "id": "spell-1",
+      "title": "Συμπλήρωσε τη λέξη: ΣΧΟΛΕΙΟ",
+      "icon": {
+        "type": "emoji",
+        "value": "✏️"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "spell-fill",
+        "word": "ΣΧΟΛΕΙΟ",
+        "hiddenIndices": [2, 5],
+        "hint": "Πάμε εκεί κάθε μέρα για να μάθουμε"
+      }
+    },
+    {
+      "id": "spell-2",
+      "title": "Συμπλήρωσε τη λέξη: ΒΙΒΛΙΟ",
+      "icon": {
+        "type": "emoji",
+        "value": "📖"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "spell-fill",
+        "word": "ΒΙΒΛΙΟ",
+        "hiddenIndices": [1, 4],
+        "hint": "Το διαβάζουμε για να μαθαίνουμε ιστορίες"
+      }
+    },
+    {
+      "id": "spell-3",
+      "title": "Συμπλήρωσε τη λέξη: ΟΙΚΟΓΕΝΕΙΑ",
+      "icon": {
+        "type": "emoji",
+        "value": "👨‍👩‍👧‍👦"
+      },
+      "difficulty": "medium",
+      "stars": 8,
+      "content": {
+        "type": "spell-fill",
+        "word": "ΟΙΚΟΓΕΝΕΙΑ",
+        "hiddenIndices": [3, 6, 8],
+        "hint": "Μαμά, μπαμπάς και παιδιά μαζί"
+      }
+    },
+    {
+      "id": "grammar-1",
+      "title": "Ποιο είναι σωστό;",
+      "icon": {
+        "type": "emoji",
+        "value": "📝"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "grammar-choice",
+        "question": "Η Ηλέκτρα ___ στο σχολείο.",
+        "options": ["πάει", "πάνε", "πάω", "πάτε"],
+        "correctIndex": 0
+      }
+    },
+    {
+      "id": "grammar-2",
+      "title": "Διάλεξε το σωστό",
+      "icon": {
+        "type": "emoji",
+        "value": "🤔"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "grammar-choice",
+        "question": "Εμείς ___ παιχνίδι.",
+        "options": ["παίζω", "παίζεις", "παίζουμε", "παίζει"],
+        "correctIndex": 2
+      }
+    },
+    {
+      "id": "grammar-3",
+      "title": "Ποια λέξη λείπει;",
+      "icon": {
+        "type": "emoji",
+        "value": "💭"
+      },
+      "difficulty": "medium",
+      "stars": 7,
+      "content": {
+        "type": "grammar-choice",
+        "question": "Το βιβλίο είναι ___ του τραπεζιού.",
+        "options": ["πάνω", "κάτω", "μέσα", "δίπλα"],
+        "correctIndex": 0
+      }
+    },
+    {
+      "id": "math-1",
+      "title": "Πρόσθεση",
+      "icon": {
+        "type": "emoji",
+        "value": "➕"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "math-simple",
+        "operation": "+",
+        "num1": 3,
+        "num2": 5
+      }
+    },
+    {
+      "id": "math-2",
+      "title": "Αφαίρεση",
+      "icon": {
+        "type": "emoji",
+        "value": "➖"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "math-simple",
+        "operation": "-",
+        "num1": 8,
+        "num2": 3
+      }
+    },
+    {
+      "id": "math-3",
+      "title": "Πολλαπλασιασμός",
+      "icon": {
+        "type": "emoji",
+        "value": "✖️"
+      },
+      "difficulty": "medium",
+      "stars": 8,
+      "content": {
+        "type": "math-simple",
+        "operation": "*",
+        "num1": 4,
+        "num2": 6
+      }
+    },
+    {
+      "id": "math-4",
+      "title": "Διαίρεση",
+      "icon": {
+        "type": "emoji",
+        "value": "➗"
+      },
+      "difficulty": "medium",
+      "stars": 8,
+      "content": {
+        "type": "math-simple",
+        "operation": "/",
+        "num1": 12,
+        "num2": 3
+      }
+    },
+    {
+      "id": "math-v-1",
+      "title": "Κάθετη Πρόσθεση",
+      "icon": {
+        "type": "emoji",
+        "value": "🔢"
+      },
+      "difficulty": "easy",
+      "stars": 7,
+      "content": {
+        "type": "math-vertical",
+        "operation": "+",
+        "num1": 23,
+        "num2": 45
+      }
+    },
+    {
+      "id": "math-v-2",
+      "title": "Κάθετη Αφαίρεση",
+      "icon": {
+        "type": "emoji",
+        "value": "🔢"
+      },
+      "difficulty": "medium",
+      "stars": 9,
+      "content": {
+        "type": "math-vertical",
+        "operation": "-",
+        "num1": 56,
+        "num2": 28
+      }
+    },
+    {
+      "id": "math-v-3",
+      "title": "Κάθετη Πρόσθεση (Δύσκολη)",
+      "icon": {
+        "type": "emoji",
+        "value": "🔢"
+      },
+      "difficulty": "hard",
+      "stars": 10,
+      "content": {
+        "type": "math-vertical",
+        "operation": "+",
+        "num1": 147,
+        "num2": 286
+      }
+    }
+  ],
   "chores": [
     {
       "id": "chore-dishes",

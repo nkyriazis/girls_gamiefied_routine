@@ -125,3 +125,69 @@ export interface ChoreInstance {
 export interface ChoreWithInstance extends Chore {
   instance?: ChoreInstance;
 }
+
+// Mini Exercises System - Educational games for earning stars
+export type ExerciseType = 'spell-fill' | 'grammar-choice' | 'math-simple' | 'math-vertical';
+export type ExerciseDifficulty = 'easy' | 'medium' | 'hard';
+
+// Spell-fill: Fill in missing letter(s) in a word
+export interface SpellFillExercise {
+  type: 'spell-fill';
+  word: string; // The complete word
+  hiddenIndices: number[]; // Indices of letters to hide (0-based)
+  hint?: string; // Optional hint
+}
+
+// Grammar-choice: Choose the correct option
+export interface GrammarChoiceExercise {
+  type: 'grammar-choice';
+  question: string; // The question text
+  options: string[]; // Array of options to choose from
+  correctIndex: number; // Index of the correct answer (0-based)
+}
+
+// Math-simple: Simple arithmetic operation
+export interface MathSimpleExercise {
+  type: 'math-simple';
+  operation: '+' | '-' | '*' | '/';
+  num1: number;
+  num2: number;
+}
+
+// Math-vertical: Vertical arithmetic operation (more visual, touch-friendly)
+export interface MathVerticalExercise {
+  type: 'math-vertical';
+  operation: '+' | '-';
+  num1: number;
+  num2: number;
+}
+
+export type ExerciseContent = 
+  | SpellFillExercise 
+  | GrammarChoiceExercise 
+  | MathSimpleExercise 
+  | MathVerticalExercise;
+
+export interface Exercise {
+  id: string;
+  title: string;
+  icon: IconValue;
+  difficulty: ExerciseDifficulty;
+  stars: number; // Stars awarded for correct completion
+  content: ExerciseContent;
+  availabilityCron?: string; // Optional: when exercise becomes available
+  eligibleUsers?: string[]; // Optional: restrict to specific users
+}
+
+export type ExerciseInstanceStatus = 'available' | 'active' | 'completed' | 'failed';
+
+export interface ExerciseInstance {
+  id: string;
+  exerciseId: string;
+  userId: string;
+  status: ExerciseInstanceStatus;
+  startedAt: string; // ISO timestamp
+  completedAt?: string; // ISO timestamp
+  attempts: number; // Number of attempts made
+  starsAwarded?: number; // Stars awarded (only if completed successfully)
+}
