@@ -269,12 +269,10 @@ const ExercisePlayer: React.FC<{
     onAbandon: () => void;
 }> = ({ exercise, instance, onComplete, onAbandon }) => {
     const [feedback, setFeedback] = useState<{ type: 'correct' | 'incorrect' | null; message: string }>({ type: null, message: '' });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const attemptsLeft = 3 - instance.attempts;
 
     const handleSubmit = async (answer: any) => {
-        setIsSubmitting(true);
         try {
             const result = await api.submitExercise(instance.id, answer);
             
@@ -299,8 +297,6 @@ const ExercisePlayer: React.FC<{
         } catch (error) {
             console.error('Failed to submit exercise:', error);
             setFeedback({ type: 'incorrect', message: 'Σφάλμα. Δοκίμασε ξανά.' });
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
