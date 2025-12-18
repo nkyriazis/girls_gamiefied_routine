@@ -125,3 +125,96 @@ export interface ChoreInstance {
 export interface ChoreWithInstance extends Chore {
   instance?: ChoreInstance;
 }
+
+// Mini Exercises System - Educational games for earning stars
+export type ExerciseType = 'spell-fill' | 'grammar-choice' | 'math-simple' | 'math-vertical' | 'comprehension';
+export type ExerciseDifficulty = 'easy' | 'medium' | 'hard';
+export type ExerciseLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10; // School grade levels
+export type ExerciseChallengeMode = 'untimed' | 'timed'; // Untimed: fail after X errors, Timed: block until correct
+
+// Spell-fill: Fill in missing letter(s) in a word
+export interface SpellFillExercise {
+  type: 'spell-fill';
+  word: string; // The complete word
+  hiddenIndices: number[]; // Indices of letters to hide (0-based)
+  hint?: string; // Optional hint
+}
+
+// Grammar-choice: Choose the correct option
+export interface GrammarChoiceExercise {
+  type: 'grammar-choice';
+  question: string; // The question text
+  options: string[]; // Array of options to choose from
+  correctIndex: number; // Index of the correct answer (0-based)
+}
+
+// Math-simple: Simple arithmetic operation
+export interface MathSimpleExercise {
+  type: 'math-simple';
+  operation: '+' | '-' | '*' | '/';
+  num1: number;
+  num2: number;
+}
+
+// Math-vertical: Interactive vertical arithmetic operation with step-by-step process
+// Users fill in partial results (carries, intermediate steps) before final answer
+export interface MathVerticalExercise {
+  type: 'math-vertical';
+  operation: '+' | '-' | '*' | '/';
+  num1: number;
+  num2: number;
+  requireCarries?: boolean; // Whether to require carry/borrow input
+  showHelpers?: boolean; // Show helper lines, partial sums, etc.
+  requirePartialProducts?: boolean; // For multiplication: require each partial product row
+  requireLongDivisionSteps?: boolean; // For division: require step-by-step long division
+}
+
+// Comprehension: Read text passage and answer multiple-choice question
+// Optionally timed for both reading and answering phases
+export interface ComprehensionExercise {
+  type: 'comprehension';
+  passage: string; // The text to read
+  readingTimeSeconds?: number; // Optional: time allowed to read (null = unlimited)
+  question: string; // The comprehension question
+  options: string[]; // Array of answer choices (2-6 options)
+  correctIndex: number; // Index of the correct answer (0-based)
+  questionTimeSeconds?: number; // Optional: time allowed to answer question
+}
+
+export type ExerciseContent = 
+  | SpellFillExercise 
+  | GrammarChoiceExercise 
+  | MathSimpleExercise 
+  | MathVerticalExercise
+  | ComprehensionExercise;
+
+export interface Exercise {
+  id: string;
+  title: string;
+  icon: IconValue;
+  difficulty: ExerciseDifficulty;
+  level: ExerciseLevel; // School grade level (1-10) for content generation
+  stars: number; // Stars awarded for correct completion
+  content: ExerciseContent;
+  challengeMode?: ExerciseChallengeMode; // 'untimed' (default) or 'timed'
+  timeoutSeconds?: number; // Optional timeout for timed challenges
+  maxErrors?: number; // Max errors before failing (for untimed mode, default: 3)
+  availabilityCron?: string; // Optional: when exercise becomes available
+  eligibleUsers?: string[]; // Optional: restrict to specific users
+}
+
+export type ExerciseInstanceStatus = 'available' | 'active' | 'completed' | 'failed';
+
+export interface ExerciseInstance {
+  id: string;
+  exerciseId: string;
+  userId: string;
+  status: ExerciseInstanceStatus;
+  startedAt: string; // ISO timestamp
+  completedAt?: string; // ISO timestamp
+  attempts: number; // Number of attempts made
+  errors: number; // Number of errors made (for untimed mode)
+  starsAwarded?: number; // Stars awarded (only if completed successfully)
+  timeElapsed?: number; // Time elapsed in seconds (for timed challenges)
+  stepData?: any; // Step-by-step progress data (for interactive exercises like vertical math)
+}

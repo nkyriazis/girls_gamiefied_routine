@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import Ajv from 'ajv';
-import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ChoreInstanceStatus } from '../../shared/types';
+import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ChoreInstanceStatus, Exercise, ExerciseInstance } from '../../shared/types';
 
 // File paths
 export const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
@@ -89,13 +89,15 @@ export let globalState: {
   spendings: Spending[];
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[];
+  exerciseInstances: ExerciseInstance[];
 } = {
   userStars: {},
   routineExecutions: [],
   taskExecutions: [],
   spendings: [],
   starTransfers: [],
-  choreInstances: []
+  choreInstances: [],
+  exerciseInstances: []
 };
 
 // WebSocket connections
@@ -137,7 +139,8 @@ export async function loadState() {
           taskExecutions: [],
           spendings: [],
           starTransfers: [],
-          choreInstances: []
+          choreInstances: [],
+          exerciseInstances: []
         };
         return;
       } else {
@@ -151,7 +154,8 @@ export async function loadState() {
       taskExecutions: loaded.taskExecutions || [],
       spendings: loaded.spendings || [],
       starTransfers: loaded.starTransfers || [],
-      choreInstances: loaded.choreInstances || []
+      choreInstances: loaded.choreInstances || [],
+      exerciseInstances: loaded.exerciseInstances || []
     };
     console.log('State loaded into memory');
   } catch (error) {
@@ -198,12 +202,14 @@ export interface Db {
   schedules: any[];
   rewards: Reward[];
   chores: Chore[];
+  exercises: Exercise[];
   settings?: { timezone: string };
   routineExecutions: any[];
   taskExecutions: any[];
   spendings: Spending[];
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[];
+  exerciseInstances: ExerciseInstance[];
 }
 
 export async function readDb(): Promise<Db> {
@@ -239,13 +245,15 @@ export async function readDb(): Promise<Db> {
       users,
       rewards: (data.rewards || []) as Reward[],
       chores: (data.chores || []) as Chore[],
+      exercises: (data.exercises || []) as Exercise[],
       schedules: data.schedules || [],
       settings: data.settings || { timezone: 'Europe/Athens' },
       routineExecutions: globalState.routineExecutions,
       taskExecutions: globalState.taskExecutions,
       spendings: globalState.spendings,
       starTransfers: globalState.starTransfers,
-      choreInstances: globalState.choreInstances
+      choreInstances: globalState.choreInstances,
+      exerciseInstances: globalState.exerciseInstances
     };
   } catch (error) {
     console.error("Error reading DB:", error);
@@ -918,4 +926,231 @@ export async function broadcastChoreState() {
       choreInstances: instances
     }
   });
+}
+
+// ========== Exercise Management ==========
+
+/**
+ * Get all exercises with optional filtering by user eligibility
+ */
+export async function getExercises(userId?: string): Promise<{ exercises: Exercise[], instances: ExerciseInstance[] }> {
+  const db = await readDb();
+  
+  let exercises = db.exercises;
+  
+  // Filter by eligibility if userId provided
+  if (userId) {
+    exercises = exercises.filter(ex => 
+      !ex.eligibleUsers || ex.eligibleUsers.length === 0 || ex.eligibleUsers.includes(userId)
+    );
+  }
+  
+  return {
+    exercises,
+    instances: globalState.exerciseInstances
+  };
+}
+
+/**
+ * Start an exercise for a user
+ */
+export async function startExercise(exerciseId: string, userId: string): Promise<ExerciseInstance> {
+  const db = await readDb();
+  
+  // Find the exercise
+  const exercise = db.exercises.find(ex => ex.id === exerciseId);
+  if (!exercise) {
+    throw new Error(`Exercise ${exerciseId} not found`);
+  }
+  
+  // Check eligibility
+  if (exercise.eligibleUsers && exercise.eligibleUsers.length > 0 && !exercise.eligibleUsers.includes(userId)) {
+    throw new Error(`User ${userId} is not eligible for this exercise`);
+  }
+  
+  // Check if user already has an active instance of this exercise
+  const existingActive = globalState.exerciseInstances.find(
+    inst => inst.exerciseId === exerciseId && inst.userId === userId && inst.status === 'active'
+  );
+  
+  if (existingActive) {
+    // Return existing active instance
+    return existingActive;
+  }
+  
+  // Create new instance
+  const instance: ExerciseInstance = {
+    id: randomUUID(),
+    exerciseId,
+    userId,
+    status: 'active',
+    startedAt: new Date().toISOString(),
+    attempts: 0,
+    errors: 0
+  };
+  
+  globalState.exerciseInstances.push(instance);
+  scheduleSave();
+  
+  logAction('EXERCISE_START', { instance });
+  
+  // Broadcast state update
+  broadcast({
+    type: 'EXERCISE_STARTED',
+    payload: { instance }
+  });
+  
+  return instance;
+}
+
+/**
+ * Submit an answer for an exercise
+ */
+export async function submitExercise(instanceId: string, answer: any): Promise<{ instance: ExerciseInstance, correct: boolean }> {
+  const db = await readDb();
+  
+  // Find the instance
+  const instance = globalState.exerciseInstances.find(inst => inst.id === instanceId);
+  if (!instance) {
+    throw new Error(`Exercise instance ${instanceId} not found`);
+  }
+  
+  if (instance.status !== 'active') {
+    throw new Error(`Exercise instance ${instanceId} is not active`);
+  }
+  
+  // Find the exercise
+  const exercise = db.exercises.find(ex => ex.id === instance.exerciseId);
+  if (!exercise) {
+    throw new Error(`Exercise ${instance.exerciseId} not found`);
+  }
+  
+  // Increment attempts
+  instance.attempts++;
+  
+  // Validate answer based on exercise type
+  let correct = false;
+  
+  switch (exercise.content.type) {
+    case 'spell-fill': {
+      const expected = exercise.content.word.toUpperCase();
+      const provided = (answer as string || '').toUpperCase();
+      correct = expected === provided;
+      break;
+    }
+    
+    case 'grammar-choice': {
+      correct = (answer as number) === exercise.content.correctIndex;
+      break;
+    }
+    
+    case 'math-simple':
+    case 'math-vertical': {
+      let expectedAnswer: number;
+      const { operation, num1, num2 } = exercise.content;
+      
+      switch (operation) {
+        case '+':
+          expectedAnswer = num1 + num2;
+          break;
+        case '-':
+          expectedAnswer = num1 - num2;
+          break;
+        case '*':
+          expectedAnswer = num1 * num2;
+          break;
+        case '/':
+          expectedAnswer = Math.floor(num1 / num2); // Integer division (quotient)
+          break;
+        default:
+          expectedAnswer = 0;
+      }
+      
+      correct = Math.abs((answer as number) - expectedAnswer) < 0.01;
+      break;
+    }
+    
+    case 'comprehension': {
+      correct = (answer as number) === exercise.content.correctIndex;
+      break;
+    }
+  }
+  
+  // Update instance based on result
+  if (correct) {
+    instance.status = 'completed';
+    instance.completedAt = new Date().toISOString();
+    instance.starsAwarded = exercise.stars;
+    
+    // Award stars
+    if (!globalState.userStars[instance.userId]) {
+      globalState.userStars[instance.userId] = 0;
+    }
+    globalState.userStars[instance.userId] += exercise.stars;
+    
+    logAction('EXERCISE_COMPLETED', { instance, starsAwarded: exercise.stars });
+    
+    // Broadcast success
+    broadcast({
+      type: 'EXERCISE_COMPLETED',
+      payload: { instance, starsAwarded: exercise.stars }
+    });
+  } else {
+    // Increment error count
+    instance.errors++;
+    
+    // Determine max errors based on exercise settings
+    const maxErrors = exercise.maxErrors || 3;
+    const challengeMode = exercise.challengeMode || 'untimed';
+    
+    // For untimed mode: fail after maxErrors
+    // For timed mode: keep trying until timeout (handled by frontend timer)
+    if (challengeMode === 'untimed' && instance.errors >= maxErrors) {
+      instance.status = 'failed';
+      instance.completedAt = new Date().toISOString();
+      
+      logAction('EXERCISE_FAILED', { instance });
+      
+      broadcast({
+        type: 'EXERCISE_FAILED',
+        payload: { instance }
+      });
+    } else {
+      // Still active, can try again
+      const errorsRemaining = challengeMode === 'untimed' ? maxErrors - instance.errors : null;
+      logAction('EXERCISE_ATTEMPT', { instance, correct: false, errorsRemaining });
+    }
+  }
+  
+  scheduleSave();
+  
+  return { instance, correct };
+}
+
+/**
+ * Abandon an active exercise
+ */
+export async function abandonExercise(instanceId: string): Promise<ExerciseInstance> {
+  const instance = globalState.exerciseInstances.find(inst => inst.id === instanceId);
+  if (!instance) {
+    throw new Error(`Exercise instance ${instanceId} not found`);
+  }
+  
+  if (instance.status !== 'active') {
+    throw new Error(`Exercise instance ${instanceId} is not active`);
+  }
+  
+  instance.status = 'failed';
+  instance.completedAt = new Date().toISOString();
+  
+  scheduleSave();
+  
+  logAction('EXERCISE_ABANDONED', { instance });
+  
+  broadcast({
+    type: 'EXERCISE_ABANDONED',
+    payload: { instance }
+  });
+  
+  return instance;
 }

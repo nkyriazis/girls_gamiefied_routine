@@ -49,7 +49,11 @@ import {
   attemptChore,
   confirmChore,
   rejectChore,
-  broadcastChoreState
+  broadcastChoreState,
+  getExercises,
+  startExercise,
+  submitExercise,
+  abandonExercise
 } from './db';
 
 // Import MCP server
@@ -370,6 +374,81 @@ server.post('/api/chores/:instanceId/reject', async (request, reply) => {
       return reply.code(404).send({ error: message });
     }
     if (message.includes('must be attempted')) {
+      return reply.code(400).send({ error: message });
+    }
+    return reply.code(500).send({ error: 'Internal Server Error', details: message });
+  }
+});
+
+// Exercises routes
+server.get('/api/exercises', async (request, reply) => {
+  try {
+    const { userId } = request.query as { userId?: string };
+    const { exercises, instances } = await getExercises(userId);
+    return { exercises, instances };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
+  }
+});
+
+server.post('/api/exercises/:exerciseId/start', async (request, reply) => {
+  try {
+    const { exerciseId } = request.params as { exerciseId: string };
+    const { userId } = request.body as { userId: string };
+    
+    if (!userId) {
+      return reply.code(400).send({ error: 'userId is required' });
+    }
+    
+    const instance = await startExercise(exerciseId, userId);
+    return instance;
+  } catch (error) {
+    request.log.error(error);
+    const message = (error as Error).message;
+    if (message.includes('not found')) {
+      return reply.code(404).send({ error: message });
+    }
+    if (message.includes('not eligible')) {
+      return reply.code(400).send({ error: message });
+    }
+    return reply.code(500).send({ error: 'Internal Server Error', details: message });
+  }
+});
+
+server.post('/api/exercises/:instanceId/submit', async (request, reply) => {
+  try {
+    const { instanceId } = request.params as { instanceId: string };
+    const { answer } = request.body as { answer: any };
+    
+    const result = await submitExercise(instanceId, answer);
+    return result;
+  } catch (error) {
+    request.log.error(error);
+    const message = (error as Error).message;
+    if (message.includes('not found')) {
+      return reply.code(404).send({ error: message });
+    }
+    if (message.includes('not active')) {
+      return reply.code(400).send({ error: message });
+    }
+    return reply.code(500).send({ error: 'Internal Server Error', details: message });
+  }
+});
+
+server.post('/api/exercises/:instanceId/abandon', async (request, reply) => {
+  try {
+    const { instanceId } = request.params as { instanceId: string };
+    
+    const instance = await abandonExercise(instanceId);
+    return instance;
+  } catch (error) {
+    request.log.error(error);
+    const message = (error as Error).message;
+    if (message.includes('not found')) {
+      return reply.code(404).send({ error: message });
+    }
+    if (message.includes('not active')) {
       return reply.code(400).send({ error: message });
     }
     return reply.code(500).send({ error: 'Internal Server Error', details: message });

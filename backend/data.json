@@ -1,4 +1,558 @@
 {
+  "exercises": [
+    {
+      "id": "spell-1",
+      "title": "Συμπλήρωσε τη λέξη: ΣΧΟΛΕΙΟ",
+      "icon": {
+        "type": "emoji",
+        "value": "✏️"
+      },
+      "difficulty": "easy",
+      "level": 1,
+      "stars": 5,
+      "content": {
+        "type": "spell-fill",
+        "word": "ΣΧΟΛΕΙΟ",
+        "hiddenIndices": [
+          2,
+          5
+        ],
+        "hint": "Πάμε εκεί κάθε μέρα για να μάθουμε"
+      }
+    },
+    {
+      "id": "spell-2",
+      "title": "Συμπλήρωσε τη λέξη: ΒΙΒΛΙΟ",
+      "icon": {
+        "type": "emoji",
+        "value": "📖"
+      },
+      "difficulty": "easy",
+      "level": 1,
+      "stars": 5,
+      "content": {
+        "type": "spell-fill",
+        "word": "ΒΙΒΛΙΟ",
+        "hiddenIndices": [
+          1,
+          4
+        ],
+        "hint": "Το διαβάζουμε για να μαθαίνουμε ιστορίες"
+      }
+    },
+    {
+      "id": "spell-3",
+      "title": "Συμπλήρωσε τη λέξη: ΟΙΚΟΓΕΝΕΙΑ",
+      "icon": {
+        "type": "emoji",
+        "value": "👨‍👩‍👧‍👦"
+      },
+      "difficulty": "medium",
+      "level": 2,
+      "stars": 8,
+      "content": {
+        "type": "spell-fill",
+        "word": "ΟΙΚΟΓΕΝΕΙΑ",
+        "hiddenIndices": [
+          3,
+          6,
+          8
+        ],
+        "hint": "Μαμά, μπαμπάς και παιδιά μαζί"
+      }
+    },
+    {
+      "id": "grammar-1",
+      "title": "Ποιο είναι σωστό;",
+      "icon": {
+        "type": "emoji",
+        "value": "📝"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "grammar-choice",
+        "question": "Η Ηλέκτρα ___ στο σχολείο.",
+        "options": [
+          "πάει",
+          "πάνε",
+          "πάω",
+          "πάτε"
+        ],
+        "correctIndex": 0
+      },
+      "level": 1
+    },
+    {
+      "id": "grammar-2",
+      "title": "Διάλεξε το σωστό",
+      "icon": {
+        "type": "emoji",
+        "value": "🤔"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "grammar-choice",
+        "question": "Εμείς ___ παιχνίδι.",
+        "options": [
+          "παίζω",
+          "παίζεις",
+          "παίζουμε",
+          "παίζει"
+        ],
+        "correctIndex": 2
+      },
+      "level": 1
+    },
+    {
+      "id": "grammar-3",
+      "title": "Ποια λέξη λείπει;",
+      "icon": {
+        "type": "emoji",
+        "value": "💭"
+      },
+      "difficulty": "medium",
+      "stars": 7,
+      "content": {
+        "type": "grammar-choice",
+        "question": "Το βιβλίο είναι ___ του τραπεζιού.",
+        "options": [
+          "πάνω",
+          "κάτω",
+          "μέσα",
+          "δίπλα"
+        ],
+        "correctIndex": 0
+      },
+      "level": 2
+    },
+    {
+      "id": "math-1",
+      "title": "Πρόσθεση",
+      "icon": {
+        "type": "emoji",
+        "value": "➕"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "math-simple",
+        "operation": "+",
+        "num1": 3,
+        "num2": 5
+      },
+      "level": 1
+    },
+    {
+      "id": "math-2",
+      "title": "Αφαίρεση",
+      "icon": {
+        "type": "emoji",
+        "value": "➖"
+      },
+      "difficulty": "easy",
+      "stars": 5,
+      "content": {
+        "type": "math-simple",
+        "operation": "-",
+        "num1": 8,
+        "num2": 3
+      },
+      "level": 1
+    },
+    {
+      "id": "math-3",
+      "title": "Πολλαπλασιασμός",
+      "icon": {
+        "type": "emoji",
+        "value": "✖️"
+      },
+      "difficulty": "medium",
+      "stars": 8,
+      "content": {
+        "type": "math-simple",
+        "operation": "*",
+        "num1": 4,
+        "num2": 6
+      },
+      "level": 2
+    },
+    {
+      "id": "math-4",
+      "title": "Διαίρεση",
+      "icon": {
+        "type": "emoji",
+        "value": "➗"
+      },
+      "difficulty": "medium",
+      "stars": 8,
+      "content": {
+        "type": "math-simple",
+        "operation": "/",
+        "num1": 12,
+        "num2": 3
+      },
+      "level": 2
+    },
+    {
+      "id": "math-v-1",
+      "title": "Κάθετη Πρόσθεση",
+      "icon": {
+        "type": "emoji",
+        "value": "🔢"
+      },
+      "difficulty": "easy",
+      "stars": 7,
+      "content": {
+        "type": "math-vertical",
+        "operation": "+",
+        "num1": 23,
+        "num2": 45
+      },
+      "level": 1
+    },
+    {
+      "id": "math-v-2",
+      "title": "Κάθετη Αφαίρεση",
+      "icon": {
+        "type": "emoji",
+        "value": "🔢"
+      },
+      "difficulty": "medium",
+      "stars": 9,
+      "content": {
+        "type": "math-vertical",
+        "operation": "-",
+        "num1": 56,
+        "num2": 28
+      },
+      "level": 2
+    },
+    {
+      "id": "math-v-3",
+      "title": "Κάθετη Πρόσθεση (Δύσκολη)",
+      "icon": {
+        "type": "emoji",
+        "value": "🔢"
+      },
+      "difficulty": "hard",
+      "stars": 10,
+      "content": {
+        "type": "math-vertical",
+        "operation": "+",
+        "num1": 147,
+        "num2": 286
+      },
+      "level": 3
+    },
+    {
+      "id": "math-v-interactive-1",
+      "title": "Κάθετη Πρόσθεση με Κρατούμενα",
+      "icon": {
+        "type": "emoji",
+        "value": "🎓"
+      },
+      "difficulty": "medium",
+      "level": 2,
+      "stars": 10,
+      "challengeMode": "untimed",
+      "maxErrors": 5,
+      "content": {
+        "type": "math-vertical",
+        "operation": "+",
+        "num1": 47,
+        "num2": 38,
+        "requireCarries": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-v-interactive-2",
+      "title": "Κάθετη Αφαίρεση με Δανεισμό",
+      "icon": {
+        "type": "emoji",
+        "value": "🎓"
+      },
+      "difficulty": "hard",
+      "level": 3,
+      "stars": 12,
+      "challengeMode": "untimed",
+      "maxErrors": 5,
+      "content": {
+        "type": "math-vertical",
+        "operation": "-",
+        "num1": 82,
+        "num2": 47,
+        "requireCarries": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-v-timed-1",
+      "title": "Πρόκληση με Χρόνο: Πρόσθεση",
+      "icon": {
+        "type": "emoji",
+        "value": "⏱️"
+      },
+      "difficulty": "hard",
+      "level": 3,
+      "stars": 15,
+      "challengeMode": "timed",
+      "timeoutSeconds": 120,
+      "content": {
+        "type": "math-vertical",
+        "operation": "+",
+        "num1": 156,
+        "num2": 289,
+        "requireCarries": true,
+        "showHelpers": false
+      }
+    },
+    {
+      "id": "math-mult-1",
+      "title": "Πολλαπλασιασμός: 23 × 4",
+      "icon": {
+        "type": "emoji",
+        "value": "✖️"
+      },
+      "difficulty": "medium",
+      "level": 3,
+      "stars": 8,
+      "challengeMode": "untimed",
+      "maxErrors": 5,
+      "content": {
+        "type": "math-vertical",
+        "operation": "*",
+        "num1": 23,
+        "num2": 4,
+        "requirePartialProducts": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-mult-2",
+      "title": "Πολλαπλασιασμός: 12 × 15",
+      "icon": {
+        "type": "emoji",
+        "value": "✖️"
+      },
+      "difficulty": "hard",
+      "level": 4,
+      "stars": 12,
+      "challengeMode": "untimed",
+      "maxErrors": 7,
+      "content": {
+        "type": "math-vertical",
+        "operation": "*",
+        "num1": 12,
+        "num2": 15,
+        "requirePartialProducts": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-div-1",
+      "title": "Διαίρεση: 84 ÷ 4",
+      "icon": {
+        "type": "emoji",
+        "value": "➗"
+      },
+      "difficulty": "medium",
+      "level": 3,
+      "stars": 8,
+      "challengeMode": "untimed",
+      "maxErrors": 5,
+      "content": {
+        "type": "math-vertical",
+        "operation": "/",
+        "num1": 84,
+        "num2": 4,
+        "requireLongDivisionSteps": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-div-2",
+      "title": "Διαίρεση: 156 ÷ 12",
+      "icon": {
+        "type": "emoji",
+        "value": "➗"
+      },
+      "difficulty": "hard",
+      "level": 4,
+      "stars": 12,
+      "challengeMode": "untimed",
+      "maxErrors": 7,
+      "content": {
+        "type": "math-vertical",
+        "operation": "/",
+        "num1": 156,
+        "num2": 12,
+        "requireLongDivisionSteps": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-mult-timed",
+      "title": "Πρόκληση: Πολλαπλασιασμός με Χρόνο",
+      "icon": {
+        "type": "emoji",
+        "value": "⏱️"
+      },
+      "difficulty": "hard",
+      "level": 5,
+      "stars": 15,
+      "challengeMode": "timed",
+      "timeoutSeconds": 180,
+      "content": {
+        "type": "math-vertical",
+        "operation": "*",
+        "num1": 34,
+        "num2": 27,
+        "requirePartialProducts": true,
+        "showHelpers": false
+      }
+    },
+    {
+      "id": "math-div-timed",
+      "title": "Πρόκληση: Διαίρεση με Χρόνο",
+      "icon": {
+        "type": "emoji",
+        "value": "⏱️"
+      },
+      "difficulty": "hard",
+      "level": 5,
+      "stars": 15,
+      "challengeMode": "timed",
+      "timeoutSeconds": 180,
+      "content": {
+        "type": "math-vertical",
+        "operation": "/",
+        "num1": 224,
+        "num2": 16,
+        "requireLongDivisionSteps": true,
+        "showHelpers": false
+      }
+    },
+    {
+      "id": "comp-1",
+      "title": "Ανάγνωση: Η Γάτα",
+      "icon": {
+        "type": "emoji",
+        "value": "📖"
+      },
+      "difficulty": "easy",
+      "level": 1,
+      "stars": 5,
+      "content": {
+        "type": "comprehension",
+        "passage": "Η Μίνι είναι μια μικρή γάτα. Της αρέσει να παίζει με το κουβαράκι. Κάθε μέρα τρέχει στον κήπο. Η Μίνι είναι πολύ χαρούμενη!",
+        "question": "Τι αρέσει στη Μίνι να κάνει;",
+        "options": [
+          "Να κοιμάται",
+          "Να παίζει με το κουβαράκι",
+          "Να τρώει",
+          "Να κολυμπάει"
+        ],
+        "correctIndex": 1
+      }
+    },
+    {
+      "id": "comp-2",
+      "title": "Ανάγνωση με Χρόνο: Το Σχολείο",
+      "icon": {
+        "type": "emoji",
+        "value": "📚"
+      },
+      "difficulty": "medium",
+      "level": 2,
+      "stars": 8,
+      "content": {
+        "type": "comprehension",
+        "passage": "Η Ηλέκτρα και η Ιφιγένεια πηγαίνουν στο σχολείο κάθε πρωί. Τους αρέσουν τα μαθηματικά και η ζωγραφική. Η δασκάλα τους λέγεται κυρία Μαρία. Στο διάλειμμα παίζουν κρυφτό με τους φίλους τους. Το σχολείο τελειώνει στις δύο το μεσημέρι.",
+        "readingTimeSeconds": 45,
+        "question": "Πώς λέγεται η δασκάλα τους;",
+        "options": [
+          "Κυρία Ελένη",
+          "Κυρία Μαρία",
+          "Κυρία Σοφία"
+        ],
+        "correctIndex": 1
+      }
+    },
+    {
+      "id": "comp-3",
+      "title": "Κατανόηση: Το Παιχνίδι",
+      "icon": {
+        "type": "emoji",
+        "value": "📖"
+      },
+      "difficulty": "easy",
+      "level": 1,
+      "stars": 5,
+      "content": {
+        "type": "comprehension",
+        "passage": "Σήμερα είναι Σάββατο. Τα παιδιά παίζουν στο πάρκο. Υπάρχει μια κούνια και μια τσουλήθρα. Όλοι περνούν καλά!",
+        "question": "Πού παίζουν τα παιδιά;",
+        "options": [
+          "Στο σπίτι",
+          "Στο σχολείο",
+          "Στο πάρκο"
+        ],
+        "correctIndex": 2
+      }
+    },
+    {
+      "id": "comp-4",
+      "title": "Πρόκληση Ανάγνωσης: Η Εκδρομή",
+      "icon": {
+        "type": "emoji",
+        "value": "⏱️"
+      },
+      "difficulty": "hard",
+      "level": 3,
+      "stars": 12,
+      "content": {
+        "type": "comprehension",
+        "passage": "Την Κυριακή η οικογένεια πήγε εκδρομή στο βουνό. Ξεκίνησαν νωρίς το πρωί με το αυτοκίνητο. Στο δρόμο σταμάτησαν σε ένα χωριό για πρωινό. Έφαγαν τυρόπιτα και ήπιαν γάλα. Μετά συνέχισαν το ταξίδι τους. Όταν έφτασαν στο βουνό, περπάτησαν σε ένα μονοπάτι με πολλά δέντρα. Είδαν πουλιά και πεταλούδες. Το μεσημέρι έκαναν πικνίκ δίπλα σε ένα ρυάκι. Η μέρα ήταν υπέροχη!",
+        "readingTimeSeconds": 60,
+        "question": "Τι έφαγαν για πρωινό στο χωριό;",
+        "options": [
+          "Σάντουιτς",
+          "Τυρόπιτα και γάλα",
+          "Φρούτα",
+          "Κέικ",
+          "Ψωμί με μέλι"
+        ],
+        "correctIndex": 1,
+        "questionTimeSeconds": 30
+      }
+    },
+    {
+      "id": "comp-5",
+      "title": "Κατανόηση: Ο Κήπος",
+      "icon": {
+        "type": "emoji",
+        "value": "🌱"
+      },
+      "difficulty": "medium",
+      "level": 2,
+      "stars": 7,
+      "content": {
+        "type": "comprehension",
+        "passage": "Στον κήπο του παππού υπάρχουν πολλά λουλούδια. Κόκκινα τριαντάφυλλα, κίτρινες μαργαρίτες και μωβ λεβάντες. Κάθε μέρα ο παππούς τα ποτίζει. Οι μέλισσες έρχονται να πάρουν γύρη. Ο κήπος μυρίζει πολύ ωραία!",
+        "question": "Τι κάνει ο παππούς κάθε μέρα;",
+        "options": [
+          "Ποτίζει τα λουλούδια",
+          "Μαζεύει φρούτα",
+          "Κοιμάται",
+          "Διαβάζει βιβλίο"
+        ],
+        "correctIndex": 0
+      }
+    }
+  ],
   "chores": [
     {
       "id": "chore-dishes",
@@ -34,7 +588,10 @@
       "defaultStars": 15,
       "availabilityCron": "0 10 * * 6",
       "expirationHours": 8,
-      "eligibleUsers": ["u1", "u2"],
+      "eligibleUsers": [
+        "u1",
+        "u2"
+      ],
       "category": "chore"
     },
     {
@@ -47,7 +604,9 @@
       "defaultStars": 25,
       "availabilityCron": "0 11 * * 0",
       "expirationHours": 6,
-      "eligibleUsers": ["u1"],
+      "eligibleUsers": [
+        "u1"
+      ],
       "category": "chore"
     },
     {

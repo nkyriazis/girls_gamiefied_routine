@@ -1,4 +1,4 @@
-import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance } from '@shared/types';
+import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, Exercise, ExerciseInstance } from '@shared/types';
 
 const API_URL = '/api';
 
@@ -294,6 +294,53 @@ export const api = {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || 'Failed to reject chore');
+    }
+    return response.json();
+  },
+
+  // Exercises API
+  getExercises: async (userId?: string): Promise<{ exercises: Exercise[], instances: ExerciseInstance[] }> => {
+    const url = userId ? `${API_URL}/exercises?userId=${userId}` : `${API_URL}/exercises`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Failed to fetch exercises');
+    return response.json();
+  },
+
+  startExercise: async (exerciseId: string, userId: string): Promise<ExerciseInstance> => {
+    const response = await fetch(`${API_URL}/exercises/${exerciseId}/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to start exercise');
+    }
+    return response.json();
+  },
+
+  submitExercise: async (instanceId: string, answer: any): Promise<{ instance: ExerciseInstance, correct: boolean }> => {
+    const response = await fetch(`${API_URL}/exercises/${instanceId}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answer }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to submit exercise');
+    }
+    return response.json();
+  },
+
+  abandonExercise: async (instanceId: string): Promise<ExerciseInstance> => {
+    const response = await fetch(`${API_URL}/exercises/${instanceId}/abandon`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to abandon exercise');
     }
     return response.json();
   }

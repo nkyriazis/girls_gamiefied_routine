@@ -48,6 +48,67 @@
         }
       }
     },
+    "exerciseInstances": {
+      "type": "array",
+      "description": "Exercise instance lifecycle tracking",
+      "items": {
+        "type": "object",
+        "required": ["id", "exerciseId", "userId", "status", "startedAt", "attempts", "errors"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9-]{36}$",
+            "description": "UUID of the exercise instance"
+          },
+          "exerciseId": {
+            "type": "string",
+            "description": "Reference to exercise ID"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User ID attempting the exercise"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "active", "completed", "failed"],
+            "description": "Current status of the exercise instance"
+          },
+          "startedAt": {
+            "type": "string",
+            "description": "ISO timestamp when exercise was started"
+          },
+          "completedAt": {
+            "type": "string",
+            "description": "ISO timestamp when exercise was completed"
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of attempts made"
+          },
+          "errors": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of errors made (for untimed mode)"
+          },
+          "starsAwarded": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Stars awarded for completing the exercise"
+          },
+          "timeElapsed": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Time elapsed in seconds (for timed challenges)"
+          },
+          "stepData": {
+            "type": "object",
+            "description": "Step-by-step progress data (for interactive exercises like vertical math)"
+          }
+        }
+      }
+    },
     "choreInstances": {
       "type": "array",
       "description": "Chore instance lifecycle tracking",

@@ -9,6 +9,7 @@ import { GlobalAlarm } from './GlobalAlarm';
 import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
 import { ChoresDrawer } from './ChoresDrawer';
+import { ExercisesDrawer } from './ExercisesDrawer';
 import { useGame } from '../context/GameContext';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
@@ -28,6 +29,9 @@ export const Dashboard: React.FC = () => {
   
   // Bonus Activities Drawer State
   const [bonusOpen, setBonusOpen] = useState(false);
+
+  // Exercises Drawer State
+  const [exercisesOpen, setExercisesOpen] = useState(false);
 
   // Flow State - supports multiple simultaneous flows
   const [activeFlows, setActiveFlows] = useState<FlowInstance[]>([]);
@@ -327,6 +331,20 @@ export const Dashboard: React.FC = () => {
         </motion.button>
       )}
 
+      {/* Floating Exercises Button */}
+      {totalActiveCount === 0 && (
+        <motion.button
+          className="exercises-fab"
+          onClick={() => setExercisesOpen(true)}
+          initial={{ x: 100 }}
+          animate={{ x: 0 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          🎓
+        </motion.button>
+      )}
+
       {/* Chores Drawer */}
       <ChoresDrawer
         isOpen={choresOpen}
@@ -339,6 +357,12 @@ export const Dashboard: React.FC = () => {
         isOpen={bonusOpen}
         onClose={() => setBonusOpen(false)}
         category="bonus"
+      />
+
+      {/* Exercises Drawer */}
+      <ExercisesDrawer
+        isOpen={exercisesOpen}
+        onClose={() => setExercisesOpen(false)}
       />
 
       {/* Toast Notifications for Chores */}
@@ -757,6 +781,29 @@ export const Dashboard: React.FC = () => {
           border-radius: 1rem;
           min-width: 1.5rem;
           text-align: center;
+        }
+
+        /* Floating Exercises Button */
+        .exercises-fab {
+          position: fixed;
+          right: 1.5rem;
+          top: calc(50% + 160px);
+          transform: translateY(-50%);
+          width: 60px;
+          height: 60px;
+          min-width: 60px;
+          min-height: 60px;
+          padding: 0;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #f72585, #b5179e);
+          border: none;
+          font-size: 2rem;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(247, 37, 133, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
         }
 
         /* Toast Notifications */
