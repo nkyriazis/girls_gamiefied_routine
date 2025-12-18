@@ -4,9 +4,10 @@ import { SmartIcon } from './SmartIcon';
 import { InteractiveVerticalMath } from './InteractiveVerticalMath';
 import { InteractiveMultiplication } from './InteractiveMultiplication';
 import { InteractiveDivision } from './InteractiveDivision';
+import { ComprehensionGame } from './ComprehensionGame';
 import { useGame } from '../context/GameContext';
 import { api } from '../api';
-import type { Exercise, ExerciseInstance, ExerciseDifficulty, SpellFillExercise, GrammarChoiceExercise, MathSimpleExercise, MathVerticalExercise, User } from '@shared/types';
+import type { Exercise, ExerciseInstance, ExerciseDifficulty, SpellFillExercise, GrammarChoiceExercise, MathSimpleExercise, MathVerticalExercise, ComprehensionExercise, User } from '@shared/types';
 
 interface ExercisesDrawerProps {
     isOpen: boolean;
@@ -384,6 +385,14 @@ const ExercisePlayer: React.FC<{
                                 attemptsLeft={attemptsLeft}
                             />
                         )
+                    )}
+                    {exercise.content.type === 'comprehension' && (
+                        <ComprehensionGame
+                            exercise={exercise}
+                            content={exercise.content}
+                            onSubmit={handleSubmit}
+                            attemptsLeft={attemptsLeft}
+                        />
                     )}
                 </div>
             )}

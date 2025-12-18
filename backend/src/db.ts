@@ -1069,6 +1069,11 @@ export async function submitExercise(instanceId: string, answer: any): Promise<{
       correct = Math.abs((answer as number) - expectedAnswer) < 0.01;
       break;
     }
+    
+    case 'comprehension': {
+      correct = (answer as number) === exercise.content.correctIndex;
+      break;
+    }
   }
   
   // Update instance based on result

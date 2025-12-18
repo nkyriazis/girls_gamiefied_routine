@@ -127,7 +127,7 @@ export interface ChoreWithInstance extends Chore {
 }
 
 // Mini Exercises System - Educational games for earning stars
-export type ExerciseType = 'spell-fill' | 'grammar-choice' | 'math-simple' | 'math-vertical';
+export type ExerciseType = 'spell-fill' | 'grammar-choice' | 'math-simple' | 'math-vertical' | 'comprehension';
 export type ExerciseDifficulty = 'easy' | 'medium' | 'hard';
 export type ExerciseLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10; // School grade levels
 export type ExerciseChallengeMode = 'untimed' | 'timed'; // Untimed: fail after X errors, Timed: block until correct
@@ -169,11 +169,24 @@ export interface MathVerticalExercise {
   requireLongDivisionSteps?: boolean; // For division: require step-by-step long division
 }
 
+// Comprehension: Read text passage and answer multiple-choice question
+// Optionally timed for both reading and answering phases
+export interface ComprehensionExercise {
+  type: 'comprehension';
+  passage: string; // The text to read
+  readingTimeSeconds?: number; // Optional: time allowed to read (null = unlimited)
+  question: string; // The comprehension question
+  options: string[]; // Array of answer choices (2-6 options)
+  correctIndex: number; // Index of the correct answer (0-based)
+  questionTimeSeconds?: number; // Optional: time allowed to answer question
+}
+
 export type ExerciseContent = 
   | SpellFillExercise 
   | GrammarChoiceExercise 
   | MathSimpleExercise 
-  | MathVerticalExercise;
+  | MathVerticalExercise
+  | ComprehensionExercise;
 
 export interface Exercise {
   id: string;
