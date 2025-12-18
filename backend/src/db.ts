@@ -1060,7 +1060,7 @@ export async function submitExercise(instanceId: string, answer: any): Promise<{
           expectedAnswer = num1 * num2;
           break;
         case '/':
-          expectedAnswer = num1 / num2;
+          expectedAnswer = Math.floor(num1 / num2); // Integer division (quotient)
           break;
         default:
           expectedAnswer = 0;

@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { InteractiveVerticalMath } from './InteractiveVerticalMath';
+import { InteractiveMultiplication } from './InteractiveMultiplication';
+import { InteractiveDivision } from './InteractiveDivision';
 import { useGame } from '../context/GameContext';
 import { api } from '../api';
 import type { Exercise, ExerciseInstance, ExerciseDifficulty, SpellFillExercise, GrammarChoiceExercise, MathSimpleExercise, MathVerticalExercise, User } from '@shared/types';
@@ -346,8 +348,26 @@ const ExercisePlayer: React.FC<{
                         />
                     )}
                     {exercise.content.type === 'math-vertical' && (
-                        // Use interactive version if requireCarries is set, otherwise use simple version
-                        exercise.content.requireCarries ? (
+                        // Choose appropriate interactive component based on operation
+                        exercise.content.operation === '*' && exercise.content.requirePartialProducts ? (
+                            <InteractiveMultiplication
+                                exercise={exercise}
+                                content={exercise.content}
+                                onSubmit={(data) => handleSubmit(data.finalAnswer)}
+                                errorsRemaining={errorsRemaining}
+                                challengeMode={challengeMode}
+                                timeoutSeconds={exercise.timeoutSeconds}
+                            />
+                        ) : exercise.content.operation === '/' && exercise.content.requireLongDivisionSteps ? (
+                            <InteractiveDivision
+                                exercise={exercise}
+                                content={exercise.content}
+                                onSubmit={(data) => handleSubmit(data.finalAnswer)}
+                                errorsRemaining={errorsRemaining}
+                                challengeMode={challengeMode}
+                                timeoutSeconds={exercise.timeoutSeconds}
+                            />
+                        ) : exercise.content.requireCarries ? (
                             <InteractiveVerticalMath
                                 exercise={exercise}
                                 content={exercise.content}

@@ -308,6 +308,132 @@
         "requireCarries": true,
         "showHelpers": false
       }
+    },
+    {
+      "id": "math-mult-1",
+      "title": "Πολλαπλασιασμός: 23 × 4",
+      "icon": {
+        "type": "emoji",
+        "value": "✖️"
+      },
+      "difficulty": "medium",
+      "level": 3,
+      "stars": 8,
+      "challengeMode": "untimed",
+      "maxErrors": 5,
+      "content": {
+        "type": "math-vertical",
+        "operation": "*",
+        "num1": 23,
+        "num2": 4,
+        "requirePartialProducts": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-mult-2",
+      "title": "Πολλαπλασιασμός: 12 × 15",
+      "icon": {
+        "type": "emoji",
+        "value": "✖️"
+      },
+      "difficulty": "hard",
+      "level": 4,
+      "stars": 12,
+      "challengeMode": "untimed",
+      "maxErrors": 7,
+      "content": {
+        "type": "math-vertical",
+        "operation": "*",
+        "num1": 12,
+        "num2": 15,
+        "requirePartialProducts": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-div-1",
+      "title": "Διαίρεση: 84 ÷ 4",
+      "icon": {
+        "type": "emoji",
+        "value": "➗"
+      },
+      "difficulty": "medium",
+      "level": 3,
+      "stars": 8,
+      "challengeMode": "untimed",
+      "maxErrors": 5,
+      "content": {
+        "type": "math-vertical",
+        "operation": "/",
+        "num1": 84,
+        "num2": 4,
+        "requireLongDivisionSteps": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-div-2",
+      "title": "Διαίρεση: 156 ÷ 12",
+      "icon": {
+        "type": "emoji",
+        "value": "➗"
+      },
+      "difficulty": "hard",
+      "level": 4,
+      "stars": 12,
+      "challengeMode": "untimed",
+      "maxErrors": 7,
+      "content": {
+        "type": "math-vertical",
+        "operation": "/",
+        "num1": 156,
+        "num2": 12,
+        "requireLongDivisionSteps": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-mult-timed",
+      "title": "Πρόκληση: Πολλαπλασιασμός με Χρόνο",
+      "icon": {
+        "type": "emoji",
+        "value": "⏱️"
+      },
+      "difficulty": "hard",
+      "level": 5,
+      "stars": 15,
+      "challengeMode": "timed",
+      "timeoutSeconds": 180,
+      "content": {
+        "type": "math-vertical",
+        "operation": "*",
+        "num1": 34,
+        "num2": 27,
+        "requirePartialProducts": true,
+        "showHelpers": false
+      }
+    },
+    {
+      "id": "math-div-timed",
+      "title": "Πρόκληση: Διαίρεση με Χρόνο",
+      "icon": {
+        "type": "emoji",
+        "value": "⏱️"
+      },
+      "difficulty": "hard",
+      "level": 5,
+      "stars": 15,
+      "challengeMode": "timed",
+      "timeoutSeconds": 180,
+      "content": {
+        "type": "math-vertical",
+        "operation": "/",
+        "num1": 224,
+        "num2": 16,
+        "requireLongDivisionSteps": true,
+        "showHelpers": false
+      }
     }
   ],
   "chores": [

@@ -160,11 +160,13 @@ export interface MathSimpleExercise {
 // Users fill in partial results (carries, intermediate steps) before final answer
 export interface MathVerticalExercise {
   type: 'math-vertical';
-  operation: '+' | '-' | '*';
+  operation: '+' | '-' | '*' | '/';
   num1: number;
   num2: number;
   requireCarries?: boolean; // Whether to require carry/borrow input
   showHelpers?: boolean; // Show helper lines, partial sums, etc.
+  requirePartialProducts?: boolean; // For multiplication: require each partial product row
+  requireLongDivisionSteps?: boolean; // For division: require step-by-step long division
 }
 
 export type ExerciseContent = 

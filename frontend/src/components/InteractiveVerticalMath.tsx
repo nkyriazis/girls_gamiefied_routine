@@ -12,11 +12,12 @@ interface InteractiveVerticalMathProps {
 }
 
 // Helper to calculate the correct answer
-function calculateAnswer(num1: number, num2: number, operation: '+' | '-' | '*'): number {
+function calculateAnswer(num1: number, num2: number, operation: '+' | '-' | '*' | '/'): number {
     switch (operation) {
         case '+': return num1 + num2;
         case '-': return num1 - num2;
         case '*': return num1 * num2;
+        case '/': return Math.floor(num1 / num2);
         default: return 0;
     }
 }

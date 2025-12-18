@@ -176,7 +176,7 @@
                   },
                   "operation": {
                     "type": "string",
-                    "enum": ["+", "-", "*"]
+                    "enum": ["+", "-", "*", "/"]
                   },
                   "num1": {
                     "type": "number"
@@ -191,6 +191,14 @@
                   "showHelpers": {
                     "type": "boolean",
                     "description": "Show helper lines, partial sums, and visual aids"
+                  },
+                  "requirePartialProducts": {
+                    "type": "boolean",
+                    "description": "For multiplication: require each partial product row to be filled step-by-step"
+                  },
+                  "requireLongDivisionSteps": {
+                    "type": "boolean",
+                    "description": "For division: require step-by-step long division process"
                   }
                 }
               }
