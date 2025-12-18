@@ -53,7 +53,7 @@
       "description": "Exercise instance lifecycle tracking",
       "items": {
         "type": "object",
-        "required": ["id", "exerciseId", "userId", "status", "startedAt", "attempts"],
+        "required": ["id", "exerciseId", "userId", "status", "startedAt", "attempts", "errors"],
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -87,10 +87,24 @@
             "minimum": 0,
             "description": "Number of attempts made"
           },
+          "errors": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of errors made (for untimed mode)"
+          },
           "starsAwarded": {
             "type": "integer",
             "minimum": 0,
             "description": "Stars awarded for completing the exercise"
+          },
+          "timeElapsed": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Time elapsed in seconds (for timed challenges)"
+          },
+          "stepData": {
+            "type": "object",
+            "description": "Step-by-step progress data (for interactive exercises like vertical math)"
           }
         }
       }

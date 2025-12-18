@@ -11,7 +11,7 @@
       "description": "Educational mini-games for earning stars",
       "items": {
         "type": "object",
-        "required": ["id", "title", "icon", "difficulty", "stars", "content"],
+        "required": ["id", "title", "icon", "difficulty", "level", "stars", "content"],
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -46,10 +46,31 @@
             "enum": ["easy", "medium", "hard"],
             "description": "Difficulty level of the exercise"
           },
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "School grade level (1-10) for content generation"
+          },
           "stars": {
             "type": "integer",
             "minimum": 1,
             "description": "Star reward for correct completion"
+          },
+          "challengeMode": {
+            "type": "string",
+            "enum": ["untimed", "timed"],
+            "description": "Challenge mode: untimed (fail after maxErrors) or timed (block until correct with timeout)"
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "minimum": 10,
+            "description": "Optional timeout in seconds for timed challenges"
+          },
+          "maxErrors": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Maximum errors before failing (for untimed mode, default: 3)"
           },
           "availabilityCron": {
             "type": "string",
@@ -155,13 +176,21 @@
                   },
                   "operation": {
                     "type": "string",
-                    "enum": ["+", "-"]
+                    "enum": ["+", "-", "*"]
                   },
                   "num1": {
                     "type": "number"
                   },
                   "num2": {
                     "type": "number"
+                  },
+                  "requireCarries": {
+                    "type": "boolean",
+                    "description": "Whether to require carry/borrow input for interactive step-by-step process"
+                  },
+                  "showHelpers": {
+                    "type": "boolean",
+                    "description": "Show helper lines, partial sums, and visual aids"
                   }
                 }
               }

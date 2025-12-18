@@ -129,6 +129,8 @@ export interface ChoreWithInstance extends Chore {
 // Mini Exercises System - Educational games for earning stars
 export type ExerciseType = 'spell-fill' | 'grammar-choice' | 'math-simple' | 'math-vertical';
 export type ExerciseDifficulty = 'easy' | 'medium' | 'hard';
+export type ExerciseLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10; // School grade levels
+export type ExerciseChallengeMode = 'untimed' | 'timed'; // Untimed: fail after X errors, Timed: block until correct
 
 // Spell-fill: Fill in missing letter(s) in a word
 export interface SpellFillExercise {
@@ -154,12 +156,15 @@ export interface MathSimpleExercise {
   num2: number;
 }
 
-// Math-vertical: Vertical arithmetic operation (more visual, touch-friendly)
+// Math-vertical: Interactive vertical arithmetic operation with step-by-step process
+// Users fill in partial results (carries, intermediate steps) before final answer
 export interface MathVerticalExercise {
   type: 'math-vertical';
-  operation: '+' | '-';
+  operation: '+' | '-' | '*';
   num1: number;
   num2: number;
+  requireCarries?: boolean; // Whether to require carry/borrow input
+  showHelpers?: boolean; // Show helper lines, partial sums, etc.
 }
 
 export type ExerciseContent = 
@@ -173,8 +178,12 @@ export interface Exercise {
   title: string;
   icon: IconValue;
   difficulty: ExerciseDifficulty;
+  level: ExerciseLevel; // School grade level (1-10) for content generation
   stars: number; // Stars awarded for correct completion
   content: ExerciseContent;
+  challengeMode?: ExerciseChallengeMode; // 'untimed' (default) or 'timed'
+  timeoutSeconds?: number; // Optional timeout for timed challenges
+  maxErrors?: number; // Max errors before failing (for untimed mode, default: 3)
   availabilityCron?: string; // Optional: when exercise becomes available
   eligibleUsers?: string[]; // Optional: restrict to specific users
 }
@@ -189,5 +198,8 @@ export interface ExerciseInstance {
   startedAt: string; // ISO timestamp
   completedAt?: string; // ISO timestamp
   attempts: number; // Number of attempts made
+  errors: number; // Number of errors made (for untimed mode)
   starsAwarded?: number; // Stars awarded (only if completed successfully)
+  timeElapsed?: number; // Time elapsed in seconds (for timed challenges)
+  stepData?: any; // Step-by-step progress data (for interactive exercises like vertical math)
 }

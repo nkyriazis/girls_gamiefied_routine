@@ -8,11 +8,15 @@
         "value": "✏️"
       },
       "difficulty": "easy",
+      "level": 1,
       "stars": 5,
       "content": {
         "type": "spell-fill",
         "word": "ΣΧΟΛΕΙΟ",
-        "hiddenIndices": [2, 5],
+        "hiddenIndices": [
+          2,
+          5
+        ],
         "hint": "Πάμε εκεί κάθε μέρα για να μάθουμε"
       }
     },
@@ -24,11 +28,15 @@
         "value": "📖"
       },
       "difficulty": "easy",
+      "level": 1,
       "stars": 5,
       "content": {
         "type": "spell-fill",
         "word": "ΒΙΒΛΙΟ",
-        "hiddenIndices": [1, 4],
+        "hiddenIndices": [
+          1,
+          4
+        ],
         "hint": "Το διαβάζουμε για να μαθαίνουμε ιστορίες"
       }
     },
@@ -40,11 +48,16 @@
         "value": "👨‍👩‍👧‍👦"
       },
       "difficulty": "medium",
+      "level": 2,
       "stars": 8,
       "content": {
         "type": "spell-fill",
         "word": "ΟΙΚΟΓΕΝΕΙΑ",
-        "hiddenIndices": [3, 6, 8],
+        "hiddenIndices": [
+          3,
+          6,
+          8
+        ],
         "hint": "Μαμά, μπαμπάς και παιδιά μαζί"
       }
     },
@@ -60,9 +73,15 @@
       "content": {
         "type": "grammar-choice",
         "question": "Η Ηλέκτρα ___ στο σχολείο.",
-        "options": ["πάει", "πάνε", "πάω", "πάτε"],
+        "options": [
+          "πάει",
+          "πάνε",
+          "πάω",
+          "πάτε"
+        ],
         "correctIndex": 0
-      }
+      },
+      "level": 1
     },
     {
       "id": "grammar-2",
@@ -76,9 +95,15 @@
       "content": {
         "type": "grammar-choice",
         "question": "Εμείς ___ παιχνίδι.",
-        "options": ["παίζω", "παίζεις", "παίζουμε", "παίζει"],
+        "options": [
+          "παίζω",
+          "παίζεις",
+          "παίζουμε",
+          "παίζει"
+        ],
         "correctIndex": 2
-      }
+      },
+      "level": 1
     },
     {
       "id": "grammar-3",
@@ -92,9 +117,15 @@
       "content": {
         "type": "grammar-choice",
         "question": "Το βιβλίο είναι ___ του τραπεζιού.",
-        "options": ["πάνω", "κάτω", "μέσα", "δίπλα"],
+        "options": [
+          "πάνω",
+          "κάτω",
+          "μέσα",
+          "δίπλα"
+        ],
         "correctIndex": 0
-      }
+      },
+      "level": 2
     },
     {
       "id": "math-1",
@@ -110,7 +141,8 @@
         "operation": "+",
         "num1": 3,
         "num2": 5
-      }
+      },
+      "level": 1
     },
     {
       "id": "math-2",
@@ -126,7 +158,8 @@
         "operation": "-",
         "num1": 8,
         "num2": 3
-      }
+      },
+      "level": 1
     },
     {
       "id": "math-3",
@@ -142,7 +175,8 @@
         "operation": "*",
         "num1": 4,
         "num2": 6
-      }
+      },
+      "level": 2
     },
     {
       "id": "math-4",
@@ -158,7 +192,8 @@
         "operation": "/",
         "num1": 12,
         "num2": 3
-      }
+      },
+      "level": 2
     },
     {
       "id": "math-v-1",
@@ -174,7 +209,8 @@
         "operation": "+",
         "num1": 23,
         "num2": 45
-      }
+      },
+      "level": 1
     },
     {
       "id": "math-v-2",
@@ -190,7 +226,8 @@
         "operation": "-",
         "num1": 56,
         "num2": 28
-      }
+      },
+      "level": 2
     },
     {
       "id": "math-v-3",
@@ -206,7 +243,8 @@
         "operation": "+",
         "num1": 147,
         "num2": 286
-      }
+      },
+      "level": 3
     }
   ],
   "chores": [
@@ -244,7 +282,10 @@
       "defaultStars": 15,
       "availabilityCron": "0 10 * * 6",
       "expirationHours": 8,
-      "eligibleUsers": ["u1", "u2"],
+      "eligibleUsers": [
+        "u1",
+        "u2"
+      ],
       "category": "chore"
     },
     {
@@ -257,7 +298,9 @@
       "defaultStars": 25,
       "availabilityCron": "0 11 * * 0",
       "expirationHours": 6,
-      "eligibleUsers": ["u1"],
+      "eligibleUsers": [
+        "u1"
+      ],
       "category": "chore"
     },
     {

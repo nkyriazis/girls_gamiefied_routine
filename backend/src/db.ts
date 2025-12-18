@@ -985,7 +985,8 @@ export async function startExercise(exerciseId: string, userId: string): Promise
     userId,
     status: 'active',
     startedAt: new Date().toISOString(),
-    attempts: 0
+    attempts: 0,
+    errors: 0
   };
   
   globalState.exerciseInstances.push(instance);
@@ -1090,8 +1091,16 @@ export async function submitExercise(instanceId: string, answer: any): Promise<{
       payload: { instance, starsAwarded: exercise.stars }
     });
   } else {
-    // Allow up to 3 attempts, then mark as failed
-    if (instance.attempts >= 3) {
+    // Increment error count
+    instance.errors++;
+    
+    // Determine max errors based on exercise settings
+    const maxErrors = exercise.maxErrors || 3;
+    const challengeMode = exercise.challengeMode || 'untimed';
+    
+    // For untimed mode: fail after maxErrors
+    // For timed mode: keep trying until timeout (handled by frontend timer)
+    if (challengeMode === 'untimed' && instance.errors >= maxErrors) {
       instance.status = 'failed';
       instance.completedAt = new Date().toISOString();
       
@@ -1103,7 +1112,8 @@ export async function submitExercise(instanceId: string, answer: any): Promise<{
       });
     } else {
       // Still active, can try again
-      logAction('EXERCISE_ATTEMPT', { instance, correct: false, attemptsRemaining: 3 - instance.attempts });
+      const errorsRemaining = challengeMode === 'untimed' ? maxErrors - instance.errors : null;
+      logAction('EXERCISE_ATTEMPT', { instance, correct: false, errorsRemaining });
     }
   }
   
