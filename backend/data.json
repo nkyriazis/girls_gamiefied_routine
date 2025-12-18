@@ -245,6 +245,69 @@
         "num2": 286
       },
       "level": 3
+    },
+    {
+      "id": "math-v-interactive-1",
+      "title": "Κάθετη Πρόσθεση με Κρατούμενα",
+      "icon": {
+        "type": "emoji",
+        "value": "🎓"
+      },
+      "difficulty": "medium",
+      "level": 2,
+      "stars": 10,
+      "challengeMode": "untimed",
+      "maxErrors": 5,
+      "content": {
+        "type": "math-vertical",
+        "operation": "+",
+        "num1": 47,
+        "num2": 38,
+        "requireCarries": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-v-interactive-2",
+      "title": "Κάθετη Αφαίρεση με Δανεισμό",
+      "icon": {
+        "type": "emoji",
+        "value": "🎓"
+      },
+      "difficulty": "hard",
+      "level": 3,
+      "stars": 12,
+      "challengeMode": "untimed",
+      "maxErrors": 5,
+      "content": {
+        "type": "math-vertical",
+        "operation": "-",
+        "num1": 82,
+        "num2": 47,
+        "requireCarries": true,
+        "showHelpers": true
+      }
+    },
+    {
+      "id": "math-v-timed-1",
+      "title": "Πρόκληση με Χρόνο: Πρόσθεση",
+      "icon": {
+        "type": "emoji",
+        "value": "⏱️"
+      },
+      "difficulty": "hard",
+      "level": 3,
+      "stars": 15,
+      "challengeMode": "timed",
+      "timeoutSeconds": 120,
+      "content": {
+        "type": "math-vertical",
+        "operation": "+",
+        "num1": 156,
+        "num2": 289,
+        "requireCarries": true,
+        "showHelpers": false
+      }
     }
   ],
   "chores": [

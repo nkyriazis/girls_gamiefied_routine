@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
+import { InteractiveVerticalMath } from './InteractiveVerticalMath';
 import { useGame } from '../context/GameContext';
 import { api } from '../api';
 import type { Exercise, ExerciseInstance, ExerciseDifficulty, SpellFillExercise, GrammarChoiceExercise, MathSimpleExercise, MathVerticalExercise, User } from '@shared/types';
@@ -270,7 +271,10 @@ const ExercisePlayer: React.FC<{
 }> = ({ exercise, instance, onComplete, onAbandon }) => {
     const [feedback, setFeedback] = useState<{ type: 'correct' | 'incorrect' | null; message: string }>({ type: null, message: '' });
 
-    const attemptsLeft = 3 - instance.attempts;
+    const challengeMode = exercise.challengeMode || 'untimed';
+    const maxErrors = exercise.maxErrors || 3;
+    const errorsRemaining = maxErrors - instance.errors;
+    const attemptsLeft = 3 - instance.attempts; // Legacy for non-interactive exercises
 
     const handleSubmit = async (answer: any) => {
         try {
@@ -282,13 +286,19 @@ const ExercisePlayer: React.FC<{
                     onComplete();
                 }, 2000);
             } else {
-                if (attemptsLeft === 1) {
-                    setFeedback({ type: 'incorrect', message: 'Λυπάμαι, δεν είναι σωστό. Δοκίμασε άλλη άσκηση!' });
+                // Check if exercise has failed
+                if (result.instance.status === 'failed') {
+                    setFeedback({ type: 'incorrect', message: 'Λυπάμαι, δεν το πέτυχες. Δοκίμασε άλλη άσκηση!' });
                     setTimeout(() => {
                         onAbandon();
                     }, 2500);
                 } else {
-                    setFeedback({ type: 'incorrect', message: `Δοκίμασε ξανά! Απομένουν ${attemptsLeft - 1} προσπάθειες.` });
+                    // Still can try
+                    const remaining = challengeMode === 'untimed' ? maxErrors - result.instance.errors : null;
+                    const msg = remaining !== null ? 
+                        `Δοκίμασε ξανά! Απομένουν ${remaining} προσπάθειες.` :
+                        'Δοκίμασε ξανά!';
+                    setFeedback({ type: 'incorrect', message: msg });
                     setTimeout(() => {
                         setFeedback({ type: null, message: '' });
                     }, 2000);
@@ -336,12 +346,24 @@ const ExercisePlayer: React.FC<{
                         />
                     )}
                     {exercise.content.type === 'math-vertical' && (
-                        <MathVerticalGame
-                            exercise={exercise}
-                            content={exercise.content}
-                            onSubmit={handleSubmit}
-                            attemptsLeft={attemptsLeft}
-                        />
+                        // Use interactive version if requireCarries is set, otherwise use simple version
+                        exercise.content.requireCarries ? (
+                            <InteractiveVerticalMath
+                                exercise={exercise}
+                                content={exercise.content}
+                                onSubmit={(data) => handleSubmit(data.finalAnswer)}
+                                errorsRemaining={errorsRemaining}
+                                challengeMode={challengeMode}
+                                timeoutSeconds={exercise.timeoutSeconds}
+                            />
+                        ) : (
+                            <MathVerticalGame
+                                exercise={exercise}
+                                content={exercise.content}
+                                onSubmit={handleSubmit}
+                                attemptsLeft={attemptsLeft}
+                            />
+                        )
                     )}
                 </div>
             )}
