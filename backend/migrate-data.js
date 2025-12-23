@@ -18,12 +18,16 @@ const args = process.argv.slice(2);
 const dataFileArg = args.indexOf('--data-file');
 const stateFileArg = args.indexOf('--state-file');
 
-const DATA_FILE = dataFileArg >= 0 && args[dataFileArg + 1] 
-  ? args[dataFileArg + 1] 
-  : path.join(__dirname, 'data.json');
-const STATE_FILE = stateFileArg >= 0 && args[stateFileArg + 1]
-  ? args[stateFileArg + 1]
-  : path.join(__dirname, 'state.json');
+// Validate that the argument after the flag exists and isn't another flag
+const getArgValue = (flagIndex) => {
+  if (flagIndex >= 0 && args[flagIndex + 1] && !args[flagIndex + 1].startsWith('--')) {
+    return args[flagIndex + 1];
+  }
+  return null;
+};
+
+const DATA_FILE = getArgValue(dataFileArg) || path.join(__dirname, 'data.json');
+const STATE_FILE = getArgValue(stateFileArg) || path.join(__dirname, 'state.json');
 
 const DATA_SCHEMA_FILE = path.join(__dirname, 'data.schema.json');
 const STATE_SCHEMA_FILE = path.join(__dirname, 'state.schema.json');
@@ -132,7 +136,7 @@ function saveFile(filePath, data) {
 }
 
 // Main migration process
-async function main() {
+function main() {
   console.log('Step 1: Validating existing files...\n');
   
   const dataResult = validateFile(DATA_FILE, DATA_SCHEMA_FILE, 'data.json');
@@ -227,7 +231,9 @@ async function main() {
 }
 
 // Run migration
-main().catch(error => {
+try {
+  main();
+} catch (error) {
   console.error('\n❌ Fatal error during migration:', error);
   process.exit(1);
-});
+}
