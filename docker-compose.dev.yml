@@ -22,3 +22,15 @@ services:
     command: npm run dev -- --host
     environment:
       - CHOKIDAR_USEPOLLING=true
+
+  llm-service:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./llm-service:/app
+      - ./llm-service/data:/app/data
+    ports:
+      - "8000:8000"
+    command: sh -c "pip install -q -r requirements.txt && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      - PYTHONUNBUFFERED=1
