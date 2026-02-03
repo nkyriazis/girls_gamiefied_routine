@@ -2,6 +2,28 @@
 
 This guide helps you navigate all the documentation for the LLM service implementation.
 
+## ❓ NEW: Understanding the Implementation
+
+**START HERE if you're confused about what runs vs what's reference:**
+
+0. **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - At-a-glance summary ⚡
+   - Custom service (runs) vs Danswer (reference)
+   - What starts when you run docker compose
+   - Quick verification commands
+
+0b. **[VISUAL_EXPLANATION.sh](VISUAL_EXPLANATION.sh)** - Run for visual diagram 🎨
+   ```bash
+   ./VISUAL_EXPLANATION.sh
+   ```
+   - ASCII art showing what runs
+   - Directory structure
+   - Service comparisons
+
+0c. **[UNDERSTANDING_THE_IMPLEMENTATION.md](UNDERSTANDING_THE_IMPLEMENTATION.md)** - Detailed Q&A 📖
+   - Comprehensive explanation
+   - Analogy: bicycle vs factory
+   - Migration scenarios
+
 ## 🚀 Quick Start (New Users)
 
 **Start here if you want to use the service:**
