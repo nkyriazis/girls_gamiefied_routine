@@ -11,8 +11,9 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
 - **Frontend**: [http://localhost:5173](http://localhost:5173)
-- **Backend**: Internal (proxied via Frontend)
-- **Changes**: Edit files in `frontend/` or `backend/` and see changes instantly.
+- **Backend**: [http://localhost:3000](http://localhost:3000) (Internal)
+- **LLM Service**: [http://localhost:8000](http://localhost:8000)
+- **Changes**: Edit files in `frontend/`, `backend/`, or `llm-service/` and see changes instantly.
 
 ---
 
@@ -26,6 +27,7 @@ docker-compose up --build
 
 - **Frontend**: [http://localhost](http://localhost) (Default Port 80, configurable via `.env`)
 - **Backend**: Internal (proxied via Nginx)
+- **LLM Service**: [http://localhost:8000](http://localhost:8000)
 - **Performance**: Optimized assets, no file watchers, native file system speed.
 
 > **Note**: To stop the production server, press `Ctrl+C`. To run it in the background, add `-d` to the end of the command.
@@ -39,6 +41,36 @@ FRONTEND_PORT=8080
 ```
 
 Then restart the containers. The frontend will be accessible at the port you specified.
+
+---
+
+## 🤖 LLM Service Setup
+
+The LLM service provides AI-powered exercise generation based on school textbooks using RAG (Retrieval-Augmented Generation).
+
+### Prerequisites
+
+1. Get an API key from at least one LLM provider:
+   - **OpenAI**: https://platform.openai.com/api-keys (Recommended)
+   - **Anthropic**: https://console.anthropic.com/
+
+2. Copy `.env.example` to `.env` and add your API keys:
+
+```bash
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+DEFAULT_LLM_PROVIDER=openai
+DEFAULT_MODEL=gpt-4o-mini
+```
+
+### Features
+
+- 📚 Upload school textbooks (PDF) for context-aware exercise generation
+- 🎯 Generate personalized exercises in multiple formats (multiple choice, short answer, etc.)
+- 🧠 RAG-based content retrieval for curriculum-aligned questions
+- 🔄 Support for both OpenAI (GPT) and Anthropic (Claude) models
+
+See [llm-service/README.md](llm-service/README.md) for detailed documentation.
 
 ---
 

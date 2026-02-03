@@ -1,0 +1,3 @@
+[submodule "third-party/danswer"]
+	path = third-party/danswer
+	url = https://github.com/unoplat/danswer.git

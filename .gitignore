@@ -13,3 +13,11 @@ backend/state.json
 backend/logs.jsonl
 backend/uploads/
 backend/test-*.json
+
+# LLM Service data
+llm-service/data/
+llm-service/__pycache__/
+llm-service/src/__pycache__/
+llm-service/*.pyc
+llm-service/.pytest_cache/
+

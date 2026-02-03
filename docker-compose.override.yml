@@ -18,3 +18,14 @@ services:
     ports:
       - "${FRONTEND_PORT:-80}:80"
     restart: always
+
+  llm-service:
+    build:
+      context: .
+      dockerfile: llm-service/Dockerfile
+    volumes:
+      - ./llm-service/data:/app/data
+    ports:
+      - "8000:8000"
+    restart: always
+

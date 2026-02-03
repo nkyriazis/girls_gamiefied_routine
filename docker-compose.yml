@@ -12,6 +12,17 @@ services:
     networks:
       - routine-net
 
+  # LLM Service for exercise generation and RAG
+  llm-service:
+    networks:
+      - routine-net
+    environment:
+      - TZ=Europe/Athens
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-openai}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gpt-4o-mini}
+
   # Tunnel (ngrok) for public MCP endpoint access
   # The public URL (HTTP & HTTPS) will be printed to logs
   tunnel:
