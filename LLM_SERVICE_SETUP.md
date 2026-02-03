@@ -4,6 +4,35 @@
 
 A complete 3rd backend service has been added to the Girls Gamified Routine system to provide LLM (Large Language Model) and RAG (Retrieval-Augmented Generation) functionality for generating personalized exercises based on school textbooks.
 
+## Danswer/Onyx Consideration
+
+This implementation was **inspired by [Danswer/Onyx](https://github.com/unoplat/danswer)** but kept lightweight for this specific use case.
+
+### Why Lightweight Custom vs Full Danswer?
+
+**Danswer/Onyx** (referenced in `third-party/danswer/`):
+- Full enterprise search platform
+- 8+ Docker services (PostgreSQL, Redis, Vespa, Nginx, workers)
+- Multi-connector (Slack, Google Drive, Confluence, Jira, etc.)
+- User auth, admin dashboard, background indexing
+- 50K+ lines of code
+
+**This Custom Service:**
+- Focused exercise generation
+- 1 Docker service (llm-service)
+- Simple ChromaDB vector storage
+- 500 lines of focused code
+- Uses same core tech (LangChain, FastAPI, vector embeddings)
+
+**Decision Rationale:**
+- Current system: 2 services (backend, frontend)
+- Adding Danswer: Would become 10+ services
+- Need: Generate exercises from textbooks (not enterprise search)
+
+**When to migrate to Danswer:** See `DANSWER_INTEGRATION_OPTIONS.md` for scenarios where full Danswer makes sense (multi-user enterprise search, 10+ data sources, Slack integration).
+
+---
+
 ## Key Features
 
 ✅ **Multi-Provider LLM Support**

@@ -2,6 +2,28 @@
 
 A dedicated microservice for LLM (Large Language Model) and RAG (Retrieval-Augmented Generation) functionality, designed to generate personalized exercises based on school textbooks.
 
+## Relationship with Danswer/Onyx
+
+This service is **inspired by [Danswer](https://github.com/unoplat/danswer)** (now Onyx) but intentionally lightweight for focused use case.
+
+**Why not use Danswer directly?**
+- Danswer is a full enterprise search platform (8+ containers: PostgreSQL, Redis, Vespa, Nginx, workers, etc.)
+- This system currently has 2 core services; adding Danswer would mean 10+ services
+- Our use case: Generate exercises from textbooks (focused)
+- Danswer's use case: Enterprise search across Slack/Google Drive/Confluence/etc. (broad)
+
+**What we use from Danswer's approach:**
+- ✅ RAG architecture pattern
+- ✅ LangChain framework (same as Danswer)
+- ✅ Vector embeddings for semantic search
+- ✅ FastAPI backend (same as Danswer)
+
+**Danswer reference:** See `third-party/danswer/` submodule for the full implementation.
+
+**When to switch to Danswer:** If you need multi-user enterprise search, Slack integration, or 10+ data connectors, consider migrating to full Danswer stack. See `DANSWER_INTEGRATION_OPTIONS.md` for details.
+
+---
+
 ## Features
 
 - **Multiple LLM Providers**: Support for OpenAI (GPT-4, GPT-3.5) and Anthropic (Claude)
