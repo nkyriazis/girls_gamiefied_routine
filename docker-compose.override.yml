@@ -17,4 +17,7 @@ services:
       dockerfile: frontend/Dockerfile
     ports:
       - "${FRONTEND_PORT:-80}:80"
+    environment:
+      - API_URL=http://backend:3000
+      - WS_URL=ws://backend:3000
     restart: always
