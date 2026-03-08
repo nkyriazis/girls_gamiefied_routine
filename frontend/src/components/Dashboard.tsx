@@ -12,9 +12,14 @@ import { ChoresDrawer } from './ChoresDrawer';
 import { useGame } from '../context/GameContext';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
+import { ExerciseSetup } from './ExerciseSetup';
+import { ExerciseGame } from './ExerciseGame';
 
 export const Dashboard: React.FC = () => {
-  const { users, flows, rewards, spendings, starTransfers, chores, choreInstances, choreNotifications, dismissChoreNotification, lastEvent } = useGame();
+  const { 
+    users, flows, rewards, spendings, starTransfers, chores, choreInstances, 
+    choreNotifications, dismissChoreNotification, activeExerciseSessions, lastEvent 
+  } = useGame();
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
   const { isInstallable, promptInstall } = useInstallPrompt();
@@ -28,6 +33,9 @@ export const Dashboard: React.FC = () => {
   
   // Bonus Activities Drawer State
   const [bonusOpen, setBonusOpen] = useState(false);
+
+  // Exercise State
+  const [setupOpen, setSetupOpen] = useState(false);
 
   // Flow State - supports multiple simultaneous flows
   const [activeFlows, setActiveFlows] = useState<FlowInstance[]>([]);
@@ -327,6 +335,20 @@ export const Dashboard: React.FC = () => {
         </motion.button>
       )}
 
+      {/* Floating School Exercises Button */}
+      {totalActiveCount === 0 && (
+        <motion.button
+          className="exercise-fab"
+          onClick={() => setSetupOpen(true)}
+          initial={{ x: 100 }}
+          animate={{ x: 0 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          📚
+        </motion.button>
+      )}
+
       {/* Chores Drawer */}
       <ChoresDrawer
         isOpen={choresOpen}
@@ -340,6 +362,29 @@ export const Dashboard: React.FC = () => {
         onClose={() => setBonusOpen(false)}
         category="bonus"
       />
+
+      {/* Exercise Overlays */}
+      <AnimatePresence>
+        {setupOpen && (
+          <ExerciseSetup
+            users={users}
+            onClose={() => setSetupOpen(false)}
+            onStart={(p, c, r, q) => {
+              api.startExerciseSession(p, c, r, q);
+              setSetupOpen(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {activeExerciseSessions.length > 0 && (
+          <ExerciseGame
+            session={activeExerciseSessions[0]}
+            onClose={() => api.cancelExerciseSession(activeExerciseSessions[0].id)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Toast Notifications for Chores */}
       <div className="toast-container">
@@ -757,6 +802,29 @@ export const Dashboard: React.FC = () => {
           border-radius: 1rem;
           min-width: 1.5rem;
           text-align: center;
+        }
+
+        /* Floating School Exercises Button */
+        .exercise-fab {
+          position: fixed;
+          right: 1.5rem;
+          top: calc(50% + 160px);
+          transform: translateY(-50%);
+          width: 60px;
+          height: 60px;
+          min-width: 60px;
+          min-height: 60px;
+          padding: 0;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #f72585, #7209b7);
+          border: none;
+          font-size: 2rem;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(247, 37, 133, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
         }
 
         /* Toast Notifications */

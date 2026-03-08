@@ -1,0 +1,108 @@
+{
+  "exercises": [
+    {
+      "id": "math-mc-1",
+      "type": "multiple-choice",
+      "category": "Μαθηματικά",
+      "title": "Πρόσθεση",
+      "question": "Πόσο κάνει 12 + 15;",
+      "options": [
+        "25",
+        "27",
+        "29",
+        "30"
+      ],
+      "correctIndex": 1,
+      "stars": 5
+    },
+    {
+      "id": "math-tp-1",
+      "type": "match-pairs",
+      "category": "Μαθηματικά",
+      "title": "Ζευγάρια",
+      "body": "Σύνδεσε τις προσθέσεις με τα σωστά αποτελέσματα.",
+      "pairs": [
+        {
+          "left": "5 + 5",
+          "right": "10"
+        },
+        {
+          "left": "3 + 4",
+          "right": "7"
+        },
+        {
+          "left": "8 + 2",
+          "right": "10"
+        }
+      ],
+      "stars": 10
+    },
+    {
+      "id": "lang-mc-1",
+      "type": "multiple-choice",
+      "category": "Γλώσσα",
+      "title": "Ορθογραφία",
+      "question": "Ποια είναι η σωστή γραφή;",
+      "options": [
+        "Πήγαμαι",
+        "Πήγαμε",
+        "Πήγαμες"
+      ],
+      "correctIndex": 1,
+      "stars": 5
+    },
+    {
+      "id": "math-ord-1",
+      "type": "ordering",
+      "category": "Μαθηματικά",
+      "title": "Σειρά",
+      "body": "Βάλε τους αριθμούς στη σειρά από το μικρότερο στο μεγαλύτερο.",
+      "items": [
+        {
+          "id": "1",
+          "content": "5"
+        },
+        {
+          "id": "2",
+          "content": "12"
+        },
+        {
+          "id": "3",
+          "content": "25"
+        },
+        {
+          "id": "4",
+          "content": "40"
+        }
+      ],
+      "stars": 8
+    },
+    {
+      "id": "lang-tf-1",
+      "type": "true-false",
+      "category": "Γλώσσα",
+      "title": "Σωστό/Λάθος",
+      "question": "Η λέξη 'μήλο' είναι ουσιαστικό.",
+      "correctValue": true,
+      "stars": 3
+    },
+    {
+      "id": "lang-fb-1",
+      "type": "fill-blank",
+      "category": "Γλώσσα",
+      "title": "Κενά",
+      "textWithGaps": "Το {0} είναι ένα κόκκινο {1}.",
+      "options": [
+        "μήλο",
+        "φρούτο",
+        "αυτοκίνητο",
+        "δέντρο"
+      ],
+      "correctAnswers": [
+        "μήλο",
+        "φρούτο"
+      ],
+      "stars": 10
+    }
+  ]
+}

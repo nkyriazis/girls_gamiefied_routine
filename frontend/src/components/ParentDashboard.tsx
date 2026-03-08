@@ -236,7 +236,7 @@ const formatDuration = (seconds: number): string => {
 
 export const ParentDashboard: React.FC = () => {
     const { users, spendings, starTransfers, flows, chores, choreInstances, lastEvent } = useGame();
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'config' | 'state' | 'debug' | 'logs'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'exercises' | 'schedule' | 'config' | 'state' | 'debug' | 'logs'>('dashboard');
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [nextToastId, setNextToastId] = useState(0);
     const [validationErrors, setValidationErrors] = useState<{ config?: any, state?: any }>({});
@@ -410,6 +410,7 @@ export const ParentDashboard: React.FC = () => {
                 <h1>Γονείς & Διαχείριση</h1>
                 <div className="tabs">
                     <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
+                    <button className={activeTab === 'exercises' ? 'active' : ''} onClick={() => setActiveTab('exercises')}>📝 Ασκήσεις</button>
                     <button className={activeTab === 'schedule' ? 'active' : ''} onClick={() => setActiveTab('schedule')}>📅 Schedule</button>
                     <button className={activeTab === 'config' ? 'active' : ''} onClick={() => setActiveTab('config')}>Config (data.json)</button>
                     <button className={activeTab === 'state' ? 'active' : ''} onClick={() => setActiveTab('state')}>State (state.json)</button>
@@ -731,6 +732,62 @@ export const ParentDashboard: React.FC = () => {
                             )}
                         </section>
                     </>
+                )}
+
+                {activeTab === 'exercises' && (
+                    <section className="card full-width">
+                        <div className="exercises-header">
+                            <p className="hint" style={{ margin: '0 0 1rem 0' }}>
+                                Επεξεργαστείτε τις ασκήσεις εδώ ή κατεβάστε το Schema για να δημιουργήσετε ασκήσεις μέσω ChatGPT/AI.
+                            </p>
+                            <button
+                                className="schema-download-btn"
+                                onClick={async () => {
+                                    try {
+                                        const schema = await api.getExerciseSchema();
+                                        await navigator.clipboard.writeText(JSON.stringify(schema, null, 2));
+                                        showToast('Schema copied to clipboard!', 'success');
+                                    } catch (err) {
+                                        showToast('Failed to copy schema', 'error');
+                                    }
+                                }}
+                            >
+                                📋 Copy Schema (for ChatGPT)
+                            </button>
+                        </div>
+                        <JsonEditor
+                            title="Exercises (exercises.json)"
+                            loadFn={api.getRawExercises}
+                            saveFn={api.saveRawExercises}
+                            onToast={showToast}
+                            enableValidation={true}
+                            schemaUri="/api/exercises/schema"
+                        />
+                        <style>{`
+                            .exercises-header {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: flex-start;
+                                flex-wrap: wrap;
+                                gap: 1rem;
+                                margin-bottom: 1rem;
+                            }
+                            .schema-download-btn {
+                                background: #4cc9f0;
+                                color: #1a1a2e;
+                                border: none;
+                                padding: 0.6rem 1.2rem;
+                                border-radius: 0.5rem;
+                                cursor: pointer;
+                                font-weight: bold;
+                                font-size: 0.9rem;
+                                white-space: nowrap;
+                            }
+                            .schema-download-btn:hover {
+                                background: #38b6db;
+                            }
+                        `}</style>
+                    </section>
                 )}
 
                 {activeTab === 'config' && (

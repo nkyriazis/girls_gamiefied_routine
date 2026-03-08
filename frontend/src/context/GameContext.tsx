@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode, useCallback } from 'react';
-import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance } from '@shared/types';
+import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ExerciseSession } from '@shared/types';
 import { api } from '../api';
 
 // Notification for expired chores
@@ -21,6 +21,7 @@ interface GameState {
     chores: Chore[];
     choreInstances: ChoreInstance[];
     choreNotifications: ChoreNotification[];
+    activeExerciseSessions: ExerciseSession[];
     dismissChoreNotification: (id: string) => void;
     isConnected: boolean;
     lastEvent: GameEvent | null;
@@ -57,6 +58,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     const [chores, setChores] = useState<Chore[]>([]);
     const [choreInstances, setChoreInstances] = useState<ChoreInstance[]>([]);
     const [choreNotifications, setChoreNotifications] = useState<ChoreNotification[]>([]);
+    const [activeExerciseSessions, setActiveExerciseSessions] = useState<ExerciseSession[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [lastEvent, setLastEvent] = useState<GameEvent | null>(null);
 
@@ -139,12 +141,20 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
                     // Handle Data Sync internally
                     if (message.type === 'SYNC_STATE') {
-                        const { userStars, spendings: newSpendings, starTransfers: newTransfers, choreInstances: newChoreInstances } = message.payload;
+                        const { 
+                            userStars, 
+                            spendings: newSpendings, 
+                            starTransfers: newTransfers, 
+                            choreInstances: newChoreInstances,
+                            activeExerciseSessions: newExerciseSessions
+                        } = message.payload;
 
-                        setUsers(prev => prev.map(u => ({
-                            ...u,
-                            stars: userStars[u.id] ?? u.stars
-                        })));
+                        if (userStars) {
+                            setUsers(prev => prev.map(u => ({
+                                ...u,
+                                stars: userStars[u.id] ?? u.stars
+                            })));
+                        }
 
                         if (newSpendings) {
                             setSpendings(newSpendings);
@@ -157,9 +167,21 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
                         if (newChoreInstances) {
                             setChoreInstances(newChoreInstances);
                         }
+
+                        if (newExerciseSessions) {
+                            setActiveExerciseSessions(newExerciseSessions);
+                        }
                     } else if (message.type === 'STARS_AWARDED') {
                         const { userId, totalStars } = message.payload;
                         setUsers(prev => prev.map(u => u.id === userId ? { ...u, stars: totalStars } : u));
+                    } else if (message.type === 'EXERCISE_SESSION_START') {
+                        setActiveExerciseSessions(prev => [...prev, message.payload]);
+                    } else if (message.type === 'EXERCISE_ANSWER' || message.type === 'EXERCISE_SESSION_COMPLETE') {
+                        const updatedSession = message.payload.session || message.payload;
+                        setActiveExerciseSessions(prev => {
+                            const filtered = prev.filter(s => s.id !== updatedSession.id);
+                            return updatedSession.completedAt ? filtered : [...filtered, updatedSession];
+                        });
                     } else if (message.type === 'CHORE_EXPIRED') {
                         // Add notification for expired chore
                         const { choreTitle, userId, instanceId } = message.payload;
@@ -263,6 +285,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             chores,
             choreInstances,
             choreNotifications,
+            activeExerciseSessions,
             dismissChoreNotification,
             isConnected,
             lastEvent,

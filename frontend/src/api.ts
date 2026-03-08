@@ -1,4 +1,7 @@
-import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance } from '@shared/types';
+import type { 
+  User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, 
+  Exercise, ExerciseSession 
+} from '@shared/types';
 
 const API_URL = '/api';
 
@@ -296,5 +299,85 @@ export const api = {
       throw new Error(error.error || 'Failed to reject chore');
     }
     return response.json();
-  }
+  },
+
+  // Exercises API
+  getExercises: async (category?: string): Promise<Exercise[]> => {
+    const url = category ? `${API_URL}/exercises?category=${category}` : `${API_URL}/exercises`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Failed to fetch exercises');
+    return response.json();
+  },
+
+  getExerciseCategories: async (): Promise<any[]> => {
+    const response = await fetch(`${API_URL}/exercises/categories`, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Failed to fetch exercise categories');
+    return response.json();
+  },
+
+  getExerciseSchema: async (): Promise<any> => {
+    const response = await fetch(`${API_URL}/exercises/schema`);
+    if (!response.ok) throw new Error('Failed to fetch exercise schema');
+    return response.json();
+  },
+
+  getRawExercises: async (): Promise<any> => {
+    const response = await fetch(`${API_URL}/admin/exercises`);
+    if (!response.ok) throw new Error('Failed to fetch exercises');
+    return response.json();
+  },
+
+  saveRawExercises: async (data: any): Promise<void> => {
+    const response = await fetch(`${API_URL}/admin/exercises`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to save exercises');
+    }
+  },
+
+  startExerciseSession: async (playerIds: string[], categories: string[], totalRounds: number, questionsPerRound: number): Promise<ExerciseSession> => {
+    const response = await fetch(`${API_URL}/exercises/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ playerIds, categories, totalRounds, questionsPerRound }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to start exercise session');
+    }
+    return response.json();
+  },
+
+  getExerciseSession: async (id: string): Promise<ExerciseSession> => {
+    const response = await fetch(`${API_URL}/exercises/sessions/${id}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Failed to fetch exercise session');
+    return response.json();
+  },
+
+  submitExerciseAnswer: async (sessionId: string, userId: string, exerciseId: string, answer: any): Promise<{ correct: boolean, earnedStars: number, session: ExerciseSession }> => {
+    const response = await fetch(`${API_URL}/exercises/sessions/${sessionId}/answer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, exerciseId, answer }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to submit answer');
+    }
+    return response.json();
+  },
+
+  cancelExerciseSession: async (sessionId: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/exercises/sessions/${sessionId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to cancel exercise session');
+    }
+  },
 };

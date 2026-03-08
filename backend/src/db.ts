@@ -2,13 +2,15 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import Ajv from 'ajv';
-import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ChoreInstanceStatus } from '../../shared/types';
+import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ChoreInstanceStatus, Exercise, ExerciseSession, ExerciseAnswer } from '../../shared/types';
 
 // File paths
 export const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
+export const EXERCISES_FILE = process.env.EXERCISES_FILE || path.join(process.cwd(), 'exercises.json');
 export const STATE_FILE = process.env.STATE_FILE || path.join(process.cwd(), 'state.json');
 export const LOGS_FILE = process.env.LOGS_FILE || path.join(process.cwd(), 'logs.jsonl');
 export const SCHEMA_FILE = path.join(process.cwd(), 'data.schema.json');
+export const EXERCISES_SCHEMA_FILE = path.join(process.cwd(), 'exercises.schema.json');
 export const STATE_SCHEMA_FILE = path.join(process.cwd(), 'state.schema.json');
 export const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
@@ -35,15 +37,18 @@ export function logAction(type: string, details: any) {
 }
 
 console.log('Using data file:', DATA_FILE);
+console.log('Using exercises file:', EXERCISES_FILE);
 console.log('Using state file:', STATE_FILE);
 console.log('Using logs file:', LOGS_FILE);
 console.log('Using schema file:', SCHEMA_FILE);
+console.log('Using exercises schema file:', EXERCISES_SCHEMA_FILE);
 console.log('Using state schema file:', STATE_SCHEMA_FILE);
 console.log('Using uploads dir:', UPLOADS_DIR);
 
 // Initialize JSON schema validator
 const ajv = new Ajv({ allErrors: true, validateFormats: false });
 export let validateConfig: any = null;
+export let validateExercises: any = null;
 export let validateState: any = null;
 
 // Track validation errors for client reporting
@@ -69,6 +74,16 @@ export async function loadSchema() {
     console.error('Failed to load config schema:', error);
     console.log('Config validation will be disabled');
   }
+
+  try {
+    const schemaStr = await fs.readFile(EXERCISES_SCHEMA_FILE, 'utf-8');
+    const schema = JSON.parse(schemaStr);
+    validateExercises = ajv.compile(schema);
+    console.log('Exercises schema loaded successfully');
+  } catch (error) {
+    console.error('Failed to load exercises schema:', error);
+    console.log('Exercises validation will be disabled');
+  }
   
   try {
     const stateSchemaStr = await fs.readFile(STATE_SCHEMA_FILE, 'utf-8');
@@ -89,13 +104,15 @@ export let globalState: {
   spendings: Spending[];
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[];
+  exerciseSessions: ExerciseSession[];
 } = {
   userStars: {},
   routineExecutions: [],
   taskExecutions: [],
   spendings: [],
   starTransfers: [],
-  choreInstances: []
+  choreInstances: [],
+  exerciseSessions: []
 };
 
 // WebSocket connections
@@ -137,7 +154,8 @@ export async function loadState() {
           taskExecutions: [],
           spendings: [],
           starTransfers: [],
-          choreInstances: []
+          choreInstances: [],
+          exerciseSessions: []
         };
         return;
       } else {
@@ -151,7 +169,8 @@ export async function loadState() {
       taskExecutions: loaded.taskExecutions || [],
       spendings: loaded.spendings || [],
       starTransfers: loaded.starTransfers || [],
-      choreInstances: loaded.choreInstances || []
+      choreInstances: loaded.choreInstances || [],
+      exerciseSessions: loaded.exerciseSessions || []
     };
     console.log('State loaded into memory');
   } catch (error) {
@@ -198,12 +217,15 @@ export interface Db {
   schedules: any[];
   rewards: Reward[];
   chores: Chore[];
+  exercises: Exercise[];
+  exerciseCategories?: any[];
   settings?: { timezone: string };
   routineExecutions: any[];
   taskExecutions: any[];
   spendings: Spending[];
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[];
+  exerciseSessions: ExerciseSession[];
 }
 
 export async function readDb(): Promise<Db> {
@@ -234,28 +256,53 @@ export async function readDb(): Promise<Db> {
       stars: globalState.userStars[u.id] || 0
     })) as User[];
 
+    // Read exercises fresh
+    let exercises: Exercise[] = [];
+    let exerciseCategories: any[] = [];
+    try {
+      const exercisesStr = await fs.readFile(EXERCISES_FILE, 'utf-8');
+      const exercisesData = JSON.parse(exercisesStr);
+      if (validateExercises) {
+        const valid = validateExercises(exercisesData);
+        if (valid) {
+          exercises = exercisesData.exercises;
+          exerciseCategories = exercisesData.categories || [];
+        } else {
+          console.error('Exercises validation failed:', validateExercises.errors);
+        }
+      } else {
+        exercises = exercisesData.exercises;
+        exerciseCategories = exercisesData.categories || [];
+      }
+    } catch (e) {
+      console.warn('Could not read exercises file, starting with empty exercises');
+    }
+
     return {
       ...data,
       users,
       rewards: (data.rewards || []) as Reward[],
       chores: (data.chores || []) as Chore[],
+      exercises,
+      exerciseCategories,
       schedules: data.schedules || [],
       settings: data.settings || { timezone: 'Europe/Athens' },
       routineExecutions: globalState.routineExecutions,
       taskExecutions: globalState.taskExecutions,
       spendings: globalState.spendings,
       starTransfers: globalState.starTransfers,
-      choreInstances: globalState.choreInstances
+      choreInstances: globalState.choreInstances,
+      exerciseSessions: globalState.exerciseSessions
     };
   } catch (error) {
     console.error("Error reading DB:", error);
     return {
       users: [], routines: [], tasks: [], routineTasks: [], 
       routineAssignments: [], flows: [], schedules: [], rewards: [],
-      chores: [],
+      chores: [], exercises: [],
       routineExecutions: [], taskExecutions: [], spendings: [],
       starTransfers: [],
-      choreInstances: []
+      choreInstances: [], exerciseSessions: []
     };
   }
 }
@@ -273,7 +320,8 @@ export async function writeDb(data: Db) {
     taskExecutions: data.taskExecutions,
     spendings: data.spendings,
     starTransfers: data.starTransfers,
-    choreInstances: data.choreInstances
+    choreInstances: data.choreInstances,
+    exerciseSessions: data.exerciseSessions
   };
 
   // Schedule persist
@@ -918,4 +966,236 @@ export async function broadcastChoreState() {
       choreInstances: instances
     }
   });
+}
+
+// ============================================
+// SCHOOL EXERCISES SYSTEM
+// ============================================
+
+export async function readExercises(): Promise<Exercise[]> {
+  const db = await readDb();
+  return db.exercises;
+}
+
+export async function readExerciseCategories(): Promise<any[]> {
+  const db = await readDb();
+  if (db.exerciseCategories && db.exerciseCategories.length > 0) {
+    return db.exerciseCategories;
+  }
+  
+  // Fallback: Infer categories dynamically for backward compatibility
+  const categories = [...new Set(db.exercises.map((e: any) => e.category))];
+  return categories.map(c => ({ id: c, label: c }));
+}
+
+export async function readRawExercises(): Promise<any> {
+  try {
+    const exercisesStr = await fs.readFile(EXERCISES_FILE, 'utf-8');
+    return JSON.parse(exercisesStr);
+  } catch (error) {
+    return { categories: [], exercises: [] };
+  }
+}
+
+export async function writeRawExercises(data: any): Promise<void> {
+  if (validateExercises) {
+    const valid = validateExercises(data);
+    if (!valid) {
+      throw new Error(`Exercises validation failed: ${JSON.stringify(validateExercises.errors)}`);
+    }
+  }
+  await fs.writeFile(EXERCISES_FILE, JSON.stringify(data, null, 2));
+  broadcast({ type: 'CONFIG_UPDATED' }); // Trigger a reload on all clients
+}
+
+export async function startExerciseSession(
+  playerIds: string[], 
+  categories: string[], 
+  totalRounds: number, 
+  questionsPerRound: number
+): Promise<ExerciseSession> {
+  const db = await readDb();
+  
+  // Filter exercises by categories
+  let availableExercises = db.exercises;
+  if (categories.length > 0) {
+    availableExercises = availableExercises.filter(e => categories.includes(e.category));
+  }
+  
+  // Filter exercises by user eligibility:
+  // An exercise is available if it has no userIds restriction, 
+  // OR if every player in the session is in the exercise's userIds list
+  availableExercises = availableExercises.filter(e => 
+    !e.userIds || e.userIds.length === 0 || playerIds.every(pid => e.userIds!.includes(pid))
+  );
+  
+  if (availableExercises.length === 0) {
+    throw new Error('No exercises found for these categories');
+  }
+  
+  // Draw random exercises for the session (shuffle, no repeats when possible)
+  const totalQuestionsNeeded = totalRounds * questionsPerRound;
+  const drawnExerciseIds: string[] = [];
+  
+  // Shuffle available exercises using Fisher-Yates
+  const shuffled = [...availableExercises].sort(() => Math.random() - 0.5);
+  
+  for (let i = 0; i < totalQuestionsNeeded; i++) {
+    // Cycle through shuffled exercises, repeating only if pool is smaller than needed
+    drawnExerciseIds.push(shuffled[i % shuffled.length].id);
+  }
+  
+  const session: ExerciseSession = {
+    id: randomUUID(),
+    playerIds,
+    categories,
+    totalRounds,
+    currentRound: 1,
+    questionsPerRound,
+    currentQuestionIndex: 0,
+    exerciseIds: drawnExerciseIds,
+    answers: playerIds.reduce((acc, pid) => ({ ...acc, [pid]: [] }), {}),
+    startedAt: new Date().toISOString(),
+    totalStarsEarned: playerIds.reduce((acc, pid) => ({ ...acc, [pid]: 0 }), {})
+  };
+  
+  globalState.exerciseSessions.push(session);
+  await persistState();
+  
+  logAction('EXERCISE_SESSION_START', { sessionId: session.id, players: playerIds, categories });
+  broadcast({ type: 'EXERCISE_SESSION_START', payload: session });
+  
+  return session;
+}
+
+export async function cancelExerciseSession(sessionId: string): Promise<void> {
+  const sessionIndex = globalState.exerciseSessions.findIndex(s => s.id === sessionId);
+  if (sessionIndex !== -1) {
+    globalState.exerciseSessions.splice(sessionIndex, 1);
+    
+    broadcast({ 
+      type: 'SYNC_STATE', 
+      payload: { 
+        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt) 
+      } 
+    });
+    
+    scheduleSave();
+  }
+}
+
+export async function submitExerciseAnswer(
+  sessionId: string,
+  userId: string,
+  exerciseId: string,
+  answer: any // Can be index, boolean, array of pairs, etc.
+): Promise<{ correct: boolean; earnedStars: number; session: ExerciseSession }> {
+  const db = await readDb();
+  const session = globalState.exerciseSessions.find(s => s.id === sessionId);
+  
+  if (!session) throw new Error('Session not found');
+  if (session.completedAt) throw new Error('Session already completed');
+  if (!session.playerIds.includes(userId)) throw new Error('User not in this session');
+  
+  const exercise = db.exercises.find(e => e.id === exerciseId);
+  if (!exercise) throw new Error('Exercise not found');
+  
+  // Calculate the overall question index for this session
+  // (answers accumulate across rounds, so we need an absolute index)
+  const overallQuestionIndex = (session.currentRound - 1) * session.questionsPerRound + session.currentQuestionIndex;
+  
+  // Validate answer based on exercise type
+  let isCorrect = false;
+  switch (exercise.type) {
+    case 'multiple-choice':
+      isCorrect = answer === exercise.correctIndex;
+      break;
+    case 'true-false':
+      isCorrect = answer === exercise.correctValue;
+      break;
+    case 'match-pairs':
+      // answer should be array of {left, right}
+      // check if all pairs are correct
+      if (Array.isArray(answer) && answer.length === exercise.pairs.length) {
+        isCorrect = answer.every(ansPair => 
+          exercise.pairs.some(exPair => exPair.left === ansPair.left && exPair.right === ansPair.right)
+        );
+      }
+      break;
+    case 'ordering':
+      // answer should be array of ids in order
+      if (Array.isArray(answer) && answer.length === exercise.items.length) {
+        isCorrect = answer.every((id, idx) => exercise.items[idx].id === id);
+      }
+      break;
+    case 'fill-blank':
+      // answer should be array of strings
+      if (Array.isArray(answer) && answer.length === exercise.correctAnswers.length) {
+        isCorrect = answer.every((ans, idx) => exercise.correctAnswers[idx] === ans);
+      }
+      break;
+  }
+  
+  const earnedStars = isCorrect ? exercise.stars : 0;
+  
+  // Record answer
+  const exerciseAnswer: ExerciseAnswer = {
+    exerciseId,
+    status: isCorrect ? 'correct' : 'incorrect',
+    answeredAt: new Date().toISOString(),
+    earnedStars
+  };
+  
+  if (!session.answers[userId]) session.answers[userId] = [];
+  session.answers[userId].push(exerciseAnswer);
+  
+  if (isCorrect) {
+    session.totalStarsEarned[userId] = (session.totalStarsEarned[userId] || 0) + earnedStars;
+    // Award stars immediately to user balance
+    await awardStars(userId, earnedStars, true);
+  }
+  
+  // Advance question index if all players answered this overall question
+  const existingUserIds = db.users.map(u => u.id);
+  const relevantPlayerIds = session.playerIds.filter(pid => existingUserIds.includes(pid));
+  
+  const allAnsweredCurrent = relevantPlayerIds.every(pid => 
+    session.answers[pid] && session.answers[pid].length > overallQuestionIndex
+  );
+  
+  if (allAnsweredCurrent) {
+    session.currentQuestionIndex++;
+    
+    // Check if round or session complete
+    if (session.currentQuestionIndex >= session.questionsPerRound) {
+      if (session.currentRound >= session.totalRounds) {
+        // Session complete
+        session.completedAt = new Date().toISOString();
+        logAction('EXERCISE_SESSION_COMPLETE', { sessionId: session.id, totalStars: session.totalStarsEarned });
+      } else {
+        // Next round
+        session.currentRound++;
+        session.currentQuestionIndex = 0;
+      }
+    }
+  }
+  
+  await persistState();
+  
+  broadcast({ 
+    type: 'EXERCISE_ANSWER', 
+    payload: { 
+      sessionId, 
+      userId, 
+      isCorrect, 
+      earnedStars,
+      session // Broadcast updated session state
+    } 
+  });
+  
+  if (session.completedAt) {
+    broadcast({ type: 'EXERCISE_SESSION_COMPLETE', payload: session });
+  }
+  
+  return { correct: isCorrect, earnedStars, session };
 }

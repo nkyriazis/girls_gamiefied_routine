@@ -3,9 +3,50 @@
   "title": "State Schema",
   "description": "Schema for state.json runtime state file",
   "type": "object",
-  "required": ["userStars", "routineExecutions", "taskExecutions", "spendings"],
+  "required": ["userStars", "routineExecutions", "taskExecutions", "spendings", "exerciseSessions"],
   "additionalProperties": false,
   "properties": {
+    "exerciseSessions": {
+      "type": "array",
+      "description": "Game sessions of school exercises",
+      "items": {
+        "type": "object",
+        "required": ["id", "playerIds", "categories", "totalRounds", "currentRound", "questionsPerRound", "currentQuestionIndex", "exerciseIds", "answers", "startedAt", "totalStarsEarned"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-f0-9-]{36}$" },
+          "playerIds": { "type": "array", "items": { "type": "string" } },
+          "categories": { "type": "array", "items": { "type": "string" } },
+          "totalRounds": { "type": "integer", "minimum": 1 },
+          "currentRound": { "type": "integer", "minimum": 1 },
+          "questionsPerRound": { "type": "integer", "minimum": 1 },
+          "currentQuestionIndex": { "type": "integer", "minimum": 0 },
+          "exerciseIds": { "type": "array", "items": { "type": "string" } },
+          "answers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["exerciseId", "status", "answeredAt", "earnedStars"],
+                "properties": {
+                  "exerciseId": { "type": "string" },
+                  "status": { "type": "string", "enum": ["correct", "incorrect"] },
+                  "answeredAt": { "type": "string" },
+                  "earnedStars": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          },
+          "startedAt": { "type": "string" },
+          "completedAt": { "type": "string" },
+          "totalStarsEarned": {
+            "type": "object",
+            "additionalProperties": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
     "starTransfers": {
       "type": "array",
       "description": "History of star transfers between users",

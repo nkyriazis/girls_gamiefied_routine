@@ -16,40 +16,14 @@ import { Spending, StarTransfer } from '../../shared/types';
 const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 
 // Import shared database layer
-import {
-  DATA_FILE,
-  UPLOADS_DIR,
-  MAX_LOGS,
-  logAction,
-  loadSchema,
-  loadState,
-  readDb,
-  writeDb,
-  globalState,
-  wsConnections,
-  broadcast,
-  triggerAction,
-  getEnrichedSpendings,
-  getEnrichedTransfers,
-  getAvailableBalance,
-  readLastLogs,
-  flushPendingSave,
-  scheduleSave,
-  validateConfig,
-  validateState,
-  lastConfigError,
-  lastStateError,
-  setLastConfigError,
-  setLastStateError,
-  generateChoreInstances,
-  expireChores,
-  cleanupOldChoreInstances,
-  getChoresWithInstances,
-  claimChore,
-  attemptChore,
-  confirmChore,
-  rejectChore,
-  broadcastChoreState
+import { 
+  DATA_FILE, STATE_FILE, LOGS_FILE, globalState, loadSchema, loadState, readDb, writeDb, wsConnections, 
+  broadcast, scheduleSave, setLastConfigError, setLastStateError, lastConfigError, lastStateError,
+  persistState, flushPendingSave, triggerAction, getEnrichedSpendings, getEnrichedTransfers, readLastLogs, 
+  MAX_LOGS, awardStars, UPLOADS_DIR, getChoresWithInstances, claimChore, attemptChore, confirmChore, 
+  rejectChore, validateConfig, validateState, EXERCISES_SCHEMA_FILE, readExercises, readExerciseCategories, readRawExercises, writeRawExercises,
+  startExerciseSession, submitExerciseAnswer, cancelExerciseSession, generateChoreInstances, expireChores, 
+  cleanupOldChoreInstances, logAction, getAvailableBalance
 } from './db';
 
 // Import MCP server
@@ -917,6 +891,89 @@ server.get('/api/admin/uploads/list', async (request, reply) => {
   }
 });
 
+// ============================================
+// SCHOOL EXERCISES SYSTEM
+// ============================================
+
+server.get('/api/exercises', async (request, reply) => {
+  const { category } = request.query as { category?: string };
+  let exercises = await readExercises();
+  if (category) {
+    exercises = exercises.filter((e: any) => e.category === category);
+  }
+  return exercises;
+});
+
+server.get('/api/exercises/categories', async (request, reply) => {
+  const categories = await readExerciseCategories();
+  return categories;
+});
+
+server.get('/api/exercises/schema', async (request, reply) => {
+  try {
+    const schema = JSON.parse(await fs.readFile(EXERCISES_SCHEMA_FILE, 'utf-8'));
+    return schema;
+  } catch (error) {
+    return reply.code(500).send({ error: 'Failed to load exercises schema' });
+  }
+});
+
+// Admin: Raw exercises CRUD
+server.get('/api/admin/exercises', async (request, reply) => {
+  try {
+    return await readRawExercises();
+  } catch (error) {
+    return reply.code(500).send({ error: 'Failed to read exercises' });
+  }
+});
+
+server.post('/api/admin/exercises', async (request, reply) => {
+  try {
+    await writeRawExercises(request.body);
+    return { success: true };
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
+  }
+});
+
+server.post('/api/exercises/sessions', async (request, reply) => {
+  try {
+    const { playerIds, categories, totalRounds, questionsPerRound } = request.body as any;
+    const session = await startExerciseSession(playerIds, categories, totalRounds, questionsPerRound);
+    return session;
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
+  }
+});
+
+server.get('/api/exercises/sessions/:id', async (request, reply) => {
+  const { id } = request.params as { id: string };
+  const session = globalState.exerciseSessions.find(s => s.id === id);
+  if (!session) return reply.code(404).send({ error: 'Session not found' });
+  return session;
+});
+
+server.post('/api/exercises/sessions/:id/answer', async (request, reply) => {
+  try {
+    const { id } = request.params as { id: string };
+    const { userId, exerciseId, answer } = request.body as any;
+    const result = await submitExerciseAnswer(id, userId, exerciseId, answer);
+    return result;
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
+  }
+});
+
+server.delete('/api/exercises/sessions/:id', async (request, reply) => {
+  try {
+    const { id } = request.params as { id: string };
+    await cancelExerciseSession(id);
+    return { success: true };
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
+  }
+});
+
 // Admin: Get raw state
 server.get('/api/admin/state', async (request, reply) => {
   return globalState;
@@ -958,7 +1015,8 @@ server.post('/api/admin/state', async (request, reply) => {
         userStars: globalState.userStars,
         spendings: enrichedSpendings,
         starTransfers: enrichedTransfers,
-        choreInstances
+        choreInstances,
+        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt)
       }
     });
     
@@ -1031,7 +1089,8 @@ server.register(async (fastify) => {
         userStars: globalState.userStars,
         spendings: enrichedSpendings,
         starTransfers: enrichedTransfers,
-        choreInstances
+        choreInstances,
+        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt)
       }
     }));
 

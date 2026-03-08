@@ -125,3 +125,87 @@ export interface ChoreInstance {
 export interface ChoreWithInstance extends Chore {
   instance?: ChoreInstance;
 }
+
+// --- School Exercises System ---
+
+export interface ExerciseCategoryDef {
+  id: string;
+  label: string;
+  icon?: IconValue;
+}
+
+export type ExerciseCategory = string; // Will reference ExerciseCategoryDef.id
+
+export interface BaseExercise {
+  id: string;
+  type: string;
+  category: ExerciseCategory;
+  title: string;
+  body?: string;
+  figure?: IconValue;
+  stars: number;
+  userIds?: string[]; // If set, only these users can play this exercise
+  template?: boolean;
+  generatorParams?: any;
+}
+
+export interface MultipleChoiceExercise extends BaseExercise {
+  type: 'multiple-choice';
+  question: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface MatchPairsExercise extends BaseExercise {
+  type: 'match-pairs';
+  pairs: { left: string; right: string }[];
+}
+
+export interface OrderingExercise extends BaseExercise {
+  type: 'ordering';
+  items: { id: string; content: string }[]; // ordered sequence
+}
+
+export interface TrueFalseExercise extends BaseExercise {
+  type: 'true-false';
+  question: string;
+  correctValue: boolean;
+}
+
+export interface FillBlankExercise extends BaseExercise {
+  type: 'fill-blank';
+  textWithGaps: string; // e.g., "The capital of France is {0}."
+  options: string[]; // word bank
+  correctAnswers: string[]; // values for gaps
+}
+
+export type Exercise = 
+  | MultipleChoiceExercise 
+  | MatchPairsExercise 
+  | OrderingExercise 
+  | TrueFalseExercise 
+  | FillBlankExercise;
+
+export type ExerciseAnswerStatus = 'correct' | 'incorrect';
+
+export interface ExerciseAnswer {
+  exerciseId: string;
+  status: ExerciseAnswerStatus;
+  answeredAt: string;
+  earnedStars: number;
+}
+
+export interface ExerciseSession {
+  id: string;
+  playerIds: string[];
+  categories: string[];
+  totalRounds: number;
+  currentRound: number;
+  questionsPerRound: number;
+  currentQuestionIndex: number;
+  exerciseIds: string[]; // pre-drawn for the session
+  answers: Record<string, ExerciseAnswer[]>; // keyed by userId
+  startedAt: string;
+  completedAt?: string;
+  totalStarsEarned: Record<string, number>; // keyed by userId
+}

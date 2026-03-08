@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "School Exercises Schema",
+  "description": "Schema for exercises.json configuration file",
+  "type": "object",
+  "required": ["exercises"],
+  "additionalProperties": false,
+  "properties": {
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "icon": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" }
+        }
+      }
+    },
+    "exercises": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "title": "Multiple Choice",
+            "type": "object",
+            "required": ["id", "type", "category", "title", "question", "options", "correctIndex", "stars"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "const": "multiple-choice" },
+              "category": { "type": "string" },
+              "title": { "type": "string" },
+              "body": { "type": "string" },
+              "figure": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" },
+              "question": { "type": "string" },
+              "options": {
+                "type": "array",
+                "minItems": 2,
+                "items": { "type": "string" }
+              },
+              "correctIndex": { "type": "integer", "minimum": 0 },
+              "stars": { "type": "integer", "minimum": 1 },
+              "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
+              "template": { "type": "boolean" },
+              "generatorParams": { "type": "object" }
+            }
+          },
+          {
+            "title": "Match Pairs",
+            "type": "object",
+            "required": ["id", "type", "category", "title", "pairs", "stars"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "const": "match-pairs" },
+              "category": { "type": "string" },
+              "title": { "type": "string" },
+              "body": { "type": "string" },
+              "figure": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" },
+              "pairs": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "object",
+                  "required": ["left", "right"],
+                  "properties": {
+                    "left": { "type": "string" },
+                    "right": { "type": "string" }
+                  }
+                }
+              },
+              "stars": { "type": "integer", "minimum": 1 },
+              "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
+              "template": { "type": "boolean" },
+              "generatorParams": { "type": "object" }
+            }
+          },
+          {
+            "title": "Ordering",
+            "type": "object",
+            "required": ["id", "type", "category", "title", "items", "stars"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "const": "ordering" },
+              "category": { "type": "string" },
+              "title": { "type": "string" },
+              "body": { "type": "string" },
+              "figure": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" },
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "content"],
+                  "properties": {
+                    "id": { "type": "string" },
+                    "content": { "type": "string" }
+                  }
+                }
+              },
+              "stars": { "type": "integer", "minimum": 1 },
+              "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
+              "template": { "type": "boolean" },
+              "generatorParams": { "type": "object" }
+            }
+          },
+          {
+            "title": "True/False",
+            "type": "object",
+            "required": ["id", "type", "category", "title", "question", "correctValue", "stars"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "const": "true-false" },
+              "category": { "type": "string" },
+              "title": { "type": "string" },
+              "body": { "type": "string" },
+              "figure": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" },
+              "question": { "type": "string" },
+              "correctValue": { "type": "boolean" },
+              "stars": { "type": "integer", "minimum": 1 },
+              "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
+              "template": { "type": "boolean" },
+              "generatorParams": { "type": "object" }
+            }
+          },
+          {
+            "title": "Fill in the Blank",
+            "type": "object",
+            "required": ["id", "type", "category", "title", "textWithGaps", "options", "correctAnswers", "stars"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "const": "fill-blank" },
+              "category": { "type": "string" },
+              "title": { "type": "string" },
+              "body": { "type": "string" },
+              "figure": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" },
+              "textWithGaps": { "type": "string" },
+              "options": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "correctAnswers": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "stars": { "type": "integer", "minimum": 1 },
+              "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
+              "template": { "type": "boolean" },
+              "generatorParams": { "type": "object" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
