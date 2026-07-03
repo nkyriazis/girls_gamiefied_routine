@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode, useCallback } from 'react';
-import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ExerciseSession } from '@shared/types';
+import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ExerciseSession, ExerciseAssignmentWithExercise } from '@shared/types';
 import { api } from '../api';
 
 // Notification for expired chores
@@ -22,11 +22,13 @@ interface GameState {
     choreInstances: ChoreInstance[];
     choreNotifications: ChoreNotification[];
     activeExerciseSessions: ExerciseSession[];
+    exerciseAssignments: ExerciseAssignmentWithExercise[];
     dismissChoreNotification: (id: string) => void;
     isConnected: boolean;
     lastEvent: GameEvent | null;
     refreshData: () => Promise<void>;
     refreshChores: () => Promise<void>;
+    refreshExerciseAssignments: () => Promise<void>;
 }
 
 interface GameEvent {
@@ -59,6 +61,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     const [choreInstances, setChoreInstances] = useState<ChoreInstance[]>([]);
     const [choreNotifications, setChoreNotifications] = useState<ChoreNotification[]>([]);
     const [activeExerciseSessions, setActiveExerciseSessions] = useState<ExerciseSession[]>([]);
+    const [exerciseAssignments, setExerciseAssignments] = useState<ExerciseAssignmentWithExercise[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [lastEvent, setLastEvent] = useState<GameEvent | null>(null);
 
@@ -79,6 +82,15 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         }
     }, []);
 
+    const refreshExerciseAssignments = useCallback(async () => {
+        try {
+            const assignments = await api.getExerciseAssignments();
+            setExerciseAssignments(assignments);
+        } catch (error) {
+            console.error('Failed to fetch exercise assignments:', error);
+        }
+    }, []);
+
     const refreshData = useCallback(async () => {
         try {
             const [usersData, flowsData, rewardsData, spendingsData, transfersData] = await Promise.all([
@@ -94,12 +106,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             setSpendings(spendingsData);
             setStarTransfers(transfersData);
 
-            // Also refresh chores
+            // Also refresh chores and exercise assignments
             await refreshChores();
+            await refreshExerciseAssignments();
         } catch (error) {
             console.error('Failed to fetch data:', error);
         }
-    }, [refreshChores]);
+    }, [refreshChores, refreshExerciseAssignments]);
 
     // Initial Fetch
     useEffect(() => {
@@ -141,12 +154,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
                     // Handle Data Sync internally
                     if (message.type === 'SYNC_STATE') {
-                        const { 
-                            userStars, 
-                            spendings: newSpendings, 
-                            starTransfers: newTransfers, 
+                        const {
+                            userStars,
+                            spendings: newSpendings,
+                            starTransfers: newTransfers,
                             choreInstances: newChoreInstances,
-                            activeExerciseSessions: newExerciseSessions
+                            activeExerciseSessions: newExerciseSessions,
+                            exerciseAssignments: newExerciseAssignments
                         } = message.payload;
 
                         if (userStars) {
@@ -170,6 +184,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
                         if (newExerciseSessions) {
                             setActiveExerciseSessions(newExerciseSessions);
+                        }
+
+                        if (newExerciseAssignments) {
+                            setExerciseAssignments(newExerciseAssignments);
                         }
                     } else if (message.type === 'STARS_AWARDED') {
                         const { userId, totalStars } = message.payload;
@@ -286,11 +304,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             choreInstances,
             choreNotifications,
             activeExerciseSessions,
+            exerciseAssignments,
             dismissChoreNotification,
             isConnected,
             lastEvent,
             refreshData,
-            refreshChores
+            refreshChores,
+            refreshExerciseAssignments
         }}>
             {children}
         </GameContext.Provider>

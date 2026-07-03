@@ -14,11 +14,12 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
+import { ExercisesDrawer } from './ExercisesDrawer';
 
 export const Dashboard: React.FC = () => {
-  const { 
-    users, flows, rewards, spendings, starTransfers, chores, choreInstances, 
-    choreNotifications, dismissChoreNotification, activeExerciseSessions, lastEvent 
+  const {
+    users, flows, rewards, spendings, starTransfers, chores, choreInstances,
+    choreNotifications, dismissChoreNotification, activeExerciseSessions, exerciseAssignments, lastEvent
   } = useGame();
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -36,6 +37,9 @@ export const Dashboard: React.FC = () => {
 
   // Exercise State
   const [setupOpen, setSetupOpen] = useState(false);
+
+  // Daily Exercises Drawer State
+  const [dailyExercisesOpen, setDailyExercisesOpen] = useState(false);
 
   // Flow State - supports multiple simultaneous flows
   const [activeFlows, setActiveFlows] = useState<FlowInstance[]>([]);
@@ -60,6 +64,11 @@ export const Dashboard: React.FC = () => {
       return chore && (chore.category || 'chore') === 'chore';
     }).length;
   }, [choreInstances, chores]);
+
+  // Count pending daily exercise assignments
+  const pendingExercisesCount = useMemo(() => {
+    return exerciseAssignments.filter(a => a.status === 'pending').length;
+  }, [exerciseAssignments]);
 
   // Count active bonus activities
   const activeBonusCount = useMemo(() => {
@@ -349,6 +358,25 @@ export const Dashboard: React.FC = () => {
         </motion.button>
       )}
 
+      {/* Floating Daily Exercises Button */}
+      {totalActiveCount === 0 && (
+        <motion.button
+          className="daily-exercises-fab"
+          onClick={() => setDailyExercisesOpen(true)}
+          initial={{ x: 100 }}
+          animate={{ x: 0 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          ✏️
+          {pendingExercisesCount > 0 && (
+            <span className="daily-exercises-fab-badge">
+              {pendingExercisesCount}
+            </span>
+          )}
+        </motion.button>
+      )}
+
       {/* Chores Drawer */}
       <ChoresDrawer
         isOpen={choresOpen}
@@ -361,6 +389,12 @@ export const Dashboard: React.FC = () => {
         isOpen={bonusOpen}
         onClose={() => setBonusOpen(false)}
         category="bonus"
+      />
+
+      {/* Daily Exercises Drawer */}
+      <ExercisesDrawer
+        isOpen={dailyExercisesOpen}
+        onClose={() => setDailyExercisesOpen(false)}
       />
 
       {/* Exercise Overlays */}
@@ -825,6 +859,43 @@ export const Dashboard: React.FC = () => {
           align-items: center;
           justify-content: center;
           z-index: 100;
+        }
+
+        /* Floating Daily Exercises Button */
+        .daily-exercises-fab {
+          position: fixed;
+          right: 1.5rem;
+          top: calc(50% - 80px);
+          transform: translateY(-50%);
+          width: 60px;
+          height: 60px;
+          min-width: 60px;
+          min-height: 60px;
+          padding: 0;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #ffd60a, #fb8500);
+          border: none;
+          font-size: 2rem;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(255, 214, 10, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
+        }
+
+        .daily-exercises-fab-badge {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          background: #ef476f;
+          color: white;
+          font-size: 0.8rem;
+          font-weight: 700;
+          padding: 0.2rem 0.5rem;
+          border-radius: 1rem;
+          min-width: 1.5rem;
+          text-align: center;
         }
 
         /* Toast Notifications */

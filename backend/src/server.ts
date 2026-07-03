@@ -22,8 +22,9 @@ import {
   persistState, flushPendingSave, triggerAction, getEnrichedSpendings, getEnrichedTransfers, readLastLogs, 
   MAX_LOGS, awardStars, UPLOADS_DIR, getChoresWithInstances, claimChore, attemptChore, confirmChore, 
   rejectChore, validateConfig, validateState, EXERCISES_SCHEMA_FILE, readExercises, readExerciseCategories, readRawExercises, writeRawExercises,
-  startExerciseSession, submitExerciseAnswer, cancelExerciseSession, generateChoreInstances, expireChores, 
-  cleanupOldChoreInstances, logAction, getAvailableBalance
+  startExerciseSession, submitExerciseAnswer, cancelExerciseSession, generateChoreInstances, expireChores,
+  cleanupOldChoreInstances, logAction, getAvailableBalance,
+  getExerciseAssignments, answerExerciseAssignment
 } from './db';
 
 // Import MCP server
@@ -974,6 +975,32 @@ server.delete('/api/exercises/sessions/:id', async (request, reply) => {
   }
 });
 
+// ============================================
+// DAILY EXERCISE ASSIGNMENTS (per-user)
+// ============================================
+
+// Today's assignments (lazily generated), enriched with exercise definitions
+server.get('/api/exercise-assignments', async (request, reply) => {
+  try {
+    const { userId } = request.query as { userId?: string };
+    return await getExerciseAssignments(userId);
+  } catch (error) {
+    return reply.code(500).send({ error: (error as Error).message });
+  }
+});
+
+// Answer an assignment
+server.post('/api/exercise-assignments/:id/answer', async (request, reply) => {
+  try {
+    const { id } = request.params as { id: string };
+    const { answer } = request.body as any;
+    const result = await answerExerciseAssignment(id, answer);
+    return result;
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
+  }
+});
+
 // Admin: Get raw state
 server.get('/api/admin/state', async (request, reply) => {
   return globalState;
@@ -1082,6 +1109,7 @@ server.register(async (fastify) => {
     const enrichedSpendings = await getEnrichedSpendings();
     const enrichedTransfers = await getEnrichedTransfers();
     const { instances: choreInstances } = await getChoresWithInstances();
+    const exerciseAssignments = await getExerciseAssignments();
 
     connection.send(JSON.stringify({
       type: 'SYNC_STATE',
@@ -1090,7 +1118,8 @@ server.register(async (fastify) => {
         spendings: enrichedSpendings,
         starTransfers: enrichedTransfers,
         choreInstances,
-        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt)
+        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt),
+        exerciseAssignments
       }
     }));
 

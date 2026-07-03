@@ -47,6 +47,26 @@
         }
       }
     },
+    "exerciseAssignments": {
+      "type": "array",
+      "description": "Per-user daily school exercise assignments (chore-like)",
+      "items": {
+        "type": "object",
+        "required": ["id", "userId", "exerciseId", "date", "status", "attempts", "assignedAt"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-f0-9-]{36}$" },
+          "userId": { "type": "string" },
+          "exerciseId": { "type": "string" },
+          "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "status": { "type": "string", "enum": ["pending", "completed"] },
+          "attempts": { "type": "integer", "minimum": 0 },
+          "assignedAt": { "type": "string" },
+          "completedAt": { "type": "string" },
+          "starsAwarded": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
     "starTransfers": {
       "type": "array",
       "description": "History of star transfers between users",

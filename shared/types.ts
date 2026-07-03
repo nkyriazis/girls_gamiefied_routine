@@ -179,12 +179,19 @@ export interface FillBlankExercise extends BaseExercise {
   correctAnswers: string[]; // values for gaps
 }
 
-export type Exercise = 
-  | MultipleChoiceExercise 
-  | MatchPairsExercise 
-  | OrderingExercise 
-  | TrueFalseExercise 
-  | FillBlankExercise;
+export interface NumberInputExercise extends BaseExercise {
+  type: 'number-input';
+  question: string;
+  correctValue: number;
+}
+
+export type Exercise =
+  | MultipleChoiceExercise
+  | MatchPairsExercise
+  | OrderingExercise
+  | TrueFalseExercise
+  | FillBlankExercise
+  | NumberInputExercise;
 
 export type ExerciseAnswerStatus = 'correct' | 'incorrect';
 
@@ -193,6 +200,27 @@ export interface ExerciseAnswer {
   status: ExerciseAnswerStatus;
   answeredAt: string;
   earnedStars: number;
+}
+
+// --- Daily Exercise Assignments (per-user, chore-like) ---
+
+export type ExerciseAssignmentStatus = 'pending' | 'completed';
+
+export interface ExerciseAssignment {
+  id: string;
+  userId: string;
+  exerciseId: string;
+  date: string; // Local date (YYYY-MM-DD) the assignment belongs to
+  status: ExerciseAssignmentStatus;
+  attempts: number;
+  assignedAt: string; // ISO timestamp
+  completedAt?: string; // ISO timestamp
+  starsAwarded?: number;
+}
+
+// Enriched assignment with the exercise definition for frontend display
+export interface ExerciseAssignmentWithExercise extends ExerciseAssignment {
+  exercise?: Exercise;
 }
 
 export interface ExerciseSession {

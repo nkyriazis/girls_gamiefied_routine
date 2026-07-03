@@ -12,6 +12,7 @@ import { TrueFalseRenderer } from './exercises/TrueFalseRenderer';
 import { MatchPairsRenderer } from './exercises/MatchPairsRenderer';
 import { OrderingRenderer } from './exercises/OrderingRenderer';
 import { FillBlankRenderer } from './exercises/FillBlankRenderer';
+import { NumberInputRenderer } from './exercises/NumberInputRenderer';
 
 interface ExerciseGameProps {
   session: ExerciseSession;
@@ -151,6 +152,8 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
         return <OrderingRenderer exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
       case 'fill-blank':
         return <FillBlankRenderer exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
+      case 'number-input':
+        return <NumberInputRenderer exercise={currentExercise as any} onAnswer={(ans: number) => handleAnswer(ans)} disabled={!!submittingUser} />;
       default:
         return <div>Τύπος άσκησης μη διαθέσιμος</div>;
     }
