@@ -190,6 +190,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           <div className="exercise-content">
+            <div className="exercise-reward">⭐ {currentExercise.stars}</div>
             <h1 className="exercise-title">{currentExercise.title}</h1>
             {currentExercise.body && <p className="exercise-body">{currentExercise.body}</p>}
             
@@ -340,6 +341,16 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           align-items: center;
           text-align: center;
           gap: 1.5rem;
+        }
+
+        .exercise-reward {
+          background: rgba(255, 215, 0, 0.12);
+          border: 2px solid rgba(255, 215, 0, 0.5);
+          color: gold;
+          font-size: 1.3rem;
+          font-weight: bold;
+          padding: 0.35rem 1.2rem;
+          border-radius: 2rem;
         }
 
         .exercise-title {
