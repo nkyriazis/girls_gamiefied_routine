@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode, useCallback } from 'react';
-import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ExerciseSession, ExerciseAssignmentWithExercise } from '@shared/types';
+import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ExerciseSession, ExerciseAssignmentWithExercise, ServerMessage } from '@shared/types';
 import { api } from '../api';
 
 // Notification for expired chores
@@ -149,7 +149,9 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
             websocket.onmessage = (event) => {
                 try {
-                    const message = JSON.parse(event.data);
+                    // Typed against the shared protocol: payload shapes are checked
+                    // at compile time on both ends (see ServerMessage in shared/types.ts)
+                    const message: ServerMessage = JSON.parse(event.data);
                     console.log('WS Message:', message);
 
                     // Handle Data Sync internally
@@ -195,7 +197,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
                     } else if (message.type === 'EXERCISE_SESSION_START') {
                         setActiveExerciseSessions(prev => [...prev, message.payload]);
                     } else if (message.type === 'EXERCISE_ANSWER' || message.type === 'EXERCISE_SESSION_COMPLETE') {
-                        const updatedSession = message.payload.session || message.payload;
+                        const updatedSession = message.type === 'EXERCISE_ANSWER' ? message.payload.session : message.payload;
                         setActiveExerciseSessions(prev => {
                             const filtered = prev.filter(s => s.id !== updatedSession.id);
                             return updatedSession.completedAt ? filtered : [...filtered, updatedSession];
@@ -211,7 +213,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
                             const notification: ChoreNotification = {
                                 id: messageKey,
                                 type: 'expired',
-                                choreTitle,
+                                choreTitle: choreTitle || '',
                                 userId,
                                 timestamp: Date.now()
                             };
@@ -232,7 +234,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
                             const notification: ChoreNotification = {
                                 id: messageKey,
                                 type: 'confirmed',
-                                choreTitle,
+                                choreTitle: choreTitle || '',
                                 userId,
                                 starsAwarded,
                                 timestamp: Date.now()
@@ -253,7 +255,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
                             const notification: ChoreNotification = {
                                 id: messageKey,
                                 type: 'rejected',
-                                choreTitle,
+                                choreTitle: choreTitle || '',
                                 userId,
                                 timestamp: Date.now()
                             };

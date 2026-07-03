@@ -237,3 +237,52 @@ export interface ExerciseSession {
   completedAt?: string;
   totalStarsEarned: Record<string, number>; // keyed by userId
 }
+
+// --- Realtime protocol (backend → frontend WebSocket messages) ---
+//
+// Every message the backend broadcasts is a ServerMessage. The backend's
+// broadcast() only accepts this type and the frontend parses incoming frames
+// into it, so a payload shape change (or a brand-new message type) is a
+// compile error on whichever side doesn't handle it — not a silent runtime gap.
+
+// Partial state sync: each field is optional, clients merge what's present.
+export interface SyncStatePayload {
+  userStars?: Record<string, number>;
+  spendings?: Spending[];
+  starTransfers?: StarTransfer[];
+  choreInstances?: ChoreInstance[];
+  activeExerciseSessions?: ExerciseSession[];
+  exerciseAssignments?: ExerciseAssignmentWithExercise[];
+}
+
+export interface ChoreEventPayload {
+  instanceId: string;
+  choreId: string;
+  choreTitle?: string;
+  userId?: string;
+}
+
+export type ServerMessage =
+  // State sync — the payload is authoritative for every field it carries
+  | { type: 'SYNC_STATE'; payload: SyncStatePayload }
+  // Semantic notifications — for toasts/celebrations; never the only carrier of state
+  | { type: 'STARS_AWARDED'; payload: { userId: string; amount: number; totalStars: number } }
+  | { type: 'ROUTINE_START'; payload: { userId: string; routineId: string; executionId: string } }
+  | { type: 'FLOW_START'; payload: { flowId: string; steps: FlowStep[] } }
+  | { type: 'ALARM_START' }
+  | { type: 'CHORE_AVAILABLE'; payload: ChoreEventPayload & { expiresAt: string } }
+  | { type: 'CHORE_CLAIMED'; payload: ChoreEventPayload }
+  | { type: 'CHORE_ATTEMPTED'; payload: ChoreEventPayload }
+  | { type: 'CHORE_CONFIRMED'; payload: ChoreEventPayload & { starsAwarded: number } }
+  | { type: 'CHORE_REJECTED'; payload: ChoreEventPayload }
+  | { type: 'CHORE_EXPIRED'; payload: ChoreEventPayload }
+  | { type: 'EXERCISE_SESSION_START'; payload: ExerciseSession }
+  | { type: 'EXERCISE_ANSWER'; payload: { sessionId: string; userId: string; isCorrect: boolean; earnedStars: number; session: ExerciseSession } }
+  | { type: 'EXERCISE_SESSION_COMPLETE'; payload: ExerciseSession }
+  | { type: 'EXERCISE_ASSIGNMENT_ANSWER'; payload: { assignmentId: string; userId: string; exerciseId: string; exerciseTitle: string; correct: boolean; starsAwarded: number } }
+  // Config/state file lifecycle
+  | { type: 'CONFIG_UPDATED' }
+  | { type: 'CONFIG_ERROR'; payload: { message: string; errors: any[] } }
+  | { type: 'STATE_ERROR'; payload: { message: string; errors: any[] } }
+  // Dev echo on the raw socket
+  | { type: 'ACK'; data?: any };

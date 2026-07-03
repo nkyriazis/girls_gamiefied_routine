@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import Ajv from 'ajv';
-import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ChoreInstanceStatus, Exercise, ExerciseSession, ExerciseAnswer, ExerciseAssignment, ExerciseAssignmentWithExercise } from '../../shared/types';
+import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, Exercise, ExerciseSession, ExerciseAnswer, ExerciseAssignment, ExerciseAssignmentWithExercise, ServerMessage } from '../../shared/types';
 import { exercisePoolProvider, ASSIGNMENTS_PER_DAY } from './exercisePool';
 
 // File paths
@@ -121,8 +121,9 @@ export let globalState: {
 // WebSocket connections
 export const wsConnections = new Set<any>();
 
-// Broadcast helper
-export function broadcast(message: any) {
+// Broadcast helper. Only well-formed protocol messages can be sent — adding a
+// new message type or changing a payload starts in shared/types.ts.
+export function broadcast(message: ServerMessage) {
   const payload = JSON.stringify(message);
   wsConnections.forEach(ws => {
     if (ws.readyState === 1) { // OPEN
@@ -212,6 +213,18 @@ export async function flushPendingSave() {
   }
 }
 
+// Db is a merged VIEW handed to request handlers, with two very different halves:
+//
+//  - CONFIG sections (users, routines, tasks, flows, rewards, chores, exercises, ...)
+//    are fresh read-only copies parsed from data.json/exercises.json on every readDb().
+//    Mutating them changes nothing durable — config edits go through writeRawConfig/
+//    writeRawExercises, and star balances through adjustUserStars/awardStars/
+//    setUserStars (user objects are frozen so a stray `user.stars = ...` throws).
+//
+//  - LIVE STATE sections (routineExecutions, taskExecutions, spendings, starTransfers,
+//    choreInstances, exerciseSessions, exerciseAssignments) are the actual in-memory
+//    arrays (globalState.*). Mutate them in place, then call commitState(db) to
+//    schedule persistence to state.json.
 export interface Db {
   users: User[];
   routines: Routine[];
@@ -256,8 +269,10 @@ export async function readDb(): Promise<Db> {
       }
     }
 
-    // Merge with in-memory state
-    const users = data.users.map((u: any) => ({
+    // Merge with in-memory state. Frozen: these are per-call snapshots, so writes
+    // to them would be silently lost — freezing turns that mistake into a loud
+    // TypeError. Star balances change only via adjustUserStars/awardStars/setUserStars.
+    const users = data.users.map((u: any) => Object.freeze({
       ...u,
       stars: globalState.userStars[u.id] || 0
     })) as User[];
@@ -314,15 +329,15 @@ export async function readDb(): Promise<Db> {
   }
 }
 
-export async function writeDb(data: Db) {
-  // Update in-memory state
-  const userStars = data.users.reduce((acc: any, user: any) => {
-    acc[user.id] = user.stars;
-    return acc;
-  }, {});
-
+// Commit the live-state half of a Db view (see the Db interface docs) and schedule
+// persistence. Config sections are ignored — they don't live in state.json.
+export async function commitState(data: Db) {
+  // userStars is NOT derived here — it's owned directly by adjustUserStars/
+  // awardStars/setUserStars, since db.users.stars is only a readDb()-time snapshot
+  // and rebuilding the map from it would clobber concurrent star updates that
+  // happened after that snapshot was taken.
   globalState = {
-    userStars,
+    userStars: globalState.userStars,
     routineExecutions: data.routineExecutions,
     taskExecutions: data.taskExecutions,
     spendings: data.spendings,
@@ -401,7 +416,7 @@ export async function triggerAction(id: string, db: Db, source: string = 'unknow
     };
     
     db.routineExecutions.push(execution);
-    await writeDb(db);
+    await commitState(db);
 
     // Broadcast to frontend
     broadcast({
@@ -514,70 +529,80 @@ export async function readLastLogs(maxLines: number): Promise<any[]> {
   }
 }
 
+// Commit a new star balance: mutate the single in-memory source of truth
+// (globalState.userStars), schedule persistence, and notify all clients.
+// The broadcast is intrinsic to the mutation — a balance can never change
+// without every client hearing about it, so callers have nothing to remember.
+function commitUserStars(userId: string, newTotal: number): number {
+  globalState.userStars[userId] = newTotal;
+  scheduleSave();
+  broadcast({
+    type: 'SYNC_STATE',
+    payload: {
+      userStars: globalState.userStars
+    }
+  });
+  return newTotal;
+}
+
+// Atomically adjust a user's star balance by a delta. All star-mutating code
+// paths must go through this (or setUserStars) — never mutate `.stars` on a
+// readDb() snapshot, since commitState() does not persist it.
+export function adjustUserStars(userId: string, delta: number): number {
+  return commitUserStars(userId, (globalState.userStars[userId] || 0) + delta);
+}
+
+// Atomically spend stars: balance check and deduction happen in one synchronous
+// step, so concurrent spends can never overdraw. Returns the new total, or null
+// if the balance is insufficient (nothing is deducted).
+export function trySpendStars(userId: string, cost: number): number | null {
+  const balance = globalState.userStars[userId] || 0;
+  if (balance < cost) return null;
+  return commitUserStars(userId, balance - cost);
+}
+
 // Award stars to a user
-export async function awardStars(userId: string, amount: number, skipBroadcast = false): Promise<{ success: boolean; newTotal: number }> {
+export async function awardStars(userId: string, amount: number): Promise<{ success: boolean; newTotal: number }> {
   const db = await readDb();
   const user = db.users.find(u => u.id === userId);
-  
+
   if (!user) {
     throw new Error(`User not found: ${userId}`);
   }
-  
-  user.stars = (user.stars || 0) + amount;
-  await writeDb(db);
-  
-  logAction('AWARD_STARS', { userId, amount, newBalance: user.stars });
-  
-  if (!skipBroadcast) {
-    broadcast({
-      type: 'STARS_AWARDED',
-      payload: {
-        userId,
-        amount,
-        totalStars: user.stars
-      }
-    });
-    
-    // Also broadcast sync state
-    const enrichedSpendings = await getEnrichedSpendings();
-    broadcast({
-      type: 'SYNC_STATE',
-      payload: {
-        userStars: globalState.userStars,
-        spendings: enrichedSpendings
-      }
-    });
-  }
-  
-  return { success: true, newTotal: user.stars };
+
+  const newTotal = adjustUserStars(userId, amount);
+
+  logAction('AWARD_STARS', { userId, amount, newBalance: newTotal });
+
+  // Semantic notification on top of the balance sync (which adjustUserStars
+  // already broadcast) — lets the UI celebrate the award if it wants to.
+  broadcast({
+    type: 'STARS_AWARDED',
+    payload: {
+      userId,
+      amount,
+      totalStars: newTotal
+    }
+  });
+
+  return { success: true, newTotal };
 }
 
 // Set stars for a user (absolute value)
 export async function setUserStars(userId: string, amount: number): Promise<{ success: boolean; newTotal: number }> {
   const db = await readDb();
   const user = db.users.find(u => u.id === userId);
-  
+
   if (!user) {
     throw new Error(`User not found: ${userId}`);
   }
-  
-  const oldStars = user.stars || 0;
-  user.stars = amount;
-  await writeDb(db);
-  
+
+  const oldStars = globalState.userStars[userId] || 0;
+  commitUserStars(userId, amount);
+
   logAction('SET_STARS', { userId, oldBalance: oldStars, newBalance: amount });
-  
-  // Broadcast sync state
-  const enrichedSpendings = await getEnrichedSpendings();
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: globalState.userStars,
-      spendings: enrichedSpendings
-    }
-  });
-  
-  return { success: true, newTotal: user.stars };
+
+  return { success: true, newTotal: amount };
 }
 
 // ============================================
@@ -597,7 +622,7 @@ function cronMatches(cronExpr: string, date: Date): boolean {
   const month = date.getMonth() + 1;
   const dayOfWeek = date.getDay(); // 0 = Sunday
   
-  const matchField = (expr: string, value: number, max: number): boolean => {
+  const matchField = (expr: string, value: number, _max: number): boolean => {
     if (expr === '*') return true;
     
     // Handle ranges (e.g., 1-5)
@@ -669,7 +694,7 @@ export async function generateChoreInstances(): Promise<ChoreInstance[]> {
   }
   
   if (newInstances.length > 0) {
-    await writeDb(db);
+    await commitState(db);
     await broadcastChoreState();
     
     // Broadcast availability event for each new instance
@@ -731,7 +756,7 @@ export async function expireChores(): Promise<{ expired: ChoreInstance[], notifi
   }
   
   if (expiredInstances.length > 0) {
-    await writeDb(db);
+    await commitState(db);
     await broadcastChoreState();
   }
   
@@ -755,7 +780,7 @@ export async function cleanupOldChoreInstances(): Promise<number> {
   
   const removed = before - db.choreInstances.length;
   if (removed > 0) {
-    await writeDb(db);
+    await commitState(db);
     logAction('CHORE_CLEANUP', { removed, remaining: db.choreInstances.length });
   }
   
@@ -810,7 +835,7 @@ export async function claimChore(instanceId: string, userId: string): Promise<Ch
   // Check expiration
   if (new Date(instance.expiresAt) < new Date()) {
     instance.status = 'expired';
-    await writeDb(db);
+    await commitState(db);
     throw new Error('Chore has expired');
   }
   
@@ -818,7 +843,7 @@ export async function claimChore(instanceId: string, userId: string): Promise<Ch
   instance.claimedBy = userId;
   instance.claimedAt = new Date().toISOString();
   
-  await writeDb(db);
+  await commitState(db);
   
   logAction('CHORE_CLAIMED', { instanceId, choreId: instance.choreId, userId });
   
@@ -855,7 +880,7 @@ export async function attemptChore(instanceId: string): Promise<ChoreInstance> {
   instance.status = 'attempted';
   instance.attemptedAt = new Date().toISOString();
   
-  await writeDb(db);
+  await commitState(db);
   
   logAction('CHORE_ATTEMPTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
   
@@ -898,11 +923,10 @@ export async function confirmChore(instanceId: string, starsOverride?: number): 
   instance.confirmedAt = new Date().toISOString();
   instance.starsAwarded = stars;
   
-  await writeDb(db);
+  await commitState(db);
   
-  // Award stars to the user (skip broadcast, we'll do it below)
   if (stars > 0) {
-    await awardStars(instance.claimedBy, stars, true);
+    await awardStars(instance.claimedBy, stars);
   }
   
   logAction('CHORE_CONFIRMED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy, starsAwarded: stars });
@@ -942,7 +966,7 @@ export async function rejectChore(instanceId: string): Promise<ChoreInstance> {
   instance.status = 'rejected';
   instance.rejectedAt = new Date().toISOString();
   
-  await writeDb(db);
+  await commitState(db);
   
   logAction('CHORE_REJECTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
   
@@ -1166,7 +1190,7 @@ export async function submitExerciseAnswer(
   if (isCorrect) {
     session.totalStarsEarned[userId] = (session.totalStarsEarned[userId] || 0) + earnedStars;
     // Award stars immediately to user balance
-    await awardStars(userId, earnedStars, true);
+    await awardStars(userId, earnedStars);
   }
   
   // Advance question index if all players answered this overall question
@@ -1195,16 +1219,16 @@ export async function submitExerciseAnswer(
   }
   
   await persistState();
-  
-  broadcast({ 
-    type: 'EXERCISE_ANSWER', 
-    payload: { 
-      sessionId, 
-      userId, 
-      isCorrect, 
+
+  broadcast({
+    type: 'EXERCISE_ANSWER',
+    payload: {
+      sessionId,
+      userId,
+      isCorrect,
       earnedStars,
       session // Broadcast updated session state
-    } 
+    }
   });
   
   if (session.completedAt) {
@@ -1339,7 +1363,7 @@ export async function answerExerciseAssignment(
     assignment.starsAwarded = starsAwarded;
     await persistState();
     if (starsAwarded > 0) {
-      await awardStars(assignment.userId, starsAwarded, true);
+      await awardStars(assignment.userId, starsAwarded);
     }
   } else {
     await persistState();
