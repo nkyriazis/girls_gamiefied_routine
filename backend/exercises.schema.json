@@ -153,6 +153,26 @@
               "template": { "type": "boolean" },
               "generatorParams": { "type": "object" }
             }
+          },
+          {
+            "title": "Number Input",
+            "type": "object",
+            "required": ["id", "type", "category", "title", "question", "correctValue", "stars"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "const": "number-input" },
+              "category": { "type": "string" },
+              "title": { "type": "string" },
+              "body": { "type": "string" },
+              "figure": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" },
+              "question": { "type": "string" },
+              "correctValue": { "type": "number" },
+              "stars": { "type": "integer", "minimum": 1 },
+              "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
+              "template": { "type": "boolean" },
+              "generatorParams": { "type": "object" }
+            }
           }
         ]
       }

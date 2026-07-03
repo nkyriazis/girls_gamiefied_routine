@@ -1,6 +1,6 @@
-import type { 
-  User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, 
-  Exercise, ExerciseSession 
+import type {
+  User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance,
+  Exercise, ExerciseSession, ExerciseAssignmentWithExercise
 } from '@shared/types';
 
 const API_URL = '/api';
@@ -379,5 +379,26 @@ export const api = {
       const error = await response.json();
       throw new Error(error.error || 'Failed to cancel exercise session');
     }
+  },
+
+  // Daily Exercise Assignments API
+  getExerciseAssignments: async (userId?: string): Promise<ExerciseAssignmentWithExercise[]> => {
+    const url = userId ? `${API_URL}/exercise-assignments?userId=${userId}` : `${API_URL}/exercise-assignments`;
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Failed to fetch exercise assignments');
+    return response.json();
+  },
+
+  answerExerciseAssignment: async (assignmentId: string, answer: any): Promise<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise }> => {
+    const response = await fetch(`${API_URL}/exercise-assignments/${assignmentId}/answer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answer }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to submit answer');
+    }
+    return response.json();
   },
 };

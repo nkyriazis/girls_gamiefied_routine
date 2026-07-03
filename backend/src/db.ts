@@ -2,7 +2,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import Ajv from 'ajv';
-import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ChoreInstanceStatus, Exercise, ExerciseSession, ExerciseAnswer } from '../../shared/types';
+import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ChoreInstanceStatus, Exercise, ExerciseSession, ExerciseAnswer, ExerciseAssignment, ExerciseAssignmentWithExercise } from '../../shared/types';
+import { exercisePoolProvider, ASSIGNMENTS_PER_DAY } from './exercisePool';
 
 // File paths
 export const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
@@ -105,6 +106,7 @@ export let globalState: {
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[];
   exerciseSessions: ExerciseSession[];
+  exerciseAssignments: ExerciseAssignment[];
 } = {
   userStars: {},
   routineExecutions: [],
@@ -112,7 +114,8 @@ export let globalState: {
   spendings: [],
   starTransfers: [],
   choreInstances: [],
-  exerciseSessions: []
+  exerciseSessions: [],
+  exerciseAssignments: []
 };
 
 // WebSocket connections
@@ -155,7 +158,8 @@ export async function loadState() {
           spendings: [],
           starTransfers: [],
           choreInstances: [],
-          exerciseSessions: []
+          exerciseSessions: [],
+          exerciseAssignments: []
         };
         return;
       } else {
@@ -170,7 +174,8 @@ export async function loadState() {
       spendings: loaded.spendings || [],
       starTransfers: loaded.starTransfers || [],
       choreInstances: loaded.choreInstances || [],
-      exerciseSessions: loaded.exerciseSessions || []
+      exerciseSessions: loaded.exerciseSessions || [],
+      exerciseAssignments: loaded.exerciseAssignments || []
     };
     console.log('State loaded into memory');
   } catch (error) {
@@ -226,6 +231,7 @@ export interface Db {
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[];
   exerciseSessions: ExerciseSession[];
+  exerciseAssignments: ExerciseAssignment[];
 }
 
 export async function readDb(): Promise<Db> {
@@ -292,17 +298,18 @@ export async function readDb(): Promise<Db> {
       spendings: globalState.spendings,
       starTransfers: globalState.starTransfers,
       choreInstances: globalState.choreInstances,
-      exerciseSessions: globalState.exerciseSessions
+      exerciseSessions: globalState.exerciseSessions,
+      exerciseAssignments: globalState.exerciseAssignments
     };
   } catch (error) {
     console.error("Error reading DB:", error);
     return {
-      users: [], routines: [], tasks: [], routineTasks: [], 
+      users: [], routines: [], tasks: [], routineTasks: [],
       routineAssignments: [], flows: [], schedules: [], rewards: [],
       chores: [], exercises: [],
       routineExecutions: [], taskExecutions: [], spendings: [],
       starTransfers: [],
-      choreInstances: [], exerciseSessions: []
+      choreInstances: [], exerciseSessions: [], exerciseAssignments: []
     };
   }
 }
@@ -321,7 +328,8 @@ export async function writeDb(data: Db) {
     spendings: data.spendings,
     starTransfers: data.starTransfers,
     choreInstances: data.choreInstances,
-    exerciseSessions: data.exerciseSessions
+    exerciseSessions: data.exerciseSessions,
+    exerciseAssignments: data.exerciseAssignments
   };
 
   // Schedule persist
@@ -1008,6 +1016,41 @@ export async function writeRawExercises(data: any): Promise<void> {
   broadcast({ type: 'CONFIG_UPDATED' }); // Trigger a reload on all clients
 }
 
+// Validate an answer against an exercise, for any exercise type.
+// Shared by the group game sessions and the daily assignments.
+export function checkExerciseAnswer(exercise: Exercise, answer: any): boolean {
+  switch (exercise.type) {
+    case 'multiple-choice':
+      return answer === exercise.correctIndex;
+    case 'true-false':
+      return answer === exercise.correctValue;
+    case 'match-pairs':
+      // answer should be array of {left, right}
+      if (Array.isArray(answer) && answer.length === exercise.pairs.length) {
+        return answer.every(ansPair =>
+          exercise.pairs.some(exPair => exPair.left === ansPair.left && exPair.right === ansPair.right)
+        );
+      }
+      return false;
+    case 'ordering':
+      // answer should be array of ids in order
+      if (Array.isArray(answer) && answer.length === exercise.items.length) {
+        return answer.every((id, idx) => exercise.items[idx].id === id);
+      }
+      return false;
+    case 'fill-blank':
+      // answer should be array of strings
+      if (Array.isArray(answer) && answer.length === exercise.correctAnswers.length) {
+        return answer.every((ans, idx) => exercise.correctAnswers[idx] === ans);
+      }
+      return false;
+    case 'number-input':
+      return Number(answer) === exercise.correctValue;
+    default:
+      return false;
+  }
+}
+
 export async function startExerciseSession(
   playerIds: string[], 
   categories: string[], 
@@ -1105,37 +1148,8 @@ export async function submitExerciseAnswer(
   const overallQuestionIndex = (session.currentRound - 1) * session.questionsPerRound + session.currentQuestionIndex;
   
   // Validate answer based on exercise type
-  let isCorrect = false;
-  switch (exercise.type) {
-    case 'multiple-choice':
-      isCorrect = answer === exercise.correctIndex;
-      break;
-    case 'true-false':
-      isCorrect = answer === exercise.correctValue;
-      break;
-    case 'match-pairs':
-      // answer should be array of {left, right}
-      // check if all pairs are correct
-      if (Array.isArray(answer) && answer.length === exercise.pairs.length) {
-        isCorrect = answer.every(ansPair => 
-          exercise.pairs.some(exPair => exPair.left === ansPair.left && exPair.right === ansPair.right)
-        );
-      }
-      break;
-    case 'ordering':
-      // answer should be array of ids in order
-      if (Array.isArray(answer) && answer.length === exercise.items.length) {
-        isCorrect = answer.every((id, idx) => exercise.items[idx].id === id);
-      }
-      break;
-    case 'fill-blank':
-      // answer should be array of strings
-      if (Array.isArray(answer) && answer.length === exercise.correctAnswers.length) {
-        isCorrect = answer.every((ans, idx) => exercise.correctAnswers[idx] === ans);
-      }
-      break;
-  }
-  
+  const isCorrect = checkExerciseAnswer(exercise, answer);
+
   const earnedStars = isCorrect ? exercise.stars : 0;
   
   // Record answer
@@ -1198,4 +1212,157 @@ export async function submitExerciseAnswer(
   }
   
   return { correct: isCorrect, earnedStars, session };
+}
+
+// ============================================
+// DAILY EXERCISE ASSIGNMENTS (per-user, chore-like)
+// ============================================
+
+// Local date (YYYY-MM-DD) in the configured timezone
+function localDateStr(timezone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date());
+}
+
+// Draw `count` exercises from a pool, balancing across categories
+// (round-robin over shuffled per-category buckets).
+function drawBalanced(pool: Exercise[], count: number): Exercise[] {
+  const byCategory = new Map<string, Exercise[]>();
+  for (const ex of pool) {
+    if (!byCategory.has(ex.category)) byCategory.set(ex.category, []);
+    byCategory.get(ex.category)!.push(ex);
+  }
+  const buckets = [...byCategory.values()].map(b => [...b].sort(() => Math.random() - 0.5));
+  // Shuffle bucket order too, so the first category varies day to day
+  buckets.sort(() => Math.random() - 0.5);
+
+  const drawn: Exercise[] = [];
+  let i = 0;
+  while (drawn.length < count && buckets.some(b => b.length > 0)) {
+    const bucket = buckets[i % buckets.length];
+    const ex = bucket.pop();
+    if (ex) drawn.push(ex);
+    i++;
+  }
+  return drawn;
+}
+
+// Make sure every user has today's assignments drawn from their pool.
+// Lazy generation: called whenever assignments are fetched.
+export async function ensureDailyAssignments(): Promise<boolean> {
+  const db = await readDb();
+  const today = localDateStr(db.settings?.timezone || 'Europe/Athens');
+  let created = false;
+
+  for (const user of db.users) {
+    const hasToday = globalState.exerciseAssignments.some(
+      a => a.userId === user.id && a.date === today
+    );
+    if (hasToday) continue;
+
+    const pool = await exercisePoolProvider.getPoolForUser(user.id);
+    if (pool.length === 0) continue;
+
+    const drawn = drawBalanced(pool, ASSIGNMENTS_PER_DAY);
+    for (const exercise of drawn) {
+      globalState.exerciseAssignments.push({
+        id: randomUUID(),
+        userId: user.id,
+        exerciseId: exercise.id,
+        date: today,
+        status: 'pending',
+        attempts: 0,
+        assignedAt: new Date().toISOString()
+      });
+    }
+    created = true;
+    logAction('EXERCISE_ASSIGNMENTS_CREATED', { userId: user.id, date: today, exerciseIds: drawn.map(e => e.id) });
+  }
+
+  if (created) {
+    await persistState();
+  }
+  return created;
+}
+
+// Today's assignments, enriched with their exercise definitions.
+export async function getExerciseAssignments(userId?: string): Promise<ExerciseAssignmentWithExercise[]> {
+  await ensureDailyAssignments();
+  const db = await readDb();
+  const today = localDateStr(db.settings?.timezone || 'Europe/Athens');
+
+  let assignments = globalState.exerciseAssignments.filter(a => a.date === today);
+  if (userId) {
+    assignments = assignments.filter(a => a.userId === userId);
+  }
+
+  const enriched: ExerciseAssignmentWithExercise[] = [];
+  for (const a of assignments) {
+    enriched.push({ ...a, exercise: await exercisePoolProvider.getExerciseById(a.exerciseId) });
+  }
+  return enriched;
+}
+
+export async function broadcastAssignmentState() {
+  const assignments = await getExerciseAssignments();
+  broadcast({
+    type: 'SYNC_STATE',
+    payload: {
+      userStars: globalState.userStars,
+      exerciseAssignments: assignments
+    }
+  });
+}
+
+// Answer a daily assignment. Correct -> completed + stars. Wrong -> retry allowed.
+export async function answerExerciseAssignment(
+  assignmentId: string,
+  answer: any
+): Promise<{ correct: boolean; starsAwarded: number; assignment: ExerciseAssignment }> {
+  const assignment = globalState.exerciseAssignments.find(a => a.id === assignmentId);
+  if (!assignment) throw new Error('Assignment not found');
+  if (assignment.status === 'completed') throw new Error('Assignment already completed');
+
+  const exercise = await exercisePoolProvider.getExerciseById(assignment.exerciseId);
+  if (!exercise) throw new Error('Exercise not found in pool');
+
+  const isCorrect = checkExerciseAnswer(exercise, answer);
+  assignment.attempts += 1;
+
+  let starsAwarded = 0;
+  if (isCorrect) {
+    assignment.status = 'completed';
+    assignment.completedAt = new Date().toISOString();
+    starsAwarded = exercise.stars;
+    assignment.starsAwarded = starsAwarded;
+    await persistState();
+    if (starsAwarded > 0) {
+      await awardStars(assignment.userId, starsAwarded, true);
+    }
+  } else {
+    await persistState();
+  }
+
+  logAction('EXERCISE_ASSIGNMENT_ANSWER', {
+    assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId,
+    correct: isCorrect, attempts: assignment.attempts, starsAwarded
+  });
+
+  broadcast({
+    type: 'EXERCISE_ASSIGNMENT_ANSWER',
+    payload: {
+      assignmentId,
+      userId: assignment.userId,
+      exerciseId: assignment.exerciseId,
+      exerciseTitle: exercise.title,
+      correct: isCorrect,
+      starsAwarded
+    }
+  });
+
+  await broadcastAssignmentState();
+
+  return { correct: isCorrect, starsAwarded, assignment };
 }
