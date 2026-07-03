@@ -17,10 +17,10 @@ const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 
 // Import shared database layer
 import { 
-  DATA_FILE, STATE_FILE, LOGS_FILE, globalState, loadSchema, loadState, readDb, writeDb, wsConnections, 
+  DATA_FILE, STATE_FILE, LOGS_FILE, globalState, loadSchema, loadState, readDb, commitState, wsConnections, 
   broadcast, scheduleSave, setLastConfigError, setLastStateError, lastConfigError, lastStateError,
   persistState, flushPendingSave, triggerAction, getEnrichedSpendings, getEnrichedTransfers, readLastLogs, 
-  MAX_LOGS, awardStars, UPLOADS_DIR, getChoresWithInstances, claimChore, attemptChore, confirmChore, 
+  MAX_LOGS, awardStars, adjustUserStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore, attemptChore, confirmChore,
   rejectChore, validateConfig, validateState, EXERCISES_SCHEMA_FILE, readExercises, readExerciseCategories, readRawExercises, writeRawExercises,
   startExerciseSession, submitExerciseAnswer, cancelExerciseSession, generateChoreInstances, expireChores,
   cleanupOldChoreInstances, logAction, getAvailableBalance,
@@ -373,12 +373,11 @@ server.post('/api/spendings', async (request, reply) => {
     return reply.code(404).send({ error: 'User or Reward not found' });
   }
 
-  if (user.stars < reward.cost) {
+  const newBalance = trySpendStars(userId, reward.cost);
+  if (newBalance === null) {
     return reply.code(400).send({ error: 'Not enough stars' });
   }
-
-  user.stars -= reward.cost;
-  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance: user.stars });
+  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance });
 
   const spending: Spending = {
     id: randomUUID(),
@@ -390,7 +389,7 @@ server.post('/api/spendings', async (request, reply) => {
   };
 
   db.spendings.push(spending);
-  await writeDb(db);
+  await commitState(db);
 
   const enrichedSpendings = await getEnrichedSpendings();
 
@@ -419,12 +418,12 @@ server.put('/api/spendings/:id', async (request, reply) => {
   if (status === 'revoked' && spending.status !== 'revoked') {
     const user = db.users.find(u => u.id === spending.userId);
     if (user) {
-      user.stars += spending.cost;
+      adjustUserStars(spending.userId, spending.cost);
     }
   }
 
   spending.status = status;
-  await writeDb(db);
+  await commitState(db);
 
   const enrichedSpendings = await getEnrichedSpendings();
 
@@ -485,7 +484,7 @@ server.post('/api/transfers', async (request, reply) => {
   };
 
   db.starTransfers.push(transfer);
-  await writeDb(db);
+  await commitState(db);
 
   logAction('TRANSFER_REQUEST', { fromUserId, toUserId, amount, transferId: transfer.id });
 
@@ -527,8 +526,8 @@ server.put('/api/transfers/:id', async (request, reply) => {
 
   if (action === 'approve') {
     // Deduct from sender and add to receiver
-    fromUser.stars -= transfer.amount;
-    toUser.stars += transfer.amount;
+    adjustUserStars(transfer.fromUserId, -transfer.amount);
+    adjustUserStars(transfer.toUserId, transfer.amount);
     transfer.status = 'approved';
     logAction('TRANSFER_APPROVED', { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
   } else if (action === 'reject') {
@@ -544,7 +543,7 @@ server.put('/api/transfers/:id', async (request, reply) => {
   }
 
   transfer.resolvedAt = new Date().toISOString();
-  await writeDb(db);
+  await commitState(db);
 
   const enrichedTransfers = await getEnrichedTransfers();
 
@@ -657,28 +656,16 @@ server.post('/api/executions/:executionId/tasks/:taskId/complete', async (reques
 
   if (execution) {
     const starsToAdd = isOnTime ? (task.stars || 0) : (task.lateStars ?? 0);
-    
-    const user = db.users.find(u => u.id === execution.userId);
-    if (user) {
-      user.stars = (user.stars || 0) + starsToAdd;
-    }
 
     execution.totalStars = (execution.totalStars || 0) + starsToAdd;
-    
-    await writeDb(db);
-    
-    logAction('TASK_COMPLETE', { executionId, taskId, starsAwarded: starsToAdd, userId: execution.userId });
 
-    if (user) {
-      broadcast({
-        type: 'STARS_AWARDED',
-        payload: {
-          userId: execution.userId,
-          amount: starsToAdd,
-          totalStars: user.stars
-        }
-      });
+    await commitState(db);
+
+    if (starsToAdd !== 0) {
+      await awardStars(execution.userId, starsToAdd);
     }
+
+    logAction('TASK_COMPLETE', { executionId, taskId, starsAwarded: starsToAdd, userId: execution.userId });
 
     return { success: true, starsAwarded: starsToAdd };
   }
@@ -1021,20 +1008,23 @@ server.post('/api/admin/state', async (request, reply) => {
       }
     }
     
-    // Update global state
+    // Update global state — every field, so a restore can't silently keep stale sections
     globalState.userStars = newState.userStars || {};
     globalState.routineExecutions = newState.routineExecutions || [];
     globalState.taskExecutions = newState.taskExecutions || [];
     globalState.spendings = newState.spendings || [];
     globalState.starTransfers = newState.starTransfers || [];
     globalState.choreInstances = newState.choreInstances || [];
-    
+    globalState.exerciseSessions = newState.exerciseSessions || [];
+    globalState.exerciseAssignments = newState.exerciseAssignments || [];
+
     scheduleSave();
-    
+
     setLastStateError(null);
     const enrichedSpendings = await getEnrichedSpendings();
     const enrichedTransfers = await getEnrichedTransfers();
     const { instances: choreInstances } = await getChoresWithInstances();
+    const exerciseAssignments = await getExerciseAssignments();
 
     broadcast({
       type: 'SYNC_STATE',
@@ -1043,7 +1033,8 @@ server.post('/api/admin/state', async (request, reply) => {
         spendings: enrichedSpendings,
         starTransfers: enrichedTransfers,
         choreInstances,
-        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt)
+        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt),
+        exerciseAssignments
       }
     });
     
