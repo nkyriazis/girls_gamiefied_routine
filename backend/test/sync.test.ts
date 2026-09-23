@@ -18,7 +18,7 @@ class FakeClient implements Client {
 function stateWith(n: number): AppState {
   return {
     config: { users: [], tasks: [], routines: [], routineTasks: [], routineAssignments: [], flows: [], schedules: [], rewards: [], settings: { timezone: 'UTC' } },
-    configError: null, users: [], starTransfers: [], choreInstances: [], exerciseSessions: [], exerciseAssignments: [],
+    configError: null, users: [], starTransfers: [], choreInstances: [], exerciseSessions: [], exerciseAssignments: [], flowRuns: [], routineRuns: [],
     spendings: Array.from({ length: n }, (_, i) => ({ id: String(i), userId: 'u', rewardId: 'r', cost: 1, createdAt: '', status: 'pending' as const }))
   };
 }
@@ -85,7 +85,7 @@ test('a change during a slow build is followed by a snapshot of the final state;
   assert.equal(counts[counts.length - 1], 2, `last snapshot must be the final state, got ${counts}`);
 });
 
-test('a disconnected client gets nothing more; events go out immediately', async () => {
+test('a disconnected client gets nothing more; events and heartbeats go out immediately', async () => {
   const sync = new Sync(() => stateWith(0));
   const a = new FakeClient();
   const b = new FakeClient();
@@ -93,9 +93,10 @@ test('a disconnected client gets nothing more; events go out immediately', async
   sync.connect(b);
   await settle();
   sync.disconnect(b);
-  sync.notify({ type: 'ALARM_START' });
-  assert.deepEqual(a.received[a.received.length - 1], { type: 'ALARM_START' }); // synchronous, before any tick
-  assert.equal(b.received.some(m => m.type === 'ALARM_START'), false);
+  sync.notify({ type: 'CHORE_EXPIRED', payload: { instanceId: 'i', choreId: 'c' } });
+  sync.heartbeat();
+  assert.deepEqual(a.received.slice(-2).map(m => m.type), ['CHORE_EXPIRED', 'HEARTBEAT']); // synchronous, before any tick
+  assert.equal(b.received.some(m => m.type !== 'STATE'), false);
 });
 
 test('the store reports every runtime-state write, and only those', () => {

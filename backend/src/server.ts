@@ -17,7 +17,7 @@ const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 
 // Import shared database layer
 import {
-  store, sync, triggerAction, completeTask, getEnrichedSpendings, getEnrichedTransfers,
+  store, sync, triggerAction, completeTask, closeRoutine, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
   readLastLogs, MAX_LOGS, adjustUserStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
@@ -27,6 +27,7 @@ import {
 } from './db';
 import { config, configError, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
+import { HEARTBEAT_MS } from './sync';
 import { LOGS_FILE, STATE_FILE } from './paths';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 
@@ -474,12 +475,6 @@ server.post('/api/hooks/push', async (request, reply) => {
       return { success: true, type: 'schedule_simulation', simulatedTime: nextTime, targetId: id };
     }
 
-    if (id === 'alarm') {
-      sync.notify({ type: 'ALARM_START' });
-      logAction('ALARM_MANUAL', { source: 'push' });
-      return { success: true, type: 'alarm' };
-    }
-
     const result = triggerAction(id, 'push_hook');
 
     if (result) {
@@ -493,16 +488,22 @@ server.post('/api/hooks/push', async (request, reply) => {
   }
 });
 
-// Task completion endpoint
+// What kids do on a running routine or flow (see "ROUTINES AND FLOWS ON SCREEN" in db.ts).
+// Each is idempotent, so two devices reporting the same action is harmless.
 server.post('/api/executions/:executionId/tasks/:taskId/complete', async (request, reply) => {
   const { executionId, taskId } = request.params as { executionId: string, taskId: string };
-  const { duration, isOnTime } = request.body as { duration: number, isOnTime: boolean };
+  const result = completeTask(executionId, taskId);
+  return result.success ? result : reply.code(409).send(result);
+});
 
-  const result = completeTask(executionId, taskId, duration, isOnTime);
-  if (!result) {
-    return reply.code(404).send({ error: 'Task not found' });
-  }
-  return result;
+server.post('/api/executions/:executionId/close', async (request) => {
+  const { executionId } = request.params as { executionId: string };
+  return { success: closeRoutine(executionId) };
+});
+
+server.post('/api/flow-runs/:runId/steps/:stepIndex/dismiss', async (request) => {
+  const { runId, stepIndex } = request.params as { runId: string, stepIndex: string };
+  return { success: dismissAlarm(runId, Number(stepIndex)) };
 });
 
 // Debug endpoint to simulate time
@@ -855,6 +856,8 @@ const start = async () => {
       sync.changed(); // clients get the new config, or the error
     });
     
+    setInterval(() => sync.heartbeat(), HEARTBEAT_MS);
+
     // Start the real scheduler (checks every minute)
     cron.schedule('* * * * *', () => {
       checkSchedules(new Date());

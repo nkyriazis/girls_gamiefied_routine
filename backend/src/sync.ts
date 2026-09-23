@@ -8,7 +8,8 @@ import { AppState, ServerEvent, ServerMessage } from '../../shared/types';
 //     server restart need no special handling.
 // Changes made in the same turn of the event loop go out as one message, and
 // builds never overlap, so the last message a client receives is always the
-// current state. One-off effects go out immediately with notify().
+// current state. One-off effects go out immediately with notify(). A
+// heartbeat every HEARTBEAT_MS lets clients spot a dead link (see GameContext).
 // ============================================================================
 
 export interface Client {
@@ -17,6 +18,7 @@ export interface Client {
 }
 
 const OPEN = 1;
+export const HEARTBEAT_MS = 10_000;
 
 export class Sync {
   private readonly clients = new Set<Client>();
@@ -40,6 +42,11 @@ export class Sync {
     if (this.sending) return; // the running loop picks it up
     this.sending = true;
     setImmediate(() => void this.flush());
+  }
+
+  /** Tell every client the link is alive. */
+  heartbeat(): void {
+    this.send({ type: 'HEARTBEAT' });
   }
 
   /** Send a one-off effect to every client. */

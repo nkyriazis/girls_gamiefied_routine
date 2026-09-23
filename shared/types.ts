@@ -54,14 +54,30 @@ export type FlowStep =
 
 export interface Flow {
   id: string;
-  triggerTime: string;
   steps: FlowStep[];
 }
 
-export interface FlowInstance {
+// A flow that is running (server state). `steps` is copied from the config at
+// start, so a config edit can't change a run halfway.
+export interface FlowRun {
+  id: string;
   flowId: string;
-  flow: Flow;
-  stepIndex: number;
+  steps: FlowStep[];
+  stepIndex: number; // current step: an alarm waits for dismissal, a parallel step for its routines and flows
+  parentRunId?: string; // set when started by a parallel step of another run
+  startedAt: string;
+}
+
+// A routine on screen for a user (server state), at most one per user.
+export interface RoutineRun {
+  id: string; // the RoutineExecution id
+  userId: string;
+  routineId: string; // routine assignment id (User.routines[].id)
+  taskIndex: number;
+  taskStartedAt: string;
+  finishedAt?: string; // all tasks done; the reward shows until a client closes it
+  flowRunId?: string; // the flow run waiting for this routine
+  totalStars?: number; // stars earned so far (from the execution; not stored on the run)
 }
 
 export interface Reward {
@@ -347,8 +363,11 @@ export interface DataConfig {
 // have. There is no patching, so a client can't drift: the last STATE message
 // it received is the truth.
 //
-// Events: one-off effects (start a routine, sound the alarm, show a toast).
-// They never carry state that isn't also in AppState.
+// Events: one-off effects (chore toasts). They never carry state that isn't
+// also in AppState.
+//
+// HEARTBEAT: sent every few seconds so a client can tell a dead link from a
+// quiet one and reconnect.
 
 export interface AppState {
   config: DataConfig; // the live data.json
@@ -359,6 +378,8 @@ export interface AppState {
   choreInstances: ChoreInstance[]; // open ones, plus ones closed in the last 24h
   exerciseSessions: ExerciseSession[]; // active group games
   exerciseAssignments: ExerciseAssignmentWithExercise[]; // today's
+  flowRuns: FlowRun[];
+  routineRuns: RoutineRun[];
 }
 
 export interface ChoreEventPayload {
@@ -369,11 +390,8 @@ export interface ChoreEventPayload {
 }
 
 export type ServerEvent =
-  | { type: 'ROUTINE_START'; payload: { userId: string; routineId: string; executionId: string } }
-  | { type: 'FLOW_START'; payload: { flowId: string; steps: FlowStep[] } }
-  | { type: 'ALARM_START' }
   | { type: 'CHORE_CONFIRMED'; payload: ChoreEventPayload & { starsAwarded: number } }
   | { type: 'CHORE_REJECTED'; payload: ChoreEventPayload }
   | { type: 'CHORE_EXPIRED'; payload: ChoreEventPayload };
 
-export type ServerMessage = { type: 'STATE'; payload: AppState } | ServerEvent;
+export type ServerMessage = { type: 'STATE'; payload: AppState } | { type: 'HEARTBEAT' } | ServerEvent;
