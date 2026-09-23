@@ -4,6 +4,7 @@
 // until the kids' dashboard (and the other parent device) shows the result.
 // Kids' actions are done in the kids' UI and must reach the parent.
 import { chromium } from 'playwright';
+import fs from 'fs';
 
 const BASE = 'http://frontend';
 const OUT = '/e2e/shots';
@@ -48,9 +49,9 @@ async function client(path, label, viewport, mobile = false) {
 }
 
 // full: grow the window to the whole page first, so the fixed nav bar ends up at the bottom
-async function shot(page, name, full = true) {
+async function shot(page, name, full = true, keepToasts = false) {
   await sleep(600); // let animations settle so the screenshot is readable
-  for (let i = 0; i < 40 && (await count(page, '.p-toast')) > 0; i++) await sleep(100); // toasts cover the header
+  for (let i = 0; !keepToasts && i < 40 && (await count(page, '.p-toast')) > 0; i++) await sleep(100); // toasts cover the header
   const viewport = page.viewportSize();
   const height = full ? await page.evaluate(() => document.documentElement.scrollHeight) : 0;
   if (height > viewport.height) { await page.setViewportSize({ ...viewport, height }); await sleep(400); }
@@ -320,7 +321,28 @@ try {
     .map(t => `${t} ${types.filter(x => x === t).length}`);
   log(`  action log since the start of this run: ${seen.join(', ')}`);
 
-  log('== 12. History');
+  log('== 12. A broken data.json on disk: banner on both parents, forms refuse to save over it, kids keep the last valid config');
+  const DATA = '/stack/data.json';
+  const good = fs.readFileSync(DATA, 'utf-8');
+  const replace = text => { fs.writeFileSync(`${DATA}.e2e`, text); fs.renameSync(`${DATA}.e2e`, DATA); };
+  replace(good.replace(/}\s*$/, ''));
+  await until('phone and tablet show the config error banner', async () => (await visible(phone, '.p-banner')) && (await visible(tablet, '.p-banner')), 15000);
+  await go(phone, 'Ρυθμίσεις');
+  await phone.locator('.p-row', { hasText: 'Κρέπες' }).click();
+  await phone.getByLabel('Κόστος σε αστέρια').fill('1');
+  await phone.getByRole('button', { name: 'Αποθήκευση' }).click();
+  await until('phone refuses: "Το data.json δεν είναι έγκυρο"', () => visible(phone, '.p-toast.error', { hasText: 'data.json' }));
+  await shot(phone, 'phone-17-config-error', false, true);
+  await phone.getByRole('button', { name: 'Κλείσιμο' }).click();
+  if (fs.readFileSync(DATA, 'utf-8') === good) throw new Error('the broken file was overwritten');
+  log('  the broken file on disk is untouched');
+  await openStore(E);
+  await until('kids store still shows Κρέπες at ⭐300', async () => (await kids.locator('.reward-item', { hasText: 'Κρέπες' }).innerText()).includes('300'));
+  await closeStore();
+  replace(good);
+  await until('banner gone after the fix', async () => !(await visible(phone, '.p-banner')) && !(await visible(tablet, '.p-banner')), 15000);
+
+  log('== 13. History');
   await go(phone, 'Ιστορικό');
   await go(tablet, 'Ιστορικό');
   await until('history lists the rejected gift and the confirmed chore', async () =>
@@ -328,7 +350,7 @@ try {
   await shot(phone, 'phone-15-history', false);
   await shot(tablet, 'tablet-15-history', false);
 
-  log('== 13. Final balances agree everywhere');
+  log('== 14. Final balances agree everywhere');
   await go(phone, 'Σήμερα');
   await go(tablet, 'Σήμερα');
   await everywhere(E, balances[E]);

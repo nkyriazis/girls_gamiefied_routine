@@ -45,7 +45,7 @@ PW=mcr.microsoft.com/playwright:v1.55.0-noble
 
 status=0
 docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp --network ${PROJECT}_routine-net \
-  -v "$WORK/e2e:/e2e" -w /e2e $PW node "$SCRIPT" || status=$?
+  -v "$WORK/e2e:/e2e" -v "$WORK/stack:/stack" -w /e2e $PW node "$SCRIPT" || status=$?
 rm -rf "$SHOTS" && mkdir -p "$SHOTS"
 cp "$WORK"/e2e/shots/*.png "$SHOTS/" 2>/dev/null || true
 $C down 2>&1 | tail -1
