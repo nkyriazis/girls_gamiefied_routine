@@ -83,6 +83,22 @@ async function storeShot(page, name, stars, file) {
   await page.getByRole('button', { name: 'Κλείσιμο' }).click();
 }
 
+const T = ['Πλύσιμο Δοντιών', 'Πλύσιμο Προσώπου', 'Ντύσιμο', 'Πρωινό']; // the morning routine's tasks
+const player = (p, name) => p.locator('.inline-player', { hasText: name });
+const alarm = (p, name) => p.locator('.global-alarm-container', { hasText: name });
+const taskOf = (p, name) => player(p, name).locator('.task-name').innerText({ timeout: 300 });
+const timerOf = (p, name) => player(p, name).locator('.timer').innerText({ timeout: 300 })
+  .then(t => { const [m, sec] = t.split(':').map(Number); return m * 60 + sec; });
+async function bothShowTask(name, task) {
+  await until(`kids A and B show ${name} on "${task}"`, async () => (await taskOf(kidA, name)) === task && (await taskOf(kidB, name)) === task);
+}
+
+// Ask the host (run-e2e.sh) to act on the backend container and wait for it.
+async function host(command, done, timeout = 30000) {
+  if (command) fs.writeFileSync(SIGNAL, command);
+  await until(`host: ${done}`, () => fs.readFileSync(SIGNAL, 'utf-8').trim() === done, timeout);
+}
+
 async function everywhere(name, stars) {
   await until(`${name} ⭐${stars} on kids A, kids B and parent`, async () =>
     (await kidStars(kidA, name)) === stars && (await kidStars(kidB, name)) === stars && (await parentStars(parent, name)) === stars);
@@ -101,11 +117,12 @@ try {
 
   log('== 3. Kids: complete a task -> parent sees the stars');
   await rest('POST', '/hooks/push', { id: 'u1-assign-morning' });
-  await until('routine player open on kids A and B (ROUTINE_START event)', async () => (await visible(kidA, '.btn-done')) && (await visible(kidB, '.btn-done')));
+  await until('routine player open on kids A and B (server state)', async () => (await visible(kidA, '.btn-done')) && (await visible(kidB, '.btn-done')));
   await shot(kidA, '03-kids-routine');
   await kidA.locator('.btn-done').click();
   await until(`parent shows ${E} ⭐110`, async () => (await parentStars(parent, E)) === 110);
-  for (const p of [kidA, kidB]) await p.locator('.btn-exit').click();
+  await kidB.locator('.btn-exit').click(); // ✕ on one device closes it on both
+  await until('routine closed on kids A and B', async () => !(await visible(kidA, '.inline-player')) && !(await visible(kidB, '.inline-player')));
   await everywhere(E, 110);
 
   log('== 4. Kids: buy a reward -> parent sees it pending; parent marks it done -> kids see it done');
@@ -181,21 +198,79 @@ try {
   replace(good);
   await until('banner gone after the fix', async () => !(await visible(parent, '.validation-banner')), 15000);
 
-  log('== 9. Kill and restart the backend');
-  const before = [kidA.sockets, kidB.sockets, parent.sockets];
-  fs.writeFileSync(SIGNAL, 'kill');
-  await until('backend killed', () => fs.readFileSync(SIGNAL, 'utf-8').trim() === 'killed', 30000);
+  log('== 9. A flow started by the push hook runs on the server; both kids\' dashboards follow it in lockstep');
+  await rest('POST', '/hooks/push', { id: 'morning-flow' });
+  await until('kids A and B each show both alarms', async () =>
+    (await kidA.locator('.global-alarm-container').count()) === 2 && (await kidB.locator('.global-alarm-container').count()) === 2);
+  await shot(kidB, '09-kidsB-flow-alarms');
+  await alarm(kidA, E).locator('.btn-dismiss-global').click();
+  await until(`kids A and B: ${E}'s routine started, ${I}'s alarm still up`, async () =>
+    (await player(kidA, E).isVisible()) && (await player(kidB, E).isVisible()) && (await alarm(kidA, I).isVisible()) && (await alarm(kidB, I).isVisible()));
+  await alarm(kidB, I).locator('.btn-dismiss-global').click();
+  await bothShowTask(E, T[0]);
+  await bothShowTask(I, T[0]);
+  await player(kidB, E).locator('.btn-done').click(); // on device B
+  await bothShowTask(E, T[1]);
+  await until(`parent shows ${E} ⭐85`, async () => (await parentStars(parent, E)) === 85);
+  log('  both devices tap "done" at the same moment: the task completes once');
+  await Promise.all([player(kidA, E).locator('.btn-done').click(), player(kidB, E).locator('.btn-done').click()]);
+  await bothShowTask(E, T[2]);
+  await sleep(500);
+  await until(`parent shows ${E} ⭐95 (one award, not two)`, async () => (await parentStars(parent, E)) === 95);
+  await shot(kidA, '09-kidsA-flow-routines');
+  await shot(kidB, '09-kidsB-flow-routines');
+
+  log('== 10. Reloading a kids\' dashboard mid-routine resumes it');
+  await kidA.reload();
+  await kidA.locator('.interaction-overlay').click();
+  await bothShowTask(E, T[2]);
+  await bothShowTask(I, T[0]);
+  const [ta, tb] = [await timerOf(kidA, I), await timerOf(kidB, I)];
+  log(`  ${I}'s countdown after the reload: kids A ${ta}s, kids B ${tb}s`);
+  if (Math.abs(ta - tb) > 1) throw new Error('countdowns differ');
+  await shot(kidA, '10-kidsA-after-reload');
+
+  log('== 11. Kill and restart the backend mid-routine');
+  let before = [kidA.sockets, kidB.sockets, parent.sockets];
+  await host('kill', 'killed');
   await sleep(2000);
-  await everywhere(E, 75); // last state stays on screen during the outage
-  await until('backend restarted', () => fs.readFileSync(SIGNAL, 'utf-8').trim() === 'started', 60000);
+  await bothShowTask(E, T[2]); // last state stays on screen during the outage
+  await host(null, 'started', 60000);
   await mcp('award_stars', { userId: 'u2', amount: 7 }); // a change right after the restart
-  await everywhere(E, 75);
-  await everywhere(I, 17);
+  await until(`parent shows ${I} ⭐17`, async () => (await parentStars(parent, I)) === 17);
   await until('every client opened a new socket', () =>
     kidA.sockets > before[0] && kidB.sockets > before[1] && parent.sockets > before[2]);
   log(`  sockets opened per client (before -> after): ${before.join(',')} -> ${[kidA.sockets, kidB.sockets, parent.sockets].join(',')}`);
-  await storeShot(kidB, I, 17, '09-kidsB-store-after-restart');
-  await shot(parent, '09-parent-after-restart');
+  await bothShowTask(E, T[2]);
+  await bothShowTask(I, T[0]);
+  await player(kidA, E).locator('.btn-done').click(); // the restarted server still runs the routine
+  await bothShowTask(E, T[3]);
+  await until(`parent shows ${E} ⭐105`, async () => (await parentStars(parent, E)) === 105);
+  await shot(kidB, '11-kidsB-after-restart');
+  await shot(parent, '11-parent-after-restart');
+
+  log('== 12. Heartbeat: a link that goes silent (backend paused) is noticed and the clients reconnect');
+  before = [kidA.sockets, kidB.sockets, parent.sockets];
+  await host('pause', 'paused');
+  const pausedAt = Date.now();
+  await until('every client gave up on the silent socket and opened a new one', () =>
+    kidA.sockets > before[0] && kidB.sockets > before[1] && parent.sockets > before[2], 45000);
+  log(`  noticed and reconnecting after ${((Date.now() - pausedAt) / 1000).toFixed(1)} s (heartbeat 10 s, stale after 25 s, retry 3 s)`);
+  await host('unpause', 'unpaused');
+  await mcp('award_stars', { userId: 'u1', amount: 1 });
+  await until(`parent shows ${E} ⭐106`, async () => (await parentStars(parent, E)) === 106, 15000);
+  await player(kidB, E).locator('.btn-done').click(); // last task
+  await until('reward shown on kids A and B', async () =>
+    (await visible(kidA, '.reward-overlay')) && (await visible(kidB, '.reward-overlay')));
+  await shot(kidA, '12-kidsA-routine-finished');
+  await until(`${E}'s routine closed on both after the reward`, async () =>
+    !(await player(kidA, E).isVisible()) && !(await player(kidB, E).isVisible()), 10000);
+  await player(kidA, I).locator('.btn-exit').click(); // ✕ ends the last routine, so the flow ends
+  await until('kids A and B back to the clock', async () =>
+    (await visible(kidA, '.clock-container')) && (await visible(kidB, '.clock-container')));
+  await everywhere(E, 116);
+  await everywhere(I, 17);
+  await shot(kidB, '12-kidsB-flow-ended');
 
   log('PASS: every step converged on all clients');
 } catch (err) {
