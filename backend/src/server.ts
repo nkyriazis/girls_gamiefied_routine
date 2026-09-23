@@ -18,7 +18,7 @@ const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 // Import shared database layer
 import {
   store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
-  readLastLogs, MAX_LOGS, adjustUserStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
+  readLastLogs, MAX_LOGS, adjustUserStars, awardStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
   cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
@@ -159,6 +159,17 @@ server.get('/health', async () => {
 
 // User routes: users with their star balance and their assigned routines
 server.get('/api/users', async () => usersView());
+
+// Parent: add (or, with a negative amount, take away) stars
+server.post('/api/users/:id/stars', async (request, reply) => {
+  const { id } = request.params as { id: string };
+  const { amount } = (request.body ?? {}) as { amount?: unknown };
+  if (typeof amount !== 'number' || !Number.isInteger(amount) || amount === 0) {
+    return reply.code(400).send({ error: 'amount must be a non-zero integer' });
+  }
+  if (!config().users.some(u => u.id === id)) return reply.code(404).send({ error: 'User not found' });
+  return awardStars(id, amount);
+});
 
 // Flow routes
 server.get('/api/flows', async (request, reply) => {
@@ -319,12 +330,19 @@ server.post('/api/spendings', async (request, reply) => {
 
 server.put('/api/spendings/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
-  const { status } = request.body as { status: 'pending' | 'done' | 'revoked' };
+  const { status } = request.body as { status: Spending['status'] };
 
   const spending = store.spendings.get(id);
 
   if (!spending) {
     return reply.code(404).send({ error: 'Spending not found' });
+  }
+
+  if (status !== 'done' && status !== 'revoked') {
+    return reply.code(400).send({ error: 'Invalid status' });
+  }
+  if (spending.status === 'revoked') {
+    return reply.code(400).send({ error: 'Spending is already revoked' });
   }
 
   const updated = { ...spending, status };
@@ -335,6 +353,7 @@ server.put('/api/spendings/:id', async (request, reply) => {
     }
     store.spendings.put(updated);
   });
+  logAction(`SPENDING_${status.toUpperCase()}`, { spendingId: id, userId: spending.userId, rewardId: spending.rewardId, cost: spending.cost });
 
   return updated;
 });
