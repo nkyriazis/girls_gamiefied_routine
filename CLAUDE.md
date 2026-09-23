@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A real-time gamified routine/chore system for children, run as a kiosk-style PWA (typically on a Raspberry Pi 4). Kids see scheduled routines, complete tasks, earn stars, do chores and school exercises, and redeem rewards. Parents manage everything at `/parent`. UI strings are largely in Greek.
 
-Stack: Fastify 5 + TypeScript + WebSockets + node-cron (backend), React 19 + Vite + Framer Motion (frontend), JSON files for persistence, Docker Compose for everything.
+Stack: Fastify 5 + TypeScript + WebSockets + node-cron (backend), React 19 + Vite + Framer Motion (frontend), JSON files for config and SQLite (`node:sqlite`, Node 24) for runtime state, Docker Compose for everything.
 
 ## Agent rules (from .cursorrules)
 
@@ -37,9 +37,15 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec frontend npm
 
 # Validate data.json / state.json against their schemas
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm run test-schemas
+
+# Backend tests (node:test): store, config cache, legacy import
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm test
+
+# Import state.json + logs.jsonl into the database (if not done yet) and verify record by record (prod image)
+docker compose exec backend npm run migrate
 ```
 
-There is no unit test suite. Verify changes manually:
+Beyond `npm test`, verify changes manually:
 - `/?push=<id>` triggers a flow or routine.
 - `POST /api/hooks/push` supports simulated schedules and `alarm`.
 - `POST /api/debug/time` and `GET /api/debug/schedule` help with time and schedule debugging.
@@ -47,17 +53,18 @@ There is no unit test suite. Verify changes manually:
 
 ## Deployment target
 
-We develop here, but production runs on **piserve**: `ssh piserve`, checkout at `~/work/girls_gamiefied_routine`, deployed with `deploy-rpi.sh`. The Pi's `backend/data.json` and `backend/state.json` hold the **live family data** (star balances, history). They have uncommitted local changes there, so never overwrite them with the dev copies, and never `git checkout`/`reset` them on the Pi. Any config or schema change must stay compatible with that existing data, or come with a migration step.
+We develop here, but production runs on **piserve**: `ssh piserve`, checkout at `~/work/girls_gamiefied_routine`, deployed with `deploy-rpi.sh`. The Pi's `backend/data.json`, `backend/routine.db` (and, until migrated, `backend/state.json` + `backend/logs.jsonl`) hold the **live family data** (star balances, history). They have uncommitted local changes there, so never overwrite them with the dev copies, and never `git checkout`/`reset` them on the Pi. Any config or schema change must stay compatible with that existing data, or come with a migration step.
 
 Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.github/workflows/docker-build.yml`, manual dispatch). It builds multi-arch images to `ghcr.io/nkyriazis/routine-{backend,frontend}`. On the Pi, `deploy-rpi.sh` pulls them using `docker-compose.release.yml`. Don't use dev mode on the Pi, because the polling file watchers use too much CPU.
 
 ## Architecture
 
-### Persistence: config vs. state (backend/src/db.ts)
-- **Config** lives in `data.json` (`DATA_FILE`). It holds users, tasks, routines, routineTasks, routineAssignments, flows, schedules, rewards, chores, schoolLevels, subjects and settings.timezone. `readDb()` re-reads it from disk on **every call**, so config is hot-reloadable. It is validated with AJV against `data.schema.json`. On failure, `readDb()` broadcasts `CONFIG_ERROR` and returns an empty DB.
-- **Runtime state** lives in `state.json` (`STATE_FILE`) and is validated with `state.schema.json`. It holds userStars, routineExecutions, taskExecutions, spendings, starTransfers and choreInstances. It lives in memory as `globalState`, and `readDb()` merges it with the config. `writeDb()` updates `globalState` and calls `scheduleSave()`, which persists with a **10 s debounce**. `flushPendingSave()` runs on SIGINT.
-- **School exercises** have separate files: `exercises.json` and `exercise-categories.json`, each with its own schema.
-- **Action log**: `logAction()` appends to `logs.jsonl` (`LOGS_FILE`).
+### Persistence: config vs. state
+- **Config** (`config.ts`) lives in `data.json` (`DATA_FILE`) and `exercises.json` (`EXERCISES_FILE`), validated with AJV against `data.schema.json` / `exercises.schema.json` (`schemas.ts`). It is cached in memory (deep-frozen) and re-read only at startup, after an admin/MCP edit (`writeRawConfig`) and when the file changes on disk (stat polling). An invalid file never replaces the cache: the last valid config stays live and the error is broadcast as `CONFIG_ERROR` and shown by `/api/admin/validation-status`. Use `config()` to read it, `readRawConfig()` for a mutable copy.
+- **Runtime state and history** (`store.ts`) live in SQLite at `DB_FILE` (default: `routine.db` next to `data.json`, i.e. on the `/data` volume): user stars, routine/task executions, spendings, transfers, chore instances, exercise sessions/assignments and the action log. Every change is written through immediately (WAL, `synchronous=FULL`); there is no in-memory copy. Multi-step changes use `store.transaction()`. Schema changes are appended to `MIGRATIONS` in store.ts. If the data model changes, update `shared/types.ts`, the table columns in store.ts (new migration) and `state.schema.json`.
+- **Legacy files** (`migrate.ts`): on first start the backend imports `state.json` (`STATE_FILE`) and `logs.jsonl` (`LOGS_FILE`) once, in one transaction, and records it in the `meta` table. It never writes those files. `npm run migrate` runs the same import and prints a record-by-record verification.
+- `/api/admin/state` reads and replaces the whole state as a `StateSnapshot` (the old state.json shape, validated by `state.schema.json`).
+- **Action log**: `logAction()` inserts into the `action_logs` table; `/api/debug/logs` returns the newest entries.
 - The backend is the source of truth. Mutations go through db.ts helpers such as `awardStars`, `claimChore`/`attemptChore`/`confirmChore`/`rejectChore` and `triggerAction`, and these then call `broadcast()`.
 
 ### Real-time flow

@@ -32,6 +32,9 @@ export interface User {
   routines: Routine[];
 }
 
+// The user fields embedded in API responses (config user + live balance).
+export type UserSummary = Pick<User, 'id' | 'name' | 'avatar' | 'color' | 'stars'>;
+
 export type FlowAction = 
   | { type: 'routine'; userId: string; routineId: string }
   | { type: 'flow'; flowId: string };
@@ -75,7 +78,7 @@ export interface Spending {
   cost: number;
   createdAt: string;
   status: 'pending' | 'done' | 'revoked';
-  user?: User;
+  user?: UserSummary;
   reward?: Reward;
 }
 
@@ -87,8 +90,8 @@ export interface StarTransfer {
   createdAt: string;
   status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   resolvedAt?: string;
-  fromUser?: User;
-  toUser?: User;
+  fromUser?: UserSummary;
+  toUser?: UserSummary;
 }
 
 // Chores and Bonus Activities System
@@ -236,6 +239,46 @@ export interface ExerciseSession {
   startedAt: string;
   completedAt?: string;
   totalStarsEarned: Record<string, number>; // keyed by userId
+}
+
+// --- Runtime history (persisted in the backend database) ---
+
+export interface RoutineExecution {
+  id: string;
+  userId: string;
+  routineId: string;
+  startedAt: string;
+  totalStars: number;
+  completedAt?: string;
+}
+
+export interface TaskExecution {
+  id: string;
+  executionId: string;
+  taskId: string;
+  duration: number; // seconds
+  isOnTime: boolean;
+  completedAt: string;
+}
+
+export interface ActionLog {
+  id: string;
+  timestamp: string;
+  type: string;
+  details: unknown;
+}
+
+// Full runtime state, in the shape of the legacy state.json. Used by the admin
+// state editor and by the one-time import from state.json.
+export interface StateSnapshot {
+  userStars: Record<string, number>;
+  routineExecutions: RoutineExecution[];
+  taskExecutions: TaskExecution[];
+  spendings: Spending[];
+  starTransfers: StarTransfer[];
+  choreInstances: ChoreInstance[];
+  exerciseSessions: ExerciseSession[];
+  exerciseAssignments: ExerciseAssignment[];
 }
 
 // --- Realtime protocol (backend → frontend WebSocket messages) ---

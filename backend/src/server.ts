@@ -10,22 +10,25 @@ import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
-import { Spending, StarTransfer } from '../../shared/types';
+import { Spending, StarTransfer, StateSnapshot } from '../../shared/types';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 
 // Import shared database layer
-import { 
-  DATA_FILE, STATE_FILE, LOGS_FILE, globalState, loadSchema, loadState, readDb, commitState, wsConnections, 
-  broadcast, scheduleSave, setLastConfigError, setLastStateError, lastConfigError, lastStateError,
-  persistState, flushPendingSave, triggerAction, getEnrichedSpendings, getEnrichedTransfers, readLastLogs, 
-  MAX_LOGS, awardStars, adjustUserStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore, attemptChore, confirmChore,
-  rejectChore, validateConfig, validateState, EXERCISES_SCHEMA_FILE, readExercises, readExerciseCategories, readRawExercises, writeRawExercises,
-  startExerciseSession, submitExerciseAnswer, cancelExerciseSession, generateChoreInstances, expireChores,
-  cleanupOldChoreInstances, logAction, getAvailableBalance,
-  getExerciseAssignments, answerExerciseAssignment
+import {
+  store, wsConnections, broadcast, triggerAction, completeTask, getEnrichedSpendings, getEnrichedTransfers,
+  readLastLogs, MAX_LOGS, adjustUserStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
+  attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
+  writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
+  cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
+  logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, usersWithStars,
+  stateSnapshot, replaceState, fullSyncPayload
 } from './db';
+import { config, configError, reloadConfig, watchConfig } from './config';
+import { importLegacy } from './migrate';
+import { LOGS_FILE, STATE_FILE } from './paths';
+import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 
 // Import MCP server
 import { mcpServer } from './mcp';
@@ -52,14 +55,14 @@ mcpServer.connect(mcpTransport).catch((err: any) => {
 
 // Scheduler Logic
 async function checkSchedules(date: Date) {
-  const db = await readDb();
-  const timezone = db.settings?.timezone || 'Europe/Athens';
+  const { schedules, settings } = config();
+  const timezone = settings?.timezone || 'Europe/Athens';
   
   const localTime = DateTime.fromJSDate(date).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
   console.log(`Checking schedules for: ${localTime} (${timezone})`);
   
   // Check regular schedules (flows, routines)
-  for (const schedule of db.schedules) {
+  for (const schedule of schedules) {
     try {
       const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
         currentDate: new Date(date.getTime() - 1000),
@@ -73,7 +76,7 @@ async function checkSchedules(date: Date) {
       if (isMatch) {
         console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
         logAction('SCHEDULE_MATCH', { scheduleId: schedule.id, targetId: schedule.targetId, cron: schedule.cron, time: localTime });
-        await triggerAction(schedule.targetId, db, `schedule:${schedule.id}`);
+        triggerAction(schedule.targetId, `schedule:${schedule.id}`);
       }
     } catch (err) {
       console.error(`Error checking schedule ${schedule.id}:`, err);
@@ -83,7 +86,7 @@ async function checkSchedules(date: Date) {
   
   // Generate new chore instances based on their cron schedules
   try {
-    const newInstances = await generateChoreInstances();
+    const newInstances = generateChoreInstances();
     if (newInstances.length > 0) {
       console.log(`Generated ${newInstances.length} new chore instance(s)`);
     }
@@ -94,7 +97,7 @@ async function checkSchedules(date: Date) {
   
   // Expire overdue chores
   try {
-    const { expired, notified } = await expireChores();
+    const { expired, notified } = expireChores();
     if (expired.length > 0) {
       console.log(`Expired ${expired.length} chore(s), notified ${notified.length} user(s)`);
     }
@@ -106,7 +109,7 @@ async function checkSchedules(date: Date) {
   // Cleanup old instances once per hour (at minute 0)
   if (new Date().getMinutes() === 0) {
     try {
-      const removed = await cleanupOldChoreInstances();
+      const removed = cleanupOldChoreInstances();
       if (removed > 0) {
         console.log(`Cleaned up ${removed} old chore instance(s)`);
       }
@@ -154,80 +157,51 @@ function simpleCronToTime(cron: string): string | undefined {
   return undefined;
 }
 
-// User routes
+// Cron of the schedule that starts a routine assignment: directly, or via a flow that runs it.
+function assignmentCron(assignmentId: string): string | null {
+  const { schedules, flows } = config();
+  const direct = schedules.find(s => s.type === 'routine' && s.targetId === assignmentId);
+  if (direct) return direct.cron;
+
+  const triggeringFlow = flows.find(f => f.steps.some(step =>
+    (step.type === 'routine' && step.routineId === assignmentId) ||
+    (step.type === 'parallel' && step.actions.some(a => a.type === 'routine' && a.routineId === assignmentId))
+  ));
+  if (!triggeringFlow) return null;
+  return schedules.find(s => s.type === 'flow' && s.targetId === triggeringFlow.id)?.cron ?? null;
+}
+
+// User routes: users with their star balance and their assigned routines
 server.get('/api/users', async (request, reply) => {
   try {
-    const db = await readDb();
-    
-    const users = db.users.map((user: any) => {
-      const assignments = db.routineAssignments
-        .filter((a: any) => a.userId === user.id)
-        .map((assignment: any) => {
-          const routine = db.routines.find((r: any) => r.id === assignment.routineId);
-          if (!routine) return null;
+    const { routineAssignments, routines, routineTasks, tasks } = config();
 
-          let cronExpression = null;
-          
-          const directSchedule = db.schedules.find((s: any) => s.type === 'routine' && s.targetId === assignment.id);
-          if (directSchedule) {
-            cronExpression = directSchedule.cron;
-          } else {
-            const triggeringFlow = db.flows.find((f: any) => {
-              return f.steps.some((step: any) => {
-                if (step.type === 'routine' && step.routineId === assignment.id) return true;
-                if (step.type === 'parallel') {
-                  return step.actions.some((action: any) => action.type === 'routine' && action.routineId === assignment.id);
-                }
-                return false;
-              });
-            });
-            
-            if (triggeringFlow) {
-              const flowSchedule = db.schedules.find((s: any) => s.type === 'flow' && s.targetId === triggeringFlow.id);
-              if (flowSchedule) {
-                cronExpression = flowSchedule.cron;
-              }
-            }
-          }
-
-          const routineTasks = db.routineTasks
-            .filter((rt: any) => rt.routineId === routine.id)
-            .sort((a: any, b: any) => a.order - b.order)
-            .map((rt: any) => {
-              const task = db.tasks.find((t: any) => t.id === rt.taskId);
-              return { ...rt, task };
-            });
-
-          return {
-            ...assignment,
-            cronExpression,
-            scheduleTime: cronExpression ? simpleCronToTime(cronExpression) : null,
-            routine: { ...routine, tasks: routineTasks }
-          };
-        })
-        .filter((a: any) => a !== null);
-
-      return { ...user, assignments };
-    });
-
-    return users.map((user: any) => ({
+    return usersWithStars().map(user => ({
       ...user,
-      routines: user.assignments.map((assignment: any) => ({
-        id: assignment.id,
-        title: assignment.routine.title,
-        scheduleTime: assignment.scheduleTime,
-        cronExpression: assignment.cronExpression,
-        themeColor: assignment.themeColor || assignment.routine.themeColor,
-        icon: assignment.routine.icon,
-        tasks: assignment.routine.tasks.map((rt: any) => ({
-          id: rt.task.id,
-          title: rt.task.title,
-          icon: rt.task.icon,
-          durationSeconds: rt.durationSeconds,
-          routineId: assignment.id
-        }))
-      })),
-      assignments: undefined
+      routines: routineAssignments
+        .filter(a => a.userId === user.id)
+        .flatMap(assignment => {
+          const routine = routines.find(r => r.id === assignment.routineId);
+          if (!routine) return [];
+          const cronExpression = assignmentCron(assignment.id);
+          return [{
+            id: assignment.id,
+            title: routine.title,
+            scheduleTime: cronExpression ? simpleCronToTime(cronExpression) : null,
+            cronExpression,
+            themeColor: assignment.themeColor || routine.themeColor,
+            icon: routine.icon,
+            tasks: routineTasks
+              .filter(rt => rt.routineId === routine.id)
+              .sort((a, b) => a.order - b.order)
+              .flatMap(rt => {
+                const task = tasks.find(t => t.id === rt.taskId);
+                return task
+                  ? [{ id: task.id, title: task.title, icon: task.icon, durationSeconds: rt.durationSeconds, routineId: assignment.id }]
+                  : [];
+              })
+          }];
+        })
     }));
   } catch (error) {
     request.log.error(error);
@@ -238,8 +212,7 @@ server.get('/api/users', async (request, reply) => {
 // Flow routes
 server.get('/api/flows', async (request, reply) => {
   try {
-    const db = await readDb();
-    return db.flows;
+    return config().flows;
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
@@ -249,8 +222,7 @@ server.get('/api/flows', async (request, reply) => {
 // Rewards routes
 server.get('/api/rewards', async (request, reply) => {
   try {
-    const db = await readDb();
-    return db.rewards;
+    return config().rewards;
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
@@ -261,7 +233,7 @@ server.get('/api/rewards', async (request, reply) => {
 server.get('/api/chores', async (request, reply) => {
   try {
     const { userId } = request.query as { userId?: string };
-    const { chores, instances } = await getChoresWithInstances(userId);
+    const { chores, instances } = getChoresWithInstances(userId);
     return { chores, instances };
   } catch (error) {
     request.log.error(error);
@@ -278,7 +250,7 @@ server.post('/api/chores/:instanceId/claim', async (request, reply) => {
       return reply.code(400).send({ error: 'userId is required' });
     }
     
-    const instance = await claimChore(instanceId, userId);
+    const instance = claimChore(instanceId, userId);
     return instance;
   } catch (error) {
     request.log.error(error);
@@ -297,7 +269,7 @@ server.post('/api/chores/:instanceId/attempt', async (request, reply) => {
   try {
     const { instanceId } = request.params as { instanceId: string };
     
-    const instance = await attemptChore(instanceId);
+    const instance = attemptChore(instanceId);
     return instance;
   } catch (error) {
     request.log.error(error);
@@ -317,7 +289,7 @@ server.post('/api/chores/:instanceId/confirm', async (request, reply) => {
     const { instanceId } = request.params as { instanceId: string };
     const { stars } = request.body as { stars?: number };
     
-    const instance = await confirmChore(instanceId, stars);
+    const instance = confirmChore(instanceId, stars);
     return instance;
   } catch (error) {
     request.log.error(error);
@@ -336,7 +308,7 @@ server.post('/api/chores/:instanceId/reject', async (request, reply) => {
   try {
     const { instanceId } = request.params as { instanceId: string };
     
-    const instance = await rejectChore(instanceId);
+    const instance = rejectChore(instanceId);
     return instance;
   } catch (error) {
     request.log.error(error);
@@ -354,8 +326,7 @@ server.post('/api/chores/:instanceId/reject', async (request, reply) => {
 // Spendings routes
 server.get('/api/spendings', async (request, reply) => {
   try {
-    const enriched = await getEnrichedSpendings();
-    return enriched;
+    return getEnrichedSpendings();
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
@@ -365,19 +336,12 @@ server.get('/api/spendings', async (request, reply) => {
 server.post('/api/spendings', async (request, reply) => {
   const { userId, rewardId } = request.body as { userId: string, rewardId: string };
   
-  const db = await readDb();
-  const user = db.users.find(u => u.id === userId);
-  const reward = db.rewards.find(r => r.id === rewardId);
+  const user = config().users.find(u => u.id === userId);
+  const reward = config().rewards.find(r => r.id === rewardId);
 
   if (!user || !reward) {
     return reply.code(404).send({ error: 'User or Reward not found' });
   }
-
-  const newBalance = trySpendStars(userId, reward.cost);
-  if (newBalance === null) {
-    return reply.code(400).send({ error: 'Not enough stars' });
-  }
-  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance });
 
   const spending: Spending = {
     id: randomUUID(),
@@ -388,16 +352,22 @@ server.post('/api/spendings', async (request, reply) => {
     status: 'pending'
   };
 
-  db.spendings.push(spending);
-  await commitState(db);
-
-  const enrichedSpendings = await getEnrichedSpendings();
+  // Deduction and record are one transaction: stars can't vanish without a spending.
+  const newBalance = store.transaction(() => {
+    const balance = trySpendStars(userId, reward.cost);
+    if (balance !== null) store.spendings.put(spending);
+    return balance;
+  });
+  if (newBalance === null) {
+    return reply.code(400).send({ error: 'Not enough stars' });
+  }
+  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance });
 
   broadcast({
     type: 'SYNC_STATE',
     payload: {
-      userStars: globalState.userStars,
-      spendings: enrichedSpendings
+      userStars: store.allStars(),
+      spendings: getEnrichedSpendings()
     }
   });
 
@@ -408,41 +378,36 @@ server.put('/api/spendings/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
   const { status } = request.body as { status: 'pending' | 'done' | 'revoked' };
 
-  const db = await readDb();
-  const spending = db.spendings.find(s => s.id === id);
+  const spending = store.spendings.get(id);
 
   if (!spending) {
     return reply.code(404).send({ error: 'Spending not found' });
   }
 
-  if (status === 'revoked' && spending.status !== 'revoked') {
-    const user = db.users.find(u => u.id === spending.userId);
-    if (user) {
+  const updated = { ...spending, status };
+  store.transaction(() => {
+    // Revoking refunds the stars
+    if (status === 'revoked' && spending.status !== 'revoked' && config().users.some(u => u.id === spending.userId)) {
       adjustUserStars(spending.userId, spending.cost);
     }
-  }
-
-  spending.status = status;
-  await commitState(db);
-
-  const enrichedSpendings = await getEnrichedSpendings();
+    store.spendings.put(updated);
+  });
 
   broadcast({
     type: 'SYNC_STATE',
     payload: {
-      userStars: globalState.userStars,
-      spendings: enrichedSpendings
+      userStars: store.allStars(),
+      spendings: getEnrichedSpendings()
     }
   });
 
-  return spending;
+  return updated;
 });
 
 // Star Transfers routes
 server.get('/api/transfers', async (request, reply) => {
   try {
-    const enriched = await getEnrichedTransfers();
-    return enriched;
+    return getEnrichedTransfers();
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
@@ -452,9 +417,8 @@ server.get('/api/transfers', async (request, reply) => {
 server.post('/api/transfers', async (request, reply) => {
   const { fromUserId, toUserId, amount } = request.body as { fromUserId: string, toUserId: string, amount: number };
   
-  const db = await readDb();
-  const fromUser = db.users.find(u => u.id === fromUserId);
-  const toUser = db.users.find(u => u.id === toUserId);
+  const fromUser = config().users.find(u => u.id === fromUserId);
+  const toUser = config().users.find(u => u.id === toUserId);
 
   if (!fromUser || !toUser) {
     return reply.code(404).send({ error: 'User not found' });
@@ -483,19 +447,16 @@ server.post('/api/transfers', async (request, reply) => {
     status: 'pending'
   };
 
-  db.starTransfers.push(transfer);
-  await commitState(db);
+  store.starTransfers.put(transfer);
 
   logAction('TRANSFER_REQUEST', { fromUserId, toUserId, amount, transferId: transfer.id });
-
-  const enrichedTransfers = await getEnrichedTransfers();
 
   broadcast({
     type: 'SYNC_STATE',
     payload: {
-      userStars: globalState.userStars,
-      spendings: await getEnrichedSpendings(),
-      starTransfers: enrichedTransfers
+      userStars: store.allStars(),
+      spendings: getEnrichedSpendings(),
+      starTransfers: getEnrichedTransfers()
     }
   });
 
@@ -506,8 +467,7 @@ server.put('/api/transfers/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
   const { action } = request.body as { action: 'approve' | 'reject' | 'cancel' };
 
-  const db = await readDb();
-  const transfer = db.starTransfers.find(t => t.id === id);
+  const transfer = store.starTransfers.get(id);
 
   if (!transfer) {
     return reply.code(404).send({ error: 'Transfer not found' });
@@ -517,46 +477,39 @@ server.put('/api/transfers/:id', async (request, reply) => {
     return reply.code(400).send({ error: 'Transfer is already resolved' });
   }
 
-  const fromUser = db.users.find(u => u.id === transfer.fromUserId);
-  const toUser = db.users.find(u => u.id === transfer.toUserId);
-
-  if (!fromUser || !toUser) {
+  const users = config().users;
+  if (!users.some(u => u.id === transfer.fromUserId) || !users.some(u => u.id === transfer.toUserId)) {
     return reply.code(404).send({ error: 'User not found' });
   }
 
-  if (action === 'approve') {
-    // Deduct from sender and add to receiver
-    adjustUserStars(transfer.fromUserId, -transfer.amount);
-    adjustUserStars(transfer.toUserId, transfer.amount);
-    transfer.status = 'approved';
-    logAction('TRANSFER_APPROVED', { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
-  } else if (action === 'reject') {
-    // Stars stay with sender (they were locked, now unlocked)
-    transfer.status = 'rejected';
-    logAction('TRANSFER_REJECTED', { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
-  } else if (action === 'cancel') {
-    // Stars stay with sender (they were locked, now unlocked)
-    transfer.status = 'cancelled';
-    logAction('TRANSFER_CANCELLED', { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
-  } else {
+  // Reject/cancel: stars stay with the sender (they were locked, now unlocked)
+  const outcomes = { approve: 'approved', reject: 'rejected', cancel: 'cancelled' } as const;
+  const status = outcomes[action];
+  if (!status) {
     return reply.code(400).send({ error: 'Invalid action' });
   }
 
-  transfer.resolvedAt = new Date().toISOString();
-  await commitState(db);
-
-  const enrichedTransfers = await getEnrichedTransfers();
+  const resolved: StarTransfer = { ...transfer, status, resolvedAt: new Date().toISOString() };
+  store.transaction(() => {
+    if (status === 'approved') {
+      // Deduct from sender and add to receiver
+      adjustUserStars(transfer.fromUserId, -transfer.amount);
+      adjustUserStars(transfer.toUserId, transfer.amount);
+    }
+    store.starTransfers.put(resolved);
+  });
+  logAction(`TRANSFER_${status.toUpperCase()}`, { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
 
   broadcast({
     type: 'SYNC_STATE',
     payload: {
-      userStars: globalState.userStars,
-      spendings: await getEnrichedSpendings(),
-      starTransfers: enrichedTransfers
+      userStars: store.allStars(),
+      spendings: getEnrichedSpendings(),
+      starTransfers: getEnrichedTransfers()
     }
   });
 
-  return transfer;
+  return resolved;
 });
 
 // Admin: Upload file
@@ -594,12 +547,12 @@ server.post('/api/hooks/push', async (request, reply) => {
 
     logAction('PUSH_HOOK', { id });
 
-    const db = await readDb();
+    const { schedules, settings } = config();
 
-    const schedule = db.schedules.find(s => s.targetId === id);
+    const schedule = schedules.find(s => s.targetId === id);
 
     if (schedule) {
-      const timezone = db.settings?.timezone || 'Europe/Athens';
+      const timezone = settings?.timezone || 'Europe/Athens';
       const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
         tz: timezone
       });
@@ -618,7 +571,7 @@ server.post('/api/hooks/push', async (request, reply) => {
       return { success: true, type: 'alarm' };
     }
 
-    const result = await triggerAction(id, db, 'push_hook');
+    const result = triggerAction(id, 'push_hook');
 
     if (result) {
       return result;
@@ -636,41 +589,11 @@ server.post('/api/executions/:executionId/tasks/:taskId/complete', async (reques
   const { executionId, taskId } = request.params as { executionId: string, taskId: string };
   const { duration, isOnTime } = request.body as { duration: number, isOnTime: boolean };
 
-  const db = await readDb();
-  const task = db.tasks.find(t => t.id === taskId);
-
-  if (!task) {
+  const result = completeTask(executionId, taskId, duration, isOnTime);
+  if (!result) {
     return reply.code(404).send({ error: 'Task not found' });
   }
-
-  db.taskExecutions.push({
-    id: randomUUID(),
-    executionId,
-    taskId,
-    duration,
-    isOnTime,
-    completedAt: new Date().toISOString()
-  });
-
-  const execution = db.routineExecutions.find(e => e.id === executionId);
-
-  if (execution) {
-    const starsToAdd = isOnTime ? (task.stars || 0) : (task.lateStars ?? 0);
-
-    execution.totalStars = (execution.totalStars || 0) + starsToAdd;
-
-    await commitState(db);
-
-    if (starsToAdd !== 0) {
-      await awardStars(execution.userId, starsToAdd);
-    }
-
-    logAction('TASK_COMPLETE', { executionId, taskId, starsAwarded: starsToAdd, userId: execution.userId });
-
-    return { success: true, starsAwarded: starsToAdd };
-  }
-
-  return { success: false, error: 'Execution not found' };
+  return result;
 });
 
 // Debug endpoint to simulate time
@@ -678,8 +601,7 @@ server.post('/api/debug/time', async (request, reply) => {
   const { time } = request.body as { time: string };
   if (!time) return reply.code(400).send({ error: 'Missing time (ISO string or HH:mm)' });
 
-  const db = await readDb();
-  const timezone = db.settings?.timezone || 'Europe/Athens';
+  const timezone = config().settings?.timezone || 'Europe/Athens';
 
   let date: Date;
   if (time.includes('T')) {
@@ -699,13 +621,13 @@ server.post('/api/debug/time', async (request, reply) => {
 
 // Debug endpoint to check schedule status
 server.get('/api/debug/schedule', async (request, reply) => {
-  const db = await readDb();
-  const timezone = db.settings?.timezone || 'Europe/Athens';
+  const { schedules: configuredSchedules, settings } = config();
+  const timezone = settings?.timezone || 'Europe/Athens';
   const now = new Date();
   
   const localTime = DateTime.fromJSDate(now).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
   
-  const schedules = db.schedules.map((s: any) => {
+  const schedules = configuredSchedules.map(s => {
     try {
       const interval = cronParser.CronExpressionParser.parse(s.cron, {
         currentDate: now,
@@ -739,37 +661,15 @@ server.get('/api/debug/schedule', async (request, reply) => {
 });
 
 // Admin: Get raw data.json
-server.get('/api/admin/data', async (request, reply) => {
-  try {
-    const data = await fs.readFile(DATA_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return reply.code(500).send({ error: 'Failed to read data file' });
-  }
+server.get('/api/admin/data', async () => {
+  return readRawConfig();
 });
 
 // Admin: Validate config against schema
 server.post('/api/admin/validate', async (request, reply) => {
   try {
-    const data = request.body;
-    
-    if (!validateConfig) {
-      return reply.code(503).send({ 
-        valid: false, 
-        error: 'Schema validation not available' 
-      });
-    }
-    
-    const valid = validateConfig(data);
-    
-    if (!valid) {
-      return { 
-        valid: false, 
-        errors: validateConfig.errors 
-      };
-    }
-    
-    return { valid: true };
+    const error = check(dataSchema, request.body, 'Invalid config');
+    return error ? { valid: false, errors: error.errors } : { valid: true };
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
@@ -779,25 +679,8 @@ server.post('/api/admin/validate', async (request, reply) => {
 // Admin: Validate state against schema
 server.post('/api/admin/validate-state', async (request, reply) => {
   try {
-    const data = request.body;
-    
-    if (!validateState) {
-      return reply.code(503).send({ 
-        valid: false, 
-        error: 'State schema validation not available' 
-      });
-    }
-    
-    const valid = validateState(data);
-    
-    if (!valid) {
-      return { 
-        valid: false, 
-        errors: validateState.errors 
-      };
-    }
-    
-    return { valid: true };
+    const error = check(stateSchema, request.body, 'Invalid state');
+    return error ? { valid: false, errors: error.errors } : { valid: true };
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
@@ -807,23 +690,11 @@ server.post('/api/admin/validate-state', async (request, reply) => {
 // Admin: Update data.json
 server.post('/api/admin/data', async (request, reply) => {
   try {
-    const newData = request.body;
-    
-    if (validateConfig) {
-      const valid = validateConfig(newData);
-      if (!valid) {
-        return reply.code(400).send({ 
-          error: 'Validation failed', 
-          errors: validateConfig.errors 
-        });
-      }
+    const error = check(dataSchema, request.body, 'Validation failed');
+    if (error) {
+      return reply.code(400).send({ error: error.message, errors: error.errors });
     }
-    
-    await fs.writeFile(DATA_FILE, JSON.stringify(newData, null, 2));
-    
-    setLastConfigError(null);
-    broadcast({ type: 'CONFIG_UPDATED' });
-    
+    writeRawConfig(request.body);
     return { success: true };
   } catch (error) {
     request.log.error(error);
@@ -833,9 +704,10 @@ server.post('/api/admin/data', async (request, reply) => {
 
 // Admin: Get validation status
 server.get('/api/admin/validation-status', async (request, reply) => {
+  // State lives in the database now, so there is no state file to be invalid.
   return {
-    config: lastConfigError,
-    state: lastStateError
+    config: configError(),
+    state: null
   };
 });
 
@@ -846,26 +718,12 @@ server.get('/api/debug/logs', async (request, reply) => {
 
 // Admin: Get data schema
 server.get('/api/admin/schema/data', async (request, reply) => {
-  try {
-    const schemaPath = path.join(__dirname, '../data.schema.json');
-    const schema = JSON.parse(await fs.readFile(schemaPath, 'utf-8'));
-    return schema;
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Failed to load data schema' });
-  }
+  return dataSchema.schema;
 });
 
 // Admin: Get state schema
 server.get('/api/admin/schema/state', async (request, reply) => {
-  try {
-    const schemaPath = path.join(__dirname, '../state.schema.json');
-    const schema = JSON.parse(await fs.readFile(schemaPath, 'utf-8'));
-    return schema;
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Failed to load state schema' });
-  }
+  return stateSchema.schema;
 });
 
 // Admin: List uploaded files
@@ -885,39 +743,26 @@ server.get('/api/admin/uploads/list', async (request, reply) => {
 
 server.get('/api/exercises', async (request, reply) => {
   const { category } = request.query as { category?: string };
-  let exercises = await readExercises();
-  if (category) {
-    exercises = exercises.filter((e: any) => e.category === category);
-  }
-  return exercises;
+  const exercises = readExercises();
+  return category ? exercises.filter(e => e.category === category) : exercises;
 });
 
 server.get('/api/exercises/categories', async (request, reply) => {
-  const categories = await readExerciseCategories();
-  return categories;
+  return readExerciseCategories();
 });
 
 server.get('/api/exercises/schema', async (request, reply) => {
-  try {
-    const schema = JSON.parse(await fs.readFile(EXERCISES_SCHEMA_FILE, 'utf-8'));
-    return schema;
-  } catch (error) {
-    return reply.code(500).send({ error: 'Failed to load exercises schema' });
-  }
+  return exercisesSchema.schema;
 });
 
 // Admin: Raw exercises CRUD
 server.get('/api/admin/exercises', async (request, reply) => {
-  try {
-    return await readRawExercises();
-  } catch (error) {
-    return reply.code(500).send({ error: 'Failed to read exercises' });
-  }
+  return readRawExercises();
 });
 
 server.post('/api/admin/exercises', async (request, reply) => {
   try {
-    await writeRawExercises(request.body);
+    writeRawExercises(request.body);
     return { success: true };
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -927,7 +772,7 @@ server.post('/api/admin/exercises', async (request, reply) => {
 server.post('/api/exercises/sessions', async (request, reply) => {
   try {
     const { playerIds, categories, totalRounds, questionsPerRound } = request.body as any;
-    const session = await startExerciseSession(playerIds, categories, totalRounds, questionsPerRound);
+    const session = startExerciseSession(playerIds, categories, totalRounds, questionsPerRound);
     return session;
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -936,7 +781,7 @@ server.post('/api/exercises/sessions', async (request, reply) => {
 
 server.get('/api/exercises/sessions/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
-  const session = globalState.exerciseSessions.find(s => s.id === id);
+  const session = getExerciseSession(id);
   if (!session) return reply.code(404).send({ error: 'Session not found' });
   return session;
 });
@@ -945,7 +790,7 @@ server.post('/api/exercises/sessions/:id/answer', async (request, reply) => {
   try {
     const { id } = request.params as { id: string };
     const { userId, exerciseId, answer } = request.body as any;
-    const result = await submitExerciseAnswer(id, userId, exerciseId, answer);
+    const result = submitExerciseAnswer(id, userId, exerciseId, answer);
     return result;
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -955,7 +800,7 @@ server.post('/api/exercises/sessions/:id/answer', async (request, reply) => {
 server.delete('/api/exercises/sessions/:id', async (request, reply) => {
   try {
     const { id } = request.params as { id: string };
-    await cancelExerciseSession(id);
+    cancelExerciseSession(id);
     return { success: true };
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -988,58 +833,22 @@ server.post('/api/exercise-assignments/:id/answer', async (request, reply) => {
   }
 });
 
-// Admin: Get raw state
-server.get('/api/admin/state', async (request, reply) => {
-  return globalState;
+// Admin: Get the full runtime state (from the database, in state.json shape)
+server.get('/api/admin/state', async () => {
+  return stateSnapshot();
 });
 
-// Admin: Update state
+// Admin: Replace the full runtime state
 server.post('/api/admin/state', async (request, reply) => {
+  const error = check(stateSchema, request.body, 'State validation failed');
+  if (error) {
+    return reply.code(400).send({ error: error.message, errors: error.errors });
+  }
   try {
-    const newState = request.body as any;
-    
-    if (validateState) {
-      const valid = validateState(newState);
-      if (!valid) {
-        return reply.code(400).send({ 
-          error: 'State validation failed', 
-          errors: validateState.errors 
-        });
-      }
-    }
-    
-    // Update global state — every field, so a restore can't silently keep stale sections
-    globalState.userStars = newState.userStars || {};
-    globalState.routineExecutions = newState.routineExecutions || [];
-    globalState.taskExecutions = newState.taskExecutions || [];
-    globalState.spendings = newState.spendings || [];
-    globalState.starTransfers = newState.starTransfers || [];
-    globalState.choreInstances = newState.choreInstances || [];
-    globalState.exerciseSessions = newState.exerciseSessions || [];
-    globalState.exerciseAssignments = newState.exerciseAssignments || [];
-
-    scheduleSave();
-
-    setLastStateError(null);
-    const enrichedSpendings = await getEnrichedSpendings();
-    const enrichedTransfers = await getEnrichedTransfers();
-    const { instances: choreInstances } = await getChoresWithInstances();
-    const exerciseAssignments = await getExerciseAssignments();
-
-    broadcast({
-      type: 'SYNC_STATE',
-      payload: {
-        userStars: globalState.userStars,
-        spendings: enrichedSpendings,
-        starTransfers: enrichedTransfers,
-        choreInstances,
-        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt),
-        exerciseAssignments
-      }
-    });
-    
+    await replaceState(request.body as StateSnapshot);
     return { success: true };
-  } catch (error) {
+  } catch (err) {
+    request.log.error(err);
     return reply.code(500).send({ error: 'Failed to update state' });
   }
 });
@@ -1093,28 +902,13 @@ server.all('/mcp/*', handleMcpRequest);
 
 // WebSocket for real-time events
 server.register(async (fastify) => {
-  fastify.get('/ws', { websocket: true }, async (connection: any, req) => {
+  fastify.get('/ws', { websocket: true }, async (connection) => {
     fastify.log.info('Client connected via WebSocket');
     wsConnections.add(connection);
 
-    const enrichedSpendings = await getEnrichedSpendings();
-    const enrichedTransfers = await getEnrichedTransfers();
-    const { instances: choreInstances } = await getChoresWithInstances();
-    const exerciseAssignments = await getExerciseAssignments();
+    connection.send(JSON.stringify({ type: 'SYNC_STATE', payload: await fullSyncPayload() }));
 
-    connection.send(JSON.stringify({
-      type: 'SYNC_STATE',
-      payload: {
-        userStars: globalState.userStars,
-        spendings: enrichedSpendings,
-        starTransfers: enrichedTransfers,
-        choreInstances,
-        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt),
-        exerciseAssignments
-      }
-    }));
-
-    connection.on('message', (message: any) => {
+    connection.on('message', (message: Buffer) => {
       const data = JSON.parse(message.toString());
       fastify.log.info({ msg: 'Received', data });
       connection.send(JSON.stringify({ type: 'ACK', data }));
@@ -1127,17 +921,38 @@ server.register(async (fastify) => {
   });
 });
 
-// Handle graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('Stopping server...');
-  await flushPendingSave();
-  process.exit(0);
-});
+// Graceful shutdown (SIGTERM from `docker stop`, SIGINT from Ctrl-C). Every
+// change is already committed; closing checkpoints the WAL into routine.db.
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.on(signal, async () => {
+    console.log(`${signal}: stopping server...`);
+    await server.close();
+    store.close();
+    process.exit(0);
+  });
+}
 
 const start = async () => {
   try {
-    await loadSchema();
-    await loadState();
+    // First start on a database: import the legacy JSON files (read-only).
+    const legacy = importLegacy(store, { stateFile: STATE_FILE, logsFile: LOGS_FILE });
+    console.log(legacy.imported
+      ? `Imported legacy ${STATE_FILE} and ${LOGS_FILE} into the database`
+      : `Legacy files already imported at ${legacy.importedAt}`);
+
+    const change = reloadConfig();
+    if (change?.type === 'invalid') {
+      console.error('Config is invalid; running with an empty config until it is fixed:', change.error);
+    }
+    watchConfig(change => {
+      if (change.type === 'updated') {
+        console.log('Config changed on disk; reloaded');
+        broadcast({ type: 'CONFIG_UPDATED' });
+      } else {
+        console.error('Config changed on disk but is invalid; keeping the last valid config:', change.error);
+        broadcast({ type: 'CONFIG_ERROR', payload: change.error });
+      }
+    });
     
     // Start the real scheduler (checks every minute)
     cron.schedule('* * * * *', () => {

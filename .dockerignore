@@ -7,3 +7,7 @@ backend/dist
 frontend/dist
 frontend/dev-dist
 *.log
+backend/routine.db*
+backend/state.json
+backend/logs.jsonl
+backups
