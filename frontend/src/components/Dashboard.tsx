@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,11 +16,27 @@ import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
 import { ExercisesDrawer } from './ExercisesDrawer';
 
+// Toast for a chore outcome (from a server event)
+interface ChoreNotification {
+  id: string;
+  type: 'expired' | 'confirmed' | 'rejected';
+  choreTitle: string;
+  userId?: string;
+  starsAwarded?: number;
+}
+
+const TOAST_MS = 5000;
+const CHORE_TOAST_TYPE = { CHORE_CONFIRMED: 'confirmed', CHORE_REJECTED: 'rejected', CHORE_EXPIRED: 'expired' } as const;
+
 export const Dashboard: React.FC = () => {
   const {
     users, flows, rewards, spendings, starTransfers, chores, choreInstances,
-    choreNotifications, dismissChoreNotification, activeExerciseSessions, exerciseAssignments, lastEvent
+    exerciseSessions, exerciseAssignments, subscribe
   } = useGame();
+  const [choreNotifications, setChoreNotifications] = useState<ChoreNotification[]>([]);
+  const dismissChoreNotification = useCallback((id: string) => {
+    setChoreNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
   const { isInstallable, promptInstall } = useInstallPrompt();
@@ -79,33 +95,29 @@ export const Dashboard: React.FC = () => {
     }).length;
   }, [choreInstances, chores]);
 
-  // Handle Game Events
-  useEffect(() => {
-    if (!lastEvent) return;
-
-    const { type, payload } = lastEvent;
-
-    if (type === 'ALARM_START') {
+  // Handle server events
+  useEffect(() => subscribe(event => {
+    if (event.type === 'ALARM_START') {
       // Trigger alarm by creating a temporary flow
-      const alarmFlow = {
+      const alarmFlow: Flow = {
         id: 'temp-alarm',
         triggerTime: '',
-        steps: [{ type: 'alarm' as const, props: { sound: 'melody' } }]
+        steps: [{ type: 'alarm', props: { sound: 'melody' } }]
       };
       setActiveFlows(prev => {
         // Prevent duplicates - remove any existing flow with this ID
         const filtered = prev.filter(f => f.flowId !== 'temp-alarm');
-        return [...filtered, { flowId: 'temp-alarm', flow: alarmFlow as any, stepIndex: 0 }];
+        return [...filtered, { flowId: 'temp-alarm', flow: alarmFlow, stepIndex: 0 }];
       });
-    } else if (type === 'ROUTINE_START') {
-      const { userId, routineId, executionId } = payload;
+    } else if (event.type === 'ROUTINE_START') {
+      const { userId, routineId, executionId } = event.payload;
       setActiveRoutines(prev => {
         // A user can only be in one routine at a time - filter by userId only
         const filtered = prev.filter(r => r.userId !== userId);
         return [...filtered, { userId, routineId, executionId }];
       });
-    } else if (type === 'FLOW_START') {
-      const { flowId, steps } = payload;
+    } else if (event.type === 'FLOW_START') {
+      const { flowId, steps } = event.payload;
       // Use ref to get latest flows
       const flow = flowsRef.current.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
       setActiveFlows(prev => {
@@ -117,7 +129,7 @@ export const Dashboard: React.FC = () => {
       // Execute the first step if it's a parallel step
       const firstStep = steps[0];
       if (firstStep && firstStep.type === 'parallel' && firstStep.actions) {
-        firstStep.actions.forEach((a: any) => {
+        firstStep.actions.forEach(a => {
           if (a.type === 'routine') {
             api.pushNow(a.routineId).catch(console.error);
           } else if (a.type === 'flow') {
@@ -125,8 +137,20 @@ export const Dashboard: React.FC = () => {
           }
         });
       }
+    } else {
+      // A chore was confirmed, rejected or expired: show a toast
+      const { instanceId, choreTitle, userId } = event.payload;
+      const notification: ChoreNotification = {
+        id: `${event.type}-${instanceId}`,
+        type: CHORE_TOAST_TYPE[event.type],
+        choreTitle: choreTitle || '',
+        userId,
+        starsAwarded: event.type === 'CHORE_CONFIRMED' ? event.payload.starsAwarded : undefined
+      };
+      setChoreNotifications(prev => [...prev.filter(n => n.id !== notification.id), notification]);
+      setTimeout(() => dismissChoreNotification(notification.id), TOAST_MS);
     }
-  }, [lastEvent]);
+  }), [subscribe, dismissChoreNotification]);
 
   // Check for URL push parameter
   useEffect(() => {
@@ -412,10 +436,10 @@ export const Dashboard: React.FC = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {activeExerciseSessions.length > 0 && (
+        {exerciseSessions.length > 0 && (
           <ExerciseGame
-            session={activeExerciseSessions[0]}
-            onClose={() => api.cancelExerciseSession(activeExerciseSessions[0].id)}
+            session={exerciseSessions[0]}
+            onClose={() => api.cancelExerciseSession(exerciseSessions[0].id)}
           />
         )}
       </AnimatePresence>

@@ -1,40 +1,36 @@
-import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode, useCallback } from 'react';
-import type { User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, ExerciseSession, ExerciseAssignmentWithExercise, ServerMessage } from '@shared/types';
-import { api } from '../api';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { AppState, Chore, Flow, Reward, ServerEvent, ServerMessage } from '@shared/types';
 
-// Notification for expired chores
-export interface ChoreNotification {
-    id: string;
-    type: 'expired' | 'confirmed' | 'rejected';
-    choreTitle: string;
-    userId?: string;
-    starsAwarded?: number;
-    timestamp: number;
-}
+// The server is the source of truth. It sends the whole AppState on connect and
+// after every change; we replace ours with it. Reconnecting (after a network
+// drop or a server restart) needs nothing extra: the server sends the state on
+// connect. Events are one-off effects, delivered to listeners added with
+// subscribe().
 
-interface GameState {
-    users: User[];
+const RECONNECT_DELAY_MS = 3000;
+
+const EMPTY_STATE: AppState = {
+    config: {
+        users: [], tasks: [], routines: [], routineTasks: [], routineAssignments: [],
+        flows: [], schedules: [], rewards: [], chores: [], settings: { timezone: 'Europe/Athens' }
+    },
+    configError: null,
+    users: [],
+    spendings: [],
+    starTransfers: [],
+    choreInstances: [],
+    exerciseSessions: [],
+    exerciseAssignments: []
+};
+
+type EventListener = (event: ServerEvent) => void;
+
+interface GameState extends AppState {
     flows: Flow[];
     rewards: Reward[];
-    spendings: Spending[];
-    starTransfers: StarTransfer[];
     chores: Chore[];
-    choreInstances: ChoreInstance[];
-    choreNotifications: ChoreNotification[];
-    activeExerciseSessions: ExerciseSession[];
-    exerciseAssignments: ExerciseAssignmentWithExercise[];
-    dismissChoreNotification: (id: string) => void;
     isConnected: boolean;
-    lastEvent: GameEvent | null;
-    refreshData: () => Promise<void>;
-    refreshChores: () => Promise<void>;
-    refreshExerciseAssignments: () => Promise<void>;
-}
-
-interface GameEvent {
-    type: string;
-    payload?: any;
-    timestamp: number;
+    subscribe: (listener: EventListener) => () => void; // returns unsubscribe
 }
 
 const GameContext = createContext<GameState | undefined>(undefined);
@@ -47,272 +43,56 @@ export const useGame = () => {
     return context;
 };
 
-interface GameProviderProps {
-    children: ReactNode;
-}
-
-export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [flows, setFlows] = useState<Flow[]>([]);
-    const [rewards, setRewards] = useState<Reward[]>([]);
-    const [spendings, setSpendings] = useState<Spending[]>([]);
-    const [starTransfers, setStarTransfers] = useState<StarTransfer[]>([]);
-    const [chores, setChores] = useState<Chore[]>([]);
-    const [choreInstances, setChoreInstances] = useState<ChoreInstance[]>([]);
-    const [choreNotifications, setChoreNotifications] = useState<ChoreNotification[]>([]);
-    const [activeExerciseSessions, setActiveExerciseSessions] = useState<ExerciseSession[]>([]);
-    const [exerciseAssignments, setExerciseAssignments] = useState<ExerciseAssignmentWithExercise[]>([]);
+export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [state, setState] = useState<AppState>(EMPTY_STATE);
     const [isConnected, setIsConnected] = useState(false);
-    const [lastEvent, setLastEvent] = useState<GameEvent | null>(null);
+    const listeners = useRef(new Set<EventListener>());
 
-    // Track processed message IDs to prevent duplicate notifications
-    const processedMessages = useRef<Set<string>>(new Set());
-
-    const dismissChoreNotification = useCallback((id: string) => {
-        setChoreNotifications(prev => prev.filter(n => n.id !== id));
+    const subscribe = useCallback((listener: EventListener) => {
+        listeners.current.add(listener);
+        return () => { listeners.current.delete(listener); };
     }, []);
 
-    const refreshChores = useCallback(async () => {
-        try {
-            const { chores: choresData, instances } = await api.getChores();
-            setChores(choresData);
-            setChoreInstances(instances);
-        } catch (error) {
-            console.error('Failed to fetch chores:', error);
-        }
-    }, []);
-
-    const refreshExerciseAssignments = useCallback(async () => {
-        try {
-            const assignments = await api.getExerciseAssignments();
-            setExerciseAssignments(assignments);
-        } catch (error) {
-            console.error('Failed to fetch exercise assignments:', error);
-        }
-    }, []);
-
-    const refreshData = useCallback(async () => {
-        try {
-            const [usersData, flowsData, rewardsData, spendingsData, transfersData] = await Promise.all([
-                api.getUsers(),
-                api.getFlows(),
-                api.getRewards(),
-                api.getSpendings(),
-                api.getTransfers()
-            ]);
-            setUsers(usersData);
-            setFlows(flowsData);
-            setRewards(rewardsData);
-            setSpendings(spendingsData);
-            setStarTransfers(transfersData);
-
-            // Also refresh chores and exercise assignments
-            await refreshChores();
-            await refreshExerciseAssignments();
-        } catch (error) {
-            console.error('Failed to fetch data:', error);
-        }
-    }, [refreshChores, refreshExerciseAssignments]);
-
-    // Initial Fetch
-    useEffect(() => {
-        refreshData();
-    }, [refreshData]);
-
-    // WebSocket Connection
     useEffect(() => {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
-
-        let websocket: WebSocket;
-        let reconnectTimer: ReturnType<typeof setTimeout>;
+        const url = `${protocol}//${window.location.host}/ws`;
+        let socket: WebSocket;
+        let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+        let stopped = false;
 
         const connect = () => {
-            websocket = new WebSocket(wsUrl);
-
-            websocket.onopen = () => {
-                console.log('WebSocket connected');
-                setIsConnected(true);
-            };
-
-            websocket.onclose = () => {
-                console.log('WebSocket disconnected');
+            socket = new WebSocket(url);
+            socket.onopen = () => setIsConnected(true);
+            socket.onclose = () => {
                 setIsConnected(false);
-                // Try to reconnect in 3 seconds
-                reconnectTimer = setTimeout(connect, 3000);
+                if (!stopped) reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
             };
-
-            websocket.onerror = (err) => {
-                console.error('WebSocket error:', err);
-                websocket.close();
-            };
-
-            websocket.onmessage = (event) => {
-                try {
-                    // Typed against the shared protocol: payload shapes are checked
-                    // at compile time on both ends (see ServerMessage in shared/types.ts)
-                    const message: ServerMessage = JSON.parse(event.data);
-                    console.log('WS Message:', message);
-
-                    // Handle Data Sync internally
-                    if (message.type === 'SYNC_STATE') {
-                        const {
-                            userStars,
-                            spendings: newSpendings,
-                            starTransfers: newTransfers,
-                            choreInstances: newChoreInstances,
-                            activeExerciseSessions: newExerciseSessions,
-                            exerciseAssignments: newExerciseAssignments
-                        } = message.payload;
-
-                        if (userStars) {
-                            setUsers(prev => prev.map(u => ({
-                                ...u,
-                                stars: userStars[u.id] ?? u.stars
-                            })));
-                        }
-
-                        if (newSpendings) {
-                            setSpendings(newSpendings);
-                        }
-
-                        if (newTransfers) {
-                            setStarTransfers(newTransfers);
-                        }
-
-                        if (newChoreInstances) {
-                            setChoreInstances(newChoreInstances);
-                        }
-
-                        if (newExerciseSessions) {
-                            setActiveExerciseSessions(newExerciseSessions);
-                        }
-
-                        if (newExerciseAssignments) {
-                            setExerciseAssignments(newExerciseAssignments);
-                        }
-                    } else if (message.type === 'STARS_AWARDED') {
-                        const { userId, totalStars } = message.payload;
-                        setUsers(prev => prev.map(u => u.id === userId ? { ...u, stars: totalStars } : u));
-                    } else if (message.type === 'EXERCISE_SESSION_START') {
-                        setActiveExerciseSessions(prev => [...prev, message.payload]);
-                    } else if (message.type === 'EXERCISE_ANSWER' || message.type === 'EXERCISE_SESSION_COMPLETE') {
-                        const updatedSession = message.type === 'EXERCISE_ANSWER' ? message.payload.session : message.payload;
-                        setActiveExerciseSessions(prev => {
-                            const filtered = prev.filter(s => s.id !== updatedSession.id);
-                            return updatedSession.completedAt ? filtered : [...filtered, updatedSession];
-                        });
-                    } else if (message.type === 'CHORE_EXPIRED') {
-                        // Add notification for expired chore
-                        const { choreTitle, userId, instanceId } = message.payload;
-                        const messageKey = `expired-${instanceId || `${choreTitle}-${userId}`}`;
-
-                        // Deduplicate - React StrictMode may cause double invocations
-                        if (!processedMessages.current.has(messageKey)) {
-                            processedMessages.current.add(messageKey);
-                            const notification: ChoreNotification = {
-                                id: messageKey,
-                                type: 'expired',
-                                choreTitle: choreTitle || '',
-                                userId,
-                                timestamp: Date.now()
-                            };
-                            setChoreNotifications(prev => [...prev, notification]);
-
-                            // Auto-dismiss after 5 seconds and clean up dedup set
-                            setTimeout(() => {
-                                setChoreNotifications(prev => prev.filter(n => n.id !== notification.id));
-                                processedMessages.current.delete(messageKey);
-                            }, 5000);
-                        }
-                    } else if (message.type === 'CHORE_CONFIRMED') {
-                        const { choreTitle, userId, starsAwarded, instanceId } = message.payload;
-                        const messageKey = `confirmed-${instanceId || `${choreTitle}-${userId}`}`;
-
-                        if (!processedMessages.current.has(messageKey)) {
-                            processedMessages.current.add(messageKey);
-                            const notification: ChoreNotification = {
-                                id: messageKey,
-                                type: 'confirmed',
-                                choreTitle: choreTitle || '',
-                                userId,
-                                starsAwarded,
-                                timestamp: Date.now()
-                            };
-                            setChoreNotifications(prev => [...prev, notification]);
-
-                            setTimeout(() => {
-                                setChoreNotifications(prev => prev.filter(n => n.id !== notification.id));
-                                processedMessages.current.delete(messageKey);
-                            }, 5000);
-                        }
-                    } else if (message.type === 'CHORE_REJECTED') {
-                        const { choreTitle, userId, instanceId } = message.payload;
-                        const messageKey = `rejected-${instanceId || `${choreTitle}-${userId}`}`;
-
-                        if (!processedMessages.current.has(messageKey)) {
-                            processedMessages.current.add(messageKey);
-                            const notification: ChoreNotification = {
-                                id: messageKey,
-                                type: 'rejected',
-                                choreTitle: choreTitle || '',
-                                userId,
-                                timestamp: Date.now()
-                            };
-                            setChoreNotifications(prev => [...prev, notification]);
-
-                            setTimeout(() => {
-                                setChoreNotifications(prev => prev.filter(n => n.id !== notification.id));
-                                processedMessages.current.delete(messageKey);
-                            }, 5000);
-                        }
-                    } else if (message.type === 'CONFIG_UPDATED') {
-                        console.log('Config updated, reloading...');
-                        refreshData();
-                    } else if (message.type === 'CONFIG_ERROR') {
-                        console.error('Config validation error:', message.payload);
-                        // Error will be passed to subscribers via lastEvent
-                    } else if (message.type === 'STATE_ERROR') {
-                        console.error('State validation error:', message.payload);
-                        // Error will be passed to subscribers via lastEvent
-                    }
-
-                    // Pass all events to subscribers via lastEvent
-                    // We add a timestamp to ensure even identical events trigger effects
-                    setLastEvent({ ...message, timestamp: Date.now() });
-
-                } catch (err) {
-                    console.error('Error parsing WS message:', err);
+            socket.onmessage = ({ data }) => {
+                const message: ServerMessage = JSON.parse(data);
+                if (message.type === 'STATE') {
+                    setState(message.payload);
+                } else {
+                    listeners.current.forEach(listener => listener(message));
                 }
             };
         };
-
         connect();
 
         return () => {
-            if (websocket) websocket.close();
-            if (reconnectTimer) clearTimeout(reconnectTimer);
+            stopped = true;
+            clearTimeout(reconnectTimer);
+            socket.close();
         };
-    }, [refreshData]);
+    }, []);
 
     return (
         <GameContext.Provider value={{
-            users,
-            flows,
-            rewards,
-            spendings,
-            starTransfers,
-            chores,
-            choreInstances,
-            choreNotifications,
-            activeExerciseSessions,
-            exerciseAssignments,
-            dismissChoreNotification,
+            ...state,
+            flows: state.config.flows,
+            rewards: state.config.rewards,
+            chores: state.config.chores ?? [],
             isConnected,
-            lastEvent,
-            refreshData,
-            refreshChores,
-            refreshExerciseAssignments
+            subscribe
         }}>
             {children}
         </GameContext.Provider>

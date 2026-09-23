@@ -235,12 +235,10 @@ const formatDuration = (seconds: number): string => {
 };
 
 export const ParentDashboard: React.FC = () => {
-    const { users, spendings, starTransfers, flows, chores, choreInstances, lastEvent } = useGame();
+    const { users, spendings, starTransfers, flows, chores, choreInstances, config, configError } = useGame();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'exercises' | 'schedule' | 'config' | 'state' | 'debug' | 'logs'>('dashboard');
     const [toasts, setToasts] = useState<Toast[]>([]);
     const [nextToastId, setNextToastId] = useState(0);
-    const [validationErrors, setValidationErrors] = useState<{ config?: any, state?: any }>({});
-    const [db, setDb] = useState<any>(null);
     const [debugInfo, setDebugInfo] = useState<any>(null);
     const [logs, setLogs] = useState<any[]>([]);
     const [choreStarsOverride, setChoreStarsOverride] = useState<Record<string, number>>({});
@@ -253,11 +251,6 @@ export const ParentDashboard: React.FC = () => {
             setToasts(prev => prev.filter(t => t.id !== id));
         }, 3000);
     };
-
-    // Load full database for trigger list
-    React.useEffect(() => {
-        api.getRawData().then(setDb).catch(console.error);
-    }, [lastEvent]);
 
     // Load debug info when tab is active
     React.useEffect(() => {
@@ -274,19 +267,6 @@ export const ParentDashboard: React.FC = () => {
             });
         }
     }, [activeTab]);
-
-    // Listen for validation errors from WebSocket
-    React.useEffect(() => {
-        if (lastEvent?.type === 'CONFIG_ERROR') {
-            showToast('⚠️ Config validation error detected!', 'error');
-            setValidationErrors(prev => ({ ...prev, config: lastEvent.payload }));
-        } else if (lastEvent?.type === 'STATE_ERROR') {
-            showToast('⚠️ State validation error detected!', 'error');
-            setValidationErrors(prev => ({ ...prev, state: lastEvent.payload }));
-        } else if (lastEvent?.type === 'CONFIG_UPDATED') {
-            setValidationErrors(prev => ({ ...prev, config: null }));
-        }
-    }, [lastEvent]);
 
     const handleMarkDone = async (id: string) => {
         try {
@@ -419,22 +399,13 @@ export const ParentDashboard: React.FC = () => {
                 </div>
             </header>
 
-            {(validationErrors.config || validationErrors.state) && (
+            {configError && (
                 <div className="validation-banner">
                     <div className="banner-icon">⚠️</div>
                     <div className="banner-content">
-                        {validationErrors.config && (
-                            <div className="banner-error">
-                                <strong>Config Validation Error:</strong> {validationErrors.config.message}
-                                <button onClick={() => setValidationErrors(prev => ({ ...prev, config: null }))}>Dismiss</button>
-                            </div>
-                        )}
-                        {validationErrors.state && (
-                            <div className="banner-error">
-                                <strong>State Validation Error:</strong> {validationErrors.state.message}
-                                <button onClick={() => setValidationErrors(prev => ({ ...prev, state: null }))}>Dismiss</button>
-                            </div>
-                        )}
+                        <div className="banner-error">
+                            <strong>Config Validation Error:</strong> {configError.message}
+                        </div>
                     </div>
                 </div>
             )}
@@ -696,40 +667,36 @@ export const ParentDashboard: React.FC = () => {
 
                         <section className="card">
                             <h2>Trigger Actions (Test)</h2>
-                            {!db ? (
-                                <p className="empty">Loading...</p>
-                            ) : (
-                                <div className="trigger-list">
-                                    <div className="trigger-section">
-                                        <h3>Schedules</h3>
-                                        {db.schedules?.map((s: any) => (
-                                            <button key={s.id} onClick={() => handleTrigger(s.targetId)}>
-                                                📅 {s.id} ({s.cron})
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div className="trigger-section">
-                                        <h3>Flows</h3>
-                                        {flows.map(f => (
-                                            <button key={f.id} onClick={() => handleTrigger(f.id)}>
-                                                🔄 {f.id}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div className="trigger-section">
-                                        <h3>Routine Assignments</h3>
-                                        {db.routineAssignments?.map((ra: any) => {
-                                            const user = users.find(u => u.id === ra.userId);
-                                            const routine = db.routines?.find((r: any) => r.id === ra.routineId);
-                                            return (
-                                                <button key={ra.id} onClick={() => handleTrigger(ra.id)}>
-                                                    👤 {user?.name}: {routine?.title || ra.routineId}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                            <div className="trigger-list">
+                                <div className="trigger-section">
+                                    <h3>Schedules</h3>
+                                    {config.schedules?.map((s: any) => (
+                                        <button key={s.id} onClick={() => handleTrigger(s.targetId)}>
+                                            📅 {s.id} ({s.cron})
+                                        </button>
+                                    ))}
                                 </div>
-                            )}
+                                <div className="trigger-section">
+                                    <h3>Flows</h3>
+                                    {flows.map(f => (
+                                        <button key={f.id} onClick={() => handleTrigger(f.id)}>
+                                            🔄 {f.id}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="trigger-section">
+                                    <h3>Routine Assignments</h3>
+                                    {config.routineAssignments?.map((ra: any) => {
+                                        const user = users.find(u => u.id === ra.userId);
+                                        const routine = config.routines?.find((r: any) => r.id === ra.routineId);
+                                        return (
+                                            <button key={ra.id} onClick={() => handleTrigger(ra.id)}>
+                                                👤 {user?.name}: {routine?.title || ra.routineId}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </section>
                     </>
                 )}
@@ -804,13 +771,13 @@ export const ParentDashboard: React.FC = () => {
                     </section>
                 )}
 
-                {activeTab === 'schedule' && db && (
+                {activeTab === 'schedule' && (
                     <section className="card full-width schedule-view">
                         <h2>📅 Ημερήσιο Πρόγραμμα</h2>
                         <p className="schedule-subtitle">Αναλυτική προβολή του data.json</p>
 
                         <div className="schedule-container">
-                            {db.schedules?.sort((a: any, b: any) => {
+                            {[...config.schedules].sort((a: any, b: any) => {
                                 // Sort by cron time (hour:minute)
                                 const getTime = (cron: string) => {
                                     const parts = cron.split(' ');
@@ -820,18 +787,18 @@ export const ParentDashboard: React.FC = () => {
                             }).map((schedule: any) => {
                                 // Resolve what this schedule triggers
                                 const isFlow = schedule.type === 'flow';
-                                const flow = isFlow ? db.flows?.find((f: any) => f.id === schedule.targetId) : null;
-                                const routineAssignment = !isFlow ? db.routineAssignments?.find((ra: any) => ra.id === schedule.targetId) : null;
+                                const flow = isFlow ? config.flows?.find((f: any) => f.id === schedule.targetId) : null;
+                                const routineAssignment = !isFlow ? config.routineAssignments?.find((ra: any) => ra.id === schedule.targetId) : null;
 
                                 // Get involved users and routines
                                 const getRoutineDetails = (routineId: string) => {
-                                    const routine = db.routines?.find((r: any) => r.id === routineId);
+                                    const routine = config.routines?.find((r: any) => r.id === routineId);
                                     if (!routine) return null;
-                                    const tasks = db.routineTasks
+                                    const tasks = config.routineTasks
                                         ?.filter((rt: any) => rt.routineId === routineId)
                                         .sort((a: any, b: any) => a.order - b.order)
                                         .map((rt: any) => {
-                                            const task = db.tasks?.find((t: any) => t.id === rt.taskId);
+                                            const task = config.tasks?.find((t: any) => t.id === rt.taskId);
                                             return { ...rt, task };
                                         }) || [];
                                     return { routine, tasks };
@@ -846,19 +813,19 @@ export const ParentDashboard: React.FC = () => {
                                                 for (const action of step.actions || []) {
                                                     if (action.type === 'routine') {
                                                         // Find the routine assignment
-                                                        const ra = db.routineAssignments?.find((r: any) => r.id === action.routineId);
+                                                        const ra = config.routineAssignments?.find((r: any) => r.id === action.routineId);
                                                         if (ra) {
                                                             participants.push({ userId: ra.userId, routineId: ra.routineId, assignmentId: ra.id });
                                                         }
                                                     } else if (action.type === 'flow') {
-                                                        const nestedFlow = db.flows?.find((f: any) => f.id === action.flowId);
+                                                        const nestedFlow = config.flows?.find((f: any) => f.id === action.flowId);
                                                         if (nestedFlow) {
                                                             processSteps(nestedFlow.steps || []);
                                                         }
                                                     }
                                                 }
                                             } else if (step.type === 'routine') {
-                                                const ra = db.routineAssignments?.find((r: any) => r.id === step.routineId);
+                                                const ra = config.routineAssignments?.find((r: any) => r.id === step.routineId);
                                                 if (ra) {
                                                     participants.push({ userId: ra.userId, routineId: ra.routineId, assignmentId: ra.id });
                                                 }
@@ -879,7 +846,7 @@ export const ParentDashboard: React.FC = () => {
                                             } else if (step.type === 'parallel') {
                                                 for (const action of step.actions || []) {
                                                     if (action.type === 'flow') {
-                                                        const nestedFlow = db.flows?.find((f: any) => f.id === action.flowId);
+                                                        const nestedFlow = config.flows?.find((f: any) => f.id === action.flowId);
                                                         if (nestedFlow) processSteps(nestedFlow.steps || []);
                                                     }
                                                 }
@@ -903,7 +870,7 @@ export const ParentDashboard: React.FC = () => {
                                             <span className="schedule-title">
                                                 {isFlow ? (flow?.id || schedule.targetId) :
                                                     (() => {
-                                                        const routine = db.routines?.find((r: any) => r.id === routineAssignment?.routineId);
+                                                        const routine = config.routines?.find((r: any) => r.id === routineAssignment?.routineId);
                                                         return routine?.title || schedule.targetId;
                                                     })()
                                                 }
@@ -927,7 +894,7 @@ export const ParentDashboard: React.FC = () => {
                                         <div className="schedule-participants">
                                             {isFlow && flow ? (
                                                 getFlowParticipants(flow).map((p, idx) => {
-                                                    const user = db.users?.find((u: any) => u.id === p.userId);
+                                                    const user = config.users?.find((u: any) => u.id === p.userId);
                                                     const details = getRoutineDetails(p.routineId);
                                                     if (!details) return null;
 
@@ -937,7 +904,7 @@ export const ParentDashboard: React.FC = () => {
                                                     return (
                                                         <div key={idx} className="participant-block">
                                                             <div className="participant-header">
-                                                                <SmartIcon value={user?.avatar} />
+                                                                {user && <SmartIcon value={user.avatar} />}
                                                                 <span className="participant-name">{user?.name || p.userId}</span>
                                                                 <span className="routine-name">
                                                                     <SmartIcon value={details.routine.icon} />
@@ -963,7 +930,7 @@ export const ParentDashboard: React.FC = () => {
                                                 })
                                             ) : routineAssignment ? (
                                                 (() => {
-                                                    const user = db.users?.find((u: any) => u.id === routineAssignment.userId);
+                                                    const user = config.users?.find((u: any) => u.id === routineAssignment.userId);
                                                     const details = getRoutineDetails(routineAssignment.routineId);
                                                     if (!details) return <p>Routine not found</p>;
 
@@ -973,7 +940,7 @@ export const ParentDashboard: React.FC = () => {
                                                     return (
                                                         <div className="participant-block">
                                                             <div className="participant-header">
-                                                                <SmartIcon value={user?.avatar} />
+                                                                {user && <SmartIcon value={user.avatar} />}
                                                                 <span className="participant-name">{user?.name || routineAssignment.userId}</span>
                                                                 <span className="routine-name">
                                                                     <SmartIcon value={details.routine.icon} />
@@ -1010,7 +977,7 @@ export const ParentDashboard: React.FC = () => {
                         <div className="rewards-overview">
                             <h3>🎁 Διαθέσιμα Δώρα</h3>
                             <div className="rewards-grid">
-                                {db.rewards?.map((reward: any) => (
+                                {config.rewards?.map((reward: any) => (
                                     <div key={reward.id} className="reward-card">
                                         <SmartIcon value={reward.icon} />
                                         <span className="reward-title">{reward.title}</span>
@@ -1024,8 +991,8 @@ export const ParentDashboard: React.FC = () => {
                         <div className="users-overview">
                             <h3>👨‍👩‍👧‍👦 Χρήστες & Ρουτίνες</h3>
                             <div className="users-grid">
-                                {db.users?.map((user: any) => {
-                                    const assignments = db.routineAssignments?.filter((ra: any) => ra.userId === user.id) || [];
+                                {config.users?.map((user: any) => {
+                                    const assignments = config.routineAssignments?.filter((ra: any) => ra.userId === user.id) || [];
                                     return (
                                         <div key={user.id} className="user-card">
                                             <div className="user-card-header">
@@ -1034,7 +1001,7 @@ export const ParentDashboard: React.FC = () => {
                                             </div>
                                             <div className="user-routines">
                                                 {assignments.map((ra: any) => {
-                                                    const routine = db.routines?.find((r: any) => r.id === ra.routineId);
+                                                    const routine = config.routines?.find((r: any) => r.id === ra.routineId);
                                                     return routine ? (
                                                         <span key={ra.id} className="routine-badge">
                                                             <SmartIcon value={routine.icon} /> {routine.title}
