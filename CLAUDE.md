@@ -60,17 +60,18 @@ Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.gith
 ## Architecture
 
 ### Persistence: config vs. state
-- **Config** (`config.ts`) lives in `data.json` (`DATA_FILE`) and `exercises.json` (`EXERCISES_FILE`), validated with AJV against `data.schema.json` / `exercises.schema.json` (`schemas.ts`). It is cached in memory (deep-frozen) and re-read only at startup, after an admin/MCP edit (`writeRawConfig`) and when the file changes on disk (stat polling). An invalid file never replaces the cache: the last valid config stays live and the error is broadcast as `CONFIG_ERROR` and shown by `/api/admin/validation-status`. Use `config()` to read it, `readRawConfig()` for a mutable copy.
+- **Config** (`config.ts`) lives in `data.json` (`DATA_FILE`) and `exercises.json` (`EXERCISES_FILE`), validated with AJV against `data.schema.json` / `exercises.schema.json` (`schemas.ts`). It is cached in memory (deep-frozen) and re-read only at startup, after an admin/MCP edit (`writeRawConfig`) and when the file changes on disk (stat polling). An invalid file never replaces the cache: the last valid config stays live and the error goes to clients as `configError` in the state and to `/api/admin/validation-status`. Use `config()` to read it, `readRawConfig()` for a mutable copy.
 - **Runtime state and history** (`store.ts`) live in SQLite at `DB_FILE` (default: `routine.db` next to `data.json`, i.e. on the `/data` volume): user stars, routine/task executions, spendings, transfers, chore instances, exercise sessions/assignments and the action log. Every change is written through immediately (WAL, `synchronous=FULL`); there is no in-memory copy. Multi-step changes use `store.transaction()`. Schema changes are appended to `MIGRATIONS` in store.ts. If the data model changes, update `shared/types.ts`, the table columns in store.ts (new migration) and `state.schema.json`.
 - **Legacy files** (`migrate.ts`): on first start the backend imports `state.json` (`STATE_FILE`) and `logs.jsonl` (`LOGS_FILE`) once, in one transaction, and records it in the `meta` table. It never writes those files. `npm run migrate` runs the same import and prints a record-by-record verification.
 - `/api/admin/state` reads and replaces the whole state as a `StateSnapshot` (the old state.json shape, validated by `state.schema.json`).
 - **Action log**: `logAction()` inserts into the `action_logs` table; `/api/debug/logs` returns the newest entries.
-- The backend is the source of truth. Mutations go through db.ts helpers such as `awardStars`, `claimChore`/`attemptChore`/`confirmChore`/`rejectChore` and `triggerAction`, and these then call `broadcast()`.
+- The backend is the source of truth. Mutations go through db.ts helpers such as `awardStars`, `claimChore`/`attemptChore`/`confirmChore`/`rejectChore` and `triggerAction` (REST and MCP alike).
 
-### Real-time flow
-- The initial load uses REST (`frontend/src/api.ts`). Updates arrive over WebSocket `/ws`: on connect, the server sends `SYNC_STATE`, followed by events such as `STARS_AWARDED`, `ROUTINE_START`, `ALARM_START`, `CHORE_*`, `CONFIG_UPDATED`, `CONFIG_ERROR` and `STATE_ERROR`.
-- `broadcast()` sends every message to every client, with no per-user filtering. `frontend/src/context/GameContext.tsx` handles events by `message.type` and filters by userId where needed. New events must be handled there.
-- Messages have the shape `{ type, payload }`.
+### Real-time flow (backend/src/sync.ts)
+- Clients render one `AppState` (`shared/types.ts`) and nothing else. Every store write (the `Store` change hook) and every config change calls `sync.changed()`; the server then rebuilds `appState()` (db.ts) and sends it as a `STATE` message to every client over WebSocket `/ws`. Changes in one event-loop turn are sent once, builds never overlap, and a connecting client gets the state the same way, so reconnects and restarts need nothing special. Mutations don't have to remember to notify anyone.
+- `GameContext.tsx` replaces its state with each `STATE`. There is no initial REST fetch and no per-event patching. To show something new, add it to `AppState`/`appState()`.
+- One-off effects (`ROUTINE_START`, `FLOW_START`, `ALARM_START`, `CHORE_CONFIRMED/REJECTED/EXPIRED`) go out with `sync.notify()` and reach components through `useGame().subscribe()`. They never carry state that isn't also in `AppState`.
+- All messages are `ServerMessage` (`{ type, payload }`), sent to every client with no per-user filtering.
 
 ### Scheduling (backend/src/server.ts)
 - `node-cron` runs `checkSchedules()` every minute. It matches `schedules[].cron` using cron-parser in `settings.timezone` (default Europe/Athens), then calls `triggerAction(targetId)`. It also generates, expires and cleans up chore instances according to each chore's own cron.

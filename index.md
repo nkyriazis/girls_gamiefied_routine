@@ -122,47 +122,27 @@ let globalState: {
 
 ### Frontend: React Context + WebSocket Sync
 
-The frontend mirrors backend state using **GameContext** (`frontend/src/context/GameContext.tsx`):
+The server is the source of truth and clients only render its state (`backend/src/sync.ts`, `frontend/src/context/GameContext.tsx`):
 
-```typescript
-// State managed in GameContext
-const [users, setUsers] = useState<User[]>([]);
-const [flows, setFlows] = useState<Flow[]>([]);
-const [rewards, setRewards] = useState<Reward[]>([]);
-const [spendings, setSpendings] = useState<Spending[]>([]);
-const [lastEvent, setLastEvent] = useState<GameEvent | null>(null);
-```
+1. Every write to runtime state (`store.ts`) and every config change calls `sync.changed()`.
+2. The server rebuilds the whole `AppState` (config, users with stars and routines, spendings, transfers, chores, exercises) and sends it to every client as a `STATE` message. Changes in one event-loop turn go out as one message, and builds never overlap, so the last message is always current.
+3. A client that connects (or reconnects after a drop or a server restart) gets `STATE` the same way. `GameContext` replaces its state with each one; there is no REST fetch and no patching.
 
-**Initialization**:
-1. Component mounts → `useEffect` fetches initial data via REST API
-2. Establishes WebSocket connection to `/ws`
-3. Backend sends `SYNC_STATE` message immediately on connect
-
-**Real-Time Updates**:
-- WebSocket listener receives events (`SYNC_STATE`, `STARS_AWARDED`, `ROUTINE_START`, etc.)
-- Events update local state reactively
-- `lastEvent` triggers with timestamp to ensure identical events fire effects
-
-**Why Context API?**
-- Simple, built-in state management (no Redux needed for this scale)
-- Global state accessible to all components
-- WebSocket connection managed in one place
-- Easy to debug (single state tree)
+One-off effects are separate events and never the only carrier of state.
 
 ---
 
 ## Synchronization & Real-Time Communication
 
-### WebSocket Event Types
+### WebSocket Messages (`ServerMessage` in `shared/types.ts`)
 
-| Event | Direction | Payload | Purpose |
-|-------|-----------|---------|---------|
-| `SYNC_STATE` | Server → Client | `{ userStars, spendings }` | Full state sync on connect or update |
-| `ROUTINE_START` | Server → Client | `{ userId, routineId, executionId }` | Trigger routine UI for a user |
-| `FLOW_START` | Server → Client | `{ flowId, steps }` | Start a multi-step flow (alarm + routines) |
-| `ALARM_START` | Server → Client | `{}` | Trigger global alarm overlay |
-| `STARS_AWARDED` | Server → Client | `{ userId, amount, totalStars }` | Show star animation |
-| `CONFIG_UPDATED` | Server → Client | `{}` | Signal frontend to reload config |
+| Message | Payload | Purpose |
+|---------|---------|---------|
+| `STATE` | `AppState` | Everything clients render; on connect and after every change |
+| `ROUTINE_START` | `{ userId, routineId, executionId }` | Open the routine player for a user |
+| `FLOW_START` | `{ flowId, steps }` | Start a multi-step flow (alarm + routines) |
+| `ALARM_START` | none | Show the global alarm |
+| `CHORE_CONFIRMED` / `CHORE_REJECTED` / `CHORE_EXPIRED` | `{ instanceId, choreId, choreTitle?, userId? }` | Toast on the kids' dashboard |
 
 ### Trigger Mechanisms
 
@@ -258,7 +238,7 @@ Dashboard
       ↓                                      ↓
    API Call: POST /api/executions/{id}/tasks/{taskId}/complete
       ↓                                      ↓
-   Backend: Award Stars → Broadcast STARS_AWARDED
+   Backend: Award Stars → STATE to all clients
       ↓                                      ↓
 [Task 2 Active] → ... → [Last Task Done]
       ↓
@@ -305,9 +285,8 @@ Dashboard
 ### Frontend
 
 **`frontend/src/context/GameContext.tsx`** (State Container)
-- Manages: `users`, `flows`, `rewards`, `spendings`, `isConnected`, `lastEvent`
-- `refreshData()`: Fetches all data via REST API
-- WebSocket client: Auto-reconnects on disconnect, parses events, updates state
+- Holds the server's `AppState` (replaced by every `STATE` message), plus `isConnected` and `subscribe()` for events
+- WebSocket client: reconnects on close; the server sends the state on connect
 - Exported hook: `useGame()` for component access
 
 **`frontend/src/api.ts`** (API Client)
@@ -315,7 +294,7 @@ Dashboard
 - No state management (consumed by GameContext)
 
 **`frontend/src/components/Dashboard.tsx`** (Main UI)
-- Listens to `lastEvent` from GameContext
+- Subscribes to server events via `useGame().subscribe()`
 - Manages: `activeFlow`, `activeRoutines`, `storeUserId`
 - Renders: Clock (idle), InlineRoutinePlayer (active), GlobalAlarm (flows), StoreModal
 
@@ -442,34 +421,15 @@ stateDiagram-v2
 
 ### Event Processing Pipeline
 
-**GameContext** receives WebSocket events → Updates `lastEvent` → Dashboard `useEffect` reacts:
+**GameContext** calls every subscribed listener for each event; Dashboard subscribes once:
 
 ```typescript
-useEffect(() => {
-  if (!lastEvent) return;
-  
-  switch (lastEvent.type) {
-    case 'ALARM_START':
-      // Create synthetic flow with alarm step
-      setActiveFlow({ id: 'temp-alarm', steps: [{ type: 'alarm', props: {...} }] });
-      setCurrentStepIndex(0);
-      break;
-      
-    case 'ROUTINE_START':
-      // Add to activeRoutines with deduplication
-      setActiveRoutines(prev => {
-        const filtered = prev.filter(r => !(r.userId === userId && r.routineId === routineId));
-        return [...filtered, { userId, routineId, executionId }];
-      });
-      break;
-      
-    case 'FLOW_START':
-      // Load flow, reset step index
-      setActiveFlow(flowsRef.current.find(f => f.id === flowId) || payload);
-      setCurrentStepIndex(0);
-      break;
-  }
-}, [lastEvent]);
+useEffect(() => subscribe(event => {
+  if (event.type === 'ALARM_START') { /* add a synthetic alarm flow */ }
+  else if (event.type === 'ROUTINE_START') { /* add to activeRoutines (one per user) */ }
+  else if (event.type === 'FLOW_START') { /* start the flow, run a first parallel step */ }
+  else { /* CHORE_CONFIRMED / REJECTED / EXPIRED: show a toast */ }
+}), [subscribe, dismissChoreNotification]);
 ```
 
 ### Critical Race Conditions & Pitfalls
@@ -671,10 +631,9 @@ Routine state: activeRoutines = [Routine1, Routine2] (still running)
 ### Initial Page Load
 
 1. **Client** opens `/` → React app loads
-2. **GameContext** mounts → Calls `api.getUsers()`, `api.getFlows()`, `api.getRewards()`, `api.getSpendings()`
-3. **Server** receives 4 parallel REST requests → Reads `data.json`, merges `globalState`, responds
-4. **GameContext** establishes WebSocket → Server sends `SYNC_STATE` immediately
-5. **Dashboard** renders clock (idle mode)
+2. **GameContext** mounts → opens the WebSocket
+3. **Server** sends `STATE` (the whole `AppState`) on connect
+4. **Dashboard** renders clock (idle mode)
 
 ### Scheduled Routine Trigger
 
@@ -695,11 +654,8 @@ Routine state: activeRoutines = [Routine1, Routine2] (still running)
 3. **Server** (`POST /api/executions/.../complete`):
    - Creates `TaskExecution` record
    - Finds user from execution → Adds stars to `user.stars`
-   - Updates `globalState` → Schedules debounced persist
-   - Broadcasts `STARS_AWARDED` event
-4. **All Clients** receive event:
-   - Update user star count in `GameContext`
-   - Show floating star animation (only in active routine player)
+   - Writes to the database; the store change sends `STATE` to all clients
+4. **All Clients** show the new star count; the routine player animates the stars from the REST response
 5. **Frontend** advances to next task or shows completion overlay
 
 ### Reward Redemption Flow
@@ -709,8 +665,8 @@ Routine state: activeRoutines = [Routine1, Routine2] (still running)
 3. **Server** (`POST /api/spendings`):
    - Validates: `user.stars >= reward.cost`
    - Deducts stars, creates `Spending` record (status: `pending`)
-   - Updates `globalState`, broadcasts `SYNC_STATE`
-4. **All Clients** refresh spendings list
+   - Writes to the database; the store change sends `STATE` to all clients
+4. **All Clients** show the new balance and the pending spending
 5. **Parent** opens `/parent` → Sees pending spending
 6. **Parent** clicks "Done" → Calls `api.markSpendingDone(id)` → Status changes to `done`
 
@@ -806,10 +762,10 @@ Fully supported on ARM64 architecture:
 - **Benefit**: Reusable components, clear separation of concerns
 - **Implementation**: Props for data, callbacks for actions
 
-### 10. **Optimistic UI Updates**
-- **Pattern**: Frontend updates state immediately, backend confirms via WebSocket
-- **Benefit**: Instant feedback, smooth UX
-- **Implementation**: `setUsers()` before WebSocket `SYNC_STATE` arrives
+### 10. **Server-Driven State**
+- **Pattern**: Clients never patch state; they render the latest `STATE` from the server
+- **Benefit**: Every view converges, including after reconnects and restarts
+- **Implementation**: `backend/src/sync.ts` + `GameContext.tsx`
 
 ---
 
@@ -917,7 +873,7 @@ server.addHook('preHandler', (request, reply, done) => {
 - WebSocket reconnection behavior
 
 #### 🟢 **State Management Enhancement**
-**Current**: Context API with `lastEvent` timestamp trick  
+**Current**: Context API holding the server's `AppState`  
 **Limitation**: Difficult to debug, no time-travel, no middleware  
 **Recommendation** (only if complexity grows):
 - Consider Zustand (lightweight, TypeScript-friendly, dev tools)
