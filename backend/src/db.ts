@@ -1,20 +1,21 @@
 import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
-import type { WebSocket } from 'ws';
 import {
-  Chore, ChoreInstance, Exercise, ExerciseAnswer, ExerciseAssignment, ExerciseAssignmentWithExercise,
-  ExerciseCategoryDef, ExerciseSession, RoutineExecution, ServerMessage, Spending, StarTransfer,
-  StateSnapshot, SyncStatePayload, ActionLog
+  AppState, Chore, ChoreInstance, ConfigUser, DataConfig, Exercise, ExerciseAnswer, ExerciseAssignment,
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, RoutineExecution, Spending,
+  StarTransfer, StateSnapshot, ActionLog, User
 } from '../../shared/types';
 import { exercisePoolProvider, ASSIGNMENTS_PER_DAY } from './exercisePool';
-import { config, ConfigUser, dataConfig, DataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
+import { Sync } from './sync';
 
 // ============================================================================
 // Domain operations. Config comes from the in-memory cache (config.ts); all
 // runtime state and history is read from and written straight to the
-// database (store.ts). Every mutation broadcasts what changed.
+// database (store.ts). Clients follow along through `sync`: every store write
+// and config change sends them a fresh appState().
 // ============================================================================
 
 export { UPLOADS_DIR };
@@ -22,7 +23,8 @@ export { UPLOADS_DIR };
 // Ensure uploads dir exists
 fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(console.error);
 
-export const store = new Store(DB_FILE);
+export const sync = new Sync(appState);
+export const store = new Store(DB_FILE, () => sync.changed());
 
 // Action Logging
 export const MAX_LOGS = 200;
@@ -37,18 +39,18 @@ export function logAction(type: string, details: unknown) {
   }
 }
 
-// WebSocket connections
-export const wsConnections = new Set<WebSocket>();
-
-// Broadcast helper. Only well-formed protocol messages can be sent — adding a
-// new message type or changing a payload starts in shared/types.ts.
-export function broadcast(message: ServerMessage) {
-  const payload = JSON.stringify(message);
-  wsConnections.forEach(ws => {
-    if (ws.readyState === 1) { // OPEN
-      ws.send(payload);
-    }
-  });
+// Everything clients render (see AppState in shared/types.ts).
+export async function appState(): Promise<AppState> {
+  return {
+    config: config(),
+    configError: configError(),
+    users: usersView(),
+    spendings: getEnrichedSpendings(),
+    starTransfers: getEnrichedTransfers(),
+    choreInstances: getChoresWithInstances().instances,
+    exerciseSessions: activeExerciseSessions(),
+    exerciseAssignments: await todaysAssignments()
+  };
 }
 
 // ============================================
@@ -63,6 +65,68 @@ export function usersWithStars(): UserWithStars[] {
   return config().users.map(u => ({ ...u, stars: stars[u.id] ?? 0 }));
 }
 
+// Helper to convert simple cron to HH:mm for frontend display
+function simpleCronToTime(cron: string): string | undefined {
+  try {
+    const parts = cron.split(' ');
+    if (parts.length >= 2) {
+      const min = parts[0];
+      const hour = parts[1];
+      if (!isNaN(Number(min)) && !isNaN(Number(hour))) {
+        return `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
+      }
+    }
+  } catch (e) { return undefined; }
+  return undefined;
+}
+
+// Cron of the schedule that starts a routine assignment: directly, or via a flow that runs it.
+function assignmentCron(assignmentId: string): string | null {
+  const { schedules, flows } = config();
+  const direct = schedules.find(s => s.type === 'routine' && s.targetId === assignmentId);
+  if (direct) return direct.cron;
+
+  const triggeringFlow = flows.find(f => f.steps.some(step =>
+    (step.type === 'routine' && step.routineId === assignmentId) ||
+    (step.type === 'parallel' && step.actions.some(a => a.type === 'routine' && a.routineId === assignmentId))
+  ));
+  if (!triggeringFlow) return null;
+  return schedules.find(s => s.type === 'flow' && s.targetId === triggeringFlow.id)?.cron ?? null;
+}
+
+/** Config users with their balance and assigned routines, as clients render them. */
+export function usersView(): User[] {
+  const { routineAssignments, routines, routineTasks, tasks } = config();
+
+  return usersWithStars().map(user => ({
+    ...user,
+    routines: routineAssignments
+      .filter(a => a.userId === user.id)
+      .flatMap(assignment => {
+        const routine = routines.find(r => r.id === assignment.routineId);
+        if (!routine) return [];
+        const cronExpression = assignmentCron(assignment.id) ?? undefined;
+        return [{
+          id: assignment.id,
+          title: routine.title,
+          scheduleTime: cronExpression ? simpleCronToTime(cronExpression) : undefined,
+          cronExpression,
+          themeColor: assignment.themeColor || routine.themeColor,
+          icon: routine.icon,
+          tasks: routineTasks
+            .filter(rt => rt.routineId === routine.id)
+            .sort((a, b) => a.order - b.order)
+            .flatMap(rt => {
+              const task = tasks.find(t => t.id === rt.taskId);
+              return task
+                ? [{ id: task.id, title: task.title, icon: task.icon, durationSeconds: rt.durationSeconds }]
+                : [];
+            })
+        }];
+      })
+  }));
+}
+
 function findUser(userId: string): UserWithStars | undefined {
   return usersWithStars().find(u => u.id === userId);
 }
@@ -72,11 +136,11 @@ export function readRawConfig(): DataConfig {
   return dataConfig.raw();
 }
 
-/** Validate and save data.json, then tell clients to reload. Throws when invalid. */
+/** Validate and save data.json. Throws when invalid. */
 export function writeRawConfig(data: unknown): void {
   const error = dataConfig.save(data);
   if (error) throw new Error(`Validation failed: ${JSON.stringify(error.errors)}`);
-  broadcast({ type: 'CONFIG_UPDATED' });
+  sync.changed();
 }
 
 export function readRawExercises(): ExercisesConfig {
@@ -86,7 +150,7 @@ export function readRawExercises(): ExercisesConfig {
 export function writeRawExercises(data: unknown): void {
   const error = exercisesConfig.save(data);
   if (error) throw new Error(`Exercises validation failed: ${JSON.stringify(error.errors)}`);
-  broadcast({ type: 'CONFIG_UPDATED' }); // Trigger a reload on all clients
+  sync.changed();
 }
 
 // ============================================
@@ -117,7 +181,7 @@ export function triggerAction(id: string, source: string = 'unknown'): TriggerRe
         existingExecutionId: existingExecution.id
       });
       // Broadcast existing execution instead of creating duplicate
-      broadcast({
+      sync.notify({
         type: 'ROUTINE_START',
         payload: { userId: assignment.userId, routineId: assignment.id, executionId: existingExecution.id }
       });
@@ -134,7 +198,7 @@ export function triggerAction(id: string, source: string = 'unknown'): TriggerRe
     };
     store.routineExecutions.put(execution);
 
-    broadcast({
+    sync.notify({
       type: 'ROUTINE_START',
       payload: {
         userId: assignment.userId,
@@ -150,7 +214,7 @@ export function triggerAction(id: string, source: string = 'unknown'): TriggerRe
 
   if (flow) {
     logAction('TRIGGER_FLOW', { id, flowId: flow.id, source });
-    broadcast({ type: 'FLOW_START', payload: { flowId: flow.id, steps: flow.steps } });
+    sync.notify({ type: 'FLOW_START', payload: { flowId: flow.id, steps: flow.steps } });
     return { success: true, type: 'flow', id };
   }
 
@@ -224,12 +288,8 @@ export function readLastLogs(limit: number): ActionLog[] {
   return store.recentLogs(limit);
 }
 
-// Commit a new star balance and notify all clients. The broadcast is intrinsic
-// to the mutation — a balance can never change without every client hearing
-// about it, so callers have nothing to remember.
 function commitUserStars(userId: string, newTotal: number): number {
   store.setStars(userId, newTotal);
-  broadcast({ type: 'SYNC_STATE', payload: { userStars: store.allStars() } });
   return newTotal;
 }
 
@@ -256,10 +316,6 @@ export function awardStars(userId: string, amount: number): { success: boolean; 
   const newTotal = adjustUserStars(userId, amount);
   logAction('AWARD_STARS', { userId, amount, newBalance: newTotal });
 
-  // Semantic notification on top of the balance sync (which adjustUserStars
-  // already broadcast) — lets the UI celebrate the award if it wants to.
-  broadcast({ type: 'STARS_AWARDED', payload: { userId, amount, totalStars: newTotal } });
-
   return { success: true, newTotal };
 }
 
@@ -282,23 +338,10 @@ export function stateSnapshot(): StateSnapshot {
   return store.snapshot();
 }
 
-// Replace the whole runtime state (validated by the caller) and resync clients.
-export async function replaceState(state: StateSnapshot): Promise<void> {
+// Replace the whole runtime state (validated by the caller).
+export function replaceState(state: StateSnapshot): void {
   store.replaceState(state);
   logAction('STATE_REPLACED', { source: 'admin' });
-  broadcast({ type: 'SYNC_STATE', payload: await fullSyncPayload() });
-}
-
-// Everything a client needs on connect (or after a bulk change).
-export async function fullSyncPayload(): Promise<SyncStatePayload> {
-  return {
-    userStars: store.allStars(),
-    spendings: getEnrichedSpendings(),
-    starTransfers: getEnrichedTransfers(),
-    choreInstances: getChoresWithInstances().instances,
-    activeExerciseSessions: activeExerciseSessions(),
-    exerciseAssignments: await getExerciseAssignments()
-  };
 }
 
 // ============================================
@@ -380,17 +423,6 @@ export function generateChoreInstances(): ChoreInstance[] {
     logAction('CHORE_AVAILABLE', { choreId: chore.id, instanceId: instance.id, expiresAt: instance.expiresAt });
   }
 
-  if (newInstances.length > 0) {
-    broadcastChoreState();
-    for (const instance of newInstances) {
-      const chore = chores.find(c => c.id === instance.choreId);
-      broadcast({
-        type: 'CHORE_AVAILABLE',
-        payload: { instanceId: instance.id, choreId: instance.choreId, choreTitle: chore?.title, expiresAt: instance.expiresAt }
-      });
-    }
-  }
-
   return newInstances;
 }
 
@@ -417,15 +449,11 @@ export function expireChores(): { expired: ChoreInstance[], notified: { userId: 
     // If it was claimed, notify that user
     if (oldStatus === 'claimed' && instance.claimedBy) {
       notified.push({ userId: instance.claimedBy, choreTitle: chore?.title || 'Unknown chore' });
-      broadcast({
+      sync.notify({
         type: 'CHORE_EXPIRED',
         payload: { instanceId: instance.id, choreId: instance.choreId, choreTitle: chore?.title, userId: instance.claimedBy }
       });
     }
-  }
-
-  if (expiredInstances.length > 0) {
-    broadcastChoreState();
   }
 
   return { expired: expiredInstances, notified };
@@ -492,11 +520,6 @@ export function claimChore(instanceId: string, userId: string): ChoreInstance {
   store.choreInstances.put(claimed);
 
   logAction('CHORE_CLAIMED', { instanceId, choreId: instance.choreId, userId });
-  broadcast({
-    type: 'CHORE_CLAIMED',
-    payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId }
-  });
-  broadcastChoreState();
 
   return claimed;
 }
@@ -509,16 +532,10 @@ export function attemptChore(instanceId: string): ChoreInstance {
     throw new Error(`Chore must be claimed first (status: ${instance.status})`);
   }
 
-  const chore = findChore(instance.choreId);
   const attempted: ChoreInstance = { ...instance, status: 'attempted', attemptedAt: new Date().toISOString() };
   store.choreInstances.put(attempted);
 
   logAction('CHORE_ATTEMPTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
-  broadcast({
-    type: 'CHORE_ATTEMPTED',
-    payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId: instance.claimedBy }
-  });
-  broadcastChoreState();
 
   return attempted;
 }
@@ -547,11 +564,10 @@ export function confirmChore(instanceId: string, starsOverride?: number): ChoreI
   });
 
   logAction('CHORE_CONFIRMED', { instanceId, choreId: instance.choreId, userId, starsAwarded: stars });
-  broadcast({
+  sync.notify({
     type: 'CHORE_CONFIRMED',
     payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId, starsAwarded: stars }
   });
-  broadcastChoreState();
 
   return confirmed;
 }
@@ -569,25 +585,12 @@ export function rejectChore(instanceId: string): ChoreInstance {
   store.choreInstances.put(rejected);
 
   logAction('CHORE_REJECTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
-  broadcast({
+  sync.notify({
     type: 'CHORE_REJECTED',
     payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId: instance.claimedBy }
   });
-  broadcastChoreState();
 
   return rejected;
-}
-
-// Broadcast current chore state to all clients
-export function broadcastChoreState() {
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: store.allStars(),
-      spendings: getEnrichedSpendings(),
-      choreInstances: getChoresWithInstances().instances
-    }
-  });
 }
 
 // ============================================
@@ -697,15 +700,12 @@ export function startExerciseSession(
   store.exerciseSessions.put(session);
 
   logAction('EXERCISE_SESSION_START', { sessionId: session.id, players: playerIds, categories });
-  broadcast({ type: 'EXERCISE_SESSION_START', payload: session });
 
   return session;
 }
 
 export function cancelExerciseSession(sessionId: string): void {
-  if (store.exerciseSessions.deleteWhere('id = ?', sessionId) > 0) {
-    broadcast({ type: 'SYNC_STATE', payload: { activeExerciseSessions: activeExerciseSessions() } });
-  }
+  store.exerciseSessions.deleteWhere('id = ?', sessionId);
 }
 
 export function submitExerciseAnswer(
@@ -770,15 +770,6 @@ export function submitExerciseAnswer(
     // Award stars immediately to user balance
     if (isCorrect) awardStars(userId, earnedStars);
   });
-
-  broadcast({
-    type: 'EXERCISE_ANSWER',
-    payload: { sessionId, userId, isCorrect, earnedStars, session }
-  });
-
-  if (session.completedAt) {
-    broadcast({ type: 'EXERCISE_SESSION_COMPLETE', payload: session });
-  }
 
   return { correct: isCorrect, earnedStars, session };
 }
@@ -854,9 +845,13 @@ export async function ensureDailyAssignments(): Promise<boolean> {
   return created;
 }
 
-// Today's assignments, enriched with their exercise definitions.
+// Today's assignments (drawn first if needed), enriched with their exercise definitions.
 export async function getExerciseAssignments(userId?: string): Promise<ExerciseAssignmentWithExercise[]> {
   await ensureDailyAssignments();
+  return todaysAssignments(userId);
+}
+
+async function todaysAssignments(userId?: string): Promise<ExerciseAssignmentWithExercise[]> {
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
 
   const assignments = userId
@@ -868,14 +863,6 @@ export async function getExerciseAssignments(userId?: string): Promise<ExerciseA
     enriched.push({ ...a, exercise: await exercisePoolProvider.getExerciseById(a.exerciseId) });
   }
   return enriched;
-}
-
-export async function broadcastAssignmentState() {
-  const assignments = await getExerciseAssignments();
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: { userStars: store.allStars(), exerciseAssignments: assignments }
-  });
 }
 
 // Answer a daily assignment. Correct -> completed + stars. Wrong -> retry allowed.
@@ -913,20 +900,6 @@ export async function answerExerciseAssignment(
     assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId,
     correct: isCorrect, attempts: assignment.attempts, starsAwarded
   });
-
-  broadcast({
-    type: 'EXERCISE_ASSIGNMENT_ANSWER',
-    payload: {
-      assignmentId,
-      userId: assignment.userId,
-      exerciseId: assignment.exerciseId,
-      exerciseTitle: exercise.title,
-      correct: isCorrect,
-      starsAwarded
-    }
-  });
-
-  await broadcastAssignmentState();
 
   return { correct: isCorrect, starsAwarded, assignment };
 }

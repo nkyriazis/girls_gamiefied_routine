@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
-import { ConfigFile, DataConfig } from '../src/config';
+import { ConfigFile } from '../src/config';
+import { DataConfig } from '../../shared/types';
 import { dataSchema } from '../src/schemas';
 import { tempDir } from './helpers';
 

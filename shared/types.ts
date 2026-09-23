@@ -281,21 +281,84 @@ export interface StateSnapshot {
   exerciseAssignments: ExerciseAssignment[];
 }
 
-// --- Realtime protocol (backend → frontend WebSocket messages) ---
-//
-// Every message the backend broadcasts is a ServerMessage. The backend's
-// broadcast() only accepts this type and the frontend parses incoming frames
-// into it, so a payload shape change (or a brand-new message type) is a
-// compile error on whichever side doesn't handle it — not a silent runtime gap.
+// --- Config (data.json, as described by data.schema.json) ---
 
-// Partial state sync: each field is optional, clients merge what's present.
-export interface SyncStatePayload {
-  userStars?: Record<string, number>;
-  spendings?: Spending[];
-  starTransfers?: StarTransfer[];
-  choreInstances?: ChoreInstance[];
-  activeExerciseSessions?: ExerciseSession[];
-  exerciseAssignments?: ExerciseAssignmentWithExercise[];
+export interface ConfigUser {
+  id: string;
+  name: string;
+  avatar: IconValue;
+  color: string;
+}
+
+export interface ConfigTask {
+  id: string;
+  title: string;
+  icon: IconValue;
+  stars: number;
+  lateStars?: number;
+}
+
+export interface ConfigRoutine {
+  id: string;
+  title: string;
+  themeColor: string;
+  icon: IconValue;
+}
+
+export interface RoutineTask {
+  id: string;
+  routineId: string;
+  taskId: string;
+  order: number;
+  durationSeconds: number;
+}
+
+export interface RoutineAssignment {
+  id: string;
+  userId: string;
+  routineId: string;
+  themeColor?: string;
+}
+
+export interface Schedule {
+  id: string;
+  cron: string;
+  type: 'routine' | 'flow';
+  targetId: string;
+}
+
+export interface DataConfig {
+  users: ConfigUser[];
+  tasks: ConfigTask[];
+  routines: ConfigRoutine[];
+  routineTasks: RoutineTask[];
+  routineAssignments: RoutineAssignment[];
+  flows: Flow[];
+  schedules: Schedule[];
+  rewards: Reward[];
+  chores?: Chore[];
+  settings: { timezone: string };
+}
+
+// --- Realtime protocol (backend -> frontend WebSocket messages) ---
+//
+// State: clients render AppState and nothing else. The server sends the whole
+// of it on connect and again after every change, and clients replace what they
+// have. There is no patching, so a client can't drift: the last STATE message
+// it received is the truth.
+//
+// Events: one-off effects (start a routine, sound the alarm, show a toast).
+// They never carry state that isn't also in AppState.
+
+export interface AppState {
+  config: DataConfig; // the live data.json
+  configError: { message: string; errors: unknown[] } | null; // an invalid edit on disk; the last valid config stays live
+  users: User[]; // config users with their balance and assigned routines
+  spendings: Spending[];
+  starTransfers: StarTransfer[];
+  choreInstances: ChoreInstance[]; // open ones, plus ones closed in the last 24h
+  exerciseSessions: ExerciseSession[]; // active group games
+  exerciseAssignments: ExerciseAssignmentWithExercise[]; // today's
 }
 
 export interface ChoreEventPayload {
@@ -305,27 +368,12 @@ export interface ChoreEventPayload {
   userId?: string;
 }
 
-export type ServerMessage =
-  // State sync — the payload is authoritative for every field it carries
-  | { type: 'SYNC_STATE'; payload: SyncStatePayload }
-  // Semantic notifications — for toasts/celebrations; never the only carrier of state
-  | { type: 'STARS_AWARDED'; payload: { userId: string; amount: number; totalStars: number } }
+export type ServerEvent =
   | { type: 'ROUTINE_START'; payload: { userId: string; routineId: string; executionId: string } }
   | { type: 'FLOW_START'; payload: { flowId: string; steps: FlowStep[] } }
   | { type: 'ALARM_START' }
-  | { type: 'CHORE_AVAILABLE'; payload: ChoreEventPayload & { expiresAt: string } }
-  | { type: 'CHORE_CLAIMED'; payload: ChoreEventPayload }
-  | { type: 'CHORE_ATTEMPTED'; payload: ChoreEventPayload }
   | { type: 'CHORE_CONFIRMED'; payload: ChoreEventPayload & { starsAwarded: number } }
   | { type: 'CHORE_REJECTED'; payload: ChoreEventPayload }
-  | { type: 'CHORE_EXPIRED'; payload: ChoreEventPayload }
-  | { type: 'EXERCISE_SESSION_START'; payload: ExerciseSession }
-  | { type: 'EXERCISE_ANSWER'; payload: { sessionId: string; userId: string; isCorrect: boolean; earnedStars: number; session: ExerciseSession } }
-  | { type: 'EXERCISE_SESSION_COMPLETE'; payload: ExerciseSession }
-  | { type: 'EXERCISE_ASSIGNMENT_ANSWER'; payload: { assignmentId: string; userId: string; exerciseId: string; exerciseTitle: string; correct: boolean; starsAwarded: number } }
-  // Config/state file lifecycle
-  | { type: 'CONFIG_UPDATED' }
-  | { type: 'CONFIG_ERROR'; payload: { message: string; errors: any[] } }
-  | { type: 'STATE_ERROR'; payload: { message: string; errors: any[] } }
-  // Dev echo on the raw socket
-  | { type: 'ACK'; data?: any };
+  | { type: 'CHORE_EXPIRED'; payload: ChoreEventPayload };
+
+export type ServerMessage = { type: 'STATE'; payload: AppState } | ServerEvent;
