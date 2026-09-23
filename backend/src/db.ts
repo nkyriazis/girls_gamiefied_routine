@@ -1,20 +1,21 @@
 import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
-import type { WebSocket } from 'ws';
 import {
-  Chore, ChoreInstance, Exercise, ExerciseAnswer, ExerciseAssignment, ExerciseAssignmentWithExercise,
-  ExerciseCategoryDef, ExerciseSession, RoutineExecution, ServerMessage, Spending, StarTransfer,
-  StateSnapshot, SyncStatePayload, ActionLog
+  AppState, Chore, ChoreInstance, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, Spending,
+  StarTransfer, StateSnapshot, ActionLog, User
 } from '../../shared/types';
 import { exercisePoolProvider, ASSIGNMENTS_PER_DAY } from './exercisePool';
-import { config, ConfigUser, dataConfig, DataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
+import { Sync } from './sync';
 
 // ============================================================================
 // Domain operations. Config comes from the in-memory cache (config.ts); all
 // runtime state and history is read from and written straight to the
-// database (store.ts). Every mutation broadcasts what changed.
+// database (store.ts). Clients follow along through `sync`: every store write
+// and config change sends them a fresh appState().
 // ============================================================================
 
 export { UPLOADS_DIR };
@@ -22,7 +23,8 @@ export { UPLOADS_DIR };
 // Ensure uploads dir exists
 fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(console.error);
 
-export const store = new Store(DB_FILE);
+export const sync = new Sync(appState);
+export const store = new Store(DB_FILE, () => sync.changed());
 
 // Action Logging
 export const MAX_LOGS = 200;
@@ -37,18 +39,20 @@ export function logAction(type: string, details: unknown) {
   }
 }
 
-// WebSocket connections
-export const wsConnections = new Set<WebSocket>();
-
-// Broadcast helper. Only well-formed protocol messages can be sent — adding a
-// new message type or changing a payload starts in shared/types.ts.
-export function broadcast(message: ServerMessage) {
-  const payload = JSON.stringify(message);
-  wsConnections.forEach(ws => {
-    if (ws.readyState === 1) { // OPEN
-      ws.send(payload);
-    }
-  });
+// Everything clients render (see AppState in shared/types.ts).
+export async function appState(): Promise<AppState> {
+  return {
+    config: config(),
+    configError: configError(),
+    users: usersView(),
+    spendings: getEnrichedSpendings(),
+    starTransfers: getEnrichedTransfers(),
+    choreInstances: getChoresWithInstances().instances,
+    exerciseSessions: activeExerciseSessions(),
+    exerciseAssignments: await todaysAssignments(),
+    flowRuns: store.flowRuns.all(),
+    routineRuns: routineRunsView()
+  };
 }
 
 // ============================================
@@ -63,6 +67,75 @@ export function usersWithStars(): UserWithStars[] {
   return config().users.map(u => ({ ...u, stars: stars[u.id] ?? 0 }));
 }
 
+// Helper to convert simple cron to HH:mm for frontend display
+function simpleCronToTime(cron: string): string | undefined {
+  try {
+    const parts = cron.split(' ');
+    if (parts.length >= 2) {
+      const min = parts[0];
+      const hour = parts[1];
+      if (!isNaN(Number(min)) && !isNaN(Number(hour))) {
+        return `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
+      }
+    }
+  } catch (e) { return undefined; }
+  return undefined;
+}
+
+// Cron of the schedule that starts a routine assignment: directly, or via a flow that runs it.
+function assignmentCron(assignmentId: string): string | null {
+  const { schedules, flows } = config();
+  const direct = schedules.find(s => s.type === 'routine' && s.targetId === assignmentId);
+  if (direct) return direct.cron;
+
+  const triggeringFlow = flows.find(f => f.steps.some(step =>
+    (step.type === 'routine' && step.routineId === assignmentId) ||
+    (step.type === 'parallel' && step.actions.some(a => a.type === 'routine' && a.routineId === assignmentId))
+  ));
+  if (!triggeringFlow) return null;
+  return schedules.find(s => s.type === 'flow' && s.targetId === triggeringFlow.id)?.cron ?? null;
+}
+
+/** The tasks of a routine assignment, in order, with their durations. */
+function assignmentTasks(assignmentId: string): (ConfigTask & { durationSeconds: number })[] {
+  const { routineAssignments, routineTasks, tasks } = config();
+  const assignment = routineAssignments.find(a => a.id === assignmentId);
+  if (!assignment) return [];
+  return routineTasks
+    .filter(rt => rt.routineId === assignment.routineId)
+    .sort((a, b) => a.order - b.order)
+    .flatMap(rt => {
+      const task = tasks.find(t => t.id === rt.taskId);
+      return task ? [{ ...task, durationSeconds: rt.durationSeconds }] : [];
+    });
+}
+
+/** Config users with their balance and assigned routines, as clients render them. */
+export function usersView(): User[] {
+  const { routineAssignments, routines } = config();
+
+  return usersWithStars().map(user => ({
+    ...user,
+    routines: routineAssignments
+      .filter(a => a.userId === user.id)
+      .flatMap(assignment => {
+        const routine = routines.find(r => r.id === assignment.routineId);
+        if (!routine) return [];
+        const cronExpression = assignmentCron(assignment.id) ?? undefined;
+        return [{
+          id: assignment.id,
+          title: routine.title,
+          scheduleTime: cronExpression ? simpleCronToTime(cronExpression) : undefined,
+          cronExpression,
+          themeColor: assignment.themeColor || routine.themeColor,
+          icon: routine.icon,
+          tasks: assignmentTasks(assignment.id)
+            .map(t => ({ id: t.id, title: t.title, icon: t.icon, durationSeconds: t.durationSeconds }))
+        }];
+      })
+  }));
+}
+
 function findUser(userId: string): UserWithStars | undefined {
   return usersWithStars().find(u => u.id === userId);
 }
@@ -72,11 +145,11 @@ export function readRawConfig(): DataConfig {
   return dataConfig.raw();
 }
 
-/** Validate and save data.json, then tell clients to reload. Throws when invalid. */
+/** Validate and save data.json. Throws when invalid. */
 export function writeRawConfig(data: unknown): void {
   const error = dataConfig.save(data);
   if (error) throw new Error(`Validation failed: ${JSON.stringify(error.errors)}`);
-  broadcast({ type: 'CONFIG_UPDATED' });
+  sync.changed();
 }
 
 export function readRawExercises(): ExercisesConfig {
@@ -86,103 +159,204 @@ export function readRawExercises(): ExercisesConfig {
 export function writeRawExercises(data: unknown): void {
   const error = exercisesConfig.save(data);
   if (error) throw new Error(`Exercises validation failed: ${JSON.stringify(error.errors)}`);
-  broadcast({ type: 'CONFIG_UPDATED' }); // Trigger a reload on all clients
+  sync.changed();
 }
 
 // ============================================
-// ROUTINES
+// ROUTINES AND FLOWS ON SCREEN
 // ============================================
+// The server runs flows and routines; clients render flowRuns/routineRuns and
+// report what the kids do: dismiss an alarm, finish a task, close a routine.
+// A flow step is an alarm (it waits to be dismissed) or starts routines and
+// sub-flows (it waits until they have all closed). After the last step the run
+// ends and, if a parallel step of another run started it, that run moves on.
 
 export type TriggerResult =
-  | { success: true; skipped: true; existingExecutionId: string }
+  | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
   | { success: true; type: 'assignment' | 'flow'; id: string };
 
-// Trigger an action (Routine assignment or Flow)
+const ALARM_ONLY: FlowStep[] = [{ type: 'alarm', props: { sound: 'melody' } }];
+
+/**
+ * Start a routine assignment or a flow (schedule, push hook, MCP); 'alarm' shows
+ * a plain alarm. A user already in a routine keeps it; a running flow restarts.
+ */
 export function triggerAction(id: string, source: string = 'unknown'): TriggerResult | null {
   const { routineAssignments, flows } = config();
-  const assignment = routineAssignments.find(a => a.id === id);
-
-  if (assignment) {
-    // A user can only be in one routine at a time (idempotency)
-    const [existingExecution] = store.routineExecutions.all(
-      'userId = ? AND completedAt IS NULL', assignment.userId
-    );
-
-    if (existingExecution) {
-      logAction('TRIGGER_ROUTINE_SKIPPED', {
-        id,
-        userId: assignment.userId,
-        routineId: assignment.routineId,
-        source,
-        existingExecutionId: existingExecution.id
-      });
-      // Broadcast existing execution instead of creating duplicate
-      broadcast({
-        type: 'ROUTINE_START',
-        payload: { userId: assignment.userId, routineId: assignment.id, executionId: existingExecution.id }
-      });
-      return { success: true, skipped: true, existingExecutionId: existingExecution.id };
+  return store.transaction(() => {
+    if (routineAssignments.some(a => a.id === id)) {
+      const run = startRoutine(id);
+      logAction(run.started ? 'TRIGGER_ROUTINE' : 'TRIGGER_ROUTINE_SKIPPED', { id, source, runId: run.id });
+      return run.started
+        ? { success: true, type: 'assignment', id }
+        : { success: true, skipped: true, type: 'assignment', id, runningId: run.id };
     }
+    const steps = id === 'alarm' ? ALARM_ONLY : flows.find(f => f.id === id)?.steps;
+    if (steps) {
+      logAction('TRIGGER_FLOW', { id, source, runId: startFlow(id, steps) });
+      return { success: true, type: 'flow', id };
+    }
+    logAction('TRIGGER_FAILED', { id, source, reason: 'Not found' });
+    return null;
+  });
+}
 
-    logAction('TRIGGER_ROUTINE', { id, userId: assignment.userId, routineId: assignment.routineId, source });
-    const execution: RoutineExecution = {
-      id: randomUUID(),
-      userId: assignment.userId,
-      routineId: assignment.routineId,
-      startedAt: new Date().toISOString(),
-      totalStars: 0
-    };
-    store.routineExecutions.put(execution);
+// A user has at most one routine on screen.
+function startRoutine(assignmentId: string, flowRunId?: string): { started: boolean; id: string } {
+  const assignment = config().routineAssignments.find(a => a.id === assignmentId);
+  if (!assignment) return { started: false, id: '' };
+  closeStaleRoutines(assignment.userId);
+  const [running] = store.routineRuns.all('userId = ?', assignment.userId);
+  if (running) return { started: false, id: running.id };
 
-    broadcast({
-      type: 'ROUTINE_START',
-      payload: {
-        userId: assignment.userId,
-        routineId: assignment.id, // Use assignment ID as routineId for frontend
-        executionId: execution.id
+  const now = new Date().toISOString();
+  const id = randomUUID();
+  store.routineExecutions.put({ id, userId: assignment.userId, routineId: assignment.routineId, startedAt: now, totalStars: 0 });
+  store.routineRuns.put({ id, userId: assignment.userId, routineId: assignmentId, taskIndex: 0, taskStartedAt: now, flowRunId });
+  return { started: true, id };
+}
+
+// Triggering a flow that is already running restarts it, so an alarm nobody
+// dismissed can't block tomorrow's schedule.
+function startFlow(flowId: string, steps: readonly FlowStep[], parentRunId?: string): string {
+  for (const old of store.flowRuns.all('flowId = ?', flowId)) {
+    dropFlow(old.id);
+    if (old.parentRunId) childClosed(old.parentRunId);
+  }
+  const run: FlowRun = { id: randomUUID(), flowId, steps: structuredClone(steps) as FlowStep[], stepIndex: 0, parentRunId, startedAt: new Date().toISOString() };
+  enterStep(run, 0);
+  return run.id;
+}
+
+// Runs whose step is still starting its routines and sub-flows: a sub-flow that
+// ends at once must not move the parent on before its siblings have started.
+const starting = new Set<string>();
+
+function enterStep(run: FlowRun, stepIndex: number): void {
+  const step = run.steps[stepIndex];
+  if (!step) return endFlow(run);
+  store.flowRuns.put({ ...run, stepIndex });
+  if (step.type === 'alarm') return; // waits for dismissAlarm
+
+  const actions = step.type === 'routine' ? [{ type: 'routine' as const, routineId: step.routineId }] : step.actions;
+  starting.add(run.id);
+  try {
+    for (const action of actions) {
+      if (action.type === 'routine') startRoutine(action.routineId, run.id);
+      else {
+        const flow = config().flows.find(f => f.id === action.flowId);
+        if (flow) startFlow(flow.id, flow.steps, run.id);
       }
+    }
+  } finally {
+    starting.delete(run.id);
+  }
+  childClosed(run.id); // moves on right away if nothing was started (all busy or missing)
+}
+
+// Remove a run and its sub-flows. Their routines stay on screen.
+function dropFlow(runId: string): void {
+  for (const child of store.flowRuns.all('parentRunId = ?', runId)) dropFlow(child.id);
+  store.flowRuns.deleteWhere('id = ?', runId);
+}
+
+function endFlow(run: FlowRun): void {
+  store.flowRuns.deleteWhere('id = ?', run.id);
+  if (run.parentRunId) childClosed(run.parentRunId);
+}
+
+// A routine or sub-flow of this run closed: move on once none is left.
+function childClosed(runId: string): void {
+  const run = store.flowRuns.get(runId);
+  if (!run || starting.has(runId) || run.steps[run.stepIndex]?.type === 'alarm') return;
+  const waiting = store.routineRuns.all('flowRunId = ?', runId).length + store.flowRuns.all('parentRunId = ?', runId).length;
+  if (waiting === 0) enterStep(run, run.stepIndex + 1);
+}
+
+/** A kid dismissed the alarm at `stepIndex` of a run. Repeats (a second device) are no-ops. */
+export function dismissAlarm(runId: string, stepIndex: number): boolean {
+  return store.transaction(() => {
+    const run = store.flowRuns.get(runId);
+    if (!run || run.stepIndex !== stepIndex || run.steps[stepIndex]?.type !== 'alarm') return false;
+    logAction('ALARM_DISMISSED', { runId, flowId: run.flowId, stepIndex });
+    enterStep(run, stepIndex + 1);
+    return true;
+  });
+}
+
+/** A routine left the screen (reward shown, or the kid pressed ✕). Repeats are no-ops. */
+export function closeRoutine(runId: string): boolean {
+  return store.transaction(() => {
+    const run = store.routineRuns.get(runId);
+    if (run) endRoutine(run, 'ROUTINE_CLOSED');
+    return !!run;
+  });
+}
+
+function endRoutine(run: Omit<RoutineRun, 'totalStars'>, logType: string): void {
+  store.routineRuns.deleteWhere('id = ?', run.id);
+  logAction(logType, { runId: run.id, userId: run.userId, finished: !!run.finishedAt });
+  if (run.flowRunId) childClosed(run.flowRunId);
+}
+
+/**
+ * Close routines started before today (local time): left open when the kid
+ * walked away or the kiosk was off. Runs when a routine is triggered for the
+ * user and every minute, so an old run never blocks or lingers.
+ */
+export function closeStaleRoutines(userId?: string): number {
+  return store.transaction(() => {
+    const timezone = config().settings?.timezone || 'Europe/Athens';
+    const today = localDateStr(timezone);
+    const runs = userId ? store.routineRuns.all('userId = ?', userId) : store.routineRuns.all();
+    const stale = runs.filter(run => {
+      const startedAt = store.routineExecutions.get(run.id)?.startedAt ?? run.taskStartedAt;
+      return localDateStr(timezone, new Date(startedAt)) < today;
     });
+    stale.forEach(run => endRoutine(run, 'ROUTINE_CLOSED_STALE'));
+    return stale.length;
+  });
+}
 
-    return { success: true, type: 'assignment', id };
-  }
-
-  const flow = flows.find(f => f.id === id);
-
-  if (flow) {
-    logAction('TRIGGER_FLOW', { id, flowId: flow.id, source });
-    broadcast({ type: 'FLOW_START', payload: { flowId: flow.id, steps: flow.steps } });
-    return { success: true, type: 'flow', id };
-  }
-
-  logAction('TRIGGER_FAILED', { id, source, reason: 'Not found' });
-  return null;
+/** Routine runs as clients render them, with the stars earned so far. */
+function routineRunsView(): RoutineRun[] {
+  return store.routineRuns.all().map(run => ({ ...run, totalStars: store.routineExecutions.get(run.id)?.totalStars ?? 0 }));
 }
 
 export type TaskCompletion =
   | { success: true; starsAwarded: number }
   | { success: false; error: string };
 
-// Record a completed task and award its stars to the routine's user.
-export function completeTask(executionId: string, taskId: string, duration: number, isOnTime: boolean): TaskCompletion | null {
-  const task = config().tasks.find(t => t.id === taskId);
-  if (!task) return null;
+/**
+ * A kid finished the current task of a routine run. The server times it and
+ * awards the stars; `taskId` must be the current task, so a second device (or
+ * a double tap) can't complete the next one too.
+ */
+export function completeTask(runId: string, taskId: string): TaskCompletion {
+  return store.transaction(() => {
+    const run = store.routineRuns.get(runId);
+    const execution = store.routineExecutions.get(runId);
+    if (!run || !execution || run.finishedAt) return { success: false, error: 'Routine is not running' };
+    const tasks = assignmentTasks(run.routineId);
+    const task = tasks[run.taskIndex];
+    if (!task || task.id !== taskId) return { success: false, error: 'Not the current task' };
 
-  const starsToAdd = store.transaction(() => {
-    store.taskExecutions.put({
-      id: randomUUID(), executionId, taskId, duration, isOnTime, completedAt: new Date().toISOString()
-    });
-    const execution = store.routineExecutions.get(executionId);
-    if (!execution) return null;
+    const now = new Date();
+    const duration = Math.round((now.getTime() - new Date(run.taskStartedAt).getTime()) / 1000);
+    const isOnTime = duration <= task.durationSeconds;
     const stars = isOnTime ? (task.stars || 0) : (task.lateStars ?? 0);
-    store.routineExecutions.put({ ...execution, totalStars: (execution.totalStars || 0) + stars });
+    store.taskExecutions.put({ id: randomUUID(), executionId: runId, taskId, duration, isOnTime, completedAt: now.toISOString() });
+    const last = run.taskIndex + 1 >= tasks.length;
+    store.routineExecutions.put({
+      ...execution, totalStars: (execution.totalStars || 0) + stars, ...(last ? { completedAt: now.toISOString() } : {})
+    });
+    store.routineRuns.put(last
+      ? { ...run, finishedAt: now.toISOString() }
+      : { ...run, taskIndex: run.taskIndex + 1, taskStartedAt: now.toISOString() });
     if (stars !== 0) awardStars(execution.userId, stars);
-    logAction('TASK_COMPLETE', { executionId, taskId, starsAwarded: stars, userId: execution.userId });
-    return stars;
+    logAction('TASK_COMPLETE', { executionId: runId, taskId, starsAwarded: stars, userId: execution.userId, duration, isOnTime });
+    return { success: true, starsAwarded: stars };
   });
-
-  return starsToAdd === null
-    ? { success: false, error: 'Execution not found' }
-    : { success: true, starsAwarded: starsToAdd };
 }
 
 // ============================================
@@ -224,12 +398,8 @@ export function readLastLogs(limit: number): ActionLog[] {
   return store.recentLogs(limit);
 }
 
-// Commit a new star balance and notify all clients. The broadcast is intrinsic
-// to the mutation — a balance can never change without every client hearing
-// about it, so callers have nothing to remember.
 function commitUserStars(userId: string, newTotal: number): number {
   store.setStars(userId, newTotal);
-  broadcast({ type: 'SYNC_STATE', payload: { userStars: store.allStars() } });
   return newTotal;
 }
 
@@ -256,10 +426,6 @@ export function awardStars(userId: string, amount: number): { success: boolean; 
   const newTotal = adjustUserStars(userId, amount);
   logAction('AWARD_STARS', { userId, amount, newBalance: newTotal });
 
-  // Semantic notification on top of the balance sync (which adjustUserStars
-  // already broadcast) — lets the UI celebrate the award if it wants to.
-  broadcast({ type: 'STARS_AWARDED', payload: { userId, amount, totalStars: newTotal } });
-
   return { success: true, newTotal };
 }
 
@@ -282,23 +448,10 @@ export function stateSnapshot(): StateSnapshot {
   return store.snapshot();
 }
 
-// Replace the whole runtime state (validated by the caller) and resync clients.
-export async function replaceState(state: StateSnapshot): Promise<void> {
+// Replace the whole runtime state (validated by the caller).
+export function replaceState(state: StateSnapshot): void {
   store.replaceState(state);
   logAction('STATE_REPLACED', { source: 'admin' });
-  broadcast({ type: 'SYNC_STATE', payload: await fullSyncPayload() });
-}
-
-// Everything a client needs on connect (or after a bulk change).
-export async function fullSyncPayload(): Promise<SyncStatePayload> {
-  return {
-    userStars: store.allStars(),
-    spendings: getEnrichedSpendings(),
-    starTransfers: getEnrichedTransfers(),
-    choreInstances: getChoresWithInstances().instances,
-    activeExerciseSessions: activeExerciseSessions(),
-    exerciseAssignments: await getExerciseAssignments()
-  };
 }
 
 // ============================================
@@ -380,17 +533,6 @@ export function generateChoreInstances(): ChoreInstance[] {
     logAction('CHORE_AVAILABLE', { choreId: chore.id, instanceId: instance.id, expiresAt: instance.expiresAt });
   }
 
-  if (newInstances.length > 0) {
-    broadcastChoreState();
-    for (const instance of newInstances) {
-      const chore = chores.find(c => c.id === instance.choreId);
-      broadcast({
-        type: 'CHORE_AVAILABLE',
-        payload: { instanceId: instance.id, choreId: instance.choreId, choreTitle: chore?.title, expiresAt: instance.expiresAt }
-      });
-    }
-  }
-
   return newInstances;
 }
 
@@ -417,15 +559,11 @@ export function expireChores(): { expired: ChoreInstance[], notified: { userId: 
     // If it was claimed, notify that user
     if (oldStatus === 'claimed' && instance.claimedBy) {
       notified.push({ userId: instance.claimedBy, choreTitle: chore?.title || 'Unknown chore' });
-      broadcast({
+      sync.notify({
         type: 'CHORE_EXPIRED',
         payload: { instanceId: instance.id, choreId: instance.choreId, choreTitle: chore?.title, userId: instance.claimedBy }
       });
     }
-  }
-
-  if (expiredInstances.length > 0) {
-    broadcastChoreState();
   }
 
   return { expired: expiredInstances, notified };
@@ -492,11 +630,6 @@ export function claimChore(instanceId: string, userId: string): ChoreInstance {
   store.choreInstances.put(claimed);
 
   logAction('CHORE_CLAIMED', { instanceId, choreId: instance.choreId, userId });
-  broadcast({
-    type: 'CHORE_CLAIMED',
-    payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId }
-  });
-  broadcastChoreState();
 
   return claimed;
 }
@@ -509,16 +642,10 @@ export function attemptChore(instanceId: string): ChoreInstance {
     throw new Error(`Chore must be claimed first (status: ${instance.status})`);
   }
 
-  const chore = findChore(instance.choreId);
   const attempted: ChoreInstance = { ...instance, status: 'attempted', attemptedAt: new Date().toISOString() };
   store.choreInstances.put(attempted);
 
   logAction('CHORE_ATTEMPTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
-  broadcast({
-    type: 'CHORE_ATTEMPTED',
-    payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId: instance.claimedBy }
-  });
-  broadcastChoreState();
 
   return attempted;
 }
@@ -547,11 +674,10 @@ export function confirmChore(instanceId: string, starsOverride?: number): ChoreI
   });
 
   logAction('CHORE_CONFIRMED', { instanceId, choreId: instance.choreId, userId, starsAwarded: stars });
-  broadcast({
+  sync.notify({
     type: 'CHORE_CONFIRMED',
     payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId, starsAwarded: stars }
   });
-  broadcastChoreState();
 
   return confirmed;
 }
@@ -569,25 +695,12 @@ export function rejectChore(instanceId: string): ChoreInstance {
   store.choreInstances.put(rejected);
 
   logAction('CHORE_REJECTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
-  broadcast({
+  sync.notify({
     type: 'CHORE_REJECTED',
     payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId: instance.claimedBy }
   });
-  broadcastChoreState();
 
   return rejected;
-}
-
-// Broadcast current chore state to all clients
-export function broadcastChoreState() {
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: store.allStars(),
-      spendings: getEnrichedSpendings(),
-      choreInstances: getChoresWithInstances().instances
-    }
-  });
 }
 
 // ============================================
@@ -697,15 +810,12 @@ export function startExerciseSession(
   store.exerciseSessions.put(session);
 
   logAction('EXERCISE_SESSION_START', { sessionId: session.id, players: playerIds, categories });
-  broadcast({ type: 'EXERCISE_SESSION_START', payload: session });
 
   return session;
 }
 
 export function cancelExerciseSession(sessionId: string): void {
-  if (store.exerciseSessions.deleteWhere('id = ?', sessionId) > 0) {
-    broadcast({ type: 'SYNC_STATE', payload: { activeExerciseSessions: activeExerciseSessions() } });
-  }
+  store.exerciseSessions.deleteWhere('id = ?', sessionId);
 }
 
 export function submitExerciseAnswer(
@@ -771,15 +881,6 @@ export function submitExerciseAnswer(
     if (isCorrect) awardStars(userId, earnedStars);
   });
 
-  broadcast({
-    type: 'EXERCISE_ANSWER',
-    payload: { sessionId, userId, isCorrect, earnedStars, session }
-  });
-
-  if (session.completedAt) {
-    broadcast({ type: 'EXERCISE_SESSION_COMPLETE', payload: session });
-  }
-
   return { correct: isCorrect, earnedStars, session };
 }
 
@@ -788,11 +889,11 @@ export function submitExerciseAnswer(
 // ============================================
 
 // Local date (YYYY-MM-DD) in the configured timezone
-function localDateStr(timezone: string): string {
+function localDateStr(timezone: string, date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(new Date());
+  }).format(date);
 }
 
 // Draw `count` exercises from a pool, balancing across categories
@@ -854,9 +955,13 @@ export async function ensureDailyAssignments(): Promise<boolean> {
   return created;
 }
 
-// Today's assignments, enriched with their exercise definitions.
+// Today's assignments (drawn first if needed), enriched with their exercise definitions.
 export async function getExerciseAssignments(userId?: string): Promise<ExerciseAssignmentWithExercise[]> {
   await ensureDailyAssignments();
+  return todaysAssignments(userId);
+}
+
+async function todaysAssignments(userId?: string): Promise<ExerciseAssignmentWithExercise[]> {
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
 
   const assignments = userId
@@ -868,14 +973,6 @@ export async function getExerciseAssignments(userId?: string): Promise<ExerciseA
     enriched.push({ ...a, exercise: await exercisePoolProvider.getExerciseById(a.exerciseId) });
   }
   return enriched;
-}
-
-export async function broadcastAssignmentState() {
-  const assignments = await getExerciseAssignments();
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: { userStars: store.allStars(), exerciseAssignments: assignments }
-  });
 }
 
 // Answer a daily assignment. Correct -> completed + stars. Wrong -> retry allowed.
@@ -913,20 +1010,6 @@ export async function answerExerciseAssignment(
     assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId,
     correct: isCorrect, attempts: assignment.attempts, starsAwarded
   });
-
-  broadcast({
-    type: 'EXERCISE_ASSIGNMENT_ANSWER',
-    payload: {
-      assignmentId,
-      userId: assignment.userId,
-      exerciseId: assignment.exerciseId,
-      exerciseTitle: exercise.title,
-      correct: isCorrect,
-      starsAwarded
-    }
-  });
-
-  await broadcastAssignmentState();
 
   return { correct: isCorrect, starsAwarded, assignment };
 }

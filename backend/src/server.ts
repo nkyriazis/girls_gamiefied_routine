@@ -17,16 +17,17 @@ const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 
 // Import shared database layer
 import {
-  store, wsConnections, broadcast, triggerAction, completeTask, getEnrichedSpendings, getEnrichedTransfers,
+  store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
   readLastLogs, MAX_LOGS, adjustUserStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
   cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
-  logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, usersWithStars,
-  stateSnapshot, replaceState, fullSyncPayload
+  logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, usersView,
+  stateSnapshot, replaceState, ensureDailyAssignments
 } from './db';
 import { config, configError, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
+import { HEARTBEAT_MS } from './sync';
 import { LOGS_FILE, STATE_FILE } from './paths';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 
@@ -106,6 +107,20 @@ async function checkSchedules(date: Date) {
     logAction('CHORE_EXPIRATION_ERROR', { error: (err as Error).message });
   }
   
+  // Close routines left open on an earlier day
+  try {
+    closeStaleRoutines();
+  } catch (err) {
+    console.error('Error closing stale routines:', err);
+  }
+
+  // Draw today's exercise assignments once the day changes
+  try {
+    await ensureDailyAssignments();
+  } catch (err) {
+    console.error('Error drawing exercise assignments:', err);
+  }
+
   // Cleanup old instances once per hour (at minute 0)
   if (new Date().getMinutes() === 0) {
     try {
@@ -142,72 +157,8 @@ server.get('/health', async () => {
   return { status: 'ok', time: new Date().toISOString() };
 });
 
-// Helper to convert simple cron to HH:mm for frontend display
-function simpleCronToTime(cron: string): string | undefined {
-  try {
-    const parts = cron.split(' ');
-    if (parts.length >= 2) {
-      const min = parts[0];
-      const hour = parts[1];
-      if (!isNaN(Number(min)) && !isNaN(Number(hour))) {
-        return `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
-      }
-    }
-  } catch (e) { return undefined; }
-  return undefined;
-}
-
-// Cron of the schedule that starts a routine assignment: directly, or via a flow that runs it.
-function assignmentCron(assignmentId: string): string | null {
-  const { schedules, flows } = config();
-  const direct = schedules.find(s => s.type === 'routine' && s.targetId === assignmentId);
-  if (direct) return direct.cron;
-
-  const triggeringFlow = flows.find(f => f.steps.some(step =>
-    (step.type === 'routine' && step.routineId === assignmentId) ||
-    (step.type === 'parallel' && step.actions.some(a => a.type === 'routine' && a.routineId === assignmentId))
-  ));
-  if (!triggeringFlow) return null;
-  return schedules.find(s => s.type === 'flow' && s.targetId === triggeringFlow.id)?.cron ?? null;
-}
-
 // User routes: users with their star balance and their assigned routines
-server.get('/api/users', async (request, reply) => {
-  try {
-    const { routineAssignments, routines, routineTasks, tasks } = config();
-
-    return usersWithStars().map(user => ({
-      ...user,
-      routines: routineAssignments
-        .filter(a => a.userId === user.id)
-        .flatMap(assignment => {
-          const routine = routines.find(r => r.id === assignment.routineId);
-          if (!routine) return [];
-          const cronExpression = assignmentCron(assignment.id);
-          return [{
-            id: assignment.id,
-            title: routine.title,
-            scheduleTime: cronExpression ? simpleCronToTime(cronExpression) : null,
-            cronExpression,
-            themeColor: assignment.themeColor || routine.themeColor,
-            icon: routine.icon,
-            tasks: routineTasks
-              .filter(rt => rt.routineId === routine.id)
-              .sort((a, b) => a.order - b.order)
-              .flatMap(rt => {
-                const task = tasks.find(t => t.id === rt.taskId);
-                return task
-                  ? [{ id: task.id, title: task.title, icon: task.icon, durationSeconds: rt.durationSeconds, routineId: assignment.id }]
-                  : [];
-              })
-          }];
-        })
-    }));
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
-  }
-});
+server.get('/api/users', async () => usersView());
 
 // Flow routes
 server.get('/api/flows', async (request, reply) => {
@@ -363,14 +314,6 @@ server.post('/api/spendings', async (request, reply) => {
   }
   logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance });
 
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: store.allStars(),
-      spendings: getEnrichedSpendings()
-    }
-  });
-
   return spending;
 });
 
@@ -391,14 +334,6 @@ server.put('/api/spendings/:id', async (request, reply) => {
       adjustUserStars(spending.userId, spending.cost);
     }
     store.spendings.put(updated);
-  });
-
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: store.allStars(),
-      spendings: getEnrichedSpendings()
-    }
   });
 
   return updated;
@@ -451,15 +386,6 @@ server.post('/api/transfers', async (request, reply) => {
 
   logAction('TRANSFER_REQUEST', { fromUserId, toUserId, amount, transferId: transfer.id });
 
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: store.allStars(),
-      spendings: getEnrichedSpendings(),
-      starTransfers: getEnrichedTransfers()
-    }
-  });
-
   return transfer;
 });
 
@@ -499,15 +425,6 @@ server.put('/api/transfers/:id', async (request, reply) => {
     store.starTransfers.put(resolved);
   });
   logAction(`TRANSFER_${status.toUpperCase()}`, { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
-
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: store.allStars(),
-      spendings: getEnrichedSpendings(),
-      starTransfers: getEnrichedTransfers()
-    }
-  });
 
   return resolved;
 });
@@ -565,12 +482,6 @@ server.post('/api/hooks/push', async (request, reply) => {
       return { success: true, type: 'schedule_simulation', simulatedTime: nextTime, targetId: id };
     }
 
-    if (id === 'alarm') {
-      broadcast({ type: 'ALARM_START' });
-      logAction('ALARM_MANUAL', { source: 'push' });
-      return { success: true, type: 'alarm' };
-    }
-
     const result = triggerAction(id, 'push_hook');
 
     if (result) {
@@ -584,16 +495,22 @@ server.post('/api/hooks/push', async (request, reply) => {
   }
 });
 
-// Task completion endpoint
+// What kids do on a running routine or flow (see "ROUTINES AND FLOWS ON SCREEN" in db.ts).
+// Each is idempotent, so two devices reporting the same action is harmless.
 server.post('/api/executions/:executionId/tasks/:taskId/complete', async (request, reply) => {
   const { executionId, taskId } = request.params as { executionId: string, taskId: string };
-  const { duration, isOnTime } = request.body as { duration: number, isOnTime: boolean };
+  const result = completeTask(executionId, taskId);
+  return result.success ? result : reply.code(409).send(result);
+});
 
-  const result = completeTask(executionId, taskId, duration, isOnTime);
-  if (!result) {
-    return reply.code(404).send({ error: 'Task not found' });
-  }
-  return result;
+server.post('/api/executions/:executionId/close', async (request) => {
+  const { executionId } = request.params as { executionId: string };
+  return { success: closeRoutine(executionId) };
+});
+
+server.post('/api/flow-runs/:runId/steps/:stepIndex/dismiss', async (request) => {
+  const { runId, stepIndex } = request.params as { runId: string, stepIndex: string };
+  return { success: dismissAlarm(runId, Number(stepIndex)) };
 });
 
 // Debug endpoint to simulate time
@@ -845,7 +762,7 @@ server.post('/api/admin/state', async (request, reply) => {
     return reply.code(400).send({ error: error.message, errors: error.errors });
   }
   try {
-    await replaceState(request.body as StateSnapshot);
+    replaceState(request.body as StateSnapshot);
     return { success: true };
   } catch (err) {
     request.log.error(err);
@@ -904,19 +821,11 @@ server.all('/mcp/*', handleMcpRequest);
 server.register(async (fastify) => {
   fastify.get('/ws', { websocket: true }, async (connection) => {
     fastify.log.info('Client connected via WebSocket');
-    wsConnections.add(connection);
-
-    connection.send(JSON.stringify({ type: 'SYNC_STATE', payload: await fullSyncPayload() }));
-
-    connection.on('message', (message: Buffer) => {
-      const data = JSON.parse(message.toString());
-      fastify.log.info({ msg: 'Received', data });
-      connection.send(JSON.stringify({ type: 'ACK', data }));
-    });
+    sync.connect(connection); // sends it the current state
 
     connection.on('close', () => {
       fastify.log.info('Client disconnected');
-      wsConnections.delete(connection);
+      sync.disconnect(connection);
     });
   });
 });
@@ -944,16 +853,18 @@ const start = async () => {
     if (change?.type === 'invalid') {
       console.error('Config is invalid; running with an empty config until it is fixed:', change.error);
     }
+    await ensureDailyAssignments();
     watchConfig(change => {
       if (change.type === 'updated') {
         console.log('Config changed on disk; reloaded');
-        broadcast({ type: 'CONFIG_UPDATED' });
       } else {
         console.error('Config changed on disk but is invalid; keeping the last valid config:', change.error);
-        broadcast({ type: 'CONFIG_ERROR', payload: change.error });
       }
+      sync.changed(); // clients get the new config, or the error
     });
     
+    setInterval(() => sync.heartbeat(), HEARTBEAT_MS);
+
     // Start the real scheduler (checks every minute)
     cron.schedule('* * * * *', () => {
       checkSchedules(new Date());

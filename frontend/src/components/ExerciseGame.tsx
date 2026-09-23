@@ -20,13 +20,13 @@ interface ExerciseGameProps {
 }
 
 export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) => {
-  const { users, activeExerciseSessions } = useGame();
+  const { users, exerciseSessions } = useGame();
   const { playSuccess, playError, playComplete } = useAppSounds();
   
   // Get the latest session state from context
   const currentSession = useMemo(() => 
-    activeExerciseSessions.find(s => s.id === session.id) || session,
-  [activeExerciseSessions, session]);
+    exerciseSessions.find(s => s.id === session.id) || session,
+  [exerciseSessions, session]);
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);

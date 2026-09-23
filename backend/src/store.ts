@@ -1,6 +1,6 @@
 import { DatabaseSync, SQLInputValue } from 'node:sqlite';
 import {
-  ActionLog, ChoreInstance, ExerciseAssignment, ExerciseSession, RoutineExecution,
+  ActionLog, ChoreInstance, ExerciseAssignment, ExerciseSession, FlowRun, RoutineExecution, RoutineRun,
   Spending, StarTransfer, StateSnapshot, TaskExecution
 } from '../../shared/types';
 
@@ -10,7 +10,9 @@ import {
 // Every mutation is written through immediately (no in-memory copy, no
 // debounce), so a crash or restart can't lose acknowledged changes. The
 // backend is single-process and node:sqlite is synchronous, so each exported
-// operation is atomic with respect to other requests.
+// operation is atomic with respect to other requests. Every write to runtime
+// state calls `onChange` (the action log doesn't count), which is how clients
+// hear about it (sync.ts).
 // ============================================================================
 
 // Schema migrations, applied in order and tracked with PRAGMA user_version.
@@ -61,6 +63,17 @@ const MIGRATIONS: string[] = [
     id TEXT PRIMARY KEY, timestamp TEXT NOT NULL, type TEXT NOT NULL, details TEXT NOT NULL
   );
   CREATE INDEX action_logs_timestamp ON action_logs (timestamp);
+  `,
+  // What is on screen right now: running flows and routines (see FlowRun/RoutineRun)
+  `
+  CREATE TABLE flow_runs (
+    id TEXT PRIMARY KEY, flowId TEXT NOT NULL, steps TEXT NOT NULL, stepIndex INTEGER NOT NULL,
+    parentRunId TEXT, startedAt TEXT NOT NULL
+  );
+  CREATE TABLE routine_runs (
+    id TEXT PRIMARY KEY, userId TEXT NOT NULL UNIQUE, routineId TEXT NOT NULL, taskIndex INTEGER NOT NULL,
+    taskStartedAt TEXT NOT NULL, finishedAt TEXT, flowRunId TEXT
+  );
   `
 ];
 
@@ -80,6 +93,7 @@ export class Table<T extends { id: string }> {
   constructor(
     private readonly db: DatabaseSync,
     readonly name: string,
+    private readonly onChange: () => void,
     private readonly columns: Columns<T>,
     private readonly orderBy = 'rowid'
   ) {
@@ -117,7 +131,9 @@ export class Table<T extends { id: string }> {
 
   /** Delete records matching an SQL condition. Returns how many were deleted. */
   deleteWhere(where: string, ...params: SQLInputValue[]): number {
-    return Number(this.db.prepare(`DELETE FROM ${this.name} WHERE ${where}`).run(...params).changes);
+    const changes = Number(this.db.prepare(`DELETE FROM ${this.name} WHERE ${where}`).run(...params).changes);
+    if (changes > 0) this.onChange();
+    return changes;
   }
 
   // Only an id conflict is handled; any other constraint violation throws.
@@ -125,7 +141,9 @@ export class Table<T extends { id: string }> {
     const placeholders = this.keys.map(() => '?').join(', ');
     const values = this.keys.map(key => this.encode(key, (item as Record<string, unknown>)[key]));
     const sql = `INSERT INTO ${this.name} (${this.keys.join(', ')}) VALUES (${placeholders}) ${onConflict}`;
-    return Number(this.db.prepare(sql).run(...values).changes);
+    const changes = Number(this.db.prepare(sql).run(...values).changes);
+    if (changes > 0) this.onChange();
+    return changes;
   }
 
   private encode(key: string, value: unknown): SQLInputValue {
@@ -164,39 +182,47 @@ export class Store {
   readonly exerciseSessions: Table<ExerciseSession>;
   readonly exerciseAssignments: Table<ExerciseAssignment>;
   readonly logs: Table<ActionLog>;
+  readonly flowRuns: Table<FlowRun>;
+  readonly routineRuns: Table<Omit<RoutineRun, 'totalStars'>>;
 
-  constructor(file: string) {
+  constructor(file: string, private readonly onChange: () => void = () => {}) {
     this.db = new DatabaseSync(file);
     this.db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL; PRAGMA busy_timeout = 5000;');
     this.migrate();
 
     const db = this.db;
-    this.routineExecutions = new Table<RoutineExecution>(db, 'routine_executions', {
+    this.routineExecutions = new Table<RoutineExecution>(db, 'routine_executions', onChange, {
       id: 'text', userId: 'text', routineId: 'text', startedAt: 'text', totalStars: 'int', completedAt: 'text'
     });
-    this.taskExecutions = new Table<TaskExecution>(db, 'task_executions', {
+    this.taskExecutions = new Table<TaskExecution>(db, 'task_executions', onChange, {
       id: 'text', executionId: 'text', taskId: 'text', duration: 'int', isOnTime: 'bool', completedAt: 'text'
     });
-    this.spendings = new Table<StoredSpending>(db, 'spendings', {
+    this.spendings = new Table<StoredSpending>(db, 'spendings', onChange, {
       id: 'text', userId: 'text', rewardId: 'text', cost: 'int', createdAt: 'text', status: 'text'
     });
-    this.starTransfers = new Table<StoredStarTransfer>(db, 'star_transfers', {
+    this.starTransfers = new Table<StoredStarTransfer>(db, 'star_transfers', onChange, {
       id: 'text', fromUserId: 'text', toUserId: 'text', amount: 'int', createdAt: 'text', status: 'text', resolvedAt: 'text'
     });
-    this.choreInstances = new Table<ChoreInstance>(db, 'chore_instances', {
+    this.choreInstances = new Table<ChoreInstance>(db, 'chore_instances', onChange, {
       id: 'text', choreId: 'text', status: 'text', availableAt: 'text', expiresAt: 'text', claimedBy: 'text',
       claimedAt: 'text', attemptedAt: 'text', confirmedAt: 'text', rejectedAt: 'text', starsAwarded: 'int'
     });
-    this.exerciseSessions = new Table<ExerciseSession>(db, 'exercise_sessions', {
+    this.exerciseSessions = new Table<ExerciseSession>(db, 'exercise_sessions', onChange, {
       id: 'text', playerIds: 'json', categories: 'json', totalRounds: 'int', currentRound: 'int',
       questionsPerRound: 'int', currentQuestionIndex: 'int', exerciseIds: 'json', answers: 'json',
       startedAt: 'text', completedAt: 'text', totalStarsEarned: 'json'
     });
-    this.exerciseAssignments = new Table<ExerciseAssignment>(db, 'exercise_assignments', {
+    this.exerciseAssignments = new Table<ExerciseAssignment>(db, 'exercise_assignments', onChange, {
       id: 'text', userId: 'text', exerciseId: 'text', date: 'text', status: 'text', attempts: 'int',
       assignedAt: 'text', completedAt: 'text', starsAwarded: 'int'
     });
-    this.logs = new Table<ActionLog>(db, 'action_logs', {
+    this.flowRuns = new Table<FlowRun>(db, 'flow_runs', onChange, {
+      id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text'
+    });
+    this.routineRuns = new Table<Omit<RoutineRun, 'totalStars'>>(db, 'routine_runs', onChange, {
+      id: 'text', userId: 'text', routineId: 'text', taskIndex: 'int', taskStartedAt: 'text', finishedAt: 'text', flowRunId: 'text'
+    });
+    this.logs = new Table<ActionLog>(db, 'action_logs', () => {}, {
       id: 'text', timestamp: 'text', type: 'text', details: 'json'
     }, 'timestamp, rowid');
   }
@@ -238,6 +264,7 @@ export class Store {
 
   setStars(userId: string, stars: number): void {
     this.db.prepare('INSERT INTO user_stars (userId, stars) VALUES (?, ?) ON CONFLICT (userId) DO UPDATE SET stars = excluded.stars').run(userId, stars);
+    this.onChange();
   }
 
   allStars(): Record<string, number> {
@@ -282,14 +309,16 @@ export class Store {
     };
   }
 
-  /** Replace all runtime state with `state` (the action log is kept). */
+  /** Replace all runtime state with `state` (the action log is kept; nothing stays on screen). */
   replaceState(state: StateSnapshot): void {
     this.transaction(() => {
       this.db.exec(`
         DELETE FROM user_stars; DELETE FROM routine_executions; DELETE FROM task_executions;
         DELETE FROM spendings; DELETE FROM star_transfers; DELETE FROM chore_instances;
         DELETE FROM exercise_sessions; DELETE FROM exercise_assignments;
+        DELETE FROM flow_runs; DELETE FROM routine_runs;
       `);
+      this.onChange();
       this.mergeState(state);
     });
   }

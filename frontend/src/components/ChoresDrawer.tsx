@@ -80,7 +80,7 @@ function getDrawerConfig(category: ChoreCategory) {
 }
 
 export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, category = 'chore' }) => {
-    const { users, chores, choreInstances, refreshChores } = useGame();
+    const { users, chores, choreInstances } = useGame();
     const config = getDrawerConfig(category);
     const isBonus = category === 'bonus';
 
@@ -129,7 +129,6 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
     const handleClaim = async (instanceId: string, userId: string) => {
         try {
             await api.claimChore(instanceId, userId);
-            await refreshChores();
         } catch (error) {
             console.error('Failed to claim chore:', error);
         }
@@ -138,7 +137,6 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
     const handleAttempt = async (instanceId: string) => {
         try {
             await api.attemptChore(instanceId);
-            await refreshChores();
         } catch (error) {
             console.error('Failed to mark chore as done:', error);
         }

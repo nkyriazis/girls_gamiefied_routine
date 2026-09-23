@@ -1,6 +1,6 @@
 import { readFileSync, renameSync, unwatchFile, watchFile, writeFileSync } from 'fs';
 import path from 'path';
-import { Chore, Exercise, ExerciseCategoryDef, Flow, IconValue, Reward } from '../../shared/types';
+import { DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
 import { DATA_FILE, EXERCISES_FILE } from './paths';
 import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 
@@ -12,64 +12,6 @@ import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 // replaces the cached config: the last valid version stays live and the error
 // is reported, so a bad edit can't take the app (or its state) down.
 // ============================================================================
-
-export interface ConfigUser {
-  id: string;
-  name: string;
-  avatar: IconValue;
-  color: string;
-}
-
-export interface ConfigTask {
-  id: string;
-  title: string;
-  icon: IconValue;
-  stars: number;
-  lateStars?: number;
-}
-
-export interface ConfigRoutine {
-  id: string;
-  title: string;
-  themeColor: string;
-  icon: IconValue;
-}
-
-export interface RoutineTask {
-  id: string;
-  routineId: string;
-  taskId: string;
-  order: number;
-  durationSeconds: number;
-}
-
-export interface RoutineAssignment {
-  id: string;
-  userId: string;
-  routineId: string;
-  themeColor?: string;
-}
-
-export interface Schedule {
-  id: string;
-  cron: string;
-  type: 'routine' | 'flow';
-  targetId: string;
-}
-
-/** data.json, as described by data.schema.json. */
-export interface DataConfig {
-  users: ConfigUser[];
-  tasks: ConfigTask[];
-  routines: ConfigRoutine[];
-  routineTasks: RoutineTask[];
-  routineAssignments: RoutineAssignment[];
-  flows: Flow[];
-  schedules: Schedule[];
-  rewards: Reward[];
-  chores?: Chore[];
-  settings: { timezone: string };
-}
 
 /** exercises.json, as described by exercises.schema.json. */
 export interface ExercisesConfig {

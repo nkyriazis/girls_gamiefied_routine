@@ -1,6 +1,5 @@
 import type {
-  User, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance,
-  Exercise, ExerciseSession, ExerciseAssignmentWithExercise
+  StarTransfer, ChoreInstance, Exercise, ExerciseSession, ExerciseAssignmentWithExercise
 } from '@shared/types';
 
 const API_URL = '/api';
@@ -19,21 +18,6 @@ export interface ValidationResult {
 }
 
 export const api = {
-  getUsers: async (): Promise<User[]> => {
-    const response = await fetch(`${API_URL}/users`, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error('Failed to fetch users');
-    }
-    return response.json();
-  },
-
-  getFlows: async (): Promise<Flow[]> => {
-    const response = await fetch(`${API_URL}/flows`, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error('Failed to fetch flows');
-    }
-    return response.json();
-  },
 
   pushNow: async (id: string): Promise<void> => {
     const response = await fetch(`${API_URL}/hooks/push`, {
@@ -48,31 +32,23 @@ export const api = {
     }
   },
   
-  completeTask: async (executionId: string, taskId: string, duration: number, isOnTime: boolean): Promise<{ success: boolean, starsAwarded: number }> => {
-    const response = await fetch(`${API_URL}/executions/${executionId}/tasks/${taskId}/complete`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ duration, isOnTime }),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to complete task');
-    }
+  // Running routines and flows: report what the kid did; the server moves them on.
+  completeTask: async (executionId: string, taskId: string): Promise<{ success: boolean, starsAwarded: number }> => {
+    const response = await fetch(`${API_URL}/executions/${executionId}/tasks/${taskId}/complete`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to complete task');
     return response.json();
   },
 
-  getRewards: async (): Promise<Reward[]> => {
-    const response = await fetch(`${API_URL}/rewards`, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Failed to fetch rewards');
-    return response.json();
+  closeRoutine: async (executionId: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/executions/${executionId}/close`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to close routine');
   },
 
-  getSpendings: async (): Promise<Spending[]> => {
-    const response = await fetch(`${API_URL}/spendings`, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Failed to fetch spendings');
-    return response.json();
+  dismissAlarm: async (runId: string, stepIndex: number): Promise<void> => {
+    const response = await fetch(`${API_URL}/flow-runs/${runId}/steps/${stepIndex}/dismiss`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to dismiss alarm');
   },
+
 
   spendStars: async (userId: string, rewardId: string): Promise<any> => {
     const response = await fetch(`${API_URL}/spendings`, {
@@ -161,12 +137,6 @@ export const api = {
     return response.json();
   },
 
-  getValidationStatus: async (): Promise<{ config: any, state: any }> => {
-    const response = await fetch(`${API_URL}/admin/validation-status`);
-    if (!response.ok) throw new Error('Failed to fetch validation status');
-    return response.json();
-  },
-
   getScheduleDebug: async (): Promise<any> => {
     const response = await fetch(`${API_URL}/debug/schedule`);
     if (!response.ok) throw new Error('Failed to fetch schedule debug info');
@@ -189,13 +159,6 @@ export const api = {
       const error = await response.json();
       throw new Error(error.error || 'Failed to save state');
     }
-  },
-
-  // Star Transfers API
-  getTransfers: async (): Promise<StarTransfer[]> => {
-    const response = await fetch(`${API_URL}/transfers`, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Failed to fetch transfers');
-    return response.json();
   },
 
   createTransfer: async (fromUserId: string, toUserId: string, amount: number): Promise<StarTransfer> => {
@@ -238,14 +201,6 @@ export const api = {
       body: JSON.stringify({ action: 'cancel' }),
     });
     if (!response.ok) throw new Error('Failed to cancel transfer');
-    return response.json();
-  },
-
-  // Chores API
-  getChores: async (userId?: string): Promise<{ chores: Chore[], instances: ChoreInstance[] }> => {
-    const url = userId ? `${API_URL}/chores?userId=${userId}` : `${API_URL}/chores`;
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Failed to fetch chores');
     return response.json();
   },
 
@@ -352,12 +307,6 @@ export const api = {
     return response.json();
   },
 
-  getExerciseSession: async (id: string): Promise<ExerciseSession> => {
-    const response = await fetch(`${API_URL}/exercises/sessions/${id}`, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Failed to fetch exercise session');
-    return response.json();
-  },
-
   submitExerciseAnswer: async (sessionId: string, userId: string, exerciseId: string, answer: any): Promise<{ correct: boolean, earnedStars: number, session: ExerciseSession }> => {
     const response = await fetch(`${API_URL}/exercises/sessions/${sessionId}/answer`, {
       method: 'POST',
@@ -379,14 +328,6 @@ export const api = {
       const error = await response.json();
       throw new Error(error.error || 'Failed to cancel exercise session');
     }
-  },
-
-  // Daily Exercise Assignments API
-  getExerciseAssignments: async (userId?: string): Promise<ExerciseAssignmentWithExercise[]> => {
-    const url = userId ? `${API_URL}/exercise-assignments?userId=${userId}` : `${API_URL}/exercise-assignments`;
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Failed to fetch exercise assignments');
-    return response.json();
   },
 
   answerExerciseAssignment: async (assignmentId: string, answer: any): Promise<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise }> => {

@@ -11,7 +11,6 @@ import {
   stateSnapshot,
   usersWithStars,
   triggerAction,
-  broadcast,
   getEnrichedSpendings,
   awardStars,
   setUserStars,
@@ -826,8 +825,8 @@ mcpServer.registerTool(
     const result = triggerAction(id, 'mcp');
     if (result && 'skipped' in result) {
       return {
-        content: [{ type: 'text', text: `Routine "${id}" is already running (execution ${result.existingExecutionId})` }],
-        structuredContent: { success: true, type: 'assignment', id }
+        content: [{ type: 'text', text: `"${id}" is already running (${result.runningId})` }],
+        structuredContent: { success: true, type: result.type, id }
       };
     }
     if (result) {
