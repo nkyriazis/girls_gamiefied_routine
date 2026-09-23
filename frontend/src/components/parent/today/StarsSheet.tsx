@@ -34,7 +34,7 @@ export function StarsSheet({ user, onClose }: { user: User; onClose: () => void 
                     value={amount} onChange={e => setAmount(e.target.valueAsNumber)} />
             </div>
             <div className="p-actions">
-                <button type="button" className="p-btn ghost" disabled={!valid} onClick={() => change(-amount)}>− Αφαίρεση {valid ? amount : ''}</button>
+                <button type="button" className="p-btn ghost" disabled={!valid || amount > user.stars} onClick={() => change(-amount)}>− Αφαίρεση {valid ? amount : ''}</button>
                 <button type="button" className="p-btn primary" disabled={!valid} onClick={() => change(amount)}>+ Προσθήκη {valid ? amount : ''}</button>
             </div>
         </Sheet>

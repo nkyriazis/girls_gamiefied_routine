@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../../api';
 import { useFeedback } from '../useFeedback';
+import { Empty } from '../ui';
 
 // Uploaded images and sounds; the raw config refers to them by file name.
 export function UploadsPanel() {
@@ -20,6 +21,7 @@ export function UploadsPanel() {
                 Ανέβασμα εικόνας ή ήχου
                 <input type="file" accept="image/*,audio/*" hidden onChange={e => upload(e.target.files?.[0])} />
             </label>
+            {files.length === 0 && <Empty>Δεν έχει ανέβει κανένα αρχείο. Οι εικόνες μπαίνουν και από τα εικονίδια στις φόρμες.</Empty>}
             <ul className="p-list">
                 {files.map(f => (
                     <li key={f}>
