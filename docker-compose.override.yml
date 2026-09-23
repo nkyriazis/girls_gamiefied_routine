@@ -8,7 +8,10 @@ services:
       - ./backend/uploads:/app/uploads
     environment:
       - DATA_FILE=/data/data.json
+      - DB_FILE=/data/routine.db
+      # Legacy files, imported into the database once on first start (read-only)
       - STATE_FILE=/data/state.json
+      - LOGS_FILE=/data/logs.jsonl
     restart: always
 
   frontend:
