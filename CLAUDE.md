@@ -70,7 +70,9 @@ Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.gith
 ### Real-time flow (backend/src/sync.ts)
 - Clients render one `AppState` (`shared/types.ts`) and nothing else. Every store write (the `Store` change hook) and every config change calls `sync.changed()`; the server then rebuilds `appState()` (db.ts) and sends it as a `STATE` message to every client over WebSocket `/ws`. Changes in one event-loop turn are sent once, builds never overlap, and a connecting client gets the state the same way, so reconnects and restarts need nothing special. Mutations don't have to remember to notify anyone.
 - `GameContext.tsx` replaces its state with each `STATE`. There is no initial REST fetch and no per-event patching. To show something new, add it to `AppState`/`appState()`.
-- One-off effects (`ROUTINE_START`, `FLOW_START`, `ALARM_START`, `CHORE_CONFIRMED/REJECTED/EXPIRED`) go out with `sync.notify()` and reach components through `useGame().subscribe()`. They never carry state that isn't also in `AppState`.
+- Flows and routines on screen are server state too (`flowRuns`, `routineRuns`; tables `flow_runs`, `routine_runs`). The server starts and advances them (db.ts, "ROUTINES AND FLOWS ON SCREEN"); the kids' dashboard only renders them and reports actions: dismiss an alarm, complete a task, close a routine. Those REST calls name the step/task they act on, so repeats from a second device are no-ops. A reload or a server restart resumes where it was.
+- The only events are the chore toasts (`CHORE_CONFIRMED/REJECTED/EXPIRED`, via `sync.notify()` and `useGame().subscribe()`). They never carry state that isn't also in `AppState`.
+- Heartbeat: the server sends `HEARTBEAT` every 10 s; a client that hears nothing for 25 s drops the socket and reconnects.
 - All messages are `ServerMessage` (`{ type, payload }`), sent to every client with no per-user filtering.
 
 ### Scheduling (backend/src/server.ts)
