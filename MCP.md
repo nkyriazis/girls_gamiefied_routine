@@ -109,7 +109,7 @@ npx @modelcontextprotocol/inspector
 | `uploads://list` | List all uploaded files |
 | `uploads://{filename}` | Get a specific uploaded file (base64 encoded) |
 | `schema://data` | JSON Schema for data.json |
-| `schema://state` | JSON Schema for state.json |
+| `schema://state` | JSON Schema for the runtime state snapshot (`get_state`) |
 
 ## Example: Using with an LLM
 
@@ -141,7 +141,7 @@ For production use, consider re-enabling `MCP_API_KEY` or securing the tunnel wi
                                                          ▼
                                                   ┌─────────────────┐
                                                   │   data.json     │
-                                                  │   state.json    │
+                                                  │   routine.db    │
                                                   │   uploads/      │
                                                   └─────────────────┘
                                                          │
