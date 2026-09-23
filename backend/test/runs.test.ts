@@ -130,3 +130,30 @@ test('runs are in the client state and in the database (a restart resumes them)'
   assert.deepEqual(reopened.flowRuns.all(), store.flowRuns.all());
   reopened.close();
 });
+
+test('a routine left open on an earlier day is closed: on the next trigger and by the minute cron', () => {
+  reset();
+  const yesterday = new Date(Date.now() - 36 * 3600_000).toISOString();
+  const backdate = (userId: string) => {
+    const run = routineRun(userId);
+    store.routineExecutions.put({ ...store.routineExecutions.get(run.id)!, startedAt: yesterday });
+    return run;
+  };
+
+  // Left open inside a flow, then tomorrow's trigger: the old run closes, its flow moves on, a new one starts
+  db.triggerAction('f1');
+  db.dismissAlarm(flowRun('f1').id, 0);
+  const old = backdate('u1');
+  assert.equal(db.closeStaleRoutines('u2'), 0, 'other users are untouched');
+  assert.deepEqual(db.triggerAction('a1'), { success: true, type: 'assignment', id: 'a1' });
+  assert.notEqual(routineRun('u1').id, old.id);
+  assert.equal(flowRun('f1'), undefined, 'the flow waiting for the stale routine ended');
+
+  // The cron closes stale runs without a trigger; today's runs stay
+  backdate('u1');
+  db.triggerAction('a2');
+  assert.equal(db.closeStaleRoutines(), 1);
+  assert.equal(routineRun('u1'), undefined);
+  assert.ok(routineRun('u2'));
+  assert.equal(store.recentLogs(50).filter(l => l.type === 'ROUTINE_CLOSED_STALE').length, 2);
+});

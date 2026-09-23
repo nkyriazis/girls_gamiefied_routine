@@ -205,6 +205,7 @@ export function triggerAction(id: string, source: string = 'unknown'): TriggerRe
 function startRoutine(assignmentId: string, flowRunId?: string): { started: boolean; id: string } {
   const assignment = config().routineAssignments.find(a => a.id === assignmentId);
   if (!assignment) return { started: false, id: '' };
+  closeStaleRoutines(assignment.userId);
   const [running] = store.routineRuns.all('userId = ?', assignment.userId);
   if (running) return { started: false, id: running.id };
 
@@ -287,11 +288,33 @@ export function dismissAlarm(runId: string, stepIndex: number): boolean {
 export function closeRoutine(runId: string): boolean {
   return store.transaction(() => {
     const run = store.routineRuns.get(runId);
-    if (!run) return false;
-    store.routineRuns.deleteWhere('id = ?', runId);
-    logAction('ROUTINE_CLOSED', { runId, userId: run.userId, finished: !!run.finishedAt });
-    if (run.flowRunId) childClosed(run.flowRunId);
-    return true;
+    if (run) endRoutine(run, 'ROUTINE_CLOSED');
+    return !!run;
+  });
+}
+
+function endRoutine(run: Omit<RoutineRun, 'totalStars'>, logType: string): void {
+  store.routineRuns.deleteWhere('id = ?', run.id);
+  logAction(logType, { runId: run.id, userId: run.userId, finished: !!run.finishedAt });
+  if (run.flowRunId) childClosed(run.flowRunId);
+}
+
+/**
+ * Close routines started before today (local time): left open when the kid
+ * walked away or the kiosk was off. Runs when a routine is triggered for the
+ * user and every minute, so an old run never blocks or lingers.
+ */
+export function closeStaleRoutines(userId?: string): number {
+  return store.transaction(() => {
+    const timezone = config().settings?.timezone || 'Europe/Athens';
+    const today = localDateStr(timezone);
+    const runs = userId ? store.routineRuns.all('userId = ?', userId) : store.routineRuns.all();
+    const stale = runs.filter(run => {
+      const startedAt = store.routineExecutions.get(run.id)?.startedAt ?? run.taskStartedAt;
+      return localDateStr(timezone, new Date(startedAt)) < today;
+    });
+    stale.forEach(run => endRoutine(run, 'ROUTINE_CLOSED_STALE'));
+    return stale.length;
   });
 }
 
@@ -866,11 +889,11 @@ export function submitExerciseAnswer(
 // ============================================
 
 // Local date (YYYY-MM-DD) in the configured timezone
-function localDateStr(timezone: string): string {
+function localDateStr(timezone: string, date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(new Date());
+  }).format(date);
 }
 
 // Draw `count` exercises from a pool, balancing across categories

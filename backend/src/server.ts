@@ -17,7 +17,7 @@ const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 
 // Import shared database layer
 import {
-  store, sync, triggerAction, completeTask, closeRoutine, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
+  store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
   readLastLogs, MAX_LOGS, adjustUserStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
@@ -107,6 +107,13 @@ async function checkSchedules(date: Date) {
     logAction('CHORE_EXPIRATION_ERROR', { error: (err as Error).message });
   }
   
+  // Close routines left open on an earlier day
+  try {
+    closeStaleRoutines();
+  } catch (err) {
+    console.error('Error closing stale routines:', err);
+  }
+
   // Draw today's exercise assignments once the day changes
   try {
     await ensureDailyAssignments();
