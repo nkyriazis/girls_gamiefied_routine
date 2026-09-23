@@ -1,6 +1,10 @@
 import type {
-  StarTransfer, ChoreInstance, Exercise, ExerciseSession, ExerciseAssignmentWithExercise
+  ActionLog, ChoreInstance, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
+  ExerciseSession, Spending, StarTransfer, StateSnapshot
 } from '@shared/types';
+
+// REST calls. They report what someone did; the resulting state arrives over
+// the WebSocket (GameContext), so callers never cache what these return.
 
 const API_URL = '/api';
 
@@ -8,7 +12,7 @@ export interface ValidationError {
   instancePath: string;
   schemaPath: string;
   keyword: string;
-  params: Record<string, any>;
+  params: Record<string, unknown>;
   message: string;
 }
 
@@ -17,329 +21,89 @@ export interface ValidationResult {
   errors?: ValidationError[];
 }
 
+export interface ScheduleDebug {
+  serverTime: string;
+  timezone: string;
+  serverTimeLocal: string;
+  schedules: { id: string; cron: string; targetId?: string; nextRunLocal?: string; error?: string }[];
+}
+
+// Rejects with the server's error message when there is one.
+async function request<T>(method: string, path: string, body?: unknown, fallbackError = 'Request failed'): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, {
+    method,
+    cache: 'no-store',
+    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const json = await response.json().catch(() => undefined);
+  if (!response.ok) throw new Error(json?.error || fallbackError);
+  return json as T;
+}
+
+const post = <T = void>(path: string, body: unknown = {}, error?: string) => request<T>('POST', path, body, error);
+const put = <T>(path: string, body: unknown, error?: string) => request<T>('PUT', path, body, error);
+const get = <T>(path: string, error?: string) => request<T>('GET', path, undefined, error);
+
 export const api = {
+  pushNow: (id: string) => post('/hooks/push', { id }, 'Failed to push'),
 
-  pushNow: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/hooks/push`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to push');
-    }
-  },
-  
   // Running routines and flows: report what the kid did; the server moves them on.
-  completeTask: async (executionId: string, taskId: string): Promise<{ success: boolean, starsAwarded: number }> => {
-    const response = await fetch(`${API_URL}/executions/${executionId}/tasks/${taskId}/complete`, { method: 'POST' });
-    if (!response.ok) throw new Error('Failed to complete task');
-    return response.json();
-  },
+  completeTask: (executionId: string, taskId: string) =>
+    post<{ success: boolean, starsAwarded: number }>(`/executions/${executionId}/tasks/${taskId}/complete`, {}, 'Failed to complete task'),
+  closeRoutine: (executionId: string) => post(`/executions/${executionId}/close`, {}, 'Failed to close routine'),
+  dismissAlarm: (runId: string, stepIndex: number) => post(`/flow-runs/${runId}/steps/${stepIndex}/dismiss`, {}, 'Failed to dismiss alarm'),
 
-  closeRoutine: async (executionId: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/executions/${executionId}/close`, { method: 'POST' });
-    if (!response.ok) throw new Error('Failed to close routine');
-  },
+  // Stars and rewards
+  adjustStars: (userId: string, amount: number) =>
+    post<{ success: boolean, newTotal: number }>(`/users/${userId}/stars`, { amount }, 'Failed to change stars'),
+  spendStars: (userId: string, rewardId: string) => post<Spending>('/spendings', { userId, rewardId }, 'Failed to spend stars'),
+  markSpendingDone: (id: string) => put<Spending>(`/spendings/${id}`, { status: 'done' }, 'Failed to update spending'),
+  revokeSpending: (id: string) => put<Spending>(`/spendings/${id}`, { status: 'revoked' }, 'Failed to revoke spending'),
 
-  dismissAlarm: async (runId: string, stepIndex: number): Promise<void> => {
-    const response = await fetch(`${API_URL}/flow-runs/${runId}/steps/${stepIndex}/dismiss`, { method: 'POST' });
-    if (!response.ok) throw new Error('Failed to dismiss alarm');
-  },
+  createTransfer: (fromUserId: string, toUserId: string, amount: number) =>
+    post<StarTransfer>('/transfers', { fromUserId, toUserId, amount }, 'Failed to create transfer'),
+  approveTransfer: (id: string) => put<StarTransfer>(`/transfers/${id}`, { action: 'approve' }, 'Failed to approve transfer'),
+  rejectTransfer: (id: string) => put<StarTransfer>(`/transfers/${id}`, { action: 'reject' }, 'Failed to reject transfer'),
+  cancelTransfer: (id: string) => put<StarTransfer>(`/transfers/${id}`, { action: 'cancel' }, 'Failed to cancel transfer'),
 
+  // Chores
+  claimChore: (instanceId: string, userId: string) => post<ChoreInstance>(`/chores/${instanceId}/claim`, { userId }, 'Failed to claim chore'),
+  attemptChore: (instanceId: string) => post<ChoreInstance>(`/chores/${instanceId}/attempt`, {}, 'Failed to mark chore as done'),
+  confirmChore: (instanceId: string, stars?: number) => post<ChoreInstance>(`/chores/${instanceId}/confirm`, { stars }, 'Failed to confirm chore'),
+  rejectChore: (instanceId: string) => post<ChoreInstance>(`/chores/${instanceId}/reject`, {}, 'Failed to reject chore'),
 
-  spendStars: async (userId: string, rewardId: string): Promise<any> => {
-    const response = await fetch(`${API_URL}/spendings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, rewardId }),
-    });
-    if (!response.ok) throw new Error('Failed to spend stars');
-    return response.json();
-  },
-
-  markSpendingDone: async (id: string): Promise<any> => {
-    const response = await fetch(`${API_URL}/spendings/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'done' }),
-    });
-    if (!response.ok) throw new Error('Failed to update spending');
-    return response.json();
-  },
-
-  revokeSpending: async (id: string): Promise<any> => {
-    const response = await fetch(`${API_URL}/spendings/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'revoked' }),
-    });
-    if (!response.ok) throw new Error('Failed to revoke spending');
-    return response.json();
-  },
+  // Config and admin
+  saveConfig: (config: DataConfig) => post('/admin/data', config, 'Failed to save data'),
+  saveRawConfig: (data: unknown) => post('/admin/data', data, 'Failed to save data'),
+  validateConfig: (data: unknown) => post<ValidationResult>('/admin/validate', data, 'Failed to validate config'),
+  getRawState: () => get<StateSnapshot>('/admin/state', 'Failed to fetch state'),
+  saveRawState: (data: unknown) => post('/admin/state', data, 'Failed to save state'),
+  validateState: (data: unknown) => post<ValidationResult>('/admin/validate-state', data, 'Failed to validate state'),
+  getRawExercises: () => get<unknown>('/admin/exercises', 'Failed to fetch exercises'),
+  saveRawExercises: (data: unknown) => post('/admin/exercises', data, 'Failed to save exercises'),
+  getSchema: (name: 'data' | 'state') => get<object>(`/admin/schema/${name}`, 'Failed to fetch schema'),
+  getExerciseSchema: () => get<object>('/exercises/schema', 'Failed to fetch exercise schema'),
+  listUploads: () => get<string[]>('/admin/uploads/list', 'Failed to list uploads'),
+  getScheduleDebug: () => get<ScheduleDebug>('/debug/schedule', 'Failed to fetch schedule debug info'),
+  getDebugLogs: () => get<ActionLog[]>('/debug/logs', 'Failed to fetch debug logs'),
 
   uploadFile: async (file: File): Promise<{ success: boolean, url: string, filename: string }> => {
     const formData = new FormData();
     formData.append('file', file);
-    
-    const response = await fetch(`${API_URL}/admin/upload`, {
-      method: 'POST',
-      body: formData,
-    });
-    
+    const response = await fetch(`${API_URL}/admin/upload`, { method: 'POST', body: formData });
     if (!response.ok) throw new Error('Failed to upload file');
     return response.json();
   },
 
-  getRawData: async (): Promise<any> => {
-    const response = await fetch(`${API_URL}/admin/data`);
-    if (!response.ok) throw new Error('Failed to fetch data');
-    return response.json();
-  },
-
-  validateConfig: async (data: any): Promise<ValidationResult> => {
-    const response = await fetch(`${API_URL}/admin/validate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error('Failed to validate config');
-    return response.json();
-  },
-
-  validateState: async (data: any): Promise<ValidationResult> => {
-    const response = await fetch(`${API_URL}/admin/validate-state`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error('Failed to validate state');
-    return response.json();
-  },
-
-  saveRawData: async (data: any): Promise<void> => {
-    const response = await fetch(`${API_URL}/admin/data`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to save data');
-    }
-  },
-
-  getRawState: async (): Promise<any> => {
-    const response = await fetch(`${API_URL}/admin/state`);
-    if (!response.ok) throw new Error('Failed to fetch state');
-    return response.json();
-  },
-
-  getScheduleDebug: async (): Promise<any> => {
-    const response = await fetch(`${API_URL}/debug/schedule`);
-    if (!response.ok) throw new Error('Failed to fetch schedule debug info');
-    return response.json();
-  },
-
-  getDebugLogs: async (): Promise<any[]> => {
-    const response = await fetch(`${API_URL}/debug/logs`);
-    if (!response.ok) throw new Error('Failed to fetch debug logs');
-    return response.json();
-  },
-
-  saveRawState: async (data: any): Promise<void> => {
-    const response = await fetch(`${API_URL}/admin/state`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to save state');
-    }
-  },
-
-  createTransfer: async (fromUserId: string, toUserId: string, amount: number): Promise<StarTransfer> => {
-    const response = await fetch(`${API_URL}/transfers`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fromUserId, toUserId, amount }),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to create transfer');
-    }
-    return response.json();
-  },
-
-  approveTransfer: async (id: string): Promise<StarTransfer> => {
-    const response = await fetch(`${API_URL}/transfers/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'approve' }),
-    });
-    if (!response.ok) throw new Error('Failed to approve transfer');
-    return response.json();
-  },
-
-  rejectTransfer: async (id: string): Promise<StarTransfer> => {
-    const response = await fetch(`${API_URL}/transfers/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reject' }),
-    });
-    if (!response.ok) throw new Error('Failed to reject transfer');
-    return response.json();
-  },
-
-  cancelTransfer: async (id: string): Promise<StarTransfer> => {
-    const response = await fetch(`${API_URL}/transfers/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'cancel' }),
-    });
-    if (!response.ok) throw new Error('Failed to cancel transfer');
-    return response.json();
-  },
-
-  claimChore: async (instanceId: string, userId: string): Promise<ChoreInstance> => {
-    const response = await fetch(`${API_URL}/chores/${instanceId}/claim`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to claim chore');
-    }
-    return response.json();
-  },
-
-  attemptChore: async (instanceId: string): Promise<ChoreInstance> => {
-    const response = await fetch(`${API_URL}/chores/${instanceId}/attempt`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to mark chore as done');
-    }
-    return response.json();
-  },
-
-  confirmChore: async (instanceId: string, stars?: number): Promise<ChoreInstance> => {
-    const response = await fetch(`${API_URL}/chores/${instanceId}/confirm`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stars }),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to confirm chore');
-    }
-    return response.json();
-  },
-
-  rejectChore: async (instanceId: string): Promise<ChoreInstance> => {
-    const response = await fetch(`${API_URL}/chores/${instanceId}/reject`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to reject chore');
-    }
-    return response.json();
-  },
-
-  // Exercises API
-  getExercises: async (category?: string): Promise<Exercise[]> => {
-    const url = category ? `${API_URL}/exercises?category=${category}` : `${API_URL}/exercises`;
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Failed to fetch exercises');
-    return response.json();
-  },
-
-  getExerciseCategories: async (): Promise<any[]> => {
-    const response = await fetch(`${API_URL}/exercises/categories`, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Failed to fetch exercise categories');
-    return response.json();
-  },
-
-  getExerciseSchema: async (): Promise<any> => {
-    const response = await fetch(`${API_URL}/exercises/schema`);
-    if (!response.ok) throw new Error('Failed to fetch exercise schema');
-    return response.json();
-  },
-
-  getRawExercises: async (): Promise<any> => {
-    const response = await fetch(`${API_URL}/admin/exercises`);
-    if (!response.ok) throw new Error('Failed to fetch exercises');
-    return response.json();
-  },
-
-  saveRawExercises: async (data: any): Promise<void> => {
-    const response = await fetch(`${API_URL}/admin/exercises`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to save exercises');
-    }
-  },
-
-  startExerciseSession: async (playerIds: string[], categories: string[], totalRounds: number, questionsPerRound: number): Promise<ExerciseSession> => {
-    const response = await fetch(`${API_URL}/exercises/sessions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerIds, categories, totalRounds, questionsPerRound }),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to start exercise session');
-    }
-    return response.json();
-  },
-
-  submitExerciseAnswer: async (sessionId: string, userId: string, exerciseId: string, answer: any): Promise<{ correct: boolean, earnedStars: number, session: ExerciseSession }> => {
-    const response = await fetch(`${API_URL}/exercises/sessions/${sessionId}/answer`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, exerciseId, answer }),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to submit answer');
-    }
-    return response.json();
-  },
-
-  cancelExerciseSession: async (sessionId: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/exercises/sessions/${sessionId}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to cancel exercise session');
-    }
-  },
-
-  answerExerciseAssignment: async (assignmentId: string, answer: any): Promise<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise }> => {
-    const response = await fetch(`${API_URL}/exercise-assignments/${assignmentId}/answer`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answer }),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to submit answer');
-    }
-    return response.json();
-  },
+  // Exercises
+  getExercises: (category?: string) => get<Exercise[]>(category ? `/exercises?category=${category}` : '/exercises', 'Failed to fetch exercises'),
+  getExerciseCategories: () => get<ExerciseCategoryDef[]>('/exercises/categories', 'Failed to fetch exercise categories'),
+  startExerciseSession: (playerIds: string[], categories: string[], totalRounds: number, questionsPerRound: number) =>
+    post<ExerciseSession>('/exercises/sessions', { playerIds, categories, totalRounds, questionsPerRound }, 'Failed to start exercise session'),
+  submitExerciseAnswer: (sessionId: string, userId: string, exerciseId: string, answer: unknown) =>
+    post<{ correct: boolean, earnedStars: number, session: ExerciseSession }>(`/exercises/sessions/${sessionId}/answer`, { userId, exerciseId, answer }, 'Failed to submit answer'),
+  cancelExerciseSession: (sessionId: string) => request<void>('DELETE', `/exercises/sessions/${sessionId}`, undefined, 'Failed to cancel exercise session'),
+  answerExerciseAssignment: (assignmentId: string, answer: unknown) =>
+    post<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise }>(`/exercise-assignments/${assignmentId}/answer`, { answer }, 'Failed to submit answer'),
 };
