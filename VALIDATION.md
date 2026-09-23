@@ -55,7 +55,7 @@ Validates runtime state data (state.json):
 - Graceful degradation: if schema files missing, validation is skipped with warning
 - State validation protects against corrupted runtime data
 
-### 3. Frontend Integration (`frontend/src/components/ParentDashboard.tsx`)
+### 3. Frontend Integration (`frontend/src/components/parent/advanced/JsonEditor.tsx`)
 
 **Enhanced JSON Editor:**
 - New "Validate" button to check configuration/state before saving

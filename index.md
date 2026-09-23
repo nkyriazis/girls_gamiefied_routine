@@ -185,11 +185,11 @@ cron.schedule('* * * * *', () => {
    └─ StoreModal (per-user reward shop)
 
 /parent (Admin)
-└─ ParentDashboard.tsx
-   ├─ User stars overview
-   ├─ Pending reward redemptions
-   ├─ Config editor (data.json)
-   └─ State editor (state.json)
+└─ parent/ParentDashboard.tsx
+   ├─ Σήμερα: kids' balances, what waits for a parent
+   ├─ Ιστορικό
+   ├─ Ρυθμίσεις: rewards, schedules, chores (forms)
+   └─ Προχωρημένα: JSON editors, uploads, log
 ```
 
 ### View Modes & Layouts
@@ -302,10 +302,9 @@ Dashboard
 - Calls `api.completeTask()` on each task finish
 - Shows floating star animation on award
 
-**`frontend/src/components/ParentDashboard.tsx`** (Admin UI)
-- Tabs: Dashboard, Config, State
-- Dashboard: User stars, pending spendings, file upload, manual triggers
-- Config/State: JSON editors with syntax validation
+**`frontend/src/components/parent/`** (Admin UI)
+- Views: Σήμερα (balances, star adjustments, pending purchases, gifts and chores), Ιστορικό, Ρυθμίσεις (forms for rewards, schedules, chores; start now), Προχωρημένα (JSON editors, uploads, log)
+- Renders `useGame()` state; the JSON editors load on demand
 
 ### Shared
 

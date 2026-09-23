@@ -86,7 +86,7 @@ Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.gith
 - The backend compiles with `rootDir: ".."` so it can include `../shared`. That's why the prod entry point is `dist/backend/src/server.js`.
 
 ### Frontend layout
-- Routes: `/` → `Dashboard` (kid view: split-screen or grid of active routines, drawers for chores and school exercises, store) and `/parent` → `ParentDashboard` (admin, including Monaco JSON editors for config and state with schema validation).
+- Routes: `/` → `Dashboard` (kid view: split-screen or grid of active routines, drawers for chores and school exercises, store) and `/parent` → `components/parent/ParentDashboard` (phone-first: Σήμερα with the kids' balances and what waits for a parent, Ιστορικό, Ρυθμίσεις with forms for rewards, schedules and chores, and Προχωρημένα with the Monaco JSON editors, uploads and the log). It renders `useGame()` state only; actions go through `api.ts`.
 - Shared types are imported via the `@shared` alias (see `vite.config.ts`). Vite proxies `/api`, `/ws` and `/uploads` to the backend in dev. In prod, `frontend/nginx.conf` does the same, and it needs Upgrade headers for WS.
 - Component styles are usually scoped with inline `<style>` blocks inside the component.
 - The PWA is set up with vite-plugin-pwa. `/api` uses a NetworkFirst cache.
