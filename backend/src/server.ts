@@ -845,6 +845,7 @@ const start = async () => {
     if (change?.type === 'invalid') {
       console.error('Config is invalid; running with an empty config until it is fixed:', change.error);
     }
+    await ensureDailyAssignments();
     watchConfig(change => {
       if (change.type === 'updated') {
         console.log('Config changed on disk; reloaded');
