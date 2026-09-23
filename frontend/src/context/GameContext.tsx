@@ -8,6 +8,9 @@ import type { AppState, Chore, Flow, Reward, ServerEvent, ServerMessage } from '
 // subscribe().
 
 const RECONNECT_DELAY_MS = 3000;
+// The server sends at least a heartbeat every 10 s. Silence for longer means
+// the link is dead (e.g. Wi-Fi dropped without closing the socket): reconnect.
+const STALE_MS = 25000;
 
 const EMPTY_STATE: AppState = {
     config: {
@@ -20,7 +23,9 @@ const EMPTY_STATE: AppState = {
     starTransfers: [],
     choreInstances: [],
     exerciseSessions: [],
-    exerciseAssignments: []
+    exerciseAssignments: [],
+    flowRuns: [],
+    routineRuns: []
 };
 
 type EventListener = (event: ServerEvent) => void;
@@ -60,18 +65,32 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
         let stopped = false;
 
+        let staleTimer: ReturnType<typeof setTimeout> | undefined;
+
         const connect = () => {
             socket = new WebSocket(url);
-            socket.onopen = () => setIsConnected(true);
-            socket.onclose = () => {
+            const lost = () => {
+                clearTimeout(staleTimer);
+                socket.onclose = null;
+                socket.close();
                 setIsConnected(false);
                 if (!stopped) reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
             };
+            const alive = () => {
+                clearTimeout(staleTimer);
+                staleTimer = setTimeout(lost, STALE_MS);
+            };
+            socket.onopen = () => {
+                setIsConnected(true);
+                alive();
+            };
+            socket.onclose = lost;
             socket.onmessage = ({ data }) => {
+                alive();
                 const message: ServerMessage = JSON.parse(data);
                 if (message.type === 'STATE') {
                     setState(message.payload);
-                } else {
+                } else if (message.type !== 'HEARTBEAT') {
                     listeners.current.forEach(listener => listener(message));
                 }
             };
@@ -81,6 +100,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return () => {
             stopped = true;
             clearTimeout(reconnectTimer);
+            clearTimeout(staleTimer);
+            socket.onclose = null;
             socket.close();
         };
     }, []);

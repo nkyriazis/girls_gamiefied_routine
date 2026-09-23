@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type Flow, type FlowAction, type FlowInstance } from '@shared/types';
+import { type AlarmProps, type FlowRun, type RoutineRun } from '@shared/types';
 import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
@@ -26,12 +26,21 @@ interface ChoreNotification {
 }
 
 const TOAST_MS = 5000;
+
+type ActiveItem =
+  | { type: 'alarm'; key: string; userId: string | null; run: FlowRun; props: AlarmProps }
+  | { type: 'routine'; key: string; userId: string; run: RoutineRun };
+
+// The user a flow is for: its first routine action's user (null: everyone).
+const flowUserId = (run: FlowRun): string | null =>
+  run.steps.flatMap(step => (step.type === 'parallel' ? step.actions : []))
+    .flatMap(action => (action.type === 'routine' ? [action.userId] : []))[0] ?? null;
 const CHORE_TOAST_TYPE = { CHORE_CONFIRMED: 'confirmed', CHORE_REJECTED: 'rejected', CHORE_EXPIRED: 'expired' } as const;
 
 export const Dashboard: React.FC = () => {
   const {
-    users, flows, rewards, spendings, starTransfers, chores, choreInstances,
-    exerciseSessions, exerciseAssignments, subscribe
+    users, rewards, spendings, starTransfers, chores, choreInstances,
+    exerciseSessions, exerciseAssignments, flowRuns, routineRuns, subscribe
   } = useGame();
   const [choreNotifications, setChoreNotifications] = useState<ChoreNotification[]>([]);
   const dismissChoreNotification = useCallback((id: string) => {
@@ -57,20 +66,8 @@ export const Dashboard: React.FC = () => {
   // Daily Exercises Drawer State
   const [dailyExercisesOpen, setDailyExercisesOpen] = useState(false);
 
-  // Flow State - supports multiple simultaneous flows
-  const [activeFlows, setActiveFlows] = useState<FlowInstance[]>([]);
-
-  // Active Routines (triggered by flow)
-  const [activeRoutines, setActiveRoutines] = useState<{ userId: string, routineId: string, executionId?: string }[]>([]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [timeWarning, setTimeWarning] = useState<string | null>(null);
-
-  // Refs for state access in callbacks
-  const flowsRef = useRef<Flow[]>([]);
-
-  useEffect(() => {
-    flowsRef.current = flows;
-  }, [flows]);
 
   // Count active chores (available, claimed, attempted) - filtered by category
   const activeChoresCount = useMemo(() => {
@@ -95,61 +92,19 @@ export const Dashboard: React.FC = () => {
     }).length;
   }, [choreInstances, chores]);
 
-  // Handle server events
+  // Chore toasts (server events)
   useEffect(() => subscribe(event => {
-    if (event.type === 'ALARM_START') {
-      // Trigger alarm by creating a temporary flow
-      const alarmFlow: Flow = {
-        id: 'temp-alarm',
-        triggerTime: '',
-        steps: [{ type: 'alarm', props: { sound: 'melody' } }]
-      };
-      setActiveFlows(prev => {
-        // Prevent duplicates - remove any existing flow with this ID
-        const filtered = prev.filter(f => f.flowId !== 'temp-alarm');
-        return [...filtered, { flowId: 'temp-alarm', flow: alarmFlow, stepIndex: 0 }];
-      });
-    } else if (event.type === 'ROUTINE_START') {
-      const { userId, routineId, executionId } = event.payload;
-      setActiveRoutines(prev => {
-        // A user can only be in one routine at a time - filter by userId only
-        const filtered = prev.filter(r => r.userId !== userId);
-        return [...filtered, { userId, routineId, executionId }];
-      });
-    } else if (event.type === 'FLOW_START') {
-      const { flowId, steps } = event.payload;
-      // Use ref to get latest flows
-      const flow = flowsRef.current.find(f => f.id === flowId) || { id: flowId, triggerTime: '', steps };
-      setActiveFlows(prev => {
-        // Prevent duplicates - remove any existing flow with this ID
-        const filtered = prev.filter(f => f.flowId !== flowId);
-        return [...filtered, { flowId, flow, stepIndex: 0 }];
-      });
-
-      // Execute the first step if it's a parallel step
-      const firstStep = steps[0];
-      if (firstStep && firstStep.type === 'parallel' && firstStep.actions) {
-        firstStep.actions.forEach(a => {
-          if (a.type === 'routine') {
-            api.pushNow(a.routineId).catch(console.error);
-          } else if (a.type === 'flow') {
-            api.pushNow(a.flowId).catch(console.error);
-          }
-        });
-      }
-    } else {
-      // A chore was confirmed, rejected or expired: show a toast
-      const { instanceId, choreTitle, userId } = event.payload;
-      const notification: ChoreNotification = {
-        id: `${event.type}-${instanceId}`,
-        type: CHORE_TOAST_TYPE[event.type],
-        choreTitle: choreTitle || '',
-        userId,
-        starsAwarded: event.type === 'CHORE_CONFIRMED' ? event.payload.starsAwarded : undefined
-      };
-      setChoreNotifications(prev => [...prev.filter(n => n.id !== notification.id), notification]);
-      setTimeout(() => dismissChoreNotification(notification.id), TOAST_MS);
-    }
+    // A chore was confirmed, rejected or expired
+    const { instanceId, choreTitle, userId } = event.payload;
+    const notification: ChoreNotification = {
+      id: `${event.type}-${instanceId}`,
+      type: CHORE_TOAST_TYPE[event.type],
+      choreTitle: choreTitle || '',
+      userId,
+      starsAwarded: event.type === 'CHORE_CONFIRMED' ? event.payload.starsAwarded : undefined
+    };
+    setChoreNotifications(prev => [...prev.filter(n => n.id !== notification.id), notification]);
+    setTimeout(() => dismissChoreNotification(notification.id), TOAST_MS);
   }), [subscribe, dismissChoreNotification]);
 
   // Check for URL push parameter
@@ -195,96 +150,22 @@ export const Dashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Flow Trigger Logic (Test Mode: Trigger after 3s) - REMOVED
-  // Real implementation will listen to WebSockets or manual triggers
-
-  const handleStepComplete = (flowId: string) => {
-    setActiveFlows(prev => {
-      const flowInstance = prev.find(f => f.flowId === flowId);
-      if (!flowInstance) return prev;
-
-      const nextIndex = flowInstance.stepIndex + 1;
-      if (nextIndex < flowInstance.flow.steps.length) {
-        // Advance to next step
-        const updatedFlows = prev.map(f =>
-          f.flowId === flowId ? { ...f, stepIndex: nextIndex } : f
-        );
-
-        // Execute next step actions if it's a parallel step
-        const nextStep = flowInstance.flow.steps[nextIndex];
-        if (nextStep.type === 'parallel' && nextStep.actions) {
-          nextStep.actions.forEach(a => {
-            if (a.type === 'routine') {
-              // Push the routine assignment ID to trigger it
-              api.pushNow(a.routineId).catch(console.error);
-            } else if (a.type === 'flow') {
-              // Push the flow ID to trigger it
-              api.pushNow(a.flowId).catch(console.error);
-            }
-          });
-        }
-
-        return updatedFlows;
-      } else {
-        // Flow Complete - remove from array
-        return prev.filter(f => f.flowId !== flowId);
-      }
-    });
-  };
-
-  const handleRoutineExit = (userId: string) => {
-    setActiveRoutines(prev => prev.filter(r => r.userId !== userId));
-  };
-
-  const handleRoutineComplete = (userId: string) => {
-    handleRoutineExit(userId);
-  };
-
-  // Combine and sort active items for consistent "lanes"
+  // Running flows and routines come from the server; this only lays them out
+  // in "lanes" and reports what the kids do.
   const sortedActiveItems = React.useMemo(() => {
-    const items: Array<{
-      type: 'alarm' | 'routine',
-      key: string,
-      userId: string | null,
-      data: any
-    }> = [];
+    const items: ActiveItem[] = [];
 
-    // Get alarms that are currently active
-    const activeAlarms = activeFlows.filter(af => af.flow.steps[af.stepIndex]?.type === 'alarm');
-
-    // Add Alarms (but skip if user already has an active routine)
-    activeAlarms.forEach(af => {
-      // Extract userId from the flow's actions
-      const userId = af.flow.steps
-        .flatMap(step => (step.type === 'parallel' && step.actions) ? step.actions : [])
-        .find((action): action is FlowAction & { userId: string } => 'userId' in action)
-        ?.userId;
-
-      if (!userId) {
-        console.error(`[Dashboard] Failed to extract userId from flow ${af.flowId}`, af.flow);
-      }
-
-      // Skip alarm if user already has an active routine (one routine per user)
-      if (userId && activeRoutines.some(r => r.userId === userId)) {
-        return;
-      }
-
-      items.push({
-        type: 'alarm',
-        key: `alarm-${af.flowId}`,
-        userId: userId ?? null,
-        data: af
-      });
+    // Alarms (skipped if the user already has a routine on screen)
+    flowRuns.forEach(run => {
+      const step = run.steps[run.stepIndex];
+      if (step?.type !== 'alarm') return;
+      const userId = flowUserId(run);
+      if (userId && routineRuns.some(r => r.userId === userId)) return;
+      items.push({ type: 'alarm', key: `alarm-${run.id}`, userId, run, props: step.props });
     });
 
-    // Add Routines
-    activeRoutines.forEach(ar => {
-      items.push({
-        type: 'routine',
-        key: `routine-${ar.userId}-${ar.routineId}`,
-        userId: ar.userId,
-        data: ar
-      });
+    routineRuns.forEach(run => {
+      items.push({ type: 'routine', key: `routine-${run.id}`, userId: run.userId, run });
     });
 
     // Sort by User Index (Global items first)
@@ -297,7 +178,7 @@ export const Dashboard: React.FC = () => {
       const userIndexB = users.findIndex(u => u.id === b.userId);
       return userIndexA - userIndexB;
     });
-  }, [activeFlows, activeRoutines, users]);
+  }, [flowRuns, routineRuns, users]);
 
   // Determine View Mode based on actual displayed items
   const totalActiveCount = sortedActiveItems.length;
@@ -517,7 +398,7 @@ export const Dashboard: React.FC = () => {
         {/* Active Items (Alarms & Routines) Sorted by User Lane */}
         {sortedActiveItems.map((item) => {
           if (item.type === 'alarm') {
-            const af = item.data;
+            const { run } = item;
             const user = users.find(u => u.id === item.userId) || null;
             return (
               <motion.div
@@ -529,17 +410,17 @@ export const Dashboard: React.FC = () => {
                 transition={{ type: "spring", bounce: 0.3 }}
               >
                 <GlobalAlarm
-                  flowId={af.flowId}
+                  flowId={run.id}
                   user={user}
-                  alarmProps={af.flow.steps[af.stepIndex].props}
-                  onDismiss={handleStepComplete}
+                  alarmProps={item.props}
+                  onDismiss={() => api.dismissAlarm(run.id, run.stepIndex).catch(console.error)}
                 />
               </motion.div>
             );
           } else {
-            const ar = item.data;
-            const user = users.find(u => u.id === ar.userId);
-            const routine = user?.routines.find(r => r.id === ar.routineId);
+            const { run } = item;
+            const user = users.find(u => u.id === run.userId);
+            const routine = user?.routines.find(r => r.id === run.routineId);
 
             if (!user || !routine) return null;
 
@@ -553,12 +434,11 @@ export const Dashboard: React.FC = () => {
                 transition={{ type: "spring", bounce: 0.3 }}
               >
                 <InlineRoutinePlayer
-                  key={ar.executionId || `${ar.userId}-${ar.routineId}`}
+                  key={run.id}
                   user={user}
                   routine={routine}
-                  executionId={ar.executionId}
-                  onComplete={() => handleRoutineComplete(ar.userId)}
-                  onExit={() => handleRoutineExit(ar.userId)}
+                  run={run}
+                  onClose={() => api.closeRoutine(run.id).catch(console.error)}
                 />
               </motion.div>
             );

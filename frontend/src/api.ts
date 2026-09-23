@@ -32,19 +32,23 @@ export const api = {
     }
   },
   
-  completeTask: async (executionId: string, taskId: string, duration: number, isOnTime: boolean): Promise<{ success: boolean, starsAwarded: number }> => {
-    const response = await fetch(`${API_URL}/executions/${executionId}/tasks/${taskId}/complete`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ duration, isOnTime }),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to complete task');
-    }
+  // Running routines and flows: report what the kid did; the server moves them on.
+  completeTask: async (executionId: string, taskId: string): Promise<{ success: boolean, starsAwarded: number }> => {
+    const response = await fetch(`${API_URL}/executions/${executionId}/tasks/${taskId}/complete`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to complete task');
     return response.json();
   },
+
+  closeRoutine: async (executionId: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/executions/${executionId}/close`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to close routine');
+  },
+
+  dismissAlarm: async (runId: string, stepIndex: number): Promise<void> => {
+    const response = await fetch(`${API_URL}/flow-runs/${runId}/steps/${stepIndex}/dismiss`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to dismiss alarm');
+  },
+
 
   spendStars: async (userId: string, rewardId: string): Promise<any> => {
     const response = await fetch(`${API_URL}/spendings`, {
