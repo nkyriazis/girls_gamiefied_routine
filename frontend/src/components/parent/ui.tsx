@@ -32,10 +32,10 @@ function useNow(): number {
 // "πριν 3 μήνες"; older than a day is marked, since it has waited too long.
 export function Ago({ at }: { at: string }) {
     const now = useNow();
-    const old = now - new Date(at).getTime() > 24 * 3600 * 1000;
+    const age = now - new Date(at).getTime();
     return (
-        <time className={old ? 'p-ago old' : 'p-ago'} dateTime={at} title={new Date(at).toLocaleString('el-GR')}>
-            πριν {formatDistanceStrict(new Date(at), now, { locale: el })}
+        <time className={age > 24 * 3600 * 1000 ? 'p-ago old' : 'p-ago'} dateTime={at} title={new Date(at).toLocaleString('el-GR')}>
+            {age < 60_000 ? 'μόλις τώρα' : `πριν ${formatDistanceStrict(new Date(at), now, { locale: el })}`}
         </time>
     );
 }

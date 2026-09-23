@@ -23,9 +23,11 @@ function Card({ icon, kind, title, who, stars, at, children }: {
             <div className="p-inbox-body">
                 <div className="p-eyebrow">{kind} · <Ago at={at} /></div>
                 <h3>{title}</h3>
-                <div className="p-who">{who}</div>
+                <div className="p-inbox-meta">
+                    <span className="p-who">{who}</span>
+                    <span className="p-inbox-stars">{stars}</span>
+                </div>
             </div>
-            <div className="p-inbox-stars">{stars}</div>
             <div className="p-actions">{children}</div>
         </article>
     );

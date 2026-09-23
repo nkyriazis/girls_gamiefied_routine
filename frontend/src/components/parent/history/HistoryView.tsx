@@ -4,7 +4,7 @@ import { el } from 'date-fns/locale';
 import type { IconValue } from '@shared/types';
 import { useGame } from '../../../context/GameContext';
 import { SmartIcon } from '../../SmartIcon';
-import { Empty, Section, Stars } from '../ui';
+import { Empty, Stars } from '../ui';
 
 interface Entry {
     id: string;
@@ -52,7 +52,7 @@ export function HistoryView() {
     const visible = kid ? entries.filter(e => e.userIds.includes(kid)) : entries;
 
     return (
-        <Section title="Ιστορικό">
+        <section className="p-section">
             <div className="p-chips" role="group" aria-label="Παιδί">
                 <button type="button" className={kid ? 'p-chip' : 'p-chip on'} onClick={() => setKid(null)}>Όλα</button>
                 {users.map(u => (
@@ -68,11 +68,11 @@ export function HistoryView() {
                             <div className="p-row-title">{e.title}</div>
                             <div className="p-row-sub">{e.outcome} · {format(new Date(e.at), 'd MMM yyyy, HH:mm', { locale: el })}</div>
                         </div>
-                        <Stars value={e.stars} sign />
+                        {e.stars !== 0 && <Stars value={e.stars} sign />}
                     </li>
                 ))}
             </ul>
             {visible.length > shown && <button type="button" className="p-btn ghost wide" onClick={() => setShown(n => n + PAGE)}>Περισσότερα</button>}
-        </Section>
+        </section>
     );
 }

@@ -30,7 +30,7 @@ export function ChoresEditor() {
     const { chores } = useGame();
     const save = useConfigSave();
     return (
-        <CollectionEditor<Chore> title="Δουλειές & bonus" addLabel="Νέα δουλειά" items={chores} Form={ChoreForm}
+        <CollectionEditor<Chore> title="Δουλειές & bonus" empty="Δεν υπάρχουν δουλειές. Πρόσθεσε μία και τα παιδιά θα τη βλέπουν στην ώρα της." addLabel="Νέα δουλειά" items={chores} Form={ChoreForm}
             create={() => ({ id: newId('chore'), title: '', icon: { type: 'emoji', value: '🧹' }, defaultStars: 10, availabilityCron: '0 17 * * *', expirationHours: 4, category: 'chore' })}
             row={c => ({ icon: c.icon, title: c.title, sub: `${c.category === 'bonus' ? 'Bonus' : 'Δουλειά'} · ${describeCron(c.availabilityCron)} · ⭐ ${c.defaultStars}` })}
             isValid={c => c.title.trim() !== '' && Number.isInteger(c.defaultStars) && c.defaultStars >= 1 && c.expirationHours >= 0.5}

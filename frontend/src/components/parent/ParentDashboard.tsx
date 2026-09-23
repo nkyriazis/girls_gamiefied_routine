@@ -14,7 +14,7 @@ const VIEWS = [
     { id: 'today', icon: '🏠', label: 'Σήμερα' },
     { id: 'history', icon: '📜', label: 'Ιστορικό' },
     { id: 'settings', icon: '🎁', label: 'Ρυθμίσεις' },
-    { id: 'advanced', icon: '🛠️', label: 'Για προχωρημένους' },
+    { id: 'advanced', icon: '🛠️', label: 'Προχωρημένα' },
 ] as const;
 type View = typeof VIEWS[number]['id'];
 

@@ -26,7 +26,7 @@ export function SchedulesEditor() {
     const targets = targetsOf(config, users);
     const first = targets[0];
     return (
-        <CollectionEditor<Schedule> title="Πρόγραμμα" addLabel="Νέο πρόγραμμα" items={config.schedules} Form={ScheduleForm}
+        <CollectionEditor<Schedule> title="Πρόγραμμα" empty="Τίποτα δεν ξεκινά μόνο του. Πρόσθεσε ώρα για μια ρουτίνα ή ροή." addLabel="Νέο πρόγραμμα" items={config.schedules} Form={ScheduleForm}
             create={() => ({ id: newId('sch'), cron: '0 7 * * 1-5', type: first?.type ?? 'flow', targetId: first?.id ?? '' })}
             row={s => ({ icon: '⏰', title: describeCron(s.cron), sub: targets.find(t => t.id === s.targetId)?.label ?? s.targetId })}
             isValid={s => targets.some(t => t.id === s.targetId)}

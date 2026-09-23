@@ -21,7 +21,7 @@ export function RewardsEditor() {
     const { rewards } = useGame();
     const save = useConfigSave();
     return (
-        <CollectionEditor<Reward> title="Δώρα" addLabel="Νέο δώρο" items={rewards} Form={RewardForm}
+        <CollectionEditor<Reward> title="Δώρα" empty="Το κατάστημα είναι άδειο. Πρόσθεσε ένα δώρο για να το αγοράζουν τα παιδιά με αστέρια." addLabel="Νέο δώρο" items={rewards} Form={RewardForm}
             create={() => ({ id: newId('rew'), title: '', icon: { type: 'emoji', value: '🎁' }, cost: 100 })}
             row={r => ({ icon: r.icon, title: r.title, sub: <Stars value={r.cost} /> })}
             isValid={r => r.title.trim() !== '' && Number.isInteger(r.cost) && r.cost >= 1}

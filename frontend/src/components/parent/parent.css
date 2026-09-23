@@ -15,6 +15,7 @@
 }
 
 .parent :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.parent button:focus:not(:focus-visible) { outline: none; }
 
 /* Navigation: a bottom bar on phones, a rail on tablets and up */
 .p-nav {
@@ -61,7 +62,7 @@
 /* Sections, cards, rows */
 .p-section { margin-bottom: 2rem; }
 .p-section > header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
-.p-section h2 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); }
+.p-section > header h2 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); }
 .p-card { background: var(--p-card); border: 1px solid var(--p-line); border-radius: var(--p-radius); backdrop-filter: blur(var(--glass-blur)); }
 .p-empty { padding: 1.25rem; border: 1px dashed var(--p-line); border-radius: var(--p-radius); color: var(--color-text-muted); }
 .p-warning { color: var(--color-warning); }
@@ -126,7 +127,7 @@ button.p-row:active { background: var(--p-raised); }
 
 /* Today: the inbox. Each card is a ticket: what, who, how many stars, and the answer. */
 .p-inbox { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 12px; }
-.p-inbox-card { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px 14px; align-items: center; padding: 14px; }
+.p-inbox-card { display: grid; grid-template-columns: 64px 1fr; gap: 12px 14px; align-items: center; padding: 14px; }
 .p-inbox-icon {
   width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;
   border-radius: 1rem; background: var(--p-raised); font-size: 2.2rem;
@@ -134,7 +135,8 @@ button.p-row:active { background: var(--p-raised); }
 .p-inbox-body { min-width: 0; }
 .p-inbox-body h3 { font-size: 1.1rem; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
 .p-eyebrow { font-size: 0.78rem; color: var(--color-text-muted); }
-.p-who { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 0.9rem; color: var(--color-text-muted); }
+.p-inbox-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.p-who { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 0.9rem; color: var(--color-text-muted); }
 .p-inbox-stars { font-size: 1.25rem; }
 .p-inbox-card .p-actions { grid-column: 1 / -1; }
 .p-stepper { display: flex; align-items: center; gap: 4px; }
@@ -175,6 +177,10 @@ select.p-input { appearance: auto; }
 .p-when { display: flex; flex-direction: column; gap: 8px; }
 
 /* Advanced */
+@media (max-width: 599px) {
+  .p-advanced > .p-chips { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px 0.75rem; padding: 0 16px; scrollbar-width: none; }
+  .p-advanced > .p-chips .p-chip { flex: none; }
+}
 .p-json { display: flex; flex-direction: column; gap: 10px; }
 .p-json-editor { height: min(62vh, 640px); border: 1px solid var(--p-line); border-radius: 1rem; overflow: hidden; }
 .p-errors { padding: 10px 14px 10px 30px; border-radius: 0.9rem; background: rgba(255, 0, 80, 0.12); color: #ff8fb0; font-size: 0.9rem; max-height: 160px; overflow-y: auto; }
