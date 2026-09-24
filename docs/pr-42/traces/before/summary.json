@@ -1,0 +1,62 @@
+{
+ "store": {
+  "painted": "no flash",
+  "cancels": [
+   {
+    "f": 117,
+    "phase": "between-frames (after paint, before next rAF)",
+    "el": ".store-overlay#1",
+    "opAfterCancel": 1,
+    "inline": "1"
+   }
+  ]
+ },
+ "setup": {
+  "painted": "no flash",
+  "cancels": [
+   {
+    "f": 307,
+    "phase": "between-frames (after paint, before next rAF)",
+    "el": ".setup-overlay#3",
+    "opAfterCancel": 1,
+    "inline": "1"
+   }
+  ]
+ },
+ "daily": {
+  "painted": "no flash",
+  "cancels": [
+   {
+    "f": 560,
+    "phase": "between-frames (after paint, before next rAF)",
+    "el": ".exercises-backdrop#5",
+    "opAfterCancel": 1,
+    "inline": "1"
+   }
+  ]
+ },
+ "assignment": {
+  "painted": "no flash",
+  "cancels": [
+   {
+    "f": 894,
+    "phase": "between-frames (after paint, before next rAF)",
+    "el": ".assignment-player#9",
+    "opAfterCancel": 1,
+    "inline": "1"
+   }
+  ]
+ },
+ "chores": {
+  "painted": "no flash",
+  "cancels": []
+ },
+ "bonus": {
+  "painted": "no flash",
+  "cancels": []
+ },
+ "game": {
+  "painted": "no flash",
+  "cancels": []
+ }
+}

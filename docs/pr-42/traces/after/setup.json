@@ -1,0 +1,206 @@
+{
+ "series": {
+  ".setup-overlay#3": [
+   {
+    "f": 1,
+    "t": 28,
+    "el": ".setup-overlay#3",
+    "op": 0.9468,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 2,
+    "t": 68.2,
+    "el": ".setup-overlay#3",
+    "op": 0.7784,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 3,
+    "t": 111.8,
+    "el": ".setup-overlay#3",
+    "op": 0.4631,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 4,
+    "t": 156.8,
+    "el": ".setup-overlay#3",
+    "op": 0.2942,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 5,
+    "t": 202,
+    "el": ".setup-overlay#3",
+    "op": 0.1244,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 6,
+    "t": 249.5,
+    "el": ".setup-overlay#3",
+    "op": 0.034,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 7,
+    "t": 293.6,
+    "el": ".setup-overlay#3",
+    "op": 0.0011,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 8,
+    "t": 338.2,
+    "el": ".setup-overlay#3",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   }
+  ],
+  ".setup-card#4": [
+   {
+    "f": 1,
+    "t": 28,
+    "el": ".setup-card#4",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 2,
+    "t": 68.2,
+    "el": ".setup-card#4",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 3,
+    "t": 111.8,
+    "el": ".setup-card#4",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 4,
+    "t": 156.8,
+    "el": ".setup-card#4",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 5,
+    "t": 202,
+    "el": ".setup-card#4",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 6,
+    "t": 249.5,
+    "el": ".setup-card#4",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 7,
+    "t": 293.6,
+    "el": ".setup-card#4",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 8,
+    "t": 338.2,
+    "el": ".setup-card#4",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   }
+  ]
+ },
+ "muts": [
+  {
+   "f": 310,
+   "t": 337.8,
+   "el": ".setup-overlay",
+   "style": "opacity: 0;"
+  },
+  {
+   "f": 311,
+   "el": ".setup-overlay",
+   "removed": true
+  }
+ ],
+ "cancels": [
+  {
+   "f": 310,
+   "phase": "between-frames (after paint, before next rAF)",
+   "el": ".setup-overlay#3",
+   "opAfterCancel": 0,
+   "inline": "0"
+  }
+ ]
+}
