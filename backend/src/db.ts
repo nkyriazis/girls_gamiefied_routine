@@ -1,608 +1,457 @@
 import { promises as fs } from 'fs';
-import path from 'path';
 import { randomUUID } from 'crypto';
-import Ajv from 'ajv';
-import { User, Routine, Task, Flow, Reward, Spending, StarTransfer, Chore, ChoreInstance, Exercise, ExerciseSession, ExerciseAnswer, ExerciseAssignment, ExerciseAssignmentWithExercise, ServerMessage } from '../../shared/types';
+import {
+  AppState, Chore, ChoreInstance, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, Spending,
+  StarTransfer, StateSnapshot, ActionLog, User
+} from '../../shared/types';
 import { exercisePoolProvider, ASSIGNMENTS_PER_DAY } from './exercisePool';
+import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { DB_FILE, UPLOADS_DIR } from './paths';
+import { Store } from './store';
+import { Sync } from './sync';
 
-// File paths
-export const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
-export const EXERCISES_FILE = process.env.EXERCISES_FILE || path.join(process.cwd(), 'exercises.json');
-export const STATE_FILE = process.env.STATE_FILE || path.join(process.cwd(), 'state.json');
-export const LOGS_FILE = process.env.LOGS_FILE || path.join(process.cwd(), 'logs.jsonl');
-export const SCHEMA_FILE = path.join(process.cwd(), 'data.schema.json');
-export const EXERCISES_SCHEMA_FILE = path.join(process.cwd(), 'exercises.schema.json');
-export const STATE_SCHEMA_FILE = path.join(process.cwd(), 'state.schema.json');
-export const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+// ============================================================================
+// Domain operations. Config comes from the in-memory cache (config.ts); all
+// runtime state and history is read from and written straight to the
+// database (store.ts). Clients follow along through `sync`: every store write
+// and config change sends them a fresh appState().
+// ============================================================================
+
+export { UPLOADS_DIR };
 
 // Ensure uploads dir exists
 fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(console.error);
 
+export const sync = new Sync(appState);
+export const store = new Store(DB_FILE, () => sync.changed());
+
 // Action Logging
 export const MAX_LOGS = 200;
 
-export function logAction(type: string, details: any) {
-  const log = {
-    id: randomUUID(),
-    timestamp: new Date().toISOString(),
-    type,
-    details
-  };
-  
+export function logAction(type: string, details: unknown) {
+  const entry: ActionLog = { id: randomUUID(), timestamp: new Date().toISOString(), type, details };
   console.log(`[ACTION:${type}]`, JSON.stringify(details));
-  
-  // Append to file (Oldest -> Newest)
-  fs.appendFile(LOGS_FILE, JSON.stringify(log) + '\n').catch(err => 
-    console.error('Failed to write log to disk:', err)
-  );
-}
-
-console.log('Using data file:', DATA_FILE);
-console.log('Using exercises file:', EXERCISES_FILE);
-console.log('Using state file:', STATE_FILE);
-console.log('Using logs file:', LOGS_FILE);
-console.log('Using schema file:', SCHEMA_FILE);
-console.log('Using exercises schema file:', EXERCISES_SCHEMA_FILE);
-console.log('Using state schema file:', STATE_SCHEMA_FILE);
-console.log('Using uploads dir:', UPLOADS_DIR);
-
-// Initialize JSON schema validator
-const ajv = new Ajv({ allErrors: true, validateFormats: false });
-export let validateConfig: any = null;
-export let validateExercises: any = null;
-export let validateState: any = null;
-
-// Track validation errors for client reporting
-export let lastConfigError: { message: string, errors: any[] } | null = null;
-export let lastStateError: { message: string, errors: any[] } | null = null;
-
-export function setLastConfigError(err: { message: string, errors: any[] } | null) {
-  lastConfigError = err;
-}
-
-export function setLastStateError(err: { message: string, errors: any[] } | null) {
-  lastStateError = err;
-}
-
-// Load schemas at startup
-export async function loadSchema() {
   try {
-    const schemaStr = await fs.readFile(SCHEMA_FILE, 'utf-8');
-    const schema = JSON.parse(schemaStr);
-    validateConfig = ajv.compile(schema);
-    console.log('Config schema loaded successfully');
-  } catch (error) {
-    console.error('Failed to load config schema:', error);
-    console.log('Config validation will be disabled');
-  }
-
-  try {
-    const schemaStr = await fs.readFile(EXERCISES_SCHEMA_FILE, 'utf-8');
-    const schema = JSON.parse(schemaStr);
-    validateExercises = ajv.compile(schema);
-    console.log('Exercises schema loaded successfully');
-  } catch (error) {
-    console.error('Failed to load exercises schema:', error);
-    console.log('Exercises validation will be disabled');
-  }
-  
-  try {
-    const stateSchemaStr = await fs.readFile(STATE_SCHEMA_FILE, 'utf-8');
-    const stateSchema = JSON.parse(stateSchemaStr);
-    validateState = ajv.compile(stateSchema);
-    console.log('State schema loaded successfully');
-  } catch (error) {
-    console.error('Failed to load state schema:', error);
-    console.log('State validation will be disabled');
+    store.appendLog(entry);
+  } catch (err) {
+    console.error('Failed to write action log:', err);
   }
 }
 
-// In-memory state cache
-export let globalState: {
-  userStars: Record<string, number>;
-  routineExecutions: any[];
-  taskExecutions: any[];
-  spendings: Spending[];
-  starTransfers: StarTransfer[];
-  choreInstances: ChoreInstance[];
-  exerciseSessions: ExerciseSession[];
-  exerciseAssignments: ExerciseAssignment[];
-} = {
-  userStars: {},
-  routineExecutions: [],
-  taskExecutions: [],
-  spendings: [],
-  starTransfers: [],
-  choreInstances: [],
-  exerciseSessions: [],
-  exerciseAssignments: []
-};
-
-// WebSocket connections
-export const wsConnections = new Set<any>();
-
-// Broadcast helper. Only well-formed protocol messages can be sent — adding a
-// new message type or changing a payload starts in shared/types.ts.
-export function broadcast(message: ServerMessage) {
-  const payload = JSON.stringify(message);
-  wsConnections.forEach(ws => {
-    if (ws.readyState === 1) { // OPEN
-      ws.send(payload);
-    }
-  });
-}
-
-// Load state from disk at startup
-export async function loadState() {
-  try {
-    const str = await fs.readFile(STATE_FILE, 'utf-8');
-    const loaded = JSON.parse(str);
-    
-    // Validate state if validator is available
-    if (validateState) {
-      const valid = validateState(loaded);
-      if (!valid) {
-        console.error('State file validation failed:', validateState.errors);
-        console.log('Starting with empty state due to validation errors');
-        lastStateError = {
-          message: 'State file validation failed on load',
-          errors: validateState.errors
-        };
-        broadcast({
-          type: 'STATE_ERROR',
-          payload: lastStateError
-        });
-        globalState = {
-          userStars: {},
-          routineExecutions: [],
-          taskExecutions: [],
-          spendings: [],
-          starTransfers: [],
-          choreInstances: [],
-          exerciseSessions: [],
-          exerciseAssignments: []
-        };
-        return;
-      } else {
-        lastStateError = null; // Clear error on successful load
-      }
-    }
-    
-    globalState = {
-      userStars: loaded.userStars || {},
-      routineExecutions: loaded.routineExecutions || [],
-      taskExecutions: loaded.taskExecutions || [],
-      spendings: loaded.spendings || [],
-      starTransfers: loaded.starTransfers || [],
-      choreInstances: loaded.choreInstances || [],
-      exerciseSessions: loaded.exerciseSessions || [],
-      exerciseAssignments: loaded.exerciseAssignments || []
-    };
-    console.log('State loaded into memory');
-  } catch (error) {
-    console.log('No state file found or invalid, starting with empty state');
-  }
-}
-
-let saveTimeout: NodeJS.Timeout | null = null;
-
-// Atomic write helper
-export async function persistState() {
-  console.log('Persisting state to disk...');
-  const tempFile = `${STATE_FILE}.tmp`;
-  await fs.writeFile(tempFile, JSON.stringify(globalState, null, 2));
-  await fs.rename(tempFile, STATE_FILE);
-}
-
-export function scheduleSave() {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-  }
-  saveTimeout = setTimeout(() => {
-    persistState().catch(err => console.error('Failed to save state:', err));
-    saveTimeout = null;
-  }, 10000); // 10 seconds debounce
-}
-
-export async function flushPendingSave() {
-  if (saveTimeout) {
-    console.log('Flushing pending state save...');
-    clearTimeout(saveTimeout);
-    saveTimeout = null;
-    await persistState();
-  }
-}
-
-// Db is a merged VIEW handed to request handlers, with two very different halves:
-//
-//  - CONFIG sections (users, routines, tasks, flows, rewards, chores, exercises, ...)
-//    are fresh read-only copies parsed from data.json/exercises.json on every readDb().
-//    Mutating them changes nothing durable — config edits go through writeRawConfig/
-//    writeRawExercises, and star balances through adjustUserStars/awardStars/
-//    setUserStars (user objects are frozen so a stray `user.stars = ...` throws).
-//
-//  - LIVE STATE sections (routineExecutions, taskExecutions, spendings, starTransfers,
-//    choreInstances, exerciseSessions, exerciseAssignments) are the actual in-memory
-//    arrays (globalState.*). Mutate them in place, then call commitState(db) to
-//    schedule persistence to state.json.
-export interface Db {
-  users: User[];
-  routines: Routine[];
-  tasks: Task[];
-  routineTasks: any[];
-  routineAssignments: any[];
-  flows: Flow[];
-  schedules: any[];
-  rewards: Reward[];
-  chores: Chore[];
-  exercises: Exercise[];
-  exerciseCategories?: any[];
-  settings?: { timezone: string };
-  routineExecutions: any[];
-  taskExecutions: any[];
-  spendings: Spending[];
-  starTransfers: StarTransfer[];
-  choreInstances: ChoreInstance[];
-  exerciseSessions: ExerciseSession[];
-  exerciseAssignments: ExerciseAssignment[];
-}
-
-export async function readDb(): Promise<Db> {
-  try {
-    // Read static config fresh every time (allows hot-reloading config)
-    const dataStr = await fs.readFile(DATA_FILE, 'utf-8');
-    const data = JSON.parse(dataStr);
-
-    // Validate config if validator is available
-    if (validateConfig) {
-      const valid = validateConfig(data);
-      if (!valid) {
-        console.error('Config file validation failed:', validateConfig.errors);
-        broadcast({
-          type: 'CONFIG_ERROR',
-          payload: {
-            message: 'Configuration file validation failed',
-            errors: validateConfig.errors
-          }
-        });
-        throw new Error('Invalid configuration file');
-      }
-    }
-
-    // Merge with in-memory state. Frozen: these are per-call snapshots, so writes
-    // to them would be silently lost — freezing turns that mistake into a loud
-    // TypeError. Star balances change only via adjustUserStars/awardStars/setUserStars.
-    const users = data.users.map((u: any) => Object.freeze({
-      ...u,
-      stars: globalState.userStars[u.id] || 0
-    })) as User[];
-
-    // Read exercises fresh
-    let exercises: Exercise[] = [];
-    let exerciseCategories: any[] = [];
-    try {
-      const exercisesStr = await fs.readFile(EXERCISES_FILE, 'utf-8');
-      const exercisesData = JSON.parse(exercisesStr);
-      if (validateExercises) {
-        const valid = validateExercises(exercisesData);
-        if (valid) {
-          exercises = exercisesData.exercises;
-          exerciseCategories = exercisesData.categories || [];
-        } else {
-          console.error('Exercises validation failed:', validateExercises.errors);
-        }
-      } else {
-        exercises = exercisesData.exercises;
-        exerciseCategories = exercisesData.categories || [];
-      }
-    } catch (e) {
-      console.warn('Could not read exercises file, starting with empty exercises');
-    }
-
-    return {
-      ...data,
-      users,
-      rewards: (data.rewards || []) as Reward[],
-      chores: (data.chores || []) as Chore[],
-      exercises,
-      exerciseCategories,
-      schedules: data.schedules || [],
-      settings: data.settings || { timezone: 'Europe/Athens' },
-      routineExecutions: globalState.routineExecutions,
-      taskExecutions: globalState.taskExecutions,
-      spendings: globalState.spendings,
-      starTransfers: globalState.starTransfers,
-      choreInstances: globalState.choreInstances,
-      exerciseSessions: globalState.exerciseSessions,
-      exerciseAssignments: globalState.exerciseAssignments
-    };
-  } catch (error) {
-    console.error("Error reading DB:", error);
-    return {
-      users: [], routines: [], tasks: [], routineTasks: [],
-      routineAssignments: [], flows: [], schedules: [], rewards: [],
-      chores: [], exercises: [],
-      routineExecutions: [], taskExecutions: [], spendings: [],
-      starTransfers: [],
-      choreInstances: [], exerciseSessions: [], exerciseAssignments: []
-    };
-  }
-}
-
-// Commit the live-state half of a Db view (see the Db interface docs) and schedule
-// persistence. Config sections are ignored — they don't live in state.json.
-export async function commitState(data: Db) {
-  // userStars is NOT derived here — it's owned directly by adjustUserStars/
-  // awardStars/setUserStars, since db.users.stars is only a readDb()-time snapshot
-  // and rebuilding the map from it would clobber concurrent star updates that
-  // happened after that snapshot was taken.
-  globalState = {
-    userStars: globalState.userStars,
-    routineExecutions: data.routineExecutions,
-    taskExecutions: data.taskExecutions,
-    spendings: data.spendings,
-    starTransfers: data.starTransfers,
-    choreInstances: data.choreInstances,
-    exerciseSessions: data.exerciseSessions,
-    exerciseAssignments: data.exerciseAssignments
+// Everything clients render (see AppState in shared/types.ts).
+export async function appState(): Promise<AppState> {
+  return {
+    config: config(),
+    configError: configError(),
+    users: usersView(),
+    spendings: getEnrichedSpendings(),
+    starTransfers: getEnrichedTransfers(),
+    choreInstances: getChoresWithInstances().instances,
+    exerciseSessions: activeExerciseSessions(),
+    exerciseAssignments: await todaysAssignments(),
+    flowRuns: store.flowRuns.all(),
+    routineRuns: routineRunsView()
   };
-
-  // Schedule persist
-  scheduleSave();
 }
 
-// Read raw config (data.json) without state merge
-export async function readRawConfig(): Promise<any> {
-  const dataStr = await fs.readFile(DATA_FILE, 'utf-8');
-  return JSON.parse(dataStr);
+// ============================================
+// CONFIG
+// ============================================
+
+export type UserWithStars = ConfigUser & { stars: number };
+
+/** Config users with their current star balance. */
+export function usersWithStars(): UserWithStars[] {
+  const stars = store.allStars();
+  return config().users.map(u => ({ ...u, stars: stars[u.id] ?? 0 }));
 }
 
-// Write raw config (data.json)
-export async function writeRawConfig(data: any): Promise<void> {
-  // Validate against schema if available
-  if (validateConfig) {
-    const valid = validateConfig(data);
-    if (!valid) {
-      throw new Error(`Validation failed: ${JSON.stringify(validateConfig.errors)}`);
-    }
-  }
-  
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
-  setLastConfigError(null);
-  broadcast({ type: 'CONFIG_UPDATED' });
-}
-
-// Helper to trigger an action (Routine or Flow)
-export async function triggerAction(id: string, db: Db, source: string = 'unknown') {
-  // Try to find RoutineAssignment
-  const assignment = db.routineAssignments.find(a => a.id === id);
-
-  if (assignment) {
-    // Check for existing active execution for this user (idempotency)
-    // A user can only be in one routine at a time
-    const existingExecution = db.routineExecutions.find(e => 
-      e.userId === assignment.userId && 
-      !e.completedAt
-    );
-
-    if (existingExecution) {
-      logAction('TRIGGER_ROUTINE_SKIPPED', { 
-        id, 
-        userId: assignment.userId, 
-        routineId: assignment.routineId, 
-        source,
-        existingExecutionId: existingExecution.id 
-      });
-      // Broadcast existing execution instead of creating duplicate
-      broadcast({
-        type: 'ROUTINE_START',
-        payload: {
-          userId: assignment.userId,
-          routineId: assignment.id,
-          executionId: existingExecution.id
-        }
-      });
-      return { success: true, skipped: true, existingExecutionId: existingExecution.id };
-    }
-
-    logAction('TRIGGER_ROUTINE', { id, userId: assignment.userId, routineId: assignment.routineId, source });
-    // Create execution record
-    const execution = {
-      id: randomUUID(),
-      userId: assignment.userId,
-      routineId: assignment.routineId,
-      startedAt: new Date().toISOString(),
-      totalStars: 0
-    };
-    
-    db.routineExecutions.push(execution);
-    await commitState(db);
-
-    // Broadcast to frontend
-    broadcast({
-      type: 'ROUTINE_START',
-      payload: {
-        userId: assignment.userId,
-        routineId: assignment.id, // Use assignment ID as routineId for frontend
-        executionId: execution.id
-      }
-    });
-
-    return { success: true, type: 'assignment', id };
-  }
-
-  // Try to find Flow
-  const flow = db.flows.find(f => f.id === id);
-
-  if (flow) {
-    logAction('TRIGGER_FLOW', { id, flowId: flow.id, source });
-    broadcast({
-      type: 'FLOW_START',
-      payload: {
-        flowId: flow.id,
-        steps: flow.steps // Already object
-      }
-    });
-
-    return { success: true, type: 'flow', id };
-  }
-
-  logAction('TRIGGER_FAILED', { id, source, reason: 'Not found' });
-  return null;
-}
-
-// Helper to get enriched spendings
-export async function getEnrichedSpendings() {
-  const db = await readDb();
-  return db.spendings.map(s => {
-    const user = db.users.find(u => u.id === s.userId);
-    const reward = db.rewards.find(r => r.id === s.rewardId);
-    return { ...s, user, reward };
-  }).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-}
-
-// Helper to get enriched star transfers
-export async function getEnrichedTransfers() {
-  const db = await readDb();
-  return db.starTransfers.map(t => {
-    const fromUser = db.users.find(u => u.id === t.fromUserId);
-    const toUser = db.users.find(u => u.id === t.toUserId);
-    return { ...t, fromUser, toUser };
-  }).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-}
-
-// Helper to calculate pending outgoing transfer amount for a user
-export function getPendingOutgoingTransfers(userId: string): number {
-  return globalState.starTransfers
-    .filter(t => t.fromUserId === userId && t.status === 'pending')
-    .reduce((sum, t) => sum + t.amount, 0);
-}
-
-// Helper to calculate available balance (total - pending outgoing transfers)
-export function getAvailableBalance(userId: string): number {
-  const totalStars = globalState.userStars[userId] || 0;
-  const pendingOutgoing = getPendingOutgoingTransfers(userId);
-  return totalStars - pendingOutgoing;
-}
-
-// Helper to read last N lines from logs file
-export async function readLastLogs(maxLines: number): Promise<any[]> {
+// Helper to convert simple cron to HH:mm for frontend display
+function simpleCronToTime(cron: string): string | undefined {
   try {
-    try {
-      await fs.access(LOGS_FILE);
-    } catch {
-      return [];
+    const parts = cron.split(' ');
+    if (parts.length >= 2) {
+      const min = parts[0];
+      const hour = parts[1];
+      if (!isNaN(Number(min)) && !isNaN(Number(hour))) {
+        return `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
+      }
     }
-
-    const stats = await fs.stat(LOGS_FILE);
-    const fileSize = stats.size;
-    // Read last 100KB (approx 200-500 lines depending on size)
-    const bufferSize = Math.min(fileSize, 100 * 1024);
-    
-    if (bufferSize <= 0) return [];
-    
-    const start = fileSize - bufferSize;
-    const fileHandle = await fs.open(LOGS_FILE, 'r');
-    const buffer = Buffer.alloc(bufferSize);
-    await fileHandle.read(buffer, 0, bufferSize, start);
-    await fileHandle.close();
-    
-    const content = buffer.toString('utf-8');
-    const lines = content.split('\n');
-    
-    // If we started from the middle of the file, the first line is likely partial
-    if (start > 0) {
-      lines.shift();
-    }
-    
-    return lines
-      .filter(line => line.trim())
-      .map(line => {
-        try { return JSON.parse(line); } catch { return null; }
-      })
-      .filter(l => l !== null)
-      .slice(-maxLines)
-      .reverse();
-  } catch (error) {
-    console.error('Error reading logs:', error);
-    return [];
-  }
+  } catch (e) { return undefined; }
+  return undefined;
 }
 
-// Commit a new star balance: mutate the single in-memory source of truth
-// (globalState.userStars), schedule persistence, and notify all clients.
-// The broadcast is intrinsic to the mutation — a balance can never change
-// without every client hearing about it, so callers have nothing to remember.
-function commitUserStars(userId: string, newTotal: number): number {
-  globalState.userStars[userId] = newTotal;
-  scheduleSave();
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: globalState.userStars
+// Cron of the schedule that starts a routine assignment: directly, or via a flow that runs it.
+function assignmentCron(assignmentId: string): string | null {
+  const { schedules, flows } = config();
+  const direct = schedules.find(s => s.type === 'routine' && s.targetId === assignmentId);
+  if (direct) return direct.cron;
+
+  const triggeringFlow = flows.find(f => f.steps.some(step =>
+    (step.type === 'routine' && step.routineId === assignmentId) ||
+    (step.type === 'parallel' && step.actions.some(a => a.type === 'routine' && a.routineId === assignmentId))
+  ));
+  if (!triggeringFlow) return null;
+  return schedules.find(s => s.type === 'flow' && s.targetId === triggeringFlow.id)?.cron ?? null;
+}
+
+/** The tasks of a routine assignment, in order, with their durations. */
+function assignmentTasks(assignmentId: string): (ConfigTask & { durationSeconds: number })[] {
+  const { routineAssignments, routineTasks, tasks } = config();
+  const assignment = routineAssignments.find(a => a.id === assignmentId);
+  if (!assignment) return [];
+  return routineTasks
+    .filter(rt => rt.routineId === assignment.routineId)
+    .sort((a, b) => a.order - b.order)
+    .flatMap(rt => {
+      const task = tasks.find(t => t.id === rt.taskId);
+      return task ? [{ ...task, durationSeconds: rt.durationSeconds }] : [];
+    });
+}
+
+/** Config users with their balance and assigned routines, as clients render them. */
+export function usersView(): User[] {
+  const { routineAssignments, routines } = config();
+
+  return usersWithStars().map(user => ({
+    ...user,
+    routines: routineAssignments
+      .filter(a => a.userId === user.id)
+      .flatMap(assignment => {
+        const routine = routines.find(r => r.id === assignment.routineId);
+        if (!routine) return [];
+        const cronExpression = assignmentCron(assignment.id) ?? undefined;
+        return [{
+          id: assignment.id,
+          title: routine.title,
+          scheduleTime: cronExpression ? simpleCronToTime(cronExpression) : undefined,
+          cronExpression,
+          themeColor: assignment.themeColor || routine.themeColor,
+          icon: routine.icon,
+          tasks: assignmentTasks(assignment.id)
+            .map(t => ({ id: t.id, title: t.title, icon: t.icon, durationSeconds: t.durationSeconds }))
+        }];
+      })
+  }));
+}
+
+function findUser(userId: string): UserWithStars | undefined {
+  return usersWithStars().find(u => u.id === userId);
+}
+
+/** Mutable copy of data.json (for editors that change it and save it back). */
+export function readRawConfig(): DataConfig {
+  return dataConfig.raw();
+}
+
+/** Validate and save data.json. Throws when invalid. */
+export function writeRawConfig(data: unknown): void {
+  const error = dataConfig.save(data);
+  if (error) throw new Error(`Validation failed: ${JSON.stringify(error.errors)}`);
+  sync.changed();
+}
+
+export function readRawExercises(): ExercisesConfig {
+  return exercisesConfig.raw();
+}
+
+export function writeRawExercises(data: unknown): void {
+  const error = exercisesConfig.save(data);
+  if (error) throw new Error(`Exercises validation failed: ${JSON.stringify(error.errors)}`);
+  sync.changed();
+}
+
+// ============================================
+// ROUTINES AND FLOWS ON SCREEN
+// ============================================
+// The server runs flows and routines; clients render flowRuns/routineRuns and
+// report what the kids do: dismiss an alarm, finish a task, close a routine.
+// A flow step is an alarm (it waits to be dismissed) or starts routines and
+// sub-flows (it waits until they have all closed). After the last step the run
+// ends and, if a parallel step of another run started it, that run moves on.
+
+export type TriggerResult =
+  | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
+  | { success: true; type: 'assignment' | 'flow'; id: string };
+
+const ALARM_ONLY: FlowStep[] = [{ type: 'alarm', props: { sound: 'melody' } }];
+
+/**
+ * Start a routine assignment or a flow (schedule, push hook, MCP); 'alarm' shows
+ * a plain alarm. A user already in a routine keeps it; a running flow restarts.
+ */
+export function triggerAction(id: string, source: string = 'unknown'): TriggerResult | null {
+  const { routineAssignments, flows } = config();
+  return store.transaction(() => {
+    if (routineAssignments.some(a => a.id === id)) {
+      const run = startRoutine(id);
+      logAction(run.started ? 'TRIGGER_ROUTINE' : 'TRIGGER_ROUTINE_SKIPPED', { id, source, runId: run.id });
+      return run.started
+        ? { success: true, type: 'assignment', id }
+        : { success: true, skipped: true, type: 'assignment', id, runningId: run.id };
     }
+    const steps = id === 'alarm' ? ALARM_ONLY : flows.find(f => f.id === id)?.steps;
+    if (steps) {
+      logAction('TRIGGER_FLOW', { id, source, runId: startFlow(id, steps) });
+      return { success: true, type: 'flow', id };
+    }
+    logAction('TRIGGER_FAILED', { id, source, reason: 'Not found' });
+    return null;
   });
+}
+
+// A user has at most one routine on screen.
+function startRoutine(assignmentId: string, flowRunId?: string): { started: boolean; id: string } {
+  const assignment = config().routineAssignments.find(a => a.id === assignmentId);
+  if (!assignment) return { started: false, id: '' };
+  closeStaleRoutines(assignment.userId);
+  const [running] = store.routineRuns.all('userId = ?', assignment.userId);
+  if (running) return { started: false, id: running.id };
+
+  const now = new Date().toISOString();
+  const id = randomUUID();
+  store.routineExecutions.put({ id, userId: assignment.userId, routineId: assignment.routineId, startedAt: now, totalStars: 0 });
+  store.routineRuns.put({ id, userId: assignment.userId, routineId: assignmentId, taskIndex: 0, taskStartedAt: now, flowRunId });
+  return { started: true, id };
+}
+
+// Triggering a flow that is already running restarts it, so an alarm nobody
+// dismissed can't block tomorrow's schedule.
+function startFlow(flowId: string, steps: readonly FlowStep[], parentRunId?: string): string {
+  for (const old of store.flowRuns.all('flowId = ?', flowId)) {
+    dropFlow(old.id);
+    if (old.parentRunId) childClosed(old.parentRunId);
+  }
+  const run: FlowRun = { id: randomUUID(), flowId, steps: structuredClone(steps) as FlowStep[], stepIndex: 0, parentRunId, startedAt: new Date().toISOString() };
+  enterStep(run, 0);
+  return run.id;
+}
+
+// Runs whose step is still starting its routines and sub-flows: a sub-flow that
+// ends at once must not move the parent on before its siblings have started.
+const starting = new Set<string>();
+
+function enterStep(run: FlowRun, stepIndex: number): void {
+  const step = run.steps[stepIndex];
+  if (!step) return endFlow(run);
+  store.flowRuns.put({ ...run, stepIndex });
+  if (step.type === 'alarm') return; // waits for dismissAlarm
+
+  const actions = step.type === 'routine' ? [{ type: 'routine' as const, routineId: step.routineId }] : step.actions;
+  starting.add(run.id);
+  try {
+    for (const action of actions) {
+      if (action.type === 'routine') startRoutine(action.routineId, run.id);
+      else {
+        const flow = config().flows.find(f => f.id === action.flowId);
+        if (flow) startFlow(flow.id, flow.steps, run.id);
+      }
+    }
+  } finally {
+    starting.delete(run.id);
+  }
+  childClosed(run.id); // moves on right away if nothing was started (all busy or missing)
+}
+
+// Remove a run and its sub-flows. Their routines stay on screen.
+function dropFlow(runId: string): void {
+  for (const child of store.flowRuns.all('parentRunId = ?', runId)) dropFlow(child.id);
+  store.flowRuns.deleteWhere('id = ?', runId);
+}
+
+function endFlow(run: FlowRun): void {
+  store.flowRuns.deleteWhere('id = ?', run.id);
+  if (run.parentRunId) childClosed(run.parentRunId);
+}
+
+// A routine or sub-flow of this run closed: move on once none is left.
+function childClosed(runId: string): void {
+  const run = store.flowRuns.get(runId);
+  if (!run || starting.has(runId) || run.steps[run.stepIndex]?.type === 'alarm') return;
+  const waiting = store.routineRuns.all('flowRunId = ?', runId).length + store.flowRuns.all('parentRunId = ?', runId).length;
+  if (waiting === 0) enterStep(run, run.stepIndex + 1);
+}
+
+/** A kid dismissed the alarm at `stepIndex` of a run. Repeats (a second device) are no-ops. */
+export function dismissAlarm(runId: string, stepIndex: number): boolean {
+  return store.transaction(() => {
+    const run = store.flowRuns.get(runId);
+    if (!run || run.stepIndex !== stepIndex || run.steps[stepIndex]?.type !== 'alarm') return false;
+    logAction('ALARM_DISMISSED', { runId, flowId: run.flowId, stepIndex });
+    enterStep(run, stepIndex + 1);
+    return true;
+  });
+}
+
+/** A routine left the screen (reward shown, or the kid pressed ✕). Repeats are no-ops. */
+export function closeRoutine(runId: string): boolean {
+  return store.transaction(() => {
+    const run = store.routineRuns.get(runId);
+    if (run) endRoutine(run, 'ROUTINE_CLOSED');
+    return !!run;
+  });
+}
+
+function endRoutine(run: Omit<RoutineRun, 'totalStars'>, logType: string): void {
+  store.routineRuns.deleteWhere('id = ?', run.id);
+  logAction(logType, { runId: run.id, userId: run.userId, finished: !!run.finishedAt });
+  if (run.flowRunId) childClosed(run.flowRunId);
+}
+
+/**
+ * Close routines started before today (local time): left open when the kid
+ * walked away or the kiosk was off. Runs when a routine is triggered for the
+ * user and every minute, so an old run never blocks or lingers.
+ */
+export function closeStaleRoutines(userId?: string): number {
+  return store.transaction(() => {
+    const timezone = config().settings?.timezone || 'Europe/Athens';
+    const today = localDateStr(timezone);
+    const runs = userId ? store.routineRuns.all('userId = ?', userId) : store.routineRuns.all();
+    const stale = runs.filter(run => {
+      const startedAt = store.routineExecutions.get(run.id)?.startedAt ?? run.taskStartedAt;
+      return localDateStr(timezone, new Date(startedAt)) < today;
+    });
+    stale.forEach(run => endRoutine(run, 'ROUTINE_CLOSED_STALE'));
+    return stale.length;
+  });
+}
+
+/** Routine runs as clients render them, with the stars earned so far. */
+function routineRunsView(): RoutineRun[] {
+  return store.routineRuns.all().map(run => ({ ...run, totalStars: store.routineExecutions.get(run.id)?.totalStars ?? 0 }));
+}
+
+export type TaskCompletion =
+  | { success: true; starsAwarded: number }
+  | { success: false; error: string };
+
+/**
+ * A kid finished the current task of a routine run. The server times it and
+ * awards the stars; `taskId` must be the current task, so a second device (or
+ * a double tap) can't complete the next one too.
+ */
+export function completeTask(runId: string, taskId: string): TaskCompletion {
+  return store.transaction(() => {
+    const run = store.routineRuns.get(runId);
+    const execution = store.routineExecutions.get(runId);
+    if (!run || !execution || run.finishedAt) return { success: false, error: 'Routine is not running' };
+    const tasks = assignmentTasks(run.routineId);
+    const task = tasks[run.taskIndex];
+    if (!task || task.id !== taskId) return { success: false, error: 'Not the current task' };
+
+    const now = new Date();
+    const duration = Math.round((now.getTime() - new Date(run.taskStartedAt).getTime()) / 1000);
+    const isOnTime = duration <= task.durationSeconds;
+    const stars = isOnTime ? (task.stars || 0) : (task.lateStars ?? 0);
+    store.taskExecutions.put({ id: randomUUID(), executionId: runId, taskId, duration, isOnTime, completedAt: now.toISOString() });
+    const last = run.taskIndex + 1 >= tasks.length;
+    store.routineExecutions.put({
+      ...execution, totalStars: (execution.totalStars || 0) + stars, ...(last ? { completedAt: now.toISOString() } : {})
+    });
+    store.routineRuns.put(last
+      ? { ...run, finishedAt: now.toISOString() }
+      : { ...run, taskIndex: run.taskIndex + 1, taskStartedAt: now.toISOString() });
+    if (stars !== 0) awardStars(execution.userId, stars);
+    logAction('TASK_COMPLETE', { executionId: runId, taskId, starsAwarded: stars, userId: execution.userId, duration, isOnTime });
+    return { success: true, starsAwarded: stars };
+  });
+}
+
+// ============================================
+// STARS, SPENDINGS, TRANSFERS
+// ============================================
+
+function byNewest(a: { createdAt: string }, b: { createdAt: string }) {
+  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+}
+
+export function getEnrichedSpendings(): Spending[] {
+  const users = usersWithStars();
+  const { rewards } = config();
+  return store.spendings.all().map(s => ({
+    ...s,
+    user: users.find(u => u.id === s.userId),
+    reward: rewards.find(r => r.id === s.rewardId)
+  })).sort(byNewest);
+}
+
+export function getEnrichedTransfers(): StarTransfer[] {
+  const users = usersWithStars();
+  return store.starTransfers.all().map(t => ({
+    ...t,
+    fromUser: users.find(u => u.id === t.fromUserId),
+    toUser: users.find(u => u.id === t.toUserId)
+  })).sort(byNewest);
+}
+
+// Available balance: total minus stars locked in pending outgoing transfers
+export function getAvailableBalance(userId: string): number {
+  const pendingOutgoing = store.starTransfers
+    .all("fromUserId = ? AND status = 'pending'", userId)
+    .reduce((sum, t) => sum + t.amount, 0);
+  return store.getStars(userId) - pendingOutgoing;
+}
+
+export function readLastLogs(limit: number): ActionLog[] {
+  return store.recentLogs(limit);
+}
+
+function commitUserStars(userId: string, newTotal: number): number {
+  store.setStars(userId, newTotal);
   return newTotal;
 }
 
-// Atomically adjust a user's star balance by a delta. All star-mutating code
-// paths must go through this (or setUserStars) — never mutate `.stars` on a
-// readDb() snapshot, since commitState() does not persist it.
+// Adjust a user's star balance by a delta. All star-mutating code paths go
+// through this, trySpendStars or setUserStars.
 export function adjustUserStars(userId: string, delta: number): number {
-  return commitUserStars(userId, (globalState.userStars[userId] || 0) + delta);
+  return store.transaction(() => commitUserStars(userId, store.getStars(userId) + delta));
 }
 
-// Atomically spend stars: balance check and deduction happen in one synchronous
-// step, so concurrent spends can never overdraw. Returns the new total, or null
-// if the balance is insufficient (nothing is deducted).
+// Spend stars: balance check and deduction happen in one transaction, so
+// concurrent spends can never overdraw. Returns the new total, or null if the
+// balance is insufficient (nothing is deducted).
 export function trySpendStars(userId: string, cost: number): number | null {
-  const balance = globalState.userStars[userId] || 0;
-  if (balance < cost) return null;
-  return commitUserStars(userId, balance - cost);
+  return store.transaction(() => {
+    const balance = store.getStars(userId);
+    return balance < cost ? null : commitUserStars(userId, balance - cost);
+  });
 }
 
 // Award stars to a user
-export async function awardStars(userId: string, amount: number): Promise<{ success: boolean; newTotal: number }> {
-  const db = await readDb();
-  const user = db.users.find(u => u.id === userId);
-
-  if (!user) {
-    throw new Error(`User not found: ${userId}`);
-  }
+export function awardStars(userId: string, amount: number): { success: boolean; newTotal: number } {
+  if (!findUser(userId)) throw new Error(`User not found: ${userId}`);
 
   const newTotal = adjustUserStars(userId, amount);
-
   logAction('AWARD_STARS', { userId, amount, newBalance: newTotal });
-
-  // Semantic notification on top of the balance sync (which adjustUserStars
-  // already broadcast) — lets the UI celebrate the award if it wants to.
-  broadcast({
-    type: 'STARS_AWARDED',
-    payload: {
-      userId,
-      amount,
-      totalStars: newTotal
-    }
-  });
 
   return { success: true, newTotal };
 }
 
 // Set stars for a user (absolute value)
-export async function setUserStars(userId: string, amount: number): Promise<{ success: boolean; newTotal: number }> {
-  const db = await readDb();
-  const user = db.users.find(u => u.id === userId);
+export function setUserStars(userId: string, amount: number): { success: boolean; newTotal: number } {
+  if (!findUser(userId)) throw new Error(`User not found: ${userId}`);
 
-  if (!user) {
-    throw new Error(`User not found: ${userId}`);
-  }
-
-  const oldStars = globalState.userStars[userId] || 0;
+  const oldStars = store.getStars(userId);
   commitUserStars(userId, amount);
-
   logAction('SET_STARS', { userId, oldBalance: oldStars, newBalance: amount });
 
   return { success: true, newTotal: amount };
+}
+
+// ============================================
+// ADMIN STATE EDITOR
+// ============================================
+
+export function stateSnapshot(): StateSnapshot {
+  return store.snapshot();
+}
+
+// Replace the whole runtime state (validated by the caller).
+export function replaceState(state: StateSnapshot): void {
+  store.replaceState(state);
+  logAction('STATE_REPLACED', { source: 'admin' });
 }
 
 // ============================================
@@ -657,27 +506,19 @@ function cronMatches(cronExpr: string, date: Date): boolean {
 }
 
 // Generate chore instances when cron matches
-export async function generateChoreInstances(): Promise<ChoreInstance[]> {
-  const db = await readDb();
+export function generateChoreInstances(): ChoreInstance[] {
+  const chores = config().chores ?? [];
   const now = new Date();
   const newInstances: ChoreInstance[] = [];
-  
-  for (const chore of db.chores) {
-    // Check if cron matches current time
+
+  for (const chore of chores) {
     if (!cronMatches(chore.availabilityCron, now)) continue;
-    
-    // Check if there's ANY instance for this chore within the current window
-    // (window = from availableAt to expiresAt, regardless of status)
-    // This prevents respawning after claim/reject/confirm/expire
-    const existingInWindow = db.choreInstances.find(ci => {
-      if (ci.choreId !== chore.id) return false;
-      // If expiration hasn't passed, this instance is still in its window
-      return new Date(ci.expiresAt) > now;
-    });
-    
+
+    // Any instance of this chore still within its window (regardless of status)
+    // prevents respawning after claim/reject/confirm/expire.
+    const [existingInWindow] = store.choreInstances.all('choreId = ? AND expiresAt > ?', chore.id, now.toISOString());
     if (existingInWindow) continue;
-    
-    // Create new instance
+
     const expiresAt = new Date(now.getTime() + chore.expirationHours * 60 * 60 * 1000);
     const instance: ChoreInstance = {
       id: randomUUID(),
@@ -686,358 +527,197 @@ export async function generateChoreInstances(): Promise<ChoreInstance[]> {
       availableAt: now.toISOString(),
       expiresAt: expiresAt.toISOString()
     };
-    
+    store.choreInstances.put(instance);
     newInstances.push(instance);
-    db.choreInstances.push(instance);
-    
+
     logAction('CHORE_AVAILABLE', { choreId: chore.id, instanceId: instance.id, expiresAt: instance.expiresAt });
   }
-  
-  if (newInstances.length > 0) {
-    await commitState(db);
-    await broadcastChoreState();
-    
-    // Broadcast availability event for each new instance
-    for (const instance of newInstances) {
-      const chore = db.chores.find(c => c.id === instance.choreId);
-      broadcast({
-        type: 'CHORE_AVAILABLE',
-        payload: {
-          instanceId: instance.id,
-          choreId: instance.choreId,
-          choreTitle: chore?.title,
-          expiresAt: instance.expiresAt
-        }
-      });
-    }
-  }
-  
+
   return newInstances;
 }
 
+function findChore(choreId: string): Chore | undefined {
+  return (config().chores ?? []).find(c => c.id === choreId);
+}
+
 // Expire chores that are past their expiration time
-export async function expireChores(): Promise<{ expired: ChoreInstance[], notified: { userId: string, choreTitle: string }[] }> {
-  const db = await readDb();
-  const now = new Date();
+export function expireChores(): { expired: ChoreInstance[], notified: { userId: string, choreTitle: string }[] } {
+  const now = new Date().toISOString();
   const expiredInstances: ChoreInstance[] = [];
   const notified: { userId: string, choreTitle: string }[] = [];
-  
-  for (const instance of db.choreInstances) {
-    // Only expire available or claimed instances
-    if (!['available', 'claimed'].includes(instance.status)) continue;
-    
-    const expiresAt = new Date(instance.expiresAt);
-    if (now < expiresAt) continue;
-    
-    const chore = db.chores.find(c => c.id === instance.choreId);
+
+  // Only available or claimed instances expire
+  for (const instance of store.choreInstances.all("status IN ('available', 'claimed') AND expiresAt <= ?", now)) {
+    const chore = findChore(instance.choreId);
     const oldStatus = instance.status;
-    instance.status = 'expired';
-    expiredInstances.push(instance);
-    
+    const expired: ChoreInstance = { ...instance, status: 'expired' };
+    store.choreInstances.put(expired);
+    expiredInstances.push(expired);
+
     logAction('CHORE_EXPIRED', { instanceId: instance.id, choreId: instance.choreId, previousStatus: oldStatus, claimedBy: instance.claimedBy });
-    
+
     // If it was claimed, notify that user
     if (oldStatus === 'claimed' && instance.claimedBy) {
-      notified.push({
-        userId: instance.claimedBy,
-        choreTitle: chore?.title || 'Unknown chore'
-      });
-      
-      broadcast({
+      notified.push({ userId: instance.claimedBy, choreTitle: chore?.title || 'Unknown chore' });
+      sync.notify({
         type: 'CHORE_EXPIRED',
-        payload: {
-          instanceId: instance.id,
-          choreId: instance.choreId,
-          choreTitle: chore?.title,
-          userId: instance.claimedBy
-        }
+        payload: { instanceId: instance.id, choreId: instance.choreId, choreTitle: chore?.title, userId: instance.claimedBy }
       });
     }
   }
-  
-  if (expiredInstances.length > 0) {
-    await commitState(db);
-    await broadcastChoreState();
-  }
-  
+
   return { expired: expiredInstances, notified };
 }
 
-// Clean up old chore instances to prevent unbounded growth
-export async function cleanupOldChoreInstances(): Promise<number> {
-  const db = await readDb();
-  const now = new Date();
-  // Keep instances for 7 days after their window closes
-  const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  
-  const before = db.choreInstances.length;
-  db.choreInstances = db.choreInstances.filter(ci => {
-    // Always keep active instances
-    if (['available', 'claimed', 'attempted'].includes(ci.status)) return true;
-    // Keep closed instances if their expiresAt is after cutoff
-    return new Date(ci.expiresAt) > cutoff;
-  });
-  
-  const removed = before - db.choreInstances.length;
+// Clean up old chore instances to prevent unbounded growth: closed instances
+// are kept for 7 days after their window closes.
+export function cleanupOldChoreInstances(): number {
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const removed = store.choreInstances.deleteWhere(
+    "status NOT IN ('available', 'claimed', 'attempted') AND expiresAt <= ?", cutoff
+  );
   if (removed > 0) {
-    await commitState(db);
-    logAction('CHORE_CLEANUP', { removed, remaining: db.choreInstances.length });
+    logAction('CHORE_CLEANUP', { removed, remaining: store.choreInstances.count() });
   }
-  
   return removed;
 }
 
 // Get chores with their active instances, optionally filtered by user eligibility
-export async function getChoresWithInstances(userId?: string): Promise<{ chores: Chore[], instances: ChoreInstance[] }> {
-  const db = await readDb();
-  
-  // Filter chores by eligibility if userId provided
-  let chores = db.chores;
+export function getChoresWithInstances(userId?: string): { chores: Chore[], instances: ChoreInstance[] } {
+  let chores = config().chores ?? [];
   if (userId) {
-    chores = chores.filter(c => 
+    chores = chores.filter(c =>
       !c.eligibleUsers || c.eligibleUsers.length === 0 || c.eligibleUsers.includes(userId)
     );
   }
-  
-  // Get active instances (not expired/confirmed/rejected more than 24h ago)
+
+  // Active instances, plus ones completed/rejected/expired in the last 24h (for display)
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const instances = db.choreInstances.filter(ci => {
-    // Include all active instances
+  const instances = store.choreInstances.all().filter(ci => {
     if (['available', 'claimed', 'attempted'].includes(ci.status)) return true;
-    
-    // Include recently completed/rejected/expired for display
     const completedAt = ci.confirmedAt || ci.rejectedAt || ci.expiresAt;
     return completedAt && completedAt > oneDayAgo;
   });
-  
+
   return { chores, instances };
 }
 
+function getChoreInstance(instanceId: string): ChoreInstance {
+  const instance = store.choreInstances.get(instanceId);
+  if (!instance) throw new Error(`Chore instance not found: ${instanceId}`);
+  return instance;
+}
+
 // Claim a chore instance
-export async function claimChore(instanceId: string, userId: string): Promise<ChoreInstance> {
-  const db = await readDb();
-  const instance = db.choreInstances.find(ci => ci.id === instanceId);
-  
-  if (!instance) {
-    throw new Error(`Chore instance not found: ${instanceId}`);
-  }
-  
+export function claimChore(instanceId: string, userId: string): ChoreInstance {
+  const instance = getChoreInstance(instanceId);
+
   if (instance.status !== 'available') {
     throw new Error(`Chore is not available (status: ${instance.status})`);
   }
-  
-  // Check eligibility
-  const chore = db.chores.find(c => c.id === instance.choreId);
+
+  const chore = findChore(instance.choreId);
   if (chore?.eligibleUsers && chore.eligibleUsers.length > 0 && !chore.eligibleUsers.includes(userId)) {
     throw new Error(`User ${userId} is not eligible for this chore`);
   }
-  
-  // Check expiration
+
   if (new Date(instance.expiresAt) < new Date()) {
-    instance.status = 'expired';
-    await commitState(db);
+    store.choreInstances.put({ ...instance, status: 'expired' });
     throw new Error('Chore has expired');
   }
-  
-  instance.status = 'claimed';
-  instance.claimedBy = userId;
-  instance.claimedAt = new Date().toISOString();
-  
-  await commitState(db);
-  
+
+  const claimed: ChoreInstance = { ...instance, status: 'claimed', claimedBy: userId, claimedAt: new Date().toISOString() };
+  store.choreInstances.put(claimed);
+
   logAction('CHORE_CLAIMED', { instanceId, choreId: instance.choreId, userId });
-  
-  broadcast({
-    type: 'CHORE_CLAIMED',
-    payload: {
-      instanceId,
-      choreId: instance.choreId,
-      choreTitle: chore?.title,
-      userId
-    }
-  });
-  
-  await broadcastChoreState();
-  
-  return instance;
+
+  return claimed;
 }
 
 // Mark chore as attempted (user says "I did it!")
-export async function attemptChore(instanceId: string): Promise<ChoreInstance> {
-  const db = await readDb();
-  const instance = db.choreInstances.find(ci => ci.id === instanceId);
-  
-  if (!instance) {
-    throw new Error(`Chore instance not found: ${instanceId}`);
-  }
-  
+export function attemptChore(instanceId: string): ChoreInstance {
+  const instance = getChoreInstance(instanceId);
+
   if (instance.status !== 'claimed') {
     throw new Error(`Chore must be claimed first (status: ${instance.status})`);
   }
-  
-  const chore = db.chores.find(c => c.id === instance.choreId);
-  
-  instance.status = 'attempted';
-  instance.attemptedAt = new Date().toISOString();
-  
-  await commitState(db);
-  
+
+  const attempted: ChoreInstance = { ...instance, status: 'attempted', attemptedAt: new Date().toISOString() };
+  store.choreInstances.put(attempted);
+
   logAction('CHORE_ATTEMPTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
-  
-  broadcast({
-    type: 'CHORE_ATTEMPTED',
-    payload: {
-      instanceId,
-      choreId: instance.choreId,
-      choreTitle: chore?.title,
-      userId: instance.claimedBy
-    }
-  });
-  
-  await broadcastChoreState();
-  
-  return instance;
+
+  return attempted;
 }
 
 // Confirm chore completion (parent approves)
-export async function confirmChore(instanceId: string, starsOverride?: number): Promise<ChoreInstance> {
-  const db = await readDb();
-  const instance = db.choreInstances.find(ci => ci.id === instanceId);
-  
-  if (!instance) {
-    throw new Error(`Chore instance not found: ${instanceId}`);
-  }
-  
+export function confirmChore(instanceId: string, starsOverride?: number): ChoreInstance {
+  const instance = getChoreInstance(instanceId);
+
   if (instance.status !== 'attempted') {
     throw new Error(`Chore must be attempted first (status: ${instance.status})`);
   }
-  
-  if (!instance.claimedBy) {
+  const userId = instance.claimedBy;
+  if (!userId) {
     throw new Error('Chore has no claimer');
   }
-  
-  const chore = db.chores.find(c => c.id === instance.choreId);
+
+  const chore = findChore(instance.choreId);
   const stars = starsOverride ?? chore?.defaultStars ?? 0;
-  
-  instance.status = 'confirmed';
-  instance.confirmedAt = new Date().toISOString();
-  instance.starsAwarded = stars;
-  
-  await commitState(db);
-  
-  if (stars > 0) {
-    await awardStars(instance.claimedBy, stars);
-  }
-  
-  logAction('CHORE_CONFIRMED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy, starsAwarded: stars });
-  
-  // Single broadcast with all updated state
-  broadcast({
-    type: 'CHORE_CONFIRMED',
-    payload: {
-      instanceId,
-      choreId: instance.choreId,
-      choreTitle: chore?.title,
-      userId: instance.claimedBy,
-      starsAwarded: stars
-    }
+  const confirmed: ChoreInstance = {
+    ...instance, status: 'confirmed', confirmedAt: new Date().toISOString(), starsAwarded: stars
+  };
+
+  store.transaction(() => {
+    store.choreInstances.put(confirmed);
+    if (stars > 0) awardStars(userId, stars);
   });
-  
-  await broadcastChoreState();
-  
-  return instance;
+
+  logAction('CHORE_CONFIRMED', { instanceId, choreId: instance.choreId, userId, starsAwarded: stars });
+  sync.notify({
+    type: 'CHORE_CONFIRMED',
+    payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId, starsAwarded: stars }
+  });
+
+  return confirmed;
 }
 
 // Reject chore attempt (parent disapproves)
-export async function rejectChore(instanceId: string): Promise<ChoreInstance> {
-  const db = await readDb();
-  const instance = db.choreInstances.find(ci => ci.id === instanceId);
-  
-  if (!instance) {
-    throw new Error(`Chore instance not found: ${instanceId}`);
-  }
-  
+export function rejectChore(instanceId: string): ChoreInstance {
+  const instance = getChoreInstance(instanceId);
+
   if (instance.status !== 'attempted') {
     throw new Error(`Chore must be attempted first (status: ${instance.status})`);
   }
-  
-  const chore = db.chores.find(c => c.id === instance.choreId);
-  
-  instance.status = 'rejected';
-  instance.rejectedAt = new Date().toISOString();
-  
-  await commitState(db);
-  
-  logAction('CHORE_REJECTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
-  
-  broadcast({
-    type: 'CHORE_REJECTED',
-    payload: {
-      instanceId,
-      choreId: instance.choreId,
-      choreTitle: chore?.title,
-      userId: instance.claimedBy
-    }
-  });
-  
-  await broadcastChoreState();
-  
-  return instance;
-}
 
-// Broadcast current chore state to all clients
-export async function broadcastChoreState() {
-  const enrichedSpendings = await getEnrichedSpendings();
-  const { instances } = await getChoresWithInstances();
-  
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: globalState.userStars,
-      spendings: enrichedSpendings,
-      choreInstances: instances
-    }
+  const chore = findChore(instance.choreId);
+  const rejected: ChoreInstance = { ...instance, status: 'rejected', rejectedAt: new Date().toISOString() };
+  store.choreInstances.put(rejected);
+
+  logAction('CHORE_REJECTED', { instanceId, choreId: instance.choreId, userId: instance.claimedBy });
+  sync.notify({
+    type: 'CHORE_REJECTED',
+    payload: { instanceId, choreId: instance.choreId, choreTitle: chore?.title, userId: instance.claimedBy }
   });
+
+  return rejected;
 }
 
 // ============================================
 // SCHOOL EXERCISES SYSTEM
 // ============================================
 
-export async function readExercises(): Promise<Exercise[]> {
-  const db = await readDb();
-  return db.exercises;
+export function readExercises(): Exercise[] {
+  return exercisesFile().exercises;
 }
 
-export async function readExerciseCategories(): Promise<any[]> {
-  const db = await readDb();
-  if (db.exerciseCategories && db.exerciseCategories.length > 0) {
-    return db.exerciseCategories;
+export function readExerciseCategories(): ExerciseCategoryDef[] {
+  const { categories, exercises } = exercisesFile();
+  if (categories && categories.length > 0) {
+    return categories;
   }
-  
   // Fallback: Infer categories dynamically for backward compatibility
-  const categories = [...new Set(db.exercises.map((e: any) => e.category))];
-  return categories.map(c => ({ id: c, label: c }));
-}
-
-export async function readRawExercises(): Promise<any> {
-  try {
-    const exercisesStr = await fs.readFile(EXERCISES_FILE, 'utf-8');
-    return JSON.parse(exercisesStr);
-  } catch (error) {
-    return { categories: [], exercises: [] };
-  }
-}
-
-export async function writeRawExercises(data: any): Promise<void> {
-  if (validateExercises) {
-    const valid = validateExercises(data);
-    if (!valid) {
-      throw new Error(`Exercises validation failed: ${JSON.stringify(validateExercises.errors)}`);
-    }
-  }
-  await fs.writeFile(EXERCISES_FILE, JSON.stringify(data, null, 2));
-  broadcast({ type: 'CONFIG_UPDATED' }); // Trigger a reload on all clients
+  return [...new Set(exercises.map(e => e.category))].map(c => ({ id: c, label: c }));
 }
 
 // Validate an answer against an exercise, for any exercise type.
@@ -1075,43 +755,45 @@ export function checkExerciseAnswer(exercise: Exercise, answer: any): boolean {
   }
 }
 
-export async function startExerciseSession(
-  playerIds: string[], 
-  categories: string[], 
-  totalRounds: number, 
+export function activeExerciseSessions(): ExerciseSession[] {
+  return store.exerciseSessions.all('completedAt IS NULL');
+}
+
+export function getExerciseSession(sessionId: string): ExerciseSession | undefined {
+  return store.exerciseSessions.get(sessionId);
+}
+
+export function startExerciseSession(
+  playerIds: string[],
+  categories: string[],
+  totalRounds: number,
   questionsPerRound: number
-): Promise<ExerciseSession> {
-  const db = await readDb();
-  
+): ExerciseSession {
   // Filter exercises by categories
-  let availableExercises = db.exercises;
+  let availableExercises = readExercises();
   if (categories.length > 0) {
     availableExercises = availableExercises.filter(e => categories.includes(e.category));
   }
-  
-  // Filter exercises by user eligibility:
-  // An exercise is available if it has no userIds restriction, 
+
+  // An exercise is available if it has no userIds restriction,
   // OR if every player in the session is in the exercise's userIds list
-  availableExercises = availableExercises.filter(e => 
+  availableExercises = availableExercises.filter(e =>
     !e.userIds || e.userIds.length === 0 || playerIds.every(pid => e.userIds!.includes(pid))
   );
-  
+
   if (availableExercises.length === 0) {
     throw new Error('No exercises found for these categories');
   }
-  
-  // Draw random exercises for the session (shuffle, no repeats when possible)
+
+  // Draw random exercises for the session (no repeats when possible)
   const totalQuestionsNeeded = totalRounds * questionsPerRound;
-  const drawnExerciseIds: string[] = [];
-  
-  // Shuffle available exercises using Fisher-Yates
   const shuffled = [...availableExercises].sort(() => Math.random() - 0.5);
-  
+  const drawnExerciseIds: string[] = [];
   for (let i = 0; i < totalQuestionsNeeded; i++) {
     // Cycle through shuffled exercises, repeating only if pool is smaller than needed
     drawnExerciseIds.push(shuffled[i % shuffled.length].id);
   }
-  
+
   const session: ExerciseSession = {
     id: randomUUID(),
     playerIds,
@@ -1121,120 +803,84 @@ export async function startExerciseSession(
     questionsPerRound,
     currentQuestionIndex: 0,
     exerciseIds: drawnExerciseIds,
-    answers: playerIds.reduce((acc, pid) => ({ ...acc, [pid]: [] }), {}),
+    answers: Object.fromEntries(playerIds.map(pid => [pid, []])),
     startedAt: new Date().toISOString(),
-    totalStarsEarned: playerIds.reduce((acc, pid) => ({ ...acc, [pid]: 0 }), {})
+    totalStarsEarned: Object.fromEntries(playerIds.map(pid => [pid, 0]))
   };
-  
-  globalState.exerciseSessions.push(session);
-  await persistState();
-  
+  store.exerciseSessions.put(session);
+
   logAction('EXERCISE_SESSION_START', { sessionId: session.id, players: playerIds, categories });
-  broadcast({ type: 'EXERCISE_SESSION_START', payload: session });
-  
+
   return session;
 }
 
-export async function cancelExerciseSession(sessionId: string): Promise<void> {
-  const sessionIndex = globalState.exerciseSessions.findIndex(s => s.id === sessionId);
-  if (sessionIndex !== -1) {
-    globalState.exerciseSessions.splice(sessionIndex, 1);
-    
-    broadcast({ 
-      type: 'SYNC_STATE', 
-      payload: { 
-        activeExerciseSessions: globalState.exerciseSessions.filter(s => !s.completedAt) 
-      } 
-    });
-    
-    scheduleSave();
-  }
+export function cancelExerciseSession(sessionId: string): void {
+  store.exerciseSessions.deleteWhere('id = ?', sessionId);
 }
 
-export async function submitExerciseAnswer(
+export function submitExerciseAnswer(
   sessionId: string,
   userId: string,
   exerciseId: string,
-  answer: any // Can be index, boolean, array of pairs, etc.
-): Promise<{ correct: boolean; earnedStars: number; session: ExerciseSession }> {
-  const db = await readDb();
-  const session = globalState.exerciseSessions.find(s => s.id === sessionId);
-  
+  answer: unknown // index, boolean, array of pairs, etc. — checked per exercise type
+): { correct: boolean; earnedStars: number; session: ExerciseSession } {
+  const session = store.exerciseSessions.get(sessionId);
+
   if (!session) throw new Error('Session not found');
   if (session.completedAt) throw new Error('Session already completed');
   if (!session.playerIds.includes(userId)) throw new Error('User not in this session');
-  
-  const exercise = db.exercises.find(e => e.id === exerciseId);
-  if (!exercise) throw new Error('Exercise not found');
-  
-  // Calculate the overall question index for this session
-  // (answers accumulate across rounds, so we need an absolute index)
-  const overallQuestionIndex = (session.currentRound - 1) * session.questionsPerRound + session.currentQuestionIndex;
-  
-  // Validate answer based on exercise type
-  const isCorrect = checkExerciseAnswer(exercise, answer);
 
+  const exercise = readExercises().find(e => e.id === exerciseId);
+  if (!exercise) throw new Error('Exercise not found');
+
+  // Absolute question index (answers accumulate across rounds)
+  const overallQuestionIndex = (session.currentRound - 1) * session.questionsPerRound + session.currentQuestionIndex;
+
+  const isCorrect = checkExerciseAnswer(exercise, answer);
   const earnedStars = isCorrect ? exercise.stars : 0;
-  
-  // Record answer
+
   const exerciseAnswer: ExerciseAnswer = {
     exerciseId,
     status: isCorrect ? 'correct' : 'incorrect',
     answeredAt: new Date().toISOString(),
     earnedStars
   };
-  
+
   if (!session.answers[userId]) session.answers[userId] = [];
   session.answers[userId].push(exerciseAnswer);
-  
+
   if (isCorrect) {
     session.totalStarsEarned[userId] = (session.totalStarsEarned[userId] || 0) + earnedStars;
-    // Award stars immediately to user balance
-    await awardStars(userId, earnedStars);
   }
-  
+
   // Advance question index if all players answered this overall question
-  const existingUserIds = db.users.map(u => u.id);
+  const existingUserIds = config().users.map(u => u.id);
   const relevantPlayerIds = session.playerIds.filter(pid => existingUserIds.includes(pid));
-  
-  const allAnsweredCurrent = relevantPlayerIds.every(pid => 
+
+  const allAnsweredCurrent = relevantPlayerIds.every(pid =>
     session.answers[pid] && session.answers[pid].length > overallQuestionIndex
   );
-  
+
   if (allAnsweredCurrent) {
     session.currentQuestionIndex++;
-    
-    // Check if round or session complete
+
     if (session.currentQuestionIndex >= session.questionsPerRound) {
       if (session.currentRound >= session.totalRounds) {
-        // Session complete
         session.completedAt = new Date().toISOString();
         logAction('EXERCISE_SESSION_COMPLETE', { sessionId: session.id, totalStars: session.totalStarsEarned });
       } else {
-        // Next round
         session.currentRound++;
         session.currentQuestionIndex = 0;
       }
     }
   }
-  
-  await persistState();
 
-  broadcast({
-    type: 'EXERCISE_ANSWER',
-    payload: {
-      sessionId,
-      userId,
-      isCorrect,
-      earnedStars,
-      session // Broadcast updated session state
-    }
+  store.transaction(() => {
+    store.exerciseSessions.put(session);
+    // Award stars immediately to user balance
+    if (isCorrect) awardStars(userId, earnedStars);
   });
-  
-  if (session.completedAt) {
-    broadcast({ type: 'EXERCISE_SESSION_COMPLETE', payload: session });
-  }
-  
+
   return { correct: isCorrect, earnedStars, session };
 }
 
@@ -1243,11 +889,11 @@ export async function submitExerciseAnswer(
 // ============================================
 
 // Local date (YYYY-MM-DD) in the configured timezone
-function localDateStr(timezone: string): string {
+function localDateStr(timezone: string, date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(new Date());
+  }).format(date);
 }
 
 // Draw `count` exercises from a pool, balancing across categories
@@ -1276,51 +922,51 @@ function drawBalanced(pool: Exercise[], count: number): Exercise[] {
 // Make sure every user has today's assignments drawn from their pool.
 // Lazy generation: called whenever assignments are fetched.
 export async function ensureDailyAssignments(): Promise<boolean> {
-  const db = await readDb();
-  const today = localDateStr(db.settings?.timezone || 'Europe/Athens');
+  const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
   let created = false;
 
-  for (const user of db.users) {
-    const hasToday = globalState.exerciseAssignments.some(
-      a => a.userId === user.id && a.date === today
-    );
+  for (const user of config().users) {
+    const hasToday = store.exerciseAssignments.all('userId = ? AND date = ?', user.id, today).length > 0;
     if (hasToday) continue;
 
     const pool = await exercisePoolProvider.getPoolForUser(user.id);
     if (pool.length === 0) continue;
 
     const drawn = drawBalanced(pool, ASSIGNMENTS_PER_DAY);
-    for (const exercise of drawn) {
-      globalState.exerciseAssignments.push({
-        id: randomUUID(),
-        userId: user.id,
-        exerciseId: exercise.id,
-        date: today,
-        status: 'pending',
-        attempts: 0,
-        assignedAt: new Date().toISOString()
-      });
-    }
-    created = true;
-    logAction('EXERCISE_ASSIGNMENTS_CREATED', { userId: user.id, date: today, exerciseIds: drawn.map(e => e.id) });
+    // Re-check after the await: a concurrent request may have drawn already.
+    store.transaction(() => {
+      if (store.exerciseAssignments.all('userId = ? AND date = ?', user.id, today).length > 0) return;
+      for (const exercise of drawn) {
+        store.exerciseAssignments.put({
+          id: randomUUID(),
+          userId: user.id,
+          exerciseId: exercise.id,
+          date: today,
+          status: 'pending',
+          attempts: 0,
+          assignedAt: new Date().toISOString()
+        });
+      }
+      created = true;
+      logAction('EXERCISE_ASSIGNMENTS_CREATED', { userId: user.id, date: today, exerciseIds: drawn.map(e => e.id) });
+    });
   }
 
-  if (created) {
-    await persistState();
-  }
   return created;
 }
 
-// Today's assignments, enriched with their exercise definitions.
+// Today's assignments (drawn first if needed), enriched with their exercise definitions.
 export async function getExerciseAssignments(userId?: string): Promise<ExerciseAssignmentWithExercise[]> {
   await ensureDailyAssignments();
-  const db = await readDb();
-  const today = localDateStr(db.settings?.timezone || 'Europe/Athens');
+  return todaysAssignments(userId);
+}
 
-  let assignments = globalState.exerciseAssignments.filter(a => a.date === today);
-  if (userId) {
-    assignments = assignments.filter(a => a.userId === userId);
-  }
+async function todaysAssignments(userId?: string): Promise<ExerciseAssignmentWithExercise[]> {
+  const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
+
+  const assignments = userId
+    ? store.exerciseAssignments.all('date = ? AND userId = ?', today, userId)
+    : store.exerciseAssignments.all('date = ?', today);
 
   const enriched: ExerciseAssignmentWithExercise[] = [];
   for (const a of assignments) {
@@ -1329,64 +975,41 @@ export async function getExerciseAssignments(userId?: string): Promise<ExerciseA
   return enriched;
 }
 
-export async function broadcastAssignmentState() {
-  const assignments = await getExerciseAssignments();
-  broadcast({
-    type: 'SYNC_STATE',
-    payload: {
-      userStars: globalState.userStars,
-      exerciseAssignments: assignments
-    }
-  });
-}
-
 // Answer a daily assignment. Correct -> completed + stars. Wrong -> retry allowed.
 export async function answerExerciseAssignment(
   assignmentId: string,
-  answer: any
+  answer: unknown
 ): Promise<{ correct: boolean; starsAwarded: number; assignment: ExerciseAssignment }> {
-  const assignment = globalState.exerciseAssignments.find(a => a.id === assignmentId);
-  if (!assignment) throw new Error('Assignment not found');
-  if (assignment.status === 'completed') throw new Error('Assignment already completed');
+  const found = store.exerciseAssignments.get(assignmentId);
+  if (!found) throw new Error('Assignment not found');
+  if (found.status === 'completed') throw new Error('Assignment already completed');
 
-  const exercise = await exercisePoolProvider.getExerciseById(assignment.exerciseId);
+  const exercise = await exercisePoolProvider.getExerciseById(found.exerciseId);
   if (!exercise) throw new Error('Exercise not found in pool');
 
   const isCorrect = checkExerciseAnswer(exercise, answer);
-  assignment.attempts += 1;
 
-  let starsAwarded = 0;
-  if (isCorrect) {
-    assignment.status = 'completed';
-    assignment.completedAt = new Date().toISOString();
-    starsAwarded = exercise.stars;
-    assignment.starsAwarded = starsAwarded;
-    await persistState();
-    if (starsAwarded > 0) {
-      await awardStars(assignment.userId, starsAwarded);
+  // Re-read after the await so a concurrent answer can't be lost or double-paid.
+  const { assignment, starsAwarded } = store.transaction(() => {
+    const current = store.exerciseAssignments.get(assignmentId);
+    if (!current || current.status === 'completed') throw new Error('Assignment already completed');
+    const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1 };
+    let stars = 0;
+    if (isCorrect) {
+      stars = exercise.stars;
+      updated.status = 'completed';
+      updated.completedAt = new Date().toISOString();
+      updated.starsAwarded = stars;
     }
-  } else {
-    await persistState();
-  }
+    store.exerciseAssignments.put(updated);
+    if (stars > 0) awardStars(updated.userId, stars);
+    return { assignment: updated, starsAwarded: stars };
+  });
 
   logAction('EXERCISE_ASSIGNMENT_ANSWER', {
     assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId,
     correct: isCorrect, attempts: assignment.attempts, starsAwarded
   });
-
-  broadcast({
-    type: 'EXERCISE_ASSIGNMENT_ANSWER',
-    payload: {
-      assignmentId,
-      userId: assignment.userId,
-      exerciseId: assignment.exerciseId,
-      exerciseTitle: exercise.title,
-      correct: isCorrect,
-      starsAwarded
-    }
-  });
-
-  await broadcastAssignmentState();
 
   return { correct: isCorrect, starsAwarded, assignment };
 }

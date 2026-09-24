@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY shared/ ./shared/
 COPY backend/package*.json ./backend/
@@ -9,7 +9,8 @@ RUN npm run build
 # Copy sdk-proxy.js to dist (it's a plain JS file, not TypeScript, so it's not compiled)
 RUN cp src/sdk-proxy.js dist/backend/src/
 
-FROM node:20-alpine
+# Node 24 LTS: ships the built-in node:sqlite driver (no native modules to build)
+FROM node:24-alpine
 WORKDIR /app
 COPY backend/package*.json ./
 RUN npm ci --omit=dev --prefer-offline --no-audit
@@ -17,12 +18,8 @@ COPY --from=builder /app/backend/dist ./dist
 # Create symlink so sdk-proxy.js can find node_modules via relative path (../node_modules)
 RUN ln -s /app/node_modules /app/dist/backend/node_modules
 COPY backend/data.json ./
-COPY backend/data.schema.json ./
-COPY backend/state.schema.json ./
-# Copy schemas to dist directory for admin endpoints
-COPY backend/data.schema.json ./dist/backend/
-COPY backend/state.schema.json ./dist/backend/
-# state.json will be mounted
+COPY backend/data.schema.json backend/exercises.schema.json backend/state.schema.json ./
+# Config, the database (routine.db) and legacy state files live on the /data volume
 # Create uploads directory with proper permissions
 RUN mkdir -p uploads && chown node:node uploads
 EXPOSE 3000

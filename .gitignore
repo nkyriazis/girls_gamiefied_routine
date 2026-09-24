@@ -9,7 +9,10 @@ dev-dist
 .env
 
 # Runtime data
+backend/routine.db*
 backend/state.json
 backend/logs.jsonl
+backend/*.tmp
+backups/
 backend/uploads/
 backend/test-*.json

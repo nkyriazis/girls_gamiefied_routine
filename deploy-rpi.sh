@@ -6,6 +6,20 @@ set -e
 echo "🍓 Deploying to Raspberry Pi..."
 echo ""
 
+COMPOSE="docker-compose -f docker-compose.yml -f docker-compose.release.yml"
+
+# Back up the live data before anything else. The backend is stopped first so
+# the database copy is consistent (on a clean stop SQLite folds its WAL back
+# into routine.db).
+BACKUP_DIR="backups/$(date +%Y%m%d-%H%M%S)"
+echo "💾 Backing up data to $BACKUP_DIR..."
+$COMPOSE stop backend 2>/dev/null || true
+mkdir -p "$BACKUP_DIR"
+for f in data.json exercises.json routine.db routine.db-wal state.json logs.jsonl; do
+    if [ -f "backend/$f" ]; then cp --preserve=timestamps "backend/$f" "$BACKUP_DIR/"; fi
+done
+(cd "$BACKUP_DIR" && sha256sum * > SHA256SUMS 2>/dev/null || true)
+
 # Pull latest code
 if [ -d .git ]; then
     echo "📦 Pulling latest code..."
@@ -19,11 +33,11 @@ chmod 755 backend/uploads
 
 # Pull pre-built images
 echo "🐳 Pulling Docker images..."
-docker-compose -f docker-compose.yml -f docker-compose.release.yml pull
+$COMPOSE pull
 
 # Start services
 echo "🚀 Starting services..."
-docker-compose -f docker-compose.yml -f docker-compose.release.yml up -d
+$COMPOSE up -d
 
 # Wait for services
 sleep 2
@@ -32,7 +46,7 @@ sleep 2
 echo ""
 echo "✅ Deployment complete!"
 echo ""
-docker-compose -f docker-compose.yml -f docker-compose.release.yml ps
+$COMPOSE ps
 
 # Get IP
 IP=$(hostname -I | awk '{print $1}')

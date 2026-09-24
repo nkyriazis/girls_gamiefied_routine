@@ -6,7 +6,9 @@
     "dev": "nodemon --watch src --watch ../shared --exec ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/backend/src/server.js",
-    "test-schemas": "node test-schemas.js"
+    "test-schemas": "node test-schemas.js",
+    "test": "node --require ts-node/register --test test/*.test.ts",
+    "migrate": "node dist/backend/src/migrate-cli.js"
   },
   "keywords": [],
   "author": "",
@@ -32,5 +34,8 @@
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

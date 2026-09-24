@@ -5,20 +5,19 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { z } from 'zod';
 import {
-  readDb,
   readRawConfig,
   writeRawConfig,
-  globalState,
+  store,
+  stateSnapshot,
+  usersWithStars,
   triggerAction,
-  broadcast,
   getEnrichedSpendings,
   awardStars,
   setUserStars,
   UPLOADS_DIR,
-  SCHEMA_FILE,
-  STATE_SCHEMA_FILE,
   logAction
 } from './db';
+import { dataSchema, stateSchema } from './schemas';
 
 // Create MCP server instance
 export const mcpServer = new McpServer({
@@ -112,24 +111,9 @@ mcpServer.registerResource(
     description: 'JSON Schema for data.json configuration',
     mimeType: 'application/json'
   },
-  async (uri) => {
-    try {
-      const schema = await fs.readFile(SCHEMA_FILE, 'utf-8');
-      return {
-        contents: [{
-          uri: uri.href,
-          text: schema
-        }]
-      };
-    } catch {
-      return {
-        contents: [{
-          uri: uri.href,
-          text: '{}'
-        }]
-      };
-    }
-  }
+  async (uri) => ({
+    contents: [{ uri: uri.href, text: JSON.stringify(dataSchema.schema, null, 2) }]
+  })
 );
 
 // State schema
@@ -138,27 +122,12 @@ mcpServer.registerResource(
   'schema://state',
   {
     title: 'State Schema',
-    description: 'JSON Schema for state.json',
+    description: 'JSON Schema for the runtime state snapshot (get_state)',
     mimeType: 'application/json'
   },
-  async (uri) => {
-    try {
-      const schema = await fs.readFile(STATE_SCHEMA_FILE, 'utf-8');
-      return {
-        contents: [{
-          uri: uri.href,
-          text: schema
-        }]
-      };
-    } catch {
-      return {
-        contents: [{
-          uri: uri.href,
-          text: '{}'
-        }]
-      };
-    }
-  }
+  async (uri) => ({
+    contents: [{ uri: uri.href, text: JSON.stringify(stateSchema.schema, null, 2) }]
+  })
 );
 
 // ============================================================================
@@ -193,9 +162,10 @@ mcpServer.registerTool(
     outputSchema: { state: z.any() }
   },
   async () => {
+    const state = stateSnapshot();
     return {
-      content: [{ type: 'text', text: JSON.stringify(globalState, null, 2) }],
-      structuredContent: { state: globalState }
+      content: [{ type: 'text', text: JSON.stringify(state, null, 2) }],
+      structuredContent: { state }
     };
   }
 );
@@ -210,10 +180,10 @@ mcpServer.registerTool(
     outputSchema: { users: z.array(z.any()) }
   },
   async () => {
-    const db = await readDb();
+    const users = usersWithStars();
     return {
-      content: [{ type: 'text', text: JSON.stringify(db.users, null, 2) }],
-      structuredContent: { users: db.users }
+      content: [{ type: 'text', text: JSON.stringify(users, null, 2) }],
+      structuredContent: { users }
     };
   }
 );
@@ -228,8 +198,7 @@ mcpServer.registerTool(
     outputSchema: { user: z.any().nullable() }
   },
   async ({ id }) => {
-    const db = await readDb();
-    const user = db.users.find(u => u.id === id) || null;
+    const user = usersWithStars().find(u => u.id === id) || null;
     return {
       content: [{ type: 'text', text: JSON.stringify(user, null, 2) }],
       structuredContent: { user }
@@ -247,7 +216,7 @@ mcpServer.registerTool(
     outputSchema: { userId: z.string(), stars: z.number() }
   },
   async ({ userId }) => {
-    const stars = globalState.userStars[userId] || 0;
+    const stars = store.getStars(userId);
     return {
       content: [{ type: 'text', text: `User ${userId} has ${stars} stars` }],
       structuredContent: { userId, stars }
@@ -608,7 +577,7 @@ mcpServer.registerTool(
       id: z.string().describe('Unique user ID'),
       name: z.string().describe('User display name'),
       avatar: z.any().describe('Avatar icon object'),
-      color: z.string().optional().describe('Theme color')
+      color: z.string().describe('Theme color (required by data.schema.json)')
     },
     outputSchema: { success: z.boolean(), user: z.any() }
   },
@@ -853,8 +822,13 @@ mcpServer.registerTool(
     outputSchema: { success: z.boolean(), type: z.string().optional(), id: z.string().optional() }
   },
   async ({ id }) => {
-    const db = await readDb();
-    const result = await triggerAction(id, db, 'mcp');
+    const result = triggerAction(id, 'mcp');
+    if (result && 'skipped' in result) {
+      return {
+        content: [{ type: 'text', text: `"${id}" is already running (${result.runningId})` }],
+        structuredContent: { success: true, type: result.type, id }
+      };
+    }
     if (result) {
       return {
         content: [{ type: 'text', text: `Triggered ${result.type} "${id}" successfully` }],

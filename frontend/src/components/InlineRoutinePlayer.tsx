@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type User, type Routine } from '@shared/types';
+import { type User, type Routine, type RoutineRun } from '@shared/types';
 import { RewardOverlay } from './RewardOverlay';
 import { useAppSounds } from '../hooks/useAppSounds';
 import { api } from '../api';
@@ -9,106 +9,66 @@ import { SmartIcon } from './SmartIcon';
 interface InlineRoutinePlayerProps {
   user: User;
   routine: Routine;
-  executionId?: string;
-  onComplete: () => void;
-  onExit: () => void;
+  run: RoutineRun; // server state: current task, when it started, whether all are done
+  onClose: () => void; // reward shown, or the kid pressed ✕
 }
+
+const REWARD_MS = 5000;
 
 export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   user,
   routine,
-  executionId,
-  onComplete,
-  onExit
+  run,
+  onClose
 }) => {
   const { playClick, playSuccess, playAlarm } = useAppSounds();
-  const completionTimeoutRef = useRef<number | null>(null);
-
-  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [justEarnedStars, setJustEarnedStars] = useState<number | null>(null);
-  const [taskStartTime, setTaskStartTime] = useState<number>(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
+  const currentTaskIndex = run.taskIndex;
   const currentTask = routine?.tasks[currentTaskIndex];
   const totalTasks = routine?.tasks.length || 0;
+  const isCompleted = !!run.finishedAt;
 
+  // The countdown runs from the server's task start, so every device (and a
+  // reloaded one) shows the same time.
   useEffect(() => {
-    if (currentTask) {
-      setTimeLeft(currentTask.durationSeconds);
-      setTaskStartTime(Date.now());
-      setIsActive(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTask?.id]);
-
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isActive) {
-      interval = setInterval(() => {
-        const elapsedSeconds = Math.floor((Date.now() - taskStartTime) / 1000);
-        const remaining = Math.max(0, (currentTask?.durationSeconds || 0) - elapsedSeconds);
-        setTimeLeft(remaining);
-
-        if (remaining === 0) {
-          setIsActive(false);
-          playAlarm();
-        }
-      }, 1000);
-    }
+    const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [isActive, taskStartTime, currentTask?.durationSeconds, playAlarm]);
+  }, []);
+  const duration = currentTask?.durationSeconds || 0;
+  const elapsed = Math.floor((now - Date.parse(run.taskStartedAt)) / 1000);
+  const timeLeft = Math.min(duration, Math.max(0, duration - elapsed));
+
+  const timeUp = !isCompleted && !!currentTask && timeLeft === 0;
+  useEffect(() => {
+    if (timeUp) playAlarm();
+  }, [timeUp, playAlarm]);
+
+  // All tasks done: show the reward, then close the routine
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+  useEffect(() => {
+    if (!run.finishedAt) return;
+    playSuccess();
+    const timeout = setTimeout(() => onCloseRef.current(), Math.max(0, REWARD_MS - (Date.now() - Date.parse(run.finishedAt))));
+    return () => clearTimeout(timeout);
+  }, [run.finishedAt, playSuccess]);
 
   const handleNextTask = async () => {
     playClick();
-
-    if (!executionId) {
-      console.error('Missing executionId');
-      // alert('Debug: Missing executionId'); // Uncomment for debugging
-    }
-
-    // Complete current task
-    if (executionId && currentTask) {
-      try {
-        const duration = Math.round((Date.now() - taskStartTime) / 1000);
-        const isOnTime = timeLeft > 0;
-        const result = await api.completeTask(executionId, currentTask.id, duration, isOnTime);
-
-        if (result.success) {
-          setJustEarnedStars(result.starsAwarded);
-          setTimeout(() => setJustEarnedStars(null), 2000);
-        } else {
-          console.error('Complete task failed:', result);
-        }
-      } catch (err) {
-        console.error('Failed to complete task:', err);
+    if (!currentTask) return;
+    try {
+      const result = await api.completeTask(run.id, currentTask.id);
+      if (result.success) {
+        setJustEarnedStars(result.starsAwarded);
+        setTimeout(() => setJustEarnedStars(null), 2000);
       }
+    } catch (err) {
+      console.error('Failed to complete task:', err);
     }
-
-    if (currentTaskIndex < totalTasks - 1) {
-      setCurrentTaskIndex(prev => prev + 1);
-    } else {
-      handleRoutineComplete();
-    }
-  };
-
-  const handleRoutineComplete = () => {
-    setIsCompleted(true);
-    playSuccess();
-    // Show reward for a few seconds then notify parent
-    completionTimeoutRef.current = setTimeout(() => {
-      onComplete();
-    }, 5000);
-  };
-
-  const handleRewardClose = () => {
-    // When user clicks the reward, clear the timeout and call onComplete immediately
-    if (completionTimeoutRef.current) {
-      clearTimeout(completionTimeoutRef.current);
-      completionTimeoutRef.current = null;
-    }
-    onComplete();
   };
 
   const formatTime = (seconds: number) => {
@@ -125,7 +85,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         {isCompleted && (
           <RewardOverlay
             starsEarned={50}
-            onClose={handleRewardClose}
+            onClose={onClose}
           />
         )}
       </AnimatePresence>
@@ -160,7 +120,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
             />
           </div>
         </div>
-        <button className="btn-exit" onClick={onExit}>✕</button>
+        <button className="btn-exit" onClick={onClose}>✕</button>
       </div>
 
       <div className="player-body">
