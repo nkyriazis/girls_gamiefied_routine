@@ -1,0 +1,206 @@
+{
+ "series": {
+  ".store-overlay#1": [
+   {
+    "f": 1,
+    "t": 18.2,
+    "el": ".store-overlay#1",
+    "op": 0.9829,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 2,
+    "t": 58.2,
+    "el": ".store-overlay#1",
+    "op": 0.8499,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 3,
+    "t": 98,
+    "el": ".store-overlay#1",
+    "op": 0.5361,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 4,
+    "t": 137.2,
+    "el": ".store-overlay#1",
+    "op": 0.3501,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 5,
+    "t": 221.3,
+    "el": ".store-overlay#1",
+    "op": 0.0778,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 6,
+    "t": 264.5,
+    "el": ".store-overlay#1",
+    "op": 0.014,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 7,
+    "t": 308.8,
+    "el": ".store-overlay#1",
+    "op": 0.0004,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 1
+   },
+   {
+    "f": 8,
+    "t": 353.3,
+    "el": ".store-overlay#1",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   }
+  ],
+  ".store-card#2": [
+   {
+    "f": 1,
+    "t": 18.2,
+    "el": ".store-card#2",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 2,
+    "t": 58.2,
+    "el": ".store-card#2",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 3,
+    "t": 98,
+    "el": ".store-card#2",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 4,
+    "t": 137.2,
+    "el": ".store-card#2",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 5,
+    "t": 221.3,
+    "el": ".store-card#2",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 6,
+    "t": 264.5,
+    "el": ".store-card#2",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 7,
+    "t": 308.8,
+    "el": ".store-card#2",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 8,
+    "t": 353.3,
+    "el": ".store-card#2",
+    "op": 1,
+    "inl": "",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   }
+  ]
+ },
+ "muts": [
+  {
+   "f": 123,
+   "t": 352.9,
+   "el": ".store-overlay",
+   "style": "opacity: 0;"
+  },
+  {
+   "f": 124,
+   "el": ".store-overlay",
+   "removed": true
+  }
+ ],
+ "cancels": [
+  {
+   "f": 123,
+   "phase": "between-frames (after paint, before next rAF)",
+   "el": ".store-overlay#1",
+   "opAfterCancel": 0,
+   "inline": "0"
+  }
+ ]
+}

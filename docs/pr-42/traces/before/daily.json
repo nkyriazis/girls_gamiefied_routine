@@ -1,0 +1,903 @@
+{
+ "series": {
+  ".exercises-backdrop#5": [
+   {
+    "f": 1,
+    "t": 9.8,
+    "el": ".exercises-backdrop#5",
+    "op": 0.9917,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 2,
+    "t": 26,
+    "el": ".exercises-backdrop#5",
+    "op": 0.9458,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 3,
+    "t": 42.6,
+    "el": ".exercises-backdrop#5",
+    "op": 0.8723,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 4,
+    "t": 59.3,
+    "el": ".exercises-backdrop#5",
+    "op": 0.7765,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 5,
+    "t": 76,
+    "el": ".exercises-backdrop#5",
+    "op": 0.6701,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 6,
+    "t": 92.4,
+    "el": ".exercises-backdrop#5",
+    "op": 0.5617,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 7,
+    "t": 109.5,
+    "el": ".exercises-backdrop#5",
+    "op": 0.4613,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 8,
+    "t": 126,
+    "el": ".exercises-backdrop#5",
+    "op": 0.371,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 9,
+    "t": 142.6,
+    "el": ".exercises-backdrop#5",
+    "op": 0.2929,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 10,
+    "t": 159.3,
+    "el": ".exercises-backdrop#5",
+    "op": 0.2259,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 11,
+    "t": 175.9,
+    "el": ".exercises-backdrop#5",
+    "op": 0.1697,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 12,
+    "t": 192.5,
+    "el": ".exercises-backdrop#5",
+    "op": 0.1236,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 13,
+    "t": 209.4,
+    "el": ".exercises-backdrop#5",
+    "op": 0.086,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 14,
+    "t": 226.1,
+    "el": ".exercises-backdrop#5",
+    "op": 0.0562,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 15,
+    "t": 242.4,
+    "el": ".exercises-backdrop#5",
+    "op": 0.0336,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 16,
+    "t": 259.4,
+    "el": ".exercises-backdrop#5",
+    "op": 0.0173,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 17,
+    "t": 276,
+    "el": ".exercises-backdrop#5",
+    "op": 0.0066,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 18,
+    "t": 292.5,
+    "el": ".exercises-backdrop#5",
+    "op": 0.0011,
+    "inl": "1",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 1
+   },
+   {
+    "f": 19,
+    "t": 309.5,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 20,
+    "t": 326,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 21,
+    "t": 342.5,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 22,
+    "t": 359.1,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 23,
+    "t": 375.9,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 24,
+    "t": 392.2,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 25,
+    "t": 408.9,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 26,
+    "t": 425.9,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 27,
+    "t": 442.4,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 28,
+    "t": 459.4,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 29,
+    "t": 475.9,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 30,
+    "t": 492.4,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   },
+   {
+    "f": 31,
+    "t": 509.7,
+    "el": ".exercises-backdrop#5",
+    "op": 0,
+    "inl": "0",
+    "tf": "none",
+    "vis": "visible",
+    "dis": "block",
+    "waapi": 0
+   }
+  ],
+  ".exercises-drawer#6": [
+   {
+    "f": 1,
+    "t": 9.8,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 2.15683, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 2,
+    "t": 26,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 27.4106, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 3,
+    "t": 42.6,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 68.5254, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 4,
+    "t": 59.3,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 121.434, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 5,
+    "t": 76,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 176.96, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 6,
+    "t": 92.4,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 227.288, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 7,
+    "t": 109.5,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 275.825, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 8,
+    "t": 126,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 317.667, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 9,
+    "t": 142.6,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 350.369, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 10,
+    "t": 159.3,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 378.11, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 11,
+    "t": 175.9,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 399.184, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 12,
+    "t": 192.5,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 413.67, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 13,
+    "t": 209.4,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 424.283, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 14,
+    "t": 226.1,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 430.921, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 15,
+    "t": 242.4,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 434.354, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 16,
+    "t": 259.4,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 435.787, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 17,
+    "t": 276,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 435.616, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 18,
+    "t": 292.5,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 434.501, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 19,
+    "t": 309.5,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 432.726, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 20,
+    "t": 326,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 430.674, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 21,
+    "t": 342.5,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 428.704, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 22,
+    "t": 359.1,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 426.725, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 23,
+    "t": 375.9,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 424.96, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 24,
+    "t": 392.2,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 423.539, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 25,
+    "t": 408.9,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 422.298, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 26,
+    "t": 425.9,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 421.326, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 27,
+    "t": 442.4,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 420.634, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 28,
+    "t": 459.4,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 420.104, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 29,
+    "t": 475.9,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 419.751, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 30,
+    "t": 492.4,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 419.546, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   },
+   {
+    "f": 31,
+    "t": 509.7,
+    "el": ".exercises-drawer#6",
+    "op": 1,
+    "inl": "",
+    "tf": "matrix(1, 0, 0, 1, 420, 0)",
+    "vis": "visible",
+    "dis": "flex",
+    "waapi": 0
+   }
+  ]
+ },
+ "muts": [
+  {
+   "f": 543,
+   "t": 9.3,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(0.51353%);"
+  },
+  {
+   "f": 544,
+   "t": 25.7,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(6.52634%);"
+  },
+  {
+   "f": 545,
+   "t": 42.1,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(16.3156%);"
+  },
+  {
+   "f": 546,
+   "t": 58.9,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(28.9128%);"
+  },
+  {
+   "f": 547,
+   "t": 75.7,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(42.1334%);"
+  },
+  {
+   "f": 548,
+   "t": 92.1,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(54.1161%);"
+  },
+  {
+   "f": 549,
+   "t": 109.1,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(65.6725%);"
+  },
+  {
+   "f": 550,
+   "t": 125.7,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(75.6349%);"
+  },
+  {
+   "f": 551,
+   "t": 142.2,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(83.4213%);"
+  },
+  {
+   "f": 552,
+   "t": 159,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(90.0263%);"
+  },
+  {
+   "f": 553,
+   "t": 175.6,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(95.0439%);"
+  },
+  {
+   "f": 554,
+   "t": 192.1,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(98.4928%);"
+  },
+  {
+   "f": 555,
+   "t": 209,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(101.02%);"
+  },
+  {
+   "f": 556,
+   "t": 225.8,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(102.6%);"
+  },
+  {
+   "f": 557,
+   "t": 242,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(103.418%);"
+  },
+  {
+   "f": 558,
+   "t": 259,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(103.759%);"
+  },
+  {
+   "f": 559,
+   "t": 275.7,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(103.718%);"
+  },
+  {
+   "f": 560,
+   "t": 292.1,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(103.453%);"
+  },
+  {
+   "f": 561,
+   "t": 309.2,
+   "el": ".exercises-backdrop",
+   "style": "opacity: 0;"
+  },
+  {
+   "f": 561,
+   "t": 309.2,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(103.03%);"
+  },
+  {
+   "f": 562,
+   "t": 325.7,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(102.541%);"
+  },
+  {
+   "f": 563,
+   "t": 342.2,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(102.072%);"
+  },
+  {
+   "f": 564,
+   "t": 358.9,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(101.601%);"
+  },
+  {
+   "f": 565,
+   "t": 375.7,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(101.181%);"
+  },
+  {
+   "f": 566,
+   "t": 391.9,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(100.843%);"
+  },
+  {
+   "f": 567,
+   "t": 408.7,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(100.547%);"
+  },
+  {
+   "f": 568,
+   "t": 425.6,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(100.316%);"
+  },
+  {
+   "f": 569,
+   "t": 442.1,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(100.151%);"
+  },
+  {
+   "f": 570,
+   "t": 459,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(100.025%);"
+  },
+  {
+   "f": 571,
+   "t": 475.6,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(99.9407%);"
+  },
+  {
+   "f": 572,
+   "t": 492.1,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(99.892%);"
+  },
+  {
+   "f": 573,
+   "t": 509.1,
+   "el": ".exercises-drawer",
+   "style": "transform: translateX(100%);"
+  },
+  {
+   "f": 573,
+   "el": ".exercises-backdrop",
+   "removed": true
+  },
+  {
+   "f": 573,
+   "el": ".exercises-drawer",
+   "removed": true
+  }
+ ],
+ "cancels": [
+  {
+   "f": 560,
+   "phase": "between-frames (after paint, before next rAF)",
+   "el": ".exercises-backdrop#5",
+   "opAfterCancel": 1,
+   "inline": "1"
+  }
+ ]
+}
