@@ -2,6 +2,12 @@
 
 This project uses a **Docker Compose** setup with a "Base + Override" pattern to efficiently manage Development and Production environments.
 
+## 📦 Upgrading from Older Versions
+
+If you're upgrading and have existing `data.json` or `state.json` files, **good news: they will continue to work without any changes!** The latest version is fully backward-compatible.
+
+For details about new features and optional migration, see [MIGRATION.md](MIGRATION.md).
+
 ## 🚀 Quick Start (Development)
 
 Use this mode for day-to-day coding. It features hot-reloading, local file mounting, and full debugging capabilities.
