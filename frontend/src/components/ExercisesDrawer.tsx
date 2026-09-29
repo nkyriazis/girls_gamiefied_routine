@@ -13,6 +13,7 @@ interface ExercisesDrawerProps {
 const CATEGORY_ICONS: Record<string, string> = {
     'Μαθηματικά': '🔢',
     'Γλώσσα': '📖',
+    'Προβλήματα': '🧩',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -22,6 +23,7 @@ const TYPE_LABELS: Record<string, string> = {
     'ordering': 'Βάλε στη σειρά',
     'fill-blank': 'Συμπλήρωσε τα κενά',
     'number-input': 'Γράψε τον αριθμό',
+    'problem': 'Πρόβλημα σε βήματα',
 };
 
 export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClose }) => {
@@ -100,6 +102,8 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
                                                             <h4>{ex.title}</h4>
                                                             <span className="assignment-meta">
                                                                 {ex.category} · {TYPE_LABELS[ex.type] || ex.type}
+                                                                {ex.type === 'problem' && !isDone && (assignment.stepIndex ?? 0) > 0 &&
+                                                                    ` · βήμα ${(assignment.stepIndex ?? 0) + 1} από ${ex.steps.length}`}
                                                             </span>
                                                         </div>
                                                         <div className="assignment-status">

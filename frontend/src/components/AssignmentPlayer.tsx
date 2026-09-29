@@ -11,6 +11,7 @@ import { MatchPairsRenderer } from './exercises/MatchPairsRenderer';
 import { OrderingRenderer } from './exercises/OrderingRenderer';
 import { FillBlankRenderer } from './exercises/FillBlankRenderer';
 import { NumberInputRenderer } from './exercises/NumberInputRenderer';
+import { ProblemPlayer } from './exercises/ProblemPlayer';
 
 interface AssignmentPlayerProps {
   assignment: ExerciseAssignmentWithExercise;
@@ -52,8 +53,16 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     }
   };
 
+  // A problem checks its own steps; this only celebrates the last one.
+  const handleSolved = () => {
+    setFeedback('correct');
+    setTimeout(() => onClose(), 1800);
+  };
+
   const renderExercise = () => {
     switch (exercise.type) {
+      case 'problem':
+        return <ProblemPlayer assignment={assignment} exercise={exercise} onSolved={handleSolved} />;
       case 'multiple-choice':
         return <MultipleChoiceRenderer exercise={exercise} onAnswer={handleAnswer} disabled={submitting} />;
       case 'true-false':
@@ -99,7 +108,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           {'question' in exercise && exercise.question && (
             <div className="assignment-question">{exercise.question}</div>
           )}
-          <div className="assignment-renderer">{renderExercise()}</div>
+          <div className={`assignment-renderer ${exercise.type === 'problem' ? 'wide' : ''}`}>{renderExercise()}</div>
         </div>
       </div>
 
@@ -175,13 +184,13 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         .assignment-stage {
           flex: 1;
           display: flex;
-          justify-content: center;
-          align-items: center;
           padding: 2rem;
           overflow-y: auto;
         }
 
+        /* Centred by margin, so a problem taller than the screen scrolls instead of losing its top */
         .assignment-content {
+          margin: auto;
           width: 100%;
           max-width: 900px;
           display: flex;
@@ -213,6 +222,10 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         .assignment-renderer {
           width: 100%;
           max-width: 700px;
+        }
+
+        .assignment-renderer.wide {
+          max-width: 900px;
         }
 
         .feedback-overlay {

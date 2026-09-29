@@ -65,6 +65,7 @@
 .p-section > header h2 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); }
 .p-card { background: var(--p-card); border: 1px solid var(--p-line); border-radius: var(--p-radius); backdrop-filter: blur(var(--glass-blur)); }
 .p-empty { padding: 1.25rem; border: 1px dashed var(--p-line); border-radius: var(--p-radius); color: var(--color-text-muted); }
+.p-hint { margin: 0; font-size: 0.85rem; color: var(--color-text-muted); }
 .p-warning { color: var(--color-warning); }
 .p-banner { margin-bottom: 1.25rem; padding: 0.9rem 1rem; border-radius: 1rem; background: rgba(255, 0, 80, 0.15); border: 1px solid var(--color-danger); }
 

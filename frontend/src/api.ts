@@ -105,5 +105,5 @@ export const api = {
     post<{ correct: boolean, earnedStars: number, session: ExerciseSession }>(`/exercises/sessions/${sessionId}/answer`, { userId, exerciseId, answer }, 'Failed to submit answer'),
   cancelExerciseSession: (sessionId: string) => request<void>('DELETE', `/exercises/sessions/${sessionId}`, undefined, 'Failed to cancel exercise session'),
   answerExerciseAssignment: (assignmentId: string, answer: unknown) =>
-    post<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise }>(`/exercise-assignments/${assignmentId}/answer`, { answer }, 'Failed to submit answer'),
+    post<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise, wrong?: number[] }>(`/exercise-assignments/${assignmentId}/answer`, { answer }, 'Failed to submit answer'),
 };
