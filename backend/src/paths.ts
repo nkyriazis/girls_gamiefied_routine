@@ -11,4 +11,6 @@ export const DB_FILE = process.env.DB_FILE || path.join(path.dirname(DATA_FILE),
 // Legacy JSON persistence, read once by the import in migrate.ts.
 export const STATE_FILE = process.env.STATE_FILE || path.join(process.cwd(), 'state.json');
 export const LOGS_FILE = process.env.LOGS_FILE || path.join(process.cwd(), 'logs.jsonl');
+// Exercise pools shipped with the app (part of the image, not of the data volume).
+export const EXERCISE_POOLS_DIR = process.env.EXERCISE_POOLS_DIR || path.join(process.cwd(), 'exercise-pools');
 export const UPLOADS_DIR = path.join(process.cwd(), 'uploads');

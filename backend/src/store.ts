@@ -74,6 +74,11 @@ const MIGRATIONS: string[] = [
     id TEXT PRIMARY KEY, userId TEXT NOT NULL UNIQUE, routineId TEXT NOT NULL, taskIndex INTEGER NOT NULL,
     taskStartedAt TEXT NOT NULL, finishedAt TEXT, flowRunId TEXT
   );
+  `,
+  // Problems are answered step by step: where the kid is, and the wrong tries per step
+  `
+  ALTER TABLE exercise_assignments ADD COLUMN stepIndex INTEGER;
+  ALTER TABLE exercise_assignments ADD COLUMN mistakes TEXT;
   `
 ];
 
@@ -214,7 +219,7 @@ export class Store {
     });
     this.exerciseAssignments = new Table<ExerciseAssignment>(db, 'exercise_assignments', onChange, {
       id: 'text', userId: 'text', exerciseId: 'text', date: 'text', status: 'text', attempts: 'int',
-      assignedAt: 'text', completedAt: 'text', starsAwarded: 'int'
+      assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json'
     });
     this.flowRuns = new Table<FlowRun>(db, 'flow_runs', onChange, {
       id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text'

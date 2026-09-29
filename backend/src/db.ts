@@ -2,10 +2,10 @@ import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
 import {
   AppState, Chore, ChoreInstance, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
-  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, Spending,
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ProblemExercise, ProblemStepAnswer, Spending,
   StarTransfer, StateSnapshot, ActionLog, User
 } from '../../shared/types';
-import { exercisePoolProvider, ASSIGNMENTS_PER_DAY } from './exercisePool';
+import { exercisePoolProvider, exercisesPerDay, storyMarks } from './exercisePool';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
@@ -751,7 +751,34 @@ export function checkExerciseAnswer(exercise: Exercise, answer: any): boolean {
     case 'number-input':
       return Number(answer) === exercise.correctValue;
     default:
+      // Problems are answered step by step (checkProblemStep)
       return false;
+  }
+}
+
+// Check one step of a problem. `wrong` names the parts to look at again: the
+// marked phrases (tag), the rows (numbers) or the positions (order) that are off.
+export function checkProblemStep(
+  exercise: ProblemExercise,
+  stepIndex: number,
+  value: any
+): { correct: boolean; wrong?: number[] } {
+  const step = exercise.steps[stepIndex];
+  if (!step) return { correct: false };
+  const compare = (expected: unknown[]) => {
+    if (!Array.isArray(value) || value.length !== expected.length) return { correct: false };
+    const wrong = expected.flatMap((e, i) => (value[i] === e ? [] : [i]));
+    return wrong.length ? { correct: false, wrong } : { correct: true };
+  };
+  switch (step.kind) {
+    case 'tag':
+      return compare(storyMarks(exercise.story).map(m => m.role));
+    case 'choice':
+      return { correct: value === step.correctIndex };
+    case 'numbers':
+      return compare(step.rows.map(r => r.answer));
+    case 'order':
+      return compare(step.items);
   }
 }
 
@@ -771,6 +798,8 @@ export function startExerciseSession(
 ): ExerciseSession {
   // Filter exercises by categories
   let availableExercises = readExercises();
+  // Problems are solved alone, step by step, not raced in a group game
+  availableExercises = availableExercises.filter(e => e.type !== 'problem');
   if (categories.length > 0) {
     availableExercises = availableExercises.filter(e => categories.includes(e.category));
   }
@@ -932,7 +961,7 @@ export async function ensureDailyAssignments(): Promise<boolean> {
     const pool = await exercisePoolProvider.getPoolForUser(user.id);
     if (pool.length === 0) continue;
 
-    const drawn = drawBalanced(pool, ASSIGNMENTS_PER_DAY);
+    const drawn = drawBalanced(pool, exercisesPerDay());
     // Re-check after the await: a concurrent request may have drawn already.
     store.transaction(() => {
       if (store.exerciseAssignments.all('userId = ? AND date = ?', user.id, today).length > 0) return;
@@ -976,16 +1005,20 @@ async function todaysAssignments(userId?: string): Promise<ExerciseAssignmentWit
 }
 
 // Answer a daily assignment. Correct -> completed + stars. Wrong -> retry allowed.
+// A problem is answered one step at a time ({ step, value }): a correct step moves
+// on to the next, the last one completes it; a wrong one counts in `mistakes`.
 export async function answerExerciseAssignment(
   assignmentId: string,
   answer: unknown
-): Promise<{ correct: boolean; starsAwarded: number; assignment: ExerciseAssignment }> {
+): Promise<{ correct: boolean; starsAwarded: number; assignment: ExerciseAssignment; wrong?: number[] }> {
   const found = store.exerciseAssignments.get(assignmentId);
   if (!found) throw new Error('Assignment not found');
   if (found.status === 'completed') throw new Error('Assignment already completed');
 
   const exercise = await exercisePoolProvider.getExerciseById(found.exerciseId);
   if (!exercise) throw new Error('Exercise not found in pool');
+
+  if (exercise.type === 'problem') return answerProblemStep(assignmentId, exercise, answer as ProblemStepAnswer);
 
   const isCorrect = checkExerciseAnswer(exercise, answer);
 
@@ -1012,4 +1045,47 @@ export async function answerExerciseAssignment(
   });
 
   return { correct: isCorrect, starsAwarded, assignment };
+}
+
+function answerProblemStep(
+  assignmentId: string,
+  exercise: ProblemExercise,
+  answer: ProblemStepAnswer
+): { correct: boolean; starsAwarded: number; assignment: ExerciseAssignment; wrong?: number[] } {
+  const result = store.transaction(() => {
+    const current = store.exerciseAssignments.get(assignmentId);
+    if (!current || current.status === 'completed') throw new Error('Assignment already completed');
+    const stepIndex = current.stepIndex ?? 0;
+    // An answer to a step already solved (a second device, a double tap) changes nothing.
+    if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true };
+
+    const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value);
+    const mistakes = exercise.steps.map((_, i) => current.mistakes?.[i] ?? 0);
+    const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
+    let stars = 0;
+    if (!correct) {
+      mistakes[stepIndex]++;
+    } else if (stepIndex + 1 < exercise.steps.length) {
+      updated.stepIndex = stepIndex + 1;
+    } else {
+      stars = exercise.stars;
+      updated.stepIndex = exercise.steps.length;
+      updated.status = 'completed';
+      updated.completedAt = new Date().toISOString();
+      updated.starsAwarded = stars;
+    }
+    store.exerciseAssignments.put(updated);
+    if (stars > 0) awardStars(updated.userId, stars);
+    return { correct, wrong, starsAwarded: stars, assignment: updated, stale: false };
+  });
+
+  const { stale, ...reply } = result;
+  if (!stale) {
+    logAction('EXERCISE_PROBLEM_STEP', {
+      assignmentId, userId: reply.assignment.userId, exerciseId: exercise.id, step: answer.step,
+      kind: exercise.steps[answer.step]?.kind, correct: reply.correct, wrong: reply.wrong,
+      completed: reply.assignment.status === 'completed', starsAwarded: reply.starsAwarded
+    });
+  }
+  return reply;
 }

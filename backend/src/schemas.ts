@@ -21,6 +21,7 @@ function load(file: string): { schema: object; validate: ValidateFunction } {
 export const dataSchema = load('data.schema.json');
 export const exercisesSchema = load('exercises.schema.json');
 export const stateSchema = load('state.schema.json');
+export const exercisePoolSchema = load('exercise-pool.schema.json');
 
 export interface ValidationError {
   message: string;

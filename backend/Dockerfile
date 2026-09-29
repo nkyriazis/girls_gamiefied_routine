@@ -18,7 +18,9 @@ COPY --from=builder /app/backend/dist ./dist
 # Create symlink so sdk-proxy.js can find node_modules via relative path (../node_modules)
 RUN ln -s /app/node_modules /app/dist/backend/node_modules
 COPY backend/data.json ./
-COPY backend/data.schema.json backend/exercises.schema.json backend/state.schema.json ./
+COPY backend/data.schema.json backend/exercises.schema.json backend/state.schema.json backend/exercise-pool.schema.json ./
+# The daily exercise pools ship with the image (new content arrives with an update)
+COPY backend/exercise-pools ./exercise-pools
 # Config, the database (routine.db) and legacy state files live on the /data volume
 # Create uploads directory with proper permissions
 RUN mkdir -p uploads && chown node:node uploads
