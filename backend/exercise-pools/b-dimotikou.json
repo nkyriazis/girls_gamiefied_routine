@@ -1,0 +1,302 @@
+{
+  "description": "Β΄ Δημοτικού: πράξεις ως το 100, προπαίδεια του 2, 5, 10, γλώσσα. Και επανάληψη για τη Γ΄.",
+  "grades": [
+    2,
+    3
+  ],
+  "exercises": [
+    {
+      "id": "g2-math-add-1",
+      "type": "number-input",
+      "category": "Μαθηματικά",
+      "title": "Πρόσθεση",
+      "question": "Πόσο κάνει 34 + 25;",
+      "correctValue": 59,
+      "stars": 1
+    },
+    {
+      "id": "g2-math-sub-1",
+      "type": "number-input",
+      "category": "Μαθηματικά",
+      "title": "Αφαίρεση",
+      "question": "Πόσο κάνει 52 − 17;",
+      "correctValue": 35,
+      "stars": 1
+    },
+    {
+      "id": "g2-math-mult-1",
+      "type": "multiple-choice",
+      "category": "Μαθηματικά",
+      "title": "Προπαίδεια του 5",
+      "question": "Πόσο κάνει 5 × 6;",
+      "options": [
+        "25",
+        "30",
+        "35",
+        "40"
+      ],
+      "correctIndex": 1,
+      "stars": 1
+    },
+    {
+      "id": "g2-math-mult-pairs-1",
+      "type": "match-pairs",
+      "category": "Μαθηματικά",
+      "title": "Προπαίδεια του 2",
+      "body": "Σύνδεσε κάθε πολλαπλασιασμό με το σωστό αποτέλεσμα.",
+      "pairs": [
+        {
+          "left": "2 × 3",
+          "right": "6"
+        },
+        {
+          "left": "2 × 5",
+          "right": "10"
+        },
+        {
+          "left": "2 × 8",
+          "right": "16"
+        },
+        {
+          "left": "2 × 10",
+          "right": "20"
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g2-math-order-1",
+      "type": "ordering",
+      "category": "Μαθηματικά",
+      "title": "Βάλε τους αριθμούς στη σειρά",
+      "body": "Από τον μικρότερο στον μεγαλύτερο.",
+      "items": [
+        {
+          "id": "27",
+          "content": "27"
+        },
+        {
+          "id": "41",
+          "content": "41"
+        },
+        {
+          "id": "58",
+          "content": "58"
+        },
+        {
+          "id": "73",
+          "content": "73"
+        },
+        {
+          "id": "96",
+          "content": "96"
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g2-math-tf-1",
+      "type": "true-false",
+      "category": "Μαθηματικά",
+      "title": "Σύγκριση αριθμών",
+      "question": "Το 48 είναι μεγαλύτερο από το 52.",
+      "correctValue": false,
+      "stars": 1
+    },
+    {
+      "id": "g2-math-time-1",
+      "type": "multiple-choice",
+      "category": "Μαθηματικά",
+      "title": "Ο χρόνος",
+      "question": "Πόσα λεπτά έχει μία ώρα;",
+      "options": [
+        "30",
+        "60",
+        "100",
+        "120"
+      ],
+      "correctIndex": 1,
+      "stars": 1
+    },
+    {
+      "id": "g2-math-money-1",
+      "type": "number-input",
+      "category": "Μαθηματικά",
+      "title": "Τα χρήματα",
+      "question": "Έχεις 2 κέρματα των 20 λεπτών και 1 κέρμα των 10 λεπτών. Πόσα λεπτά έχεις;",
+      "correctValue": 50,
+      "stars": 1
+    },
+    {
+      "id": "g2-math-pattern-1",
+      "type": "multiple-choice",
+      "category": "Μαθηματικά",
+      "title": "Μοτίβα αριθμών",
+      "question": "Ποιος αριθμός λείπει; 5, 10, 15, __, 25",
+      "options": [
+        "16",
+        "18",
+        "20",
+        "22"
+      ],
+      "correctIndex": 2,
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-article-1",
+      "type": "multiple-choice",
+      "category": "Γλώσσα",
+      "title": "Τα άρθρα",
+      "question": "Ποιο άρθρο ταιριάζει; «___ θάλασσα»",
+      "options": [
+        "Ο",
+        "Η",
+        "Το"
+      ],
+      "correctIndex": 1,
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-punct-1",
+      "type": "multiple-choice",
+      "category": "Γλώσσα",
+      "title": "Σημεία στίξης",
+      "question": "Τι βάζουμε στο τέλος; «Πού πας__»",
+      "options": [
+        ".",
+        ";",
+        "!"
+      ],
+      "correctIndex": 1,
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-tf-1",
+      "type": "true-false",
+      "category": "Γλώσσα",
+      "title": "Τα ρήματα",
+      "question": "Η λέξη «παίζω» είναι ρήμα.",
+      "correctValue": true,
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-opposites-1",
+      "type": "match-pairs",
+      "category": "Γλώσσα",
+      "title": "Αντίθετα",
+      "body": "Σύνδεσε κάθε λέξη με την αντίθετή της.",
+      "pairs": [
+        {
+          "left": "μεγάλος",
+          "right": "μικρός"
+        },
+        {
+          "left": "ψηλός",
+          "right": "κοντός"
+        },
+        {
+          "left": "γρήγορος",
+          "right": "αργός"
+        },
+        {
+          "left": "μέρα",
+          "right": "νύχτα"
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-alpha-1",
+      "type": "ordering",
+      "category": "Γλώσσα",
+      "title": "Αλφαβητική σειρά",
+      "body": "Βάλε τις λέξεις σε αλφαβητική σειρά.",
+      "items": [
+        {
+          "id": "alepou",
+          "content": "αλεπού"
+        },
+        {
+          "id": "vatrachos",
+          "content": "βάτραχος"
+        },
+        {
+          "id": "gata",
+          "content": "γάτα"
+        },
+        {
+          "id": "delfini",
+          "content": "δελφίνι"
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-spell-1",
+      "type": "multiple-choice",
+      "category": "Γλώσσα",
+      "title": "Ορθογραφία",
+      "question": "Ποια γραφή είναι η σωστή;",
+      "options": [
+        "παιδί",
+        "πεδί",
+        "παιδή"
+      ],
+      "correctIndex": 0,
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-fb-1",
+      "type": "fill-blank",
+      "category": "Γλώσσα",
+      "title": "Συμπλήρωσε τη λέξη",
+      "textWithGaps": "Το αγόρι {0} μπάλα στην {1}.",
+      "options": [
+        "παίζει",
+        "αυλή",
+        "παίζη",
+        "αβλή"
+      ],
+      "correctAnswers": [
+        "παίζει",
+        "αυλή"
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-sentence-1",
+      "type": "ordering",
+      "category": "Γλώσσα",
+      "title": "Φτιάξε την πρόταση",
+      "body": "Βάλε τις λέξεις στη σωστή σειρά.",
+      "items": [
+        {
+          "id": "i",
+          "content": "Η"
+        },
+        {
+          "id": "gata",
+          "content": "γάτα"
+        },
+        {
+          "id": "pinei",
+          "content": "πίνει"
+        },
+        {
+          "id": "gala",
+          "content": "γάλα."
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g2-lang-tf-2",
+      "type": "true-false",
+      "category": "Γλώσσα",
+      "title": "Το αλφάβητο",
+      "question": "Μετά το γράμμα Κ έρχεται το Λ.",
+      "correctValue": true,
+      "stars": 1
+    }
+  ]
+}

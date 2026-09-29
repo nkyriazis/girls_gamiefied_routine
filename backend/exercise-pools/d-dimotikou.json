@@ -1,0 +1,294 @@
+{
+  "description": "Δ΄ Δημοτικού: πράξεις, κλάσματα, γλώσσα. Και επανάληψη για την Ε΄.",
+  "grades": [
+    4,
+    5
+  ],
+  "exercises": [
+    {
+      "id": "g4-math-add-1",
+      "type": "number-input",
+      "category": "Μαθηματικά",
+      "title": "Πρόσθεση με κρατούμενο",
+      "question": "Πόσο κάνει 348 + 275;",
+      "correctValue": 623,
+      "stars": 1
+    },
+    {
+      "id": "g4-math-sub-1",
+      "type": "number-input",
+      "category": "Μαθηματικά",
+      "title": "Αφαίρεση με δανεικό",
+      "question": "Πόσο κάνει 604 − 258;",
+      "correctValue": 346,
+      "stars": 1
+    },
+    {
+      "id": "g4-math-div-1",
+      "type": "multiple-choice",
+      "category": "Μαθηματικά",
+      "title": "Διαίρεση",
+      "question": "Πόσο κάνει 56 ÷ 8;",
+      "options": [
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "correctIndex": 1,
+      "stars": 1
+    },
+    {
+      "id": "g4-math-frac-1",
+      "type": "multiple-choice",
+      "category": "Μαθηματικά",
+      "title": "Κλάσματα",
+      "question": "Ποιο κλάσμα είναι το μεγαλύτερο;",
+      "options": [
+        "1/2",
+        "1/3",
+        "1/4",
+        "1/5"
+      ],
+      "correctIndex": 0,
+      "stars": 1
+    },
+    {
+      "id": "g4-math-frac-dec-1",
+      "type": "match-pairs",
+      "category": "Μαθηματικά",
+      "title": "Κλάσματα και δεκαδικοί",
+      "body": "Σύνδεσε κάθε κλάσμα με τον δεκαδικό του.",
+      "pairs": [
+        {
+          "left": "1/2",
+          "right": "0,5"
+        },
+        {
+          "left": "1/4",
+          "right": "0,25"
+        },
+        {
+          "left": "3/4",
+          "right": "0,75"
+        },
+        {
+          "left": "1/10",
+          "right": "0,1"
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g4-math-dec-order-1",
+      "type": "ordering",
+      "category": "Μαθηματικά",
+      "title": "Δεκαδικοί στη σειρά",
+      "body": "Από τον μικρότερο στον μεγαλύτερο.",
+      "items": [
+        {
+          "id": "a",
+          "content": "0,3"
+        },
+        {
+          "id": "b",
+          "content": "0,45"
+        },
+        {
+          "id": "c",
+          "content": "0,5"
+        },
+        {
+          "id": "d",
+          "content": "1,2"
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g4-math-geo-tf-1",
+      "type": "true-false",
+      "category": "Μαθηματικά",
+      "title": "Γεωμετρία",
+      "question": "Ένα τετράγωνο έχει 4 ίσες πλευρές.",
+      "correctValue": true,
+      "stars": 1
+    },
+    {
+      "id": "g4-math-perim-1",
+      "type": "number-input",
+      "category": "Μαθηματικά",
+      "title": "Περίμετρος",
+      "question": "Ένα ορθογώνιο έχει μήκος 9 εκ. και πλάτος 6 εκ. Πόσα εκατοστά είναι η περίμετρός του;",
+      "correctValue": 30,
+      "stars": 1
+    },
+    {
+      "id": "g4-math-time-1",
+      "type": "number-input",
+      "category": "Μαθηματικά",
+      "title": "Μετατροπή χρόνου",
+      "question": "Πόσα λεπτά είναι 2 ώρες και 15 λεπτά;",
+      "correctValue": 135,
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-tense-1",
+      "type": "multiple-choice",
+      "category": "Γλώσσα",
+      "title": "Χρόνοι ρημάτων",
+      "question": "«Χθες ___ στο σχολείο νωρίς.»",
+      "options": [
+        "πηγαίνω",
+        "πήγα",
+        "θα πάω"
+      ],
+      "correctIndex": 1,
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-tai-te-1",
+      "type": "fill-blank",
+      "category": "Γλώσσα",
+      "title": "-ται ή -τε;",
+      "textWithGaps": "Ο Γιώργος ντύνε{0} γρήγορα. Εσείς ντύνεσ{1} αργά.",
+      "options": [
+        "ται",
+        "τε"
+      ],
+      "correctAnswers": [
+        "ται",
+        "τε"
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-adj-tf-1",
+      "type": "true-false",
+      "category": "Γλώσσα",
+      "title": "Τα επίθετα",
+      "question": "Η λέξη «όμορφος» είναι επίθετο.",
+      "correctValue": true,
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-syn-1",
+      "type": "match-pairs",
+      "category": "Γλώσσα",
+      "title": "Συνώνυμα",
+      "body": "Σύνδεσε κάθε λέξη με το συνώνυμό της.",
+      "pairs": [
+        {
+          "left": "όμορφος",
+          "right": "ωραίος"
+        },
+        {
+          "left": "γρήγορος",
+          "right": "ταχύς"
+        },
+        {
+          "left": "χαρούμενος",
+          "right": "εύθυμος"
+        },
+        {
+          "left": "δυνατός",
+          "right": "ισχυρός"
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-story-order-1",
+      "type": "ordering",
+      "category": "Γλώσσα",
+      "title": "Χρονική σειρά",
+      "body": "Βάλε τα γεγονότα στη σωστή σειρά.",
+      "items": [
+        {
+          "id": "a",
+          "content": "Ξύπνησα το πρωί."
+        },
+        {
+          "id": "b",
+          "content": "Ντύθηκα."
+        },
+        {
+          "id": "c",
+          "content": "Πήρα το πρωινό μου."
+        },
+        {
+          "id": "d",
+          "content": "Πήγα στο σχολείο."
+        }
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-spell-1",
+      "type": "multiple-choice",
+      "category": "Γλώσσα",
+      "title": "Ορθογραφία",
+      "question": "«Στο σχολείο κάνουμε ___ στις 10:00.»",
+      "options": [
+        "διάλειμμα",
+        "διάλυμα",
+        "διάλειμα"
+      ],
+      "correctIndex": 0,
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-fb-1",
+      "type": "fill-blank",
+      "category": "Γλώσσα",
+      "title": "Συμπλήρωσε σωστά",
+      "textWithGaps": "Τα παιδιά {0} στην αυλή και {1} πολύ.",
+      "options": [
+        "παίζουν",
+        "χαίρονται",
+        "παίζων",
+        "χέροντε"
+      ],
+      "correctAnswers": [
+        "παίζουν",
+        "χαίρονται"
+      ],
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-tense-tf-1",
+      "type": "true-false",
+      "category": "Γλώσσα",
+      "title": "Ο ενεστώτας",
+      "question": "Ο ενεστώτας δείχνει κάτι που γίνεται τώρα.",
+      "correctValue": true,
+      "stars": 1
+    },
+    {
+      "id": "g4-lang-alpha-1",
+      "type": "ordering",
+      "category": "Γλώσσα",
+      "title": "Αλφαβητική σειρά",
+      "body": "Βάλε τις λέξεις σε αλφαβητική σειρά.",
+      "items": [
+        {
+          "id": "thalassa",
+          "content": "θάλασσα"
+        },
+        {
+          "id": "theatro",
+          "content": "θέατρο"
+        },
+        {
+          "id": "thirio",
+          "content": "θηρίο"
+        },
+        {
+          "id": "thoryvos",
+          "content": "θόρυβος"
+        }
+      ],
+      "stars": 1
+    }
+  ]
+}
