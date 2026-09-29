@@ -91,6 +91,10 @@ Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.gith
 - Component styles are usually scoped with inline `<style>` blocks inside the component.
 - The PWA is set up with vite-plugin-pwa. `/api` uses a NetworkFirst cache.
 
+### Curriculum material
+- `tools/edu-materials/` mirrors the official primary-school textbooks (ebooks.edu.gr) and the Photodentro learning objects they link to into `materials/` (git- and docker-ignored, about 18 GB), and indexes them for search. `mirror.sh` runs the whole pipeline in Docker; `index.py search` finds content by grade, subject and kind (student book, workbook, teacher's book). See its README.
+- `materials/` exists only on the dev machine, not on the Pi. Exercise generators must not read it at runtime.
+
 ### Known gaps
 - `/api/admin/*` and WebSocket connections are unauthenticated.
 - Uploads accept any file type.
