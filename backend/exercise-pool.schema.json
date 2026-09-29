@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Exercise pool",
+  "description": "Exercises shipped with the app (backend/exercise-pools/*.json). Kids whose grade is listed draw their daily exercises from them",
+  "type": "object",
+  "required": ["grades", "exercises"],
+  "additionalProperties": false,
+  "properties": {
+    "description": { "type": "string" },
+    "grades": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "integer", "minimum": 1, "maximum": 6 },
+      "description": "The school grades this pool serves (Δημοτικό: 1 = Α' … 6 = ΣΤ')"
+    },
+    "exercises": { "$ref": "exercises.schema.json#/properties/exercises" }
+  }
+}

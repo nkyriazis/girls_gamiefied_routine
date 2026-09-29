@@ -4,6 +4,38 @@
   "description": "Schema for exercises.json configuration file",
   "type": "object",
   "required": ["exercises"],
+  "definitions": {
+    "problemStep": {
+      "type": "object",
+      "required": ["kind", "phase", "prompt"],
+      "properties": {
+        "kind": { "enum": ["tag", "choice", "numbers", "order"] },
+        "phase": { "enum": ["read", "plan", "solve", "check"], "description": "Which part of the method the step belongs to" },
+        "prompt": { "type": "string", "minLength": 1 },
+        "hint": { "type": "string", "description": "Shown after a wrong try" },
+        "story": { "type": "string", "description": "Replaces the story while this step is on screen (e.g. the story without its numbers)" },
+        "options": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "correctIndex": { "type": "integer", "minimum": 0 },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["label", "answer"],
+            "additionalProperties": false,
+            "properties": { "label": { "type": "string" }, "answer": { "type": "number" }, "unit": { "type": "string" } }
+          }
+        },
+        "items": { "type": "array", "minItems": 2, "items": { "type": "string" } }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "choice" } } }, "then": { "required": ["options", "correctIndex"] } },
+        { "if": { "properties": { "kind": { "const": "numbers" } } }, "then": { "required": ["rows"] } },
+        { "if": { "properties": { "kind": { "const": "order" } } }, "then": { "required": ["items"] } }
+      ]
+    }
+  },
   "additionalProperties": false,
   "properties": {
     "categories": {
@@ -168,6 +200,28 @@
               "figure": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" },
               "question": { "type": "string" },
               "correctValue": { "type": "number" },
+              "stars": { "type": "integer", "minimum": 1 },
+              "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
+              "template": { "type": "boolean" },
+              "generatorParams": { "type": "object" }
+            }
+          },
+          {
+            "title": "Problem",
+            "description": "A word problem solved in steps (see ProblemExercise in shared/types.ts)",
+            "type": "object",
+            "required": ["id", "type", "category", "title", "story", "steps", "stars"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "const": "problem" },
+              "category": { "type": "string" },
+              "title": { "type": "string" },
+              "body": { "type": "string" },
+              "figure": { "$ref": "data.schema.json#/properties/tasks/items/properties/icon" },
+              "story": { "type": "string", "minLength": 1, "description": "The problem text. Phrases the tag step asks about are marked [phrase|known], [phrase|sought] or [phrase|extra]" },
+              "steps": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/problemStep" } },
+              "source": { "type": "string", "description": "Where in the textbooks it comes from" },
               "stars": { "type": "integer", "minimum": 1 },
               "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
               "template": { "type": "boolean" },

@@ -28,6 +28,7 @@ export interface User {
   name: string;
   avatar: IconValue; // Emoji, URL, SVG, or Object
   color: string;
+  grade?: SchoolGrade;
   stars: number;
   routines: Routine[];
 }
@@ -204,13 +205,68 @@ export interface NumberInputExercise extends BaseExercise {
   correctValue: number;
 }
 
+// A word problem solved in steps, as the Ε' book teaches it (ch. 1.3): tell what we
+// know from what we seek, plan, solve, check. Each step is checked on its own.
+//
+// The story marks the phrases the "tag" step asks about: [25 ευρώ|known],
+// [Πόσα μπαλόνια|sought], [γενέθλιά του|extra] (in the story, but not needed).
+export type ProblemRole = 'known' | 'sought' | 'extra';
+export type ProblemPhase = 'read' | 'plan' | 'solve' | 'check';
+
+interface ProblemStepBase {
+  phase: ProblemPhase;
+  prompt: string;
+  hint?: string; // shown after a wrong try
+  story?: string; // replaces the story while this step is on screen (e.g. without its numbers)
+}
+
+// Tap the marked phrases of the story as "known" or "sought"; untapped means not needed.
+// Answer: one role per marked phrase, in story order.
+export interface ProblemTagStep extends ProblemStepBase { kind: 'tag' }
+
+// Answer: the index of the chosen option.
+export interface ProblemChoiceStep extends ProblemStepBase {
+  kind: 'choice';
+  options: string[];
+  correctIndex: number;
+}
+
+// One number per row, e.g. "Μπάλες βόλεϊ και ποδοσφαίρου: 200 − 80 =" [120].
+// Answer: the numbers, in row order.
+export interface ProblemNumbersStep extends ProblemStepBase {
+  kind: 'numbers';
+  rows: { label: string; answer: number; unit?: string }[];
+}
+
+// Put the items in order; `items` is the correct order. Answer: the items as ordered.
+export interface ProblemOrderStep extends ProblemStepBase {
+  kind: 'order';
+  items: string[];
+}
+
+export type ProblemStep = ProblemTagStep | ProblemChoiceStep | ProblemNumbersStep | ProblemOrderStep;
+
+export interface ProblemExercise extends BaseExercise {
+  type: 'problem';
+  story: string;
+  steps: ProblemStep[];
+  source?: string; // where in the textbooks it comes from
+}
+
+// The answer to one step of a problem assignment.
+export interface ProblemStepAnswer {
+  step: number;
+  value: unknown;
+}
+
 export type Exercise =
   | MultipleChoiceExercise
   | MatchPairsExercise
   | OrderingExercise
   | TrueFalseExercise
   | FillBlankExercise
-  | NumberInputExercise;
+  | NumberInputExercise
+  | ProblemExercise;
 
 export type ExerciseAnswerStatus = 'correct' | 'incorrect';
 
@@ -235,6 +291,8 @@ export interface ExerciseAssignment {
   assignedAt: string; // ISO timestamp
   completedAt?: string; // ISO timestamp
   starsAwarded?: number;
+  stepIndex?: number; // problems: the step on screen (the ones before it are solved)
+  mistakes?: number[]; // problems: wrong tries per step
 }
 
 // Enriched assignment with the exercise definition for frontend display
@@ -299,11 +357,15 @@ export interface StateSnapshot {
 
 // --- Config (data.json, as described by data.schema.json) ---
 
+// Δημοτικό: 1 = Α' … 6 = ΣΤ'. Picks the daily exercise pool.
+export type SchoolGrade = 1 | 2 | 3 | 4 | 5 | 6;
+
 export interface ConfigUser {
   id: string;
   name: string;
   avatar: IconValue;
   color: string;
+  grade?: SchoolGrade;
 }
 
 export interface ConfigTask {
@@ -353,7 +415,7 @@ export interface DataConfig {
   schedules: Schedule[];
   rewards: Reward[];
   chores?: Chore[];
-  settings: { timezone: string };
+  settings: { timezone: string; exercisesPerDay?: number };
 }
 
 // --- Realtime protocol (backend -> frontend WebSocket messages) ---
