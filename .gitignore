@@ -16,3 +16,7 @@ backend/*.tmp
 backups/
 backend/uploads/
 backend/test-*.json
+
+# Mirrored school textbooks (tools/edu-materials)
+materials/
+__pycache__/

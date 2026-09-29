@@ -11,3 +11,4 @@ backend/routine.db*
 backend/state.json
 backend/logs.jsonl
 backups
+materials
