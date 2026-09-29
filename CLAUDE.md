@@ -82,7 +82,8 @@ Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.gith
 ### Backend layout
 - `server.ts` holds all REST routes: `/api/*`, the `/api/admin/*` raw config/state editors plus validate and schema endpoints, uploads to `uploads/` served at `/uploads`, and the WebSocket.
 - `mcp.ts` is an MCP server exposed at `/mcp` (Streamable HTTP, stateless, guarded by `MCP_API_KEY`). It provides many `registerTool` tools that read and write config and state. When you add domain features, consider adding matching MCP tools. See MCP.md.
-- `school/ExerciseGenerators.ts` is a plugin registry of exercise generators, keyed by generator type (for example `arithmetic`), that produce `ExerciseContent`.
+- `exercisePool.ts` serves the daily school exercises from `backend/exercise-pools/*.json` (validated by `exercise-pool.schema.json`, shipped in the image, not on the data volume). Each file lists the grades it serves, and a kid draws from every file listing their `grade` in data.json (none set, no exercises); `settings.exercisesPerDay` (default 3) sets how many. `npm test` validates every shipped pool and solves each problem.
+- A `problem` exercise is a word problem in steps (tag the story's phrases as known/sought, choose, fill numbers, order), checked one step at a time by `checkProblemStep` in db.ts; the assignment stores `stepIndex` and `mistakes` per step. The group game (exercise sessions, `exercises.json`) leaves problems out.
 - The backend compiles with `rootDir: ".."` so it can include `../shared`. That's why the prod entry point is `dist/backend/src/server.js`.
 
 ### Frontend layout
@@ -93,7 +94,7 @@ Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.gith
 
 ### Curriculum material
 - `tools/edu-materials/` mirrors the official primary-school textbooks (ebooks.edu.gr) and the Photodentro learning objects they link to into `materials/` (git- and docker-ignored, about 18 GB), and indexes them for search. `mirror.sh` runs the whole pipeline in Docker; `index.py search` finds content by grade, subject and kind (student book, workbook, teacher's book). See its README.
-- `materials/` exists only on the dev machine, not on the Pi. Exercise generators must not read it at runtime.
+- `materials/` exists only on the dev machine, not on the Pi. Nothing may read it at runtime: exercises are written from it into `backend/exercise-pools/` at development time, with a `source` naming the chapter.
 
 ### Known gaps
 - `/api/admin/*` and WebSocket connections are unauthenticated.
