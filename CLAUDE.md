@@ -33,7 +33,12 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile mcp up 
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm install <pkg>
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm run build      # tsc
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec frontend npm run build     # tsc -b && vite build
-docker compose -f docker-compose.yml -f docker-compose.dev.yml exec frontend npm run lint      # eslint
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec frontend npm run lint      # check-help, check-voice, check-sound, check-gender, then eslint
+
+# The owl's voice: record every help bubble that is new or changed, audit, list what to commit (dev machine: NVIDIA GPU, Docker)
+tools/help-voice/run.sh
+# The screens' sounds, rarely: fetch the CC0 packs, then choose and make the palette (see tools/sfx/README.md)
+tools/sfx/fetch.sh
 
 # Validate data.json / state.json against their schemas
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm run test-schemas
@@ -55,7 +60,7 @@ Beyond `npm test`, verify changes manually:
 
 We develop here, but production runs on **piserve**: `ssh piserve`, checkout at `~/work/girls_gamiefied_routine`, deployed with `deploy-rpi.sh`. The Pi's `backend/data.json`, `backend/routine.db` (and, until migrated, `backend/state.json` + `backend/logs.jsonl`) hold the **live family data** (star balances, history). They have uncommitted local changes there, so never overwrite them with the dev copies, and never `git checkout`/`reset` them on the Pi. Any config or schema change must stay compatible with that existing data, or come with a migration step.
 
-Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.github/workflows/docker-build.yml`, manual dispatch). It builds multi-arch images to `ghcr.io/nkyriazis/routine-{backend,frontend}`. On the Pi, `deploy-rpi.sh` pulls them using `docker-compose.release.yml`. Don't use dev mode on the Pi, because the polling file watchers use too much CPU.
+Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.github/workflows/docker-build.yml`, manual dispatch only: a push to master builds nothing). It builds multi-arch images to `ghcr.io/nkyriazis/routine-{backend,frontend}`. On the Pi, `deploy-rpi.sh` pulls them using `docker-compose.release.yml`. Don't use dev mode on the Pi, because the polling file watchers use too much CPU. The images bundle what is committed and generate nothing. The owl's voice clips (`frontend/public/help-voice/`, `src/help/voice/clips.json`) and the sounds (`frontend/public/sfx/`, `src/sound/sounds.json`) are made on the dev machine and ship as plain files in the frontend image, precached by the PWA. So after changing a help bubble, run `tools/help-voice/run.sh` and commit its output before building. `npm run check-voice` fails while a bubble has no clip.
 
 ## Architecture
 
