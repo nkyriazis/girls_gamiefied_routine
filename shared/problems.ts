@@ -51,9 +51,11 @@ export function checkPaint(targets: PaintTarget[], words: number, value: unknown
       if (!t.words.every(w => brush.has(w))) wrong.push(i);
     }
   });
-  // Strays: painted words that aren't near a phrase of their colour
+  // Strays: painted words that aren't near a phrase of their colour (an unneeded fact
+  // painted is its own mistake, above, not also "too much")
+  const inExtra = (w: number) => targets.some(t => t.role === 'extra' && w >= t.span[0] && w <= t.span[1]);
   const near = (w: number, role: 'known' | 'sought') =>
-    targets.some(t => t.role === role && w >= t.span[0] - MARGIN && w <= t.span[1] + MARGIN);
+    inExtra(w) || targets.some(t => t.role === role && w >= t.span[0] - MARGIN && w <= t.span[1] + MARGIN);
   const strays = [...known].filter(w => !near(w, 'known')).length + [...sought].filter(w => !near(w, 'sought')).length;
   if (strays > PAINT_SLACK) wrong.push(-1);
   return wrong.length ? { correct: false, wrong } : { correct: true };
