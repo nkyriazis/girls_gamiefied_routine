@@ -271,9 +271,11 @@ const StoryCard: React.FC<{
         .problem-story { display: grid; font-size: 1.3rem; line-height: 1.75; background: rgba(255,255,255,0.06); border-radius: 1.2rem; padding: 0.8rem 1.3rem; }
         .story-layer { grid-area: 1 / 1; }
         .story-layer.hidden { visibility: hidden; }
-        .story-phrase { padding: 0 0.3rem; border-radius: 0.4rem; border: 1px solid transparent; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-        .story-phrase.tappable { cursor: pointer; background: rgba(255,255,255,0.1); border: 1px dashed rgba(255,255,255,0.55); }
-        .story-phrase.tappable.role-known, .story-phrase.tappable.role-sought { border-style: solid; border-color: transparent; }
+        .story-phrase { border-radius: 0.3rem; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+        /* No padding, margin or border: a phrase takes exactly the space of plain text, so the
+           story wraps the same in every mode. The tap frame is an outline, which takes no space. */
+        .story-phrase.tappable { cursor: pointer; background: rgba(255,255,255,0.1); outline: 1px dashed rgba(255,255,255,0.55); outline-offset: 2px; }
+        .story-phrase.tappable.role-known, .story-phrase.tappable.role-sought { outline: none; }
       `}</style>
     </div>
   );
@@ -317,8 +319,10 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
     if (k === '↵') { setActive(a => (a + 1) % rows.length); return; }
     setValue(value.map((v, i) => (i !== active ? v : k === '⌫' ? v.slice(0, -1) : v.length < 6 ? v + k : v)));
   };
+  // Long labels ("Όλες οι ημέρες: 24 + 48 + 33 + 105 =") need the width: keypad under the rows
+  const stacked = rows.some(row => row.label.length > 22);
   return (
-    <div className="numbers-step">
+    <div className={`numbers-step ${stacked ? 'stacked' : ''}`}>
       <div className="numbers-rows">
         {rows.map((row, i) => (
           <div key={i} className="numbers-row">
@@ -340,9 +344,10 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
       <style>{`
         .numbers-step { display: grid; grid-template-columns: 1fr; gap: 1rem; align-items: center; }
         @container (min-width: 560px) {
-          .numbers-step { grid-template-columns: 1fr 15rem; }
-          .numbers-step .numbers-pad { grid-template-columns: repeat(3, 1fr); }
+          .numbers-step:not(.stacked) { grid-template-columns: 1fr 15rem; }
+          .numbers-step:not(.stacked) .numbers-pad { grid-template-columns: repeat(3, 1fr); }
         }
+        .numbers-step.stacked .numbers-key { padding: 0.45rem 0; }
         .numbers-rows { display: flex; flex-direction: column; gap: 0.5rem; }
         .numbers-row { display: flex; align-items: center; gap: 0.8rem; font-size: 1.2rem; justify-content: flex-end; }
         .numbers-label { flex: 1; text-align: right; }
