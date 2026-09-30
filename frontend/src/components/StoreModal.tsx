@@ -5,7 +5,7 @@ import { api } from '../api';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import type { User, Reward, Spending, StarTransfer } from '@shared/types';
-import { useAppSounds } from '../hooks/useAppSounds';
+import { sfx, sound } from '../sound/sfx';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 import { useGame } from '../context/GameContext';
 import { UserExercises } from './UserExercises';
@@ -23,7 +23,6 @@ interface StoreModalProps {
 }
 
 export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings, starTransfers, allUsers, onClose }) => {
-  const { playClick, playSuccess } = useAppSounds();
   const isTouchDevice = useTouchDevice();
   // Earning stars sits next to spending them: her exercises of the day and «Κι άλλο πρόβλημα»
   const { exerciseAssignments, config } = useGame();
@@ -59,14 +58,13 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
     }
 
     setPurchasingId(reward.id);
-    playClick();
 
     try {
       await api.spendStars(user.id, reward.id);
 
       // Show purchase animation
       setJustPurchased({ reward, cost: reward.cost });
-      playSuccess();
+      sfx('spend');
 
       setTimeout(() => {
         setJustPurchased(null);
@@ -83,11 +81,10 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
     if (!selectedRecipient || transferAmount <= 0 || transferAmount > availableBalance) return;
 
     setIsTransferring(true);
-    playClick();
 
     try {
       await api.createTransfer(user.id, selectedRecipient, transferAmount);
-      playSuccess();
+      sfx('send');
       setTransferSuccess(true);
       
       setTimeout(() => {
@@ -107,7 +104,6 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   const handleCancelTransfer = async (transferId: string) => {
     try {
       await api.cancelTransfer(transferId);
-      playClick();
     } catch (err) {
       console.error(err);
       alert('Error cancelling transfer');
@@ -121,6 +117,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        {...sound('close')}
         onClick={onClose}
       >
         <AnimatePresence>
@@ -194,6 +191,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                     <button
                       className="transfer-btn"
                       {...help('store.give')}
+                      {...sound('open')}
                       onClick={() => setShowTransfer(true)}
                     >
                       🎁 Δώσε Αστέρια
@@ -203,6 +201,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                     <button
                       className="activity-toggle-btn"
                       {...help('store.activity')}
+                      {...sound(showActivity ? 'close' : 'open')}
                       onClick={() => setShowActivity(!showActivity)}
                     >
                       📋 Δραστηριότητα
@@ -218,6 +217,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                     <motion.div
                       key={reward.id}
                       className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''}`}
+                      {...sound(canAfford && !isPurchasing ? 'select' : 'nope')}
                       onClick={() => canAfford && !isPurchasing && handleBuy(reward)}
                       whileHover={!isTouchDevice && canAfford && !isPurchasing ? { scale: 1.05 } : {}}
                       whileTap={canAfford && !isPurchasing ? { scale: 0.95 } : {}}
@@ -248,7 +248,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
             </div>
           </div>
 
-          <button className="close-btn" onClick={onClose} {...help('store.close')}>Κλείσιμο</button>
+          <button className="close-btn" onClick={onClose} {...help('store.close')} {...sound('close')}>Κλείσιμο</button>
         </motion.div>
 
         {/* Activity Popup */}
@@ -259,6 +259,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              {...sound('close')}
               onClick={() => setShowActivity(false)}
             >
               <motion.div
@@ -272,7 +273,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                 <HelpScreen tour={activityTour(user.id)}>
                 <div className="activity-popup-header">
                   <h3>Δραστηριότητα</h3>
-                  <button className="popup-close-btn" onClick={() => setShowActivity(false)}>✕</button>
+                  <button className="popup-close-btn" {...sound('close')} onClick={() => setShowActivity(false)}>✕</button>
                 </div>
 
                 {mySpendings.length === 0 && myPendingOutgoingTransfers.length === 0 && myPendingIncomingTransfers.length === 0 && (
@@ -316,6 +317,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                           </div>
                           <button 
                             className="cancel-transfer-btn"
+                            {...sound('unselect')}
                             onClick={() => handleCancelTransfer(transfer.id)}
                           >
                             Ακύρωση
@@ -383,6 +385,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              {...sound('close')}
               onClick={() => !isTransferring && setShowTransfer(false)}
             >
               <motion.div
@@ -404,7 +407,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                   <>
                     <div className="activity-popup-header">
                       <h3>🎁 Δώσε Αστέρια</h3>
-                      <button className="popup-close-btn" onClick={() => setShowTransfer(false)}>✕</button>
+                      <button className="popup-close-btn" {...sound('close')} onClick={() => setShowTransfer(false)}>✕</button>
                     </div>
 
                     <div className="transfer-form">
@@ -426,6 +429,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         <div className="amount-input" {...help('transfer.amount')}>
                           <button 
                             className="amount-btn"
+                            {...sound('unselect')}
                             onClick={() => setTransferAmount(Math.max(1, transferAmount - 1))}
                             disabled={transferAmount <= 1}
                           >
@@ -440,6 +444,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                           />
                           <button 
                             className="amount-btn"
+                            {...sound('select')}
                             onClick={() => setTransferAmount(Math.min(availableBalance, transferAmount + 1))}
                             disabled={transferAmount >= availableBalance}
                           >

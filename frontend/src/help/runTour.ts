@@ -4,6 +4,7 @@ import './help.css';
 import { anchorSelector } from './anchors';
 import { seenId, type HelpStep, type Tour } from './tour';
 import { hasVoice, hush, isMuted, preload, setMuted, speak } from './voice';
+import { sfx } from '../sound/sfx';
 
 // Plays a tour with driver.js: the screen dims around one widget at a time, the owl
 // explains it in a bubble next to it, and a finger shows how to use it. The look is
@@ -93,6 +94,11 @@ export function playTour(tour: Tour, { seen, onEnd }: { seen: (id: string) => bo
       owl.onclick = () => { if (isMuted()) setMuted(false); speak(steps[at]); sound.textContent = '🔊'; };
       pop.wrapper.prepend(owl);
       pop.closeButton.setAttribute('aria-label', 'Κλείσιμο');
+      // Moving on turns a page (heard as each bubble opens, however she moved on); ✕ closes
+      pop.closeButton.dataset.sound = 'close';
+      pop.nextButton.dataset.sound = at < total - 1 ? 'none' : 'done';
+      pop.previousButton.dataset.sound = 'none';
+      owl.dataset.sound = 'none';
       const sound = document.createElement('button');
       sound.type = 'button';
       sound.className = 'help-sound';
@@ -112,6 +118,7 @@ export function playTour(tour: Tour, { seen, onEnd }: { seen: (id: string) => bo
       if (at === 0) pop.previousButton.style.display = 'none';
     },
     onHighlighted: (el, step, { driver: dr }) => {
+      if ((dr.getActiveIndex() ?? 0) > 0) sfx('page');
       showFinger(el, step.data?.demo);
       speak(steps[dr.getActiveIndex() ?? 0]);
     },

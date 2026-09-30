@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { MultipleChoiceExercise } from '@shared/types';
 import { help } from '../../help/anchors';
+import { sound } from '../../sound/sfx';
 
 interface Props {
   exercise: MultipleChoiceExercise;
@@ -16,6 +17,7 @@ export const MultipleChoiceRenderer: React.FC<Props> = ({ exercise, onAnswer, di
         <motion.button
           key={index}
           className="option-btn"
+          {...sound('select')}
           onClick={() => onAnswer(index)}
           disabled={disabled}
           whileHover={!disabled ? { scale: 1.02, backgroundColor: "rgba(255,255,255,0.15)" } : {}}

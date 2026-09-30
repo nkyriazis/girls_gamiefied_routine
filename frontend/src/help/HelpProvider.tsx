@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { api } from '../api';
 import { useGame } from '../context/GameContext';
 import { help } from './anchors';
+import { sound } from '../sound/sfx';
 import { HelpContext, HelpDepth, useHelpApi, type HelpApi } from './context';
 import { playTour } from './runTour';
 import { seenId, type Tour } from './tour';
@@ -105,6 +106,7 @@ export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) =
         className={`help-btn ${fresh ? 'fresh' : ''}`}
         aria-label="Βοήθεια"
         onClick={helpApi.play}
+        {...sound('owl')}
         whileTap={{ scale: 0.9 }}
         animate={fresh ? { rotate: [0, -14, 12, -8, 6, 0], y: [0, -6, 0, -3, 0, 0] } : { rotate: 0, y: 0 }}
         transition={fresh ? { duration: 1.1, repeat: Infinity, repeatDelay: 2.2 } : { duration: 0.2 }}
@@ -118,6 +120,7 @@ export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) =
           <motion.button
             type="button"
             className="help-offer"
+            {...sound('owl')}
             onClick={helpApi.play}
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}

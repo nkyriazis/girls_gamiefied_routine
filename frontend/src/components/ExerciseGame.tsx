@@ -16,6 +16,7 @@ import { MatchPairsRenderer } from './exercises/MatchPairsRenderer';
 import { OrderingRenderer } from './exercises/OrderingRenderer';
 import { FillBlankRenderer } from './exercises/FillBlankRenderer';
 import { NumberInputRenderer } from './exercises/NumberInputRenderer';
+import { sfx, sound } from '../sound/sfx';
 
 interface ExerciseGameProps {
   session: ExerciseSession;
@@ -81,6 +82,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
       setFeedback({ userId: nextPlayerId, correct: result.correct });
       if (result.correct) {
         playSuccess();
+        sfx('stars', { delay: 350 });
       } else {
         playError();
       }
@@ -134,6 +136,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           <motion.button 
             className="finish-btn"
             {...help('game.finish')}
+            {...sound('close')}
             onClick={onClose}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -184,7 +187,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           ))}
         </div>
 
-        <button className="exit-game-btn" onClick={onClose} {...help('game.exit')}>✕ Έξοδος</button>
+        <button className="exit-game-btn" onClick={onClose} {...help('game.exit')} {...sound('close')}>✕ Έξοδος</button>
       </div>
 
       <AnimatePresence mode="wait">

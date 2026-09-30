@@ -6,6 +6,7 @@ import { UserExercises } from './UserExercises';
 import { help } from '../help/anchors';
 import { HelpScreen } from '../help/HelpProvider';
 import { exercisesTour } from './ExercisesDrawer.help';
+import { sound } from '../sound/sfx';
 
 interface ExercisesDrawerProps {
     isOpen: boolean;
@@ -28,6 +29,7 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        {...sound('close')}
                         onClick={onClose}
                     />
 
@@ -41,7 +43,7 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
                     >
                         <div className="exercises-header">
                             <h2>✏️ Ασκήσεις της Ημέρας</h2>
-                            <button className="close-btn" onClick={onClose}>✕</button>
+                            <button className="close-btn" {...sound('close')} onClick={onClose}>✕</button>
                         </div>
 
                         <div className="exercises-content">

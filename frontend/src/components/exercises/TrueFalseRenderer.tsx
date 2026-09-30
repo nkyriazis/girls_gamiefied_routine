@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { TrueFalseExercise } from '@shared/types';
 import { help } from '../../help/anchors';
+import { sound } from '../../sound/sfx';
 
 interface Props {
   exercise: TrueFalseExercise;
@@ -14,6 +15,7 @@ export const TrueFalseRenderer: React.FC<Props> = ({ onAnswer, disabled }) => {
     <div className="tf-container" {...help('answer.truefalse')}>
       <motion.button
         className="tf-btn true"
+        {...sound('select')}
         onClick={() => onAnswer(true)}
         disabled={disabled}
         whileHover={!disabled ? { scale: 1.05 } : {}}
@@ -25,6 +27,7 @@ export const TrueFalseRenderer: React.FC<Props> = ({ onAnswer, disabled }) => {
 
       <motion.button
         className="tf-btn false"
+        {...sound('select')}
         onClick={() => onAnswer(false)}
         disabled={disabled}
         whileHover={!disabled ? { scale: 1.05 } : {}}

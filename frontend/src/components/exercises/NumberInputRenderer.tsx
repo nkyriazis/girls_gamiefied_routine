@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { NumberInputExercise } from '@shared/types';
 import { help } from '../../help/anchors';
+import { sound } from '../../sound/sfx';
 
 interface Props {
   exercise: NumberInputExercise;
@@ -33,6 +34,7 @@ export const NumberInputRenderer: React.FC<Props> = ({ onAnswer, disabled }) => 
           <motion.button
             key={key}
             className={`numpad-key ${key === 'OK' ? 'ok' : ''} ${key === '⌫' ? 'back' : ''}`}
+            {...sound(key === '⌫' ? 'erase' : key === 'OK' ? 'tap' : 'key')}
             onClick={() => handleKey(key)}
             disabled={disabled || (key === 'OK' && value.length === 0)}
             whileTap={!disabled ? { scale: 0.92 } : {}}

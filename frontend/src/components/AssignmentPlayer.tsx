@@ -15,6 +15,7 @@ import { ProblemPlayer } from './exercises/ProblemPlayer';
 import { help } from '../help/anchors';
 import { HelpButton, HelpScreen } from '../help/HelpProvider';
 import { exerciseTour } from './AssignmentPlayer.help';
+import { sfx, sound } from '../sound/sfx';
 
 interface AssignmentPlayerProps {
   assignment: ExerciseAssignmentWithExercise;
@@ -41,6 +42,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
       setFeedback(result.correct ? 'correct' : 'incorrect');
       if (result.correct) {
         playSuccess();
+        sfx('stars', { delay: 350 });
         // Star earned — celebrate briefly, then return to the list
         setTimeout(() => onClose(), 1800);
       } else {
@@ -102,7 +104,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         <h1 className="assignment-header-title">{exercise.title}</h1>
         <div className="assignment-reward" {...help('exercise.stars')}>⭐ {exercise.stars}</div>
         <HelpButton inline />
-        <button className="exit-game-btn" onClick={onClose} {...help('exercise.exit')}>✕</button>
+        <button className="exit-game-btn" onClick={onClose} {...help('exercise.exit')} {...sound('close')}>✕</button>
       </div>
 
       <div className={`assignment-stage ${isProblem ? 'problem-mode' : ''}`}>

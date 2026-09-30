@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { FillBlankExercise } from '@shared/types';
 import { help } from '../../help/anchors';
+import { sound } from '../../sound/sfx';
 
 interface Props {
   exercise: FillBlankExercise;
@@ -78,6 +79,7 @@ export const FillBlankRenderer: React.FC<Props> = ({ exercise, onAnswer, disable
                 key={`gap-${index}`}
                 className={`fb-gap ${filled ? 'filled' : ''} ${isActive ? 'active' : ''}`}
                 {...help('answer.blank')}
+                {...sound(filled ? 'unselect' : 'tap')}
                 onClick={() => handleGapTap(gapIndex)}
                 disabled={disabled}
                 whileTap={{ scale: 0.95 }}
@@ -98,6 +100,7 @@ export const FillBlankRenderer: React.FC<Props> = ({ exercise, onAnswer, disable
             <motion.button
               key={`word-${i}`}
               className={`fb-word ${isUsed ? 'used' : ''}`}
+              {...sound('place')}
               onClick={() => handleWordTap(word)}
               disabled={disabled || isUsed}
               whileHover={!disabled && !isUsed ? { scale: 1.05 } : {}}

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { MatchPairsExercise } from '@shared/types';
 import { help } from '../../help/anchors';
+import { sound } from '../../sound/sfx';
 
 interface Props {
   exercise: MatchPairsExercise;
@@ -66,6 +67,7 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
             <motion.button
               key={`left-${item.idx}`}
               className={`match-item left ${isMatched ? 'matched' : ''} ${isSelected ? 'selected' : ''}`}
+              {...sound(isSelected ? 'unselect' : 'select')}
               onClick={() => handleLeftClick(item.idx)}
               disabled={disabled || isMatched}
               whileTap={!disabled && !isMatched ? { scale: 0.95 } : {}}
@@ -85,6 +87,7 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
             <motion.button
               key={`right-${item.idx}`}
               className={`match-item right ${isMatched ? 'matched' : ''} ${canMatch && !isMatched ? 'can-match' : ''}`}
+              {...sound('place')}
               onClick={() => handleRightClick(item.idx)}
               disabled={disabled || isMatched || selectedLeftIdx === null}
               whileTap={!disabled && !isMatched && selectedLeftIdx !== null ? { scale: 0.95 } : {}}

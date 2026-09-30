@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, Reorder } from 'framer-motion';
 import type { OrderingExercise } from '@shared/types';
 import { help } from '../../help/anchors';
+import { sfx } from '../../sound/sfx';
 
 interface Props {
   exercise: OrderingExercise;
@@ -20,12 +21,14 @@ export const OrderingRenderer: React.FC<Props> = ({ exercise, onAnswer, disabled
 
   return (
     <div className="ordering-container">
-      <Reorder.Group axis="y" values={items} onReorder={setItems} className="reorder-list" {...help('answer.order')}>
+      <Reorder.Group axis="y" values={items} onReorder={next => { sfx('key', { volume: 0.7 }); setItems(next); }} className="reorder-list" {...help('answer.order')}>
         {items.map(item => (
           <Reorder.Item 
             key={item.id} 
             value={item}
             dragListener={!disabled}
+            onDragStart={() => sfx('pick')}
+            onDragEnd={() => sfx('place')}
             className={`reorder-item ${disabled ? 'disabled' : ''}`}
           >
             <div className="drag-handle">☰</div>

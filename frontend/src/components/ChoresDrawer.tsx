@@ -7,6 +7,7 @@ import { help } from '../help/anchors';
 import { HelpScreen } from '../help/HelpProvider';
 import { choresTour } from './ChoresDrawer.help';
 import type { Chore, ChoreInstance, User, ChoreCategory } from '@shared/types';
+import { sfx, sound } from '../sound/sfx';
 
 interface ChoresDrawerProps {
     isOpen: boolean;
@@ -132,6 +133,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
     const handleClaim = async (instanceId: string, userId: string) => {
         try {
             await api.claimChore(instanceId, userId);
+            sfx('select');
         } catch (error) {
             console.error('Failed to claim chore:', error);
         }
@@ -140,6 +142,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
     const handleAttempt = async (instanceId: string) => {
         try {
             await api.attemptChore(instanceId);
+            sfx('send');
         } catch (error) {
             console.error('Failed to mark chore as done:', error);
         }
@@ -156,6 +159,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        {...sound('close')}
                         onClick={onClose}
                     />
 
@@ -169,7 +173,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
                     >
                         <div className="chores-header">
                             <h2>{config.title}</h2>
-                            <button className="close-btn" onClick={onClose}>✕</button>
+                            <button className="close-btn" {...sound('close')} onClick={onClose}>✕</button>
                         </div>
 
                         <div className="chores-content">
