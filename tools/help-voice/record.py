@@ -11,6 +11,7 @@ import hashlib
 import html
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -45,9 +46,28 @@ def tidy(wav, sr):
     return np.concatenate([np.zeros(int(0.12 * sr)), wav[a:b], np.zeros(int(0.25 * sr))])
 
 
+LUFS, LUFS_OFF = -16.0, 1.0  # every clip as loud as the others: within 1 LU of -16
+
+
+def loudness(path):
+    """Integrated loudness (EBU R128), in LUFS"""
+    out = subprocess.run(['ffmpeg', '-hide_banner', '-nostats', '-i', path, '-af', 'ebur128', '-f', 'null', '-'],
+                         capture_output=True, text=True).stderr
+    return float(re.findall(r'I:\s+(-?[\d.]+) LUFS', out)[-1])
+
+
 def encode(wav_path, mp3_path):
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', wav_path, '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11',
-                    '-ar', '44100', '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '64k', mp3_path], check=True)
+    """Measured, then turned up or down to -16 LUFS, peaks held under -1.5 dBTP. (ffmpeg's
+    one-pass loudnorm can't measure a clip under 3 s: those came out 20 dB quiet.)"""
+    gain = LUFS - loudness(wav_path)
+    for _ in range(4):  # the limiter takes back some of the gain: measure the mp3, make up the rest
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', wav_path, '-af', f'volume={gain:.2f}dB,alimiter=limit=0.84:level=false',
+                        '-ar', '44100', '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '64k', mp3_path], check=True)
+        got = loudness(mp3_path)
+        if abs(got - LUFS) <= 0.3:
+            break
+        gain += LUFS - got
+    return round(got, 1)
 
 
 RETRY = '--retry' in sys.argv
@@ -75,6 +95,14 @@ for n, line in enumerate(lines, 1):
         recorded = False  # it doesn't sound clean enough: recorded again
     if recorded and not (RETRY and old['cer'] > 0):
         old['where'] = line['where']
+        if abs(old.get('lufs', 0) - LUFS) > LUFS_OFF:
+            take = f'out/takes/{cid}-{old["seed"]}.wav'
+            if not os.path.exists(take):
+                recorded = False  # its take is gone: recorded again
+            else:
+                old['lufs'] = encode(take, mp3)
+                print(f'[{n}/{len(lines)}] loudness fixed ({old["lufs"]} LUFS) {text[:50]}', flush=True)
+    if recorded and not (RETRY and old['cer'] > 0):
         kept.append(old)
         print(f'[{n}/{len(lines)}] kept {text[:60]}', flush=True)
         continue
@@ -100,10 +128,11 @@ for n, line in enumerate(lines, 1):
              **{k: v for k, v in best.items() if k != 'pass'}}
     # Listened to once more as it ships (an mp3); if that fails, the next best take
     for t in good:
-        encode(f'out/takes/{cid}-{t["seed"]}.wav', mp3)
+        lufs = encode(f'out/takes/{cid}-{t["seed"]}.wav', mp3)
         shipped = listen(mp3, text)
         entry.update({k: v for k, v in t.items() if k != 'pass'}, clip=f'help-voice/{cid}.mp3', shipped_cer=shipped['cer'],
-                     shipped_heard=shipped['heard'], kb=round(os.path.getsize(mp3) / 1024, 1), ok=shipped['cer'] <= PASS['cer'])
+                     shipped_heard=shipped['heard'], kb=round(os.path.getsize(mp3) / 1024, 1), lufs=lufs,
+                     ok=shipped['cer'] <= PASS['cer'] and abs(lufs - LUFS) <= LUFS_OFF)
         if entry['ok']:
             break
     kept.append(entry)

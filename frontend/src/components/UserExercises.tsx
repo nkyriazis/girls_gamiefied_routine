@@ -6,6 +6,7 @@ import { api } from '../api';
 import { AssignmentPlayer } from './AssignmentPlayer';
 import { help } from '../help/anchors';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
+import { sound } from '../sound/sfx';
 
 // One kid's exercises: today's set and «Κι άλλο πρόβλημα» for more stars. On her own
 // screen (the store, from her avatar) and in the exercises drawer. The player opens
@@ -65,7 +66,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
       {header ?? null}
       {daily.length > 0 && (
         <div className="ue-summary">
-          {completed === daily.length ? 'Όλες οι σημερινές έτοιμες! 🎉' : `Σήμερα: ${completed} από ${daily.length}`}
+          {completed === daily.length ? 'Τα σημερινά τελείωσαν! 🎉' : `Σήμερα: ${completed} από ${daily.length}`}
         </div>
       )}
       <div className="assignment-list">
@@ -78,6 +79,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
               key={assignment.id}
               data-assignment={assignment.id}
               {...help('exercises.card')}
+              {...sound('open')}
               className={`assignment-card ${isDone ? 'completed' : ''}`}
               onClick={() => !isDone && setPlayingId(assignment.id)}
               disabled={isDone}
@@ -115,6 +117,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
             className="extra-btn"
             data-extra={user.id}
             {...help('exercises.more')}
+            {...sound('open')}
             disabled={asking || (!openExtra && extras.length >= extraLimit)}
             whileTap={{ scale: 0.97 }}
             onClick={askForProblem}

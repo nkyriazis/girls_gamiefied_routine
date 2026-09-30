@@ -12,7 +12,7 @@ interface GlobalAlarmProps {
 }
 
 export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmProps = {}, onDismiss }) => {
-  const { playWakeUpLoop, stopWakeUpLoop, playClick, playCustomSound, stopCustomSound } = useAppSounds();
+  const { playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound } = useAppSounds();
 
   const {
     sound = 'melody',
@@ -40,7 +40,6 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
   }, [sound, playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound]);
 
   const handleDismiss = () => {
-    playClick();
     onDismiss(flowId);
   };
 

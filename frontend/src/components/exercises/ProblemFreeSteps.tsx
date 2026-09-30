@@ -4,6 +4,7 @@ import type { ProblemCalcStep } from '@shared/types';
 import type { CalcOp } from '@shared/problems';
 import { help } from '../../help/anchors';
 import { fmt, lower, type Brush, type CalcValue, type PaintValue } from './problemFreeLogic';
+import { sfx, sound } from '../../sound/sfx';
 
 // The two free steps of a problem: painting the story freehand (nothing marked on
 // screen, word by word, with a finger drag) and working it out her own way (two
@@ -34,6 +35,8 @@ export const PaintWords: React.FC<{
     const s = stroke.current;
     if (w === null || !s || (w === s.to && s.to !== s.from)) return;
     s.to = w;
+    // Every word the stroke reaches is heard: a marker painting, a pop taking it back
+    sfx(s.paint === null ? 'unselect' : 'paint');
     const [lo, hi] = s.from <= w ? [s.from, w] : [w, s.from];
     onChange(s.before.map((b, i) => (i >= lo && i <= hi ? s.paint : b)));
   };
@@ -48,7 +51,7 @@ export const PaintWords: React.FC<{
   const move = (e: React.PointerEvent) => { if (stroke.current) reach(wordAt(e.clientX, e.clientY)); };
   const up = () => { stroke.current = null; };
   return (
-    <span className="paint-words" {...help('problem.paint')} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+    <span className="paint-words" {...help('problem.paint')} {...sound('none')} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
       {words.map((w, i) => (
         <React.Fragment key={i}>
           {i > 0 && <span className={value[i - 1] && value[i - 1] === value[i] ? `role-${value[i]}` : ''}> </span>}
@@ -116,12 +119,12 @@ export const CalcBench: React.FC<{
       </div>
       <div className="calc-chips" {...help('calc.chips')}>
         {story.map(q => (
-          <button key={q.id} type="button" className="calc-chip" disabled={disabled} onClick={() => pick(q.value)}>
+          <button key={q.id} type="button" className="calc-chip" disabled={disabled} {...sound('place')} onClick={() => pick(q.value)}>
             {fmt(q.value)} <small>{q.unit}</small>
           </button>
         ))}
         {value.lines.map((l, i) => (
-          <button key={`l${i}`} type="button" className="calc-chip found" disabled={disabled} onClick={() => pick(l.result)}>
+          <button key={`l${i}`} type="button" className="calc-chip found" disabled={disabled} {...sound('place')} onClick={() => pick(l.result)}>
             {fmt(l.result)} <small>{lower(l.label)}</small>
           </button>
         ))}
@@ -129,10 +132,10 @@ export const CalcBench: React.FC<{
       <div className="calc-pad" {...help('calc.pad')}>
         {OPS.map(op => (
           <motion.button key={op} type="button" className={`calc-key op ${value.op === op ? 'on' : ''}`} disabled={disabled || value.x === null}
-            whileTap={{ scale: 0.92 }} onClick={() => setValue({ ...value, op })}>{op}</motion.button>
+            whileTap={{ scale: 0.92 }} {...sound('select')} onClick={() => setValue({ ...value, op })}>{op}</motion.button>
         ))}
         {DIGITS.map(k => (
-          <motion.button key={k} type="button" className="calc-key" disabled={disabled} whileTap={{ scale: 0.92 }} onClick={() => key(k)}>{k}</motion.button>
+          <motion.button key={k} type="button" className="calc-key" disabled={disabled} whileTap={{ scale: 0.92 }} {...sound(k === '⌫' || k === 'C' ? 'erase' : 'key')} onClick={() => key(k)}>{k}</motion.button>
         ))}
       </div>
       <style>{`

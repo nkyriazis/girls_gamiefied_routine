@@ -6,6 +6,7 @@ import { useAppSounds } from '../hooks/useAppSounds';
 import { api } from '../api';
 import { help } from '../help/anchors';
 import { SmartIcon } from './SmartIcon';
+import { sfx, sound } from '../sound/sfx';
 
 interface InlineRoutinePlayerProps {
   user: User;
@@ -22,7 +23,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   run,
   onClose
 }) => {
-  const { playClick, playSuccess, playAlarm } = useAppSounds();
+  const { playComplete, playAlarm } = useAppSounds();
   const [justEarnedStars, setJustEarnedStars] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -53,17 +54,18 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   });
   useEffect(() => {
     if (!run.finishedAt) return;
-    playSuccess();
+    playComplete();
     const timeout = setTimeout(() => onCloseRef.current(), Math.max(0, REWARD_MS - (Date.now() - Date.parse(run.finishedAt))));
     return () => clearTimeout(timeout);
-  }, [run.finishedAt, playSuccess]);
+  }, [run.finishedAt, playComplete]);
 
   const handleNextTask = async () => {
-    playClick();
     if (!currentTask) return;
     try {
       const result = await api.completeTask(run.id, currentTask.id);
       if (result.success) {
+        sfx('correct');
+        if (result.starsAwarded > 0) sfx('stars', { delay: 350 });  // as her stars fly up
         setJustEarnedStars(result.starsAwarded);
         setTimeout(() => setJustEarnedStars(null), 2000);
       }
@@ -121,7 +123,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
             />
           </div>
         </div>
-        <button className="btn-exit" {...help('routine.exit')} onClick={onClose}>✕</button>
+        <button className="btn-exit" {...help('routine.exit')} {...sound('close')} onClick={onClose}>✕</button>
       </div>
 
       <div className="player-body">

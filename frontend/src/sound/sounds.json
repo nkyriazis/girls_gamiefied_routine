@@ -1,0 +1,78 @@
+{
+ "tap": {
+  "file": "sfx/tap.wav",
+  "secs": 0.056
+ },
+ "key": {
+  "file": "sfx/key.wav",
+  "secs": 0.138
+ },
+ "erase": {
+  "file": "sfx/erase.wav",
+  "secs": 0.178
+ },
+ "open": {
+  "file": "sfx/open.wav",
+  "secs": 0.311
+ },
+ "close": {
+  "file": "sfx/close.wav",
+  "secs": 0.21
+ },
+ "select": {
+  "file": "sfx/select.wav",
+  "secs": 0.206
+ },
+ "unselect": {
+  "file": "sfx/unselect.wav",
+  "secs": 0.141
+ },
+ "paint": {
+  "file": "sfx/paint.wav",
+  "secs": 0.123
+ },
+ "pick": {
+  "file": "sfx/pick.wav",
+  "secs": 0.421
+ },
+ "place": {
+  "file": "sfx/place.wav",
+  "secs": 0.252
+ },
+ "correct": {
+  "file": "sfx/correct.wav",
+  "secs": 0.29
+ },
+ "wrong": {
+  "file": "sfx/wrong.wav",
+  "secs": 0.123
+ },
+ "done": {
+  "file": "sfx/done.wav",
+  "secs": 1.6
+ },
+ "stars": {
+  "file": "sfx/stars.wav",
+  "secs": 0.705
+ },
+ "spend": {
+  "file": "sfx/spend.wav",
+  "secs": 0.474
+ },
+ "send": {
+  "file": "sfx/send.wav",
+  "secs": 0.217
+ },
+ "nope": {
+  "file": "sfx/nope.wav",
+  "secs": 0.14
+ },
+ "owl": {
+  "file": "sfx/owl.wav",
+  "secs": 0.618
+ },
+ "page": {
+  "file": "sfx/page.wav",
+  "secs": 0.392
+ }
+}

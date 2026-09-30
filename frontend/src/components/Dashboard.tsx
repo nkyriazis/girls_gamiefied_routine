@@ -16,6 +16,7 @@ import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
 import { ExercisesDrawer } from './ExercisesDrawer';
 import { help } from '../help/anchors';
+import { sound } from '../sound/sfx';
 import { HelpScreen } from '../help/HelpProvider';
 import { homeTour, routineTour } from './Dashboard.help';
 
@@ -200,7 +201,7 @@ export const Dashboard: React.FC = () => {
       )}
 
       {!hasInteracted && (
-        <div className="interaction-overlay" onClick={() => setHasInteracted(true)}>
+        <div className="interaction-overlay" {...sound('open')} onClick={() => setHasInteracted(true)}>
           <div className="start-btn">Click to Start</div>
         </div>
       )}
@@ -223,6 +224,7 @@ export const Dashboard: React.FC = () => {
         <motion.button
           className="chores-fab"
           {...help('home.chores')}
+          {...sound('open')}
           onClick={() => setChoresOpen(true)}
           initial={{ x: 100 }}
           animate={{ x: 0 }}
@@ -243,6 +245,7 @@ export const Dashboard: React.FC = () => {
         <motion.button
           className="bonus-fab"
           {...help('home.bonus')}
+          {...sound('open')}
           onClick={() => setBonusOpen(true)}
           initial={{ x: 100 }}
           animate={{ x: 0 }}
@@ -263,6 +266,7 @@ export const Dashboard: React.FC = () => {
         <motion.button
           className="exercise-fab"
           {...help('home.game')}
+          {...sound('open')}
           onClick={() => setSetupOpen(true)}
           initial={{ x: 100 }}
           animate={{ x: 0 }}
@@ -278,6 +282,7 @@ export const Dashboard: React.FC = () => {
         <motion.button
           className="daily-exercises-fab"
           {...help('home.exercises')}
+          {...sound('open')}
           onClick={() => setDailyExercisesOpen(true)}
           initial={{ x: 100 }}
           animate={{ x: 0 }}
@@ -348,6 +353,7 @@ export const Dashboard: React.FC = () => {
                 initial={{ opacity: 0, x: 100, y: 0 }}
                 animate={{ opacity: 1, x: 0, y: 0 }}
                 exit={{ opacity: 0, x: 100 }}
+                {...sound('close')}
                 onClick={() => dismissChoreNotification(notification.id)}
               >
                 {notification.type === 'expired' && (
@@ -487,7 +493,7 @@ export const Dashboard: React.FC = () => {
               whileHover={!isTouchDevice ? { scale: 1.05, y: -5 } : {}}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="dock-avatar" style={{ background: user.color }} onClick={() => setStoreUserId(user.id)}>
+              <div className="dock-avatar" style={{ background: user.color }} {...sound('open')} onClick={() => setStoreUserId(user.id)}>
                 <SmartIcon value={user.avatar} size={80} />
               </div>
               <span className="dock-name">{user.name}</span>

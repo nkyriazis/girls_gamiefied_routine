@@ -17,7 +17,7 @@ export const answerSteps = (type: Exercise['type'] | undefined): HelpStep[] => {
     ];
     case 'ordering': return [
       { el: 'answer.order', title: 'Βάλε σειρά', text: 'Σύρε κάθε κουτί με το δάχτυλο στη θέση του, από πάνω προς τα κάτω.', side: 'left', demo: 'swipe' },
-      { el: 'answer.order-submit', title: 'Έτοιμη;', text: 'Όταν είναι όλα στη σειρά, πάτα εδώ.', side: 'top' },
+      { el: 'answer.order-submit', title: 'Τελείωσες;', text: 'Όταν είναι όλα στη σειρά, πάτα εδώ.', side: 'top' },
     ];
     case 'fill-blank': return [
       { el: 'answer.blank', title: 'Τα κενά', text: 'Πάτα ένα κενό…', side: 'bottom', demo: 'tap' },

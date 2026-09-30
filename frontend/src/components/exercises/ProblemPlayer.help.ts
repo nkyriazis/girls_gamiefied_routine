@@ -28,7 +28,7 @@ const KIND: Record<ProblemHelpKind, HelpStep[]> = {
     { el: 'calc.chips', title: 'Οι αριθμοί σου', text: 'Οι αριθμοί της ιστορίας. Πάτα έναν για να ξεκινήσεις μια πράξη.', side: 'top', demo: 'tap' },
     { el: 'calc.pad', title: 'Πράξη και αποτέλεσμα', text: 'Διάλεξε πράξη, πάτα τον δεύτερο αριθμό και γράψε το αποτέλεσμα με τα πλήκτρα.', side: 'top' },
     { el: 'calc.build', title: 'Η πράξη σου', text: 'Εδώ φτιάχνεται. Με τον Έλεγχο σου λέω τι βρήκες, και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.', side: 'bottom' },
-    { el: 'calc.lines', title: 'Όσα βρήκες', text: 'Οι πράξεις σου μένουν εδώ, με το τι βρήκες σε καθεμιά. Οι πράσινες σε φέρνουν πιο κοντά στην απάντηση.', side: 'bottom' },
+    { el: 'calc.lines', title: 'Όσα βρήκες', text: 'Οι πράξεις σου μένουν εδώ, με το τι βρήκες σε κάθε πράξη. Οι πράσινες σε φέρνουν πιο κοντά στην απάντηση.', side: 'bottom' },
   ],
   choice: [
     { el: 'problem.choices', title: 'Διάλεξε', text: 'Πάτα την απάντηση που ταιριάζει και μετά Έλεγχο.', side: 'left', demo: 'tap' },
@@ -56,7 +56,7 @@ export const problemTour = (userId: string, kind: ProblemHelpKind): Tour => ({
     ],
     after: [
       { el: 'problem.hint', title: 'Συμβουλές', text: 'Αν κάτι δεν πάει καλά, εδώ σου λέω τι να κοιτάξεις.', side: 'top' },
-      { el: 'problem.check', title: 'Έλεγχος', text: 'Όταν είσαι έτοιμη, πάτα Έλεγχος. Τα λάθη δεν πειράζουν: ξαναδοκιμάζεις!', side: 'top', demo: 'tap' },
+      { el: 'problem.check', title: 'Έλεγχος', text: 'Όταν τελειώσεις, πάτα Έλεγχος. Τα λάθη δεν πειράζουν: ξαναδοκιμάζεις!', side: 'top', demo: 'tap' },
     ],
   },
 });

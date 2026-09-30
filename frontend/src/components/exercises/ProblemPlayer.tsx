@@ -5,12 +5,12 @@ import type {
 } from '@shared/types';
 import { storyWords, targetsFromMarks, usefulToAnswer, type PaintTarget } from '@shared/problems';
 import { api } from '../../api';
-import { useAppSounds } from '../../hooks/useAppSounds';
 import { CalcBench, PaintWords } from './ProblemFreeSteps';
 import { help } from '../../help/anchors';
 import { HelpScreen } from '../../help/HelpProvider';
 import { problemTour, type ProblemHelpKind } from './ProblemPlayer.help';
 import { calcNudge, emptyCalc, paintFeedback, readLine, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
+import { sfx, sound } from '../../sound/sfx';
 
 // A word problem, one step at a time, the way the Ε' book teaches it (ch. 1.3):
 // read (what we know, what we seek), plan, solve, check. The server checks each
@@ -105,7 +105,6 @@ interface Props {
 }
 
 export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved, reading = 'marked' }) => {
-  const { playSuccess, playError } = useAppSounds();
   // The server's step, or ours if its STATE hasn't arrived yet
   const [localStep, setLocalStep] = useState(assignment.stepIndex ?? 0);
   const stepIndex = Math.min(Math.max(localStep, assignment.stepIndex ?? 0), exercise.steps.length - 1);
@@ -156,16 +155,20 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
       const read = readLine(step, value as CalcValue, usefulToAnswer(step));
       setDraft({ step: stepIndex, value: read.value });
       setNote(read.note);
-      if (read.note.kind === 'math' || read.note.kind === 'nothing') { playError(); return; }
-      if (read.note.kind !== 'answer') return;
+      if (read.note.kind === 'math' || read.note.kind === 'nothing') { sfx('wrong'); return; }
+      // Something found on the way to the answer is a small yes; a right sum that leads elsewhere, a nod
+      if (read.note.kind === 'found') { sfx('correct', { volume: 0.7 }); return; }
+      if (read.note.kind !== 'answer') { sfx('select'); return; }
       answer = read.value;
     }
     setBusy(true);
     try {
       const result = await api.answerExerciseAssignment(assignment.id, { step: stepIndex, value: answerOf(kind, answer) });
       if (result.correct) {
-        playSuccess();
+        // The last step solves the whole problem: that's the big one
+        sfx(result.assignment.status === 'completed' ? 'done' : 'correct');
         if (result.assignment.status === 'completed') {
+          sfx('stars', { delay: 700 });
           onSolved(result.starsAwarded);
           return;
         }
@@ -176,7 +179,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
           setBusy(false);
         }, 900);
       } else {
-        playError();
+        sfx('wrong');
         setLastWrong({ step: stepIndex, parts: result.wrong });
         setBusy(false);
       }
@@ -188,6 +191,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
 
   const paint = (mark: number) => {
     const roles = value as ProblemRole[];
+    sfx(roles[mark] === brush ? 'unselect' : 'paint');
     setValue(roles.map((role, i) => (i !== mark ? role : role === brush ? 'extra' : brush)));
   };
 
@@ -217,7 +221,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
           <div className="tag-brushes" role="radiogroup" aria-label="Πινέλο" {...help('problem.brushes')}>
             {BRUSHES.filter(b => b.role !== 'extra' || (kind === 'paint' && unneeded)).map(b => (
               <button key={b.role} type="button" role="radio" aria-checked={brush === b.role}
-                className={`tag-brush role-${b.role} ${brush === b.role ? 'on' : ''}`} onClick={() => setBrush(b.role)}
+                className={`tag-brush role-${b.role} ${brush === b.role ? 'on' : ''}`} {...sound('select')} onClick={() => setBrush(b.role)}
                 {...(b.role === 'extra' ? help('problem.brush-extra') : {})}>
                 {b.icon} {b.label}
               </button>
@@ -356,7 +360,7 @@ const StoryCard: React.FC<{
     // An inline span, not a <button> (an inline-block), so the lines wrap as in the other modes
     const tap = () => { if (!disabled) onTap(p.mark); };
     return (
-      <span key={i} role="button" tabIndex={0} aria-disabled={disabled} onClick={tap}
+      <span key={i} role="button" tabIndex={0} aria-disabled={disabled} {...sound('none')} onClick={tap}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } }}
         {...help('problem.phrase')} className={`story-phrase tappable ${role !== 'extra' ? `role-${role}` : ''} ${wrong?.includes(p.mark) ? 'is-wrong' : ''}`}>
         {p.text}
@@ -393,7 +397,7 @@ const ChoiceStep: React.FC<StepProps<number | null> & { options: string[] }> = (
   <div className="choice-list" {...help('problem.choices')}>
     {options.map((option, i) => (
       <motion.button key={i} type="button" className={`choice-btn ${value === i ? 'picked' : ''}`} disabled={disabled}
-        aria-pressed={value === i} whileTap={!disabled ? { scale: 0.98 } : {}} onClick={() => setValue(i)}>
+        aria-pressed={value === i} whileTap={!disabled ? { scale: 0.98 } : {}} {...sound('select')} onClick={() => setValue(i)}>
         <span className="choice-letter">{String.fromCharCode(0x391 + i)}</span>{option}
       </motion.button>
     ))}
@@ -438,7 +442,7 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
       <div className="numbers-pad" {...help('problem.keypad')}>
         {KEYS.map(k => (
           <motion.button key={k} type="button" className="numbers-key" disabled={disabled} whileTap={!disabled ? { scale: 0.92 } : {}}
-            onClick={() => key(k)}>{k}</motion.button>
+            {...sound(k === '⌫' ? 'erase' : k === '↵' ? 'tap' : 'key')} onClick={() => key(k)}>{k}</motion.button>
         ))}
       </div>
       <style>{`
@@ -475,7 +479,7 @@ const OrderStep: React.FC<StepProps<string[]> & { items: string[] }> = ({ items,
       {shuffled.map(item => {
         const at = value.indexOf(item);
         return (
-          <button key={item} type="button" disabled={disabled} onClick={() => tap(item)}
+          <button key={item} type="button" disabled={disabled} {...sound(at >= 0 ? 'unselect' : 'place')} onClick={() => tap(item)}
             className={`order-item ${at >= 0 ? 'placed' : ''} ${at >= 0 && wrong?.includes(at) ? 'is-wrong' : ''}`}>
             <span className="order-num">{at >= 0 ? at + 1 : ''}</span>{item}
           </button>

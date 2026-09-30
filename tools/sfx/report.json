@@ -1,0 +1,1134 @@
+{
+ "tap": {
+  "for": "any button",
+  "sounds_like": "a soft short rounded pop of a button being pressed",
+  "chosen": {
+   "file": "ui-audio/Audio/click2.ogg",
+   "secs": 0.056,
+   "clap": 0.203,
+   "margin": -0.08,
+   "unwanted": 0.093,
+   "score": 0.163,
+   "rise": -0.4,
+   "fits": true,
+   "bright_hz": 2981,
+   "noisy": 0.001,
+   "rms_db": -20.8,
+   "peak_db": -6.5
+  },
+  "runners_up": [
+   {
+    "file": "ui-audio/Audio/click1.ogg",
+    "secs": 0.057,
+    "clap": 0.201,
+    "margin": -0.107,
+    "unwanted": 0.118,
+    "score": 0.148,
+    "rise": -1.0,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/click_003.ogg",
+    "secs": 0.01,
+    "clap": 0.188,
+    "margin": -0.016,
+    "unwanted": 0.26,
+    "score": 0.143,
+    "rise": 0.0,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/select_002.ogg",
+    "secs": 0.043,
+    "clap": 0.172,
+    "margin": -0.097,
+    "unwanted": 0.139,
+    "score": 0.123,
+    "rise": 1.3,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/click_005.ogg",
+    "secs": 0.01,
+    "clap": 0.173,
+    "margin": -0.04,
+    "unwanted": 0.234,
+    "score": 0.122,
+    "rise": 0.0,
+    "fits": true
+   }
+  ],
+  "candidates": 20,
+  "kb": 5.3
+ },
+ "key": {
+  "for": "a digit on a keypad",
+  "sounds_like": "a tiny soft tick of a key being pressed",
+  "chosen": {
+   "file": "ui-audio/Audio/switch37.ogg",
+   "secs": 0.138,
+   "clap": 0.219,
+   "margin": -0.009,
+   "unwanted": 0.073,
+   "score": 0.215,
+   "rise": -0.8,
+   "fits": true,
+   "bright_hz": 9041,
+   "noisy": 0.059,
+   "rms_db": -28.9,
+   "peak_db": -3.9
+  },
+  "runners_up": [
+   {
+    "file": "ui-audio/Audio/switch20.ogg",
+    "secs": 0.31,
+    "clap": 0.249,
+    "margin": -0.08,
+    "unwanted": 0.108,
+    "score": 0.209,
+    "rise": -6.5,
+    "fits": false
+   },
+   {
+    "file": "ui-audio/Audio/switch33.ogg",
+    "secs": 0.377,
+    "clap": 0.19,
+    "margin": 0.018,
+    "unwanted": 0.046,
+    "score": 0.199,
+    "rise": 0.6,
+    "fits": false
+   },
+   {
+    "file": "ui-audio/Audio/switch9.ogg",
+    "secs": 0.111,
+    "clap": 0.215,
+    "margin": -0.034,
+    "unwanted": 0.181,
+    "score": 0.199,
+    "rise": -2.6,
+    "fits": true
+   },
+   {
+    "file": "ui-audio/Audio/switch5.ogg",
+    "secs": 0.182,
+    "clap": 0.184,
+    "margin": 0.003,
+    "unwanted": 0.145,
+    "score": 0.186,
+    "rise": -2.7,
+    "fits": false
+   }
+  ],
+  "candidates": 51,
+  "kb": 13.0
+ },
+ "erase": {
+  "for": "⌫, taking a digit back",
+  "sounds_like": "a short soft backwards blip, deleting something",
+  "chosen": {
+   "file": "interface-sounds/Audio/minimize_007.ogg",
+   "secs": 0.178,
+   "clap": 0.328,
+   "margin": 0.115,
+   "unwanted": 0.134,
+   "score": 0.385,
+   "rise": -3.5,
+   "fits": true,
+   "bright_hz": 2542,
+   "noisy": 0.0,
+   "rms_db": -26.6,
+   "peak_db": -16.5
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/drop_001.ogg",
+    "secs": 0.085,
+    "clap": 0.294,
+    "margin": 0.127,
+    "unwanted": 0.038,
+    "score": 0.357,
+    "rise": 11.7,
+    "fits": false
+   },
+   {
+    "file": "interface-sounds/Audio/back_002.ogg",
+    "secs": 0.07,
+    "clap": 0.282,
+    "margin": 0.126,
+    "unwanted": 0.102,
+    "score": 0.345,
+    "rise": 12.0,
+    "fits": false
+   },
+   {
+    "file": "interface-sounds/Audio/back_001.ogg",
+    "secs": 0.064,
+    "clap": 0.279,
+    "margin": 0.077,
+    "unwanted": 0.175,
+    "score": 0.318,
+    "rise": 5.8,
+    "fits": false
+   },
+   {
+    "file": "interface-sounds/Audio/minimize_004.ogg",
+    "secs": 0.409,
+    "clap": 0.246,
+    "margin": 0.136,
+    "unwanted": 0.172,
+    "score": 0.315,
+    "rise": -9.5,
+    "fits": false
+   }
+  ],
+  "candidates": 22,
+  "kb": 16.7
+ },
+ "open": {
+  "for": "a drawer, a popup, a screen opening",
+  "sounds_like": "a bright soft rising swoosh of something opening",
+  "chosen": {
+   "file": "interface-sounds/Audio/open_002.ogg",
+   "secs": 0.311,
+   "clap": 0.136,
+   "margin": -0.076,
+   "unwanted": 0.125,
+   "score": 0.098,
+   "rise": 6.1,
+   "fits": true,
+   "bright_hz": 9539,
+   "noisy": 0.038,
+   "rms_db": -23.6,
+   "peak_db": -10.9
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/maximize_008.ogg",
+    "secs": 0.218,
+    "clap": 0.144,
+    "margin": -0.128,
+    "unwanted": 0.099,
+    "score": 0.08,
+    "rise": 1.5,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/open_004.ogg",
+    "secs": 0.319,
+    "clap": 0.114,
+    "margin": -0.097,
+    "unwanted": 0.146,
+    "score": 0.05,
+    "rise": 1.2,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/maximize_006.ogg",
+    "secs": 0.378,
+    "clap": 0.086,
+    "margin": -0.174,
+    "unwanted": 0.11,
+    "score": -0.012,
+    "rise": 6.4,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/maximize_001.ogg",
+    "secs": 0.257,
+    "clap": 0.088,
+    "margin": -0.172,
+    "unwanted": 0.167,
+    "score": -0.037,
+    "rise": 4.3,
+    "fits": true
+   }
+  ],
+  "candidates": 13,
+  "kb": 29.2
+ },
+ "close": {
+  "for": "a drawer, a popup, a screen closing",
+  "sounds_like": "a soft falling swoosh of something closing",
+  "chosen": {
+   "file": "interface-sounds/Audio/minimize_008.ogg",
+   "secs": 0.21,
+   "clap": 0.009,
+   "margin": -0.248,
+   "unwanted": 0.113,
+   "score": -0.167,
+   "rise": -1.4,
+   "fits": true,
+   "bright_hz": 375,
+   "noisy": 0.0,
+   "rms_db": -25.8,
+   "peak_db": -14.3
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/minimize_006.ogg",
+    "secs": 0.369,
+    "clap": -0.005,
+    "margin": -0.236,
+    "unwanted": 0.085,
+    "score": -0.168,
+    "rise": -6.5,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/minimize_007.ogg",
+    "secs": 0.178,
+    "clap": 0.028,
+    "margin": -0.299,
+    "unwanted": 0.134,
+    "score": -0.174,
+    "rise": -3.5,
+    "fits": false
+   },
+   {
+    "file": "interface-sounds/Audio/close_002.ogg",
+    "secs": 0.314,
+    "clap": -0.037,
+    "margin": -0.184,
+    "unwanted": 0.141,
+    "score": -0.217,
+    "rise": -5.7,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/back_001.ogg",
+    "secs": 0.064,
+    "clap": -0.008,
+    "margin": -0.287,
+    "unwanted": 0.175,
+    "score": -0.242,
+    "rise": 5.8,
+    "fits": false
+   }
+  ],
+  "candidates": 17,
+  "kb": 19.8
+ },
+ "select": {
+  "for": "choosing: an answer, a brush, a player, a subject",
+  "sounds_like": "a light cheerful pluck, choosing something",
+  "chosen": {
+   "file": "interface-sounds/Audio/select_006.ogg",
+   "secs": 0.206,
+   "clap": 0.032,
+   "margin": -0.175,
+   "unwanted": 0.066,
+   "score": -0.073,
+   "rise": 7.1,
+   "fits": true,
+   "bright_hz": 909,
+   "noisy": 0.0,
+   "rms_db": -24.4,
+   "peak_db": -12.6
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/switch_001.ogg",
+    "secs": 0.141,
+    "clap": 0.003,
+    "margin": -0.159,
+    "unwanted": 0.009,
+    "score": -0.079,
+    "rise": -2.2,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/glass_005.ogg",
+    "secs": 0.074,
+    "clap": 0.018,
+    "margin": -0.162,
+    "unwanted": 0.077,
+    "score": -0.092,
+    "rise": 1.2,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/select_005.ogg",
+    "secs": 0.215,
+    "clap": 0.008,
+    "margin": -0.165,
+    "unwanted": 0.072,
+    "score": -0.106,
+    "rise": 2.7,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/toggle_002.ogg",
+    "secs": 0.108,
+    "clap": -0.004,
+    "margin": -0.203,
+    "unwanted": 0.066,
+    "score": -0.141,
+    "rise": 2.6,
+    "fits": true
+   }
+  ],
+  "candidates": 27,
+  "kb": 19.4
+ },
+ "unselect": {
+  "for": "taking a choice back, unpainting",
+  "sounds_like": "a soft low pop, putting something back",
+  "chosen": {
+   "file": "interface-sounds/Audio/switch_001.ogg",
+   "secs": 0.141,
+   "clap": -0.147,
+   "margin": -0.309,
+   "unwanted": 0.009,
+   "score": -0.379,
+   "rise": -1.7,
+   "fits": true,
+   "bright_hz": 4618,
+   "noisy": 0.001,
+   "rms_db": -24.8,
+   "peak_db": -5.7
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/switch_005.ogg",
+    "secs": 0.148,
+    "clap": -0.027,
+    "margin": -0.156,
+    "unwanted": 0.09,
+    "score": -0.163,
+    "rise": 4.0,
+    "fits": false
+   },
+   {
+    "file": "interface-sounds/Audio/switch_004.ogg",
+    "secs": 0.15,
+    "clap": -0.078,
+    "margin": -0.209,
+    "unwanted": 0.099,
+    "score": -0.271,
+    "rise": 4.3,
+    "fits": false
+   },
+   {
+    "file": "interface-sounds/Audio/switch_007.ogg",
+    "secs": 0.147,
+    "clap": -0.109,
+    "margin": -0.204,
+    "unwanted": 0.035,
+    "score": -0.283,
+    "rise": 0.8,
+    "fits": false
+   },
+   {
+    "file": "interface-sounds/Audio/switch_006.ogg",
+    "secs": 0.142,
+    "clap": -0.091,
+    "margin": -0.252,
+    "unwanted": 0.04,
+    "score": -0.284,
+    "rise": 3.7,
+    "fits": false
+   }
+  ],
+  "candidates": 15,
+  "kb": 13.2
+ },
+ "paint": {
+  "for": "a brush stroke over the story",
+  "sounds_like": "a felt-tip marker squeaking across paper",
+  "chosen": {
+   "file": "interface-sounds/Audio/scratch_003.ogg",
+   "secs": 0.123,
+   "clap": 0.085,
+   "margin": -0.011,
+   "unwanted": 0.179,
+   "score": 0.032,
+   "rise": -0.2,
+   "fits": true,
+   "bright_hz": 11353,
+   "noisy": 0.137,
+   "rms_db": -26.5,
+   "peak_db": -8.6
+  },
+  "runners_up": [
+   {
+    "file": "casino-audio/Audio/card-slide-8.ogg",
+    "secs": 0.671,
+    "clap": 0.177,
+    "margin": -0.368,
+    "unwanted": 0.051,
+    "score": -0.007,
+    "rise": -20.1,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-7.ogg",
+    "secs": 0.63,
+    "clap": 0.151,
+    "margin": -0.355,
+    "unwanted": 0.03,
+    "score": -0.026,
+    "rise": -16.0,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-5.ogg",
+    "secs": 0.601,
+    "clap": 0.166,
+    "margin": -0.401,
+    "unwanted": 0.077,
+    "score": -0.034,
+    "rise": -9.4,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-3.ogg",
+    "secs": 0.59,
+    "clap": 0.141,
+    "margin": -0.365,
+    "unwanted": 0.098,
+    "score": -0.042,
+    "rise": -12.2,
+    "fits": false
+   }
+  ],
+  "candidates": 19,
+  "kb": 11.6
+ },
+ "pick": {
+  "for": "picking up a box to move it",
+  "sounds_like": "picking up a playing card",
+  "chosen": {
+   "file": "casino-audio/Audio/card-slide-6.ogg",
+   "secs": 0.421,
+   "clap": 0.493,
+   "margin": 0.151,
+   "unwanted": 0.043,
+   "score": 0.569,
+   "rise": -14.9,
+   "fits": true,
+   "bright_hz": 5750,
+   "noisy": 0.002,
+   "rms_db": -30.4,
+   "peak_db": -4.5
+  },
+  "runners_up": [
+   {
+    "file": "casino-audio/Audio/card-slide-5.ogg",
+    "secs": 0.601,
+    "clap": 0.567,
+    "margin": 0.131,
+    "unwanted": 0.077,
+    "score": 0.632,
+    "rise": -9.4,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-8.ogg",
+    "secs": 0.671,
+    "clap": 0.545,
+    "margin": 0.133,
+    "unwanted": 0.051,
+    "score": 0.611,
+    "rise": -20.1,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-3.ogg",
+    "secs": 0.59,
+    "clap": 0.506,
+    "margin": 0.15,
+    "unwanted": 0.098,
+    "score": 0.581,
+    "rise": -12.2,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-7.ogg",
+    "secs": 0.63,
+    "clap": 0.506,
+    "margin": 0.115,
+    "unwanted": 0.03,
+    "score": 0.563,
+    "rise": -16.0,
+    "fits": false
+   }
+  ],
+  "candidates": 14,
+  "kb": 39.5
+ },
+ "place": {
+  "for": "putting a box down in its place",
+  "sounds_like": "placing a playing card softly down on a table",
+  "chosen": {
+   "file": "casino-audio/Audio/card-place-2.ogg",
+   "secs": 0.252,
+   "clap": 0.358,
+   "margin": -0.132,
+   "unwanted": 0.063,
+   "score": 0.292,
+   "rise": 3.3,
+   "fits": true,
+   "bright_hz": 4566,
+   "noisy": 0.004,
+   "rms_db": -27.5,
+   "peak_db": -2.3
+  },
+  "runners_up": [
+   {
+    "file": "rpg-audio/Audio/bookPlace1.ogg",
+    "secs": 0.215,
+    "clap": 0.291,
+    "margin": -0.04,
+    "unwanted": 0.109,
+    "score": 0.271,
+    "rise": -6.7,
+    "fits": true
+   },
+   {
+    "file": "casino-audio/Audio/card-place-3.ogg",
+    "secs": 0.361,
+    "clap": 0.341,
+    "margin": -0.163,
+    "unwanted": 0.061,
+    "score": 0.26,
+    "rise": 5.9,
+    "fits": true
+   },
+   {
+    "file": "casino-audio/Audio/card-place-1.ogg",
+    "secs": 0.246,
+    "clap": 0.285,
+    "margin": -0.154,
+    "unwanted": 0.039,
+    "score": 0.208,
+    "rise": -16.1,
+    "fits": true
+   },
+   {
+    "file": "rpg-audio/Audio/bookPlace3.ogg",
+    "secs": 0.224,
+    "clap": 0.16,
+    "margin": 0.009,
+    "unwanted": 0.158,
+    "score": 0.164,
+    "rise": 0.3,
+    "fits": true
+   }
+  ],
+  "candidates": 7,
+  "kb": 23.7
+ },
+ "correct": {
+  "for": "a right answer, a step done",
+  "sounds_like": "a happy bright sparkling chime of success",
+  "chosen": {
+   "file": "interface-sounds/Audio/confirmation_001.ogg",
+   "secs": 0.29,
+   "clap": 0.279,
+   "margin": -0.027,
+   "unwanted": 0.12,
+   "score": 0.265,
+   "rise": 8.4,
+   "fits": true,
+   "bright_hz": 597,
+   "noisy": 0.0,
+   "rms_db": -21.1,
+   "peak_db": -10.9
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/confirmation_004.ogg",
+    "secs": 0.49,
+    "clap": 0.243,
+    "margin": -0.011,
+    "unwanted": 0.113,
+    "score": 0.238,
+    "rise": 12.0,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/confirmation_002.ogg",
+    "secs": 0.53,
+    "clap": 0.238,
+    "margin": -0.016,
+    "unwanted": 0.102,
+    "score": 0.23,
+    "rise": 13.2,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/confirmation_003.ogg",
+    "secs": 0.322,
+    "clap": 0.223,
+    "margin": -0.005,
+    "unwanted": 0.105,
+    "score": 0.22,
+    "rise": 5.4,
+    "fits": true
+   },
+   {
+    "file": "digital-audio/Audio/pepSound4.ogg",
+    "secs": 0.438,
+    "clap": 0.214,
+    "margin": -0.003,
+    "unwanted": 0.205,
+    "score": 0.213,
+    "rise": 0.1,
+    "fits": false
+   }
+  ],
+  "candidates": 20,
+  "kb": 27.2
+ },
+ "wrong": {
+  "for": "not right yet: try again",
+  "sounds_like": "a gentle friendly low uh-oh boop, soft and not harsh",
+  "chosen": {
+   "file": "interface-sounds/Audio/bong_001.ogg",
+   "secs": 0.123,
+   "clap": 0.221,
+   "margin": 0.077,
+   "unwanted": -0.02,
+   "score": 0.259,
+   "rise": -1.0,
+   "fits": true,
+   "bright_hz": 228,
+   "noisy": 0.0,
+   "rms_db": -24.1,
+   "peak_db": -9.0
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/question_004.ogg",
+    "secs": 0.332,
+    "clap": 0.232,
+    "margin": -0.008,
+    "unwanted": 0.088,
+    "score": 0.228,
+    "rise": 0.1,
+    "fits": true
+   },
+   {
+    "file": "digital-audio/Audio/lowDown.ogg",
+    "secs": 0.594,
+    "clap": 0.141,
+    "margin": 0.118,
+    "unwanted": 0.088,
+    "score": 0.2,
+    "rise": -3.2,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/error_006.ogg",
+    "secs": 0.229,
+    "clap": 0.136,
+    "margin": -0.003,
+    "unwanted": 0.067,
+    "score": 0.135,
+    "rise": -4.8,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/error_005.ogg",
+    "secs": 0.173,
+    "clap": 0.125,
+    "margin": -0.013,
+    "unwanted": 0.047,
+    "score": 0.118,
+    "rise": 4.2,
+    "fits": true
+   }
+  ],
+  "candidates": 14,
+  "kb": 11.6
+ },
+ "done": {
+  "for": "a whole exercise, routine or game finished",
+  "sounds_like": "a triumphant sparkling magical celebration chime",
+  "chosen": {
+   "file": "synth.py:fanfare",
+   "secs": 1.6,
+   "clap": 0.349,
+   "rise": 2.7,
+   "bright_hz": 3020,
+   "noisy": 0.0,
+   "rms_db": -23.0,
+   "peak_db": -7.8
+  },
+  "runners_up": [],
+  "candidates": 0
+ },
+ "stars": {
+  "for": "stars earned: her balance goes up",
+  "sounds_like": "coins jingling, a reward",
+  "chosen": {
+   "file": "rpg-audio/Audio/handleCoins.ogg + synth.py:twinkle",
+   "secs": 0.705,
+   "clap": 0.204,
+   "margin": 0.0,
+   "unwanted": 0.081,
+   "score": 0.204,
+   "rise": 1.1,
+   "fits": true,
+   "bright_hz": 5616,
+   "noisy": 0.001,
+   "rms_db": -24.9,
+   "peak_db": -4.4
+  },
+  "runners_up": [
+   {
+    "file": "casino-audio/Audio/chips-handle-1.ogg",
+    "secs": 0.577,
+    "clap": 0.094,
+    "margin": -0.03,
+    "unwanted": 0.065,
+    "score": 0.079,
+    "rise": 2.8,
+    "fits": true
+   },
+   {
+    "file": "casino-audio/Audio/chips-stack-6.ogg",
+    "secs": 0.127,
+    "clap": 0.104,
+    "margin": -0.118,
+    "unwanted": 0.114,
+    "score": 0.04,
+    "rise": -1.1,
+    "fits": true
+   },
+   {
+    "file": "casino-audio/Audio/chips-handle-6.ogg",
+    "secs": 0.369,
+    "clap": 0.056,
+    "margin": -0.059,
+    "unwanted": 0.027,
+    "score": 0.027,
+    "rise": -0.4,
+    "fits": true
+   },
+   {
+    "file": "rpg-audio/Audio/handleCoins2.ogg",
+    "secs": 0.308,
+    "clap": 0.076,
+    "margin": -0.11,
+    "unwanted": 0.08,
+    "score": 0.019,
+    "rise": -3.3,
+    "fits": true
+   }
+  ],
+  "candidates": 18,
+  "kb": 66.2
+ },
+ "spend": {
+  "for": "stars spent on a reward",
+  "sounds_like": "coins sliding across a table, paying for something",
+  "chosen": {
+   "file": "casino-audio/Audio/chips-handle-2.ogg",
+   "secs": 0.474,
+   "clap": 0.154,
+   "margin": -0.134,
+   "unwanted": 0.069,
+   "score": 0.087,
+   "rise": -2.1,
+   "fits": true,
+   "bright_hz": 8627,
+   "noisy": 0.186,
+   "rms_db": -29.9,
+   "peak_db": -1.1
+  },
+  "runners_up": [
+   {
+    "file": "rpg-audio/Audio/handleCoins.ogg",
+    "secs": 0.705,
+    "clap": 0.149,
+    "margin": -0.055,
+    "unwanted": 0.081,
+    "score": 0.122,
+    "rise": -3.4,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/chips-handle-3.ogg",
+    "secs": 0.228,
+    "clap": 0.106,
+    "margin": -0.065,
+    "unwanted": 0.047,
+    "score": 0.073,
+    "rise": 1.9,
+    "fits": true
+   },
+   {
+    "file": "casino-audio/Audio/chips-handle-5.ogg",
+    "secs": 0.834,
+    "clap": 0.156,
+    "margin": -0.224,
+    "unwanted": -0.007,
+    "score": 0.044,
+    "rise": -0.6,
+    "fits": true
+   },
+   {
+    "file": "casino-audio/Audio/chips-handle-4.ogg",
+    "secs": 0.359,
+    "clap": 0.166,
+    "margin": -0.257,
+    "unwanted": 0.097,
+    "score": 0.037,
+    "rise": 0.5,
+    "fits": true
+   }
+  ],
+  "candidates": 15,
+  "kb": 44.5
+ },
+ "send": {
+  "for": "stars sent to her sister, a chore handed in",
+  "sounds_like": "a playful whoosh flying away",
+  "chosen": {
+   "file": "interface-sounds/Audio/maximize_009.ogg",
+   "secs": 0.217,
+   "clap": 0.133,
+   "margin": -0.087,
+   "unwanted": 0.162,
+   "score": 0.075,
+   "rise": 3.5,
+   "fits": true,
+   "bright_hz": 1292,
+   "noisy": 0.0,
+   "rms_db": -21.7,
+   "peak_db": -12.3
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/maximize_006.ogg",
+    "secs": 0.378,
+    "clap": 0.126,
+    "margin": -0.134,
+    "unwanted": 0.11,
+    "score": 0.059,
+    "rise": 6.4,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/maximize_008.ogg",
+    "secs": 0.218,
+    "clap": 0.127,
+    "margin": -0.146,
+    "unwanted": 0.099,
+    "score": 0.054,
+    "rise": 1.5,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/maximize_007.ogg",
+    "secs": 0.186,
+    "clap": 0.128,
+    "margin": -0.173,
+    "unwanted": 0.139,
+    "score": 0.037,
+    "rise": 2.4,
+    "fits": true
+   },
+   {
+    "file": "digital-audio/Audio/phaseJump4.ogg",
+    "secs": 0.417,
+    "clap": 0.077,
+    "margin": -0.15,
+    "unwanted": 0.095,
+    "score": -0.007,
+    "rise": 0.9,
+    "fits": false
+   }
+  ],
+  "candidates": 21,
+  "kb": 20.4
+ },
+ "nope": {
+  "for": "a button that can't be pressed now",
+  "sounds_like": "a very soft dull thud",
+  "chosen": {
+   "file": "impact-sounds/Audio/impactSoft_medium_003.ogg",
+   "secs": 0.14,
+   "clap": 0.07,
+   "margin": -0.138,
+   "unwanted": -0.037,
+   "score": 0.001,
+   "rise": -3.1,
+   "fits": true,
+   "bright_hz": 100,
+   "noisy": 0.0,
+   "rms_db": -29.5,
+   "peak_db": -16.1
+  },
+  "runners_up": [
+   {
+    "file": "impact-sounds/Audio/impactSoft_medium_001.ogg",
+    "secs": 0.183,
+    "clap": 0.062,
+    "margin": -0.153,
+    "unwanted": 0.01,
+    "score": -0.015,
+    "rise": -0.9,
+    "fits": true
+   },
+   {
+    "file": "impact-sounds/Audio/impactSoft_medium_004.ogg",
+    "secs": 0.147,
+    "clap": 0.055,
+    "margin": -0.154,
+    "unwanted": -0.018,
+    "score": -0.022,
+    "rise": -1.5,
+    "fits": true
+   },
+   {
+    "file": "impact-sounds/Audio/impactSoft_medium_002.ogg",
+    "secs": 0.135,
+    "clap": 0.049,
+    "margin": -0.184,
+    "unwanted": -0.022,
+    "score": -0.043,
+    "rise": -2.8,
+    "fits": true
+   },
+   {
+    "file": "impact-sounds/Audio/impactSoft_medium_000.ogg",
+    "secs": 0.118,
+    "clap": 0.022,
+    "margin": -0.229,
+    "unwanted": -0.048,
+    "score": -0.092,
+    "rise": -5.0,
+    "fits": true
+   }
+  ],
+  "candidates": 14,
+  "kb": 13.2
+ },
+ "owl": {
+  "for": "the owl starting a tour",
+  "sounds_like": "a curious bright question chime",
+  "chosen": {
+   "file": "interface-sounds/Audio/glass_004.ogg",
+   "secs": 0.618,
+   "clap": 0.245,
+   "margin": 0.046,
+   "unwanted": 0.222,
+   "score": 0.268,
+   "rise": -0.1,
+   "fits": true,
+   "bright_hz": 7349,
+   "noisy": 0.0,
+   "rms_db": -28.5,
+   "peak_db": -11.7
+  },
+  "runners_up": [
+   {
+    "file": "interface-sounds/Audio/question_003.ogg",
+    "secs": 0.333,
+    "clap": 0.219,
+    "margin": -0.072,
+    "unwanted": 0.094,
+    "score": 0.183,
+    "rise": 5.0,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/glass_005.ogg",
+    "secs": 0.074,
+    "clap": 0.168,
+    "margin": -0.012,
+    "unwanted": 0.077,
+    "score": 0.162,
+    "rise": 1.2,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/question_004.ogg",
+    "secs": 0.332,
+    "clap": 0.185,
+    "margin": -0.054,
+    "unwanted": 0.088,
+    "score": 0.158,
+    "rise": 0.1,
+    "fits": true
+   },
+   {
+    "file": "interface-sounds/Audio/glass_001.ogg",
+    "secs": 0.254,
+    "clap": 0.144,
+    "margin": -0.021,
+    "unwanted": 0.156,
+    "score": 0.128,
+    "rise": -0.8,
+    "fits": true
+   }
+  ],
+  "candidates": 10,
+  "kb": 58.0
+ },
+ "page": {
+  "for": "the owl's next bubble",
+  "sounds_like": "a soft page turn, flipping a book page",
+  "chosen": {
+   "file": "rpg-audio/Audio/bookFlip2.ogg",
+   "secs": 0.392,
+   "clap": 0.268,
+   "margin": -0.16,
+   "unwanted": 0.086,
+   "score": 0.188,
+   "rise": -3.4,
+   "fits": true,
+   "bright_hz": 7140,
+   "noisy": 0.02,
+   "rms_db": -29.1,
+   "peak_db": -3.8
+  },
+  "runners_up": [
+   {
+    "file": "casino-audio/Audio/card-slide-5.ogg",
+    "secs": 0.601,
+    "clap": 0.317,
+    "margin": -0.25,
+    "unwanted": 0.077,
+    "score": 0.191,
+    "rise": -9.4,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-7.ogg",
+    "secs": 0.63,
+    "clap": 0.27,
+    "margin": -0.235,
+    "unwanted": 0.03,
+    "score": 0.152,
+    "rise": -16.0,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-8.ogg",
+    "secs": 0.671,
+    "clap": 0.275,
+    "margin": -0.27,
+    "unwanted": 0.051,
+    "score": 0.14,
+    "rise": -20.1,
+    "fits": false
+   },
+   {
+    "file": "casino-audio/Audio/card-slide-6.ogg",
+    "secs": 0.421,
+    "clap": 0.255,
+    "margin": -0.239,
+    "unwanted": 0.043,
+    "score": 0.135,
+    "rise": -15.0,
+    "fits": false
+   }
+  ],
+  "candidates": 13,
+  "kb": 36.8
+ }
+}

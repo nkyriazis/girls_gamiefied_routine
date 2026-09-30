@@ -10,7 +10,7 @@ export const storeTour = (userId: string): Tour => ({
     { el: 'store.earn', title: 'Κέρδισε αστέρια', text: 'Οι ασκήσεις σου για σήμερα. Πάτα μία για να ξεκινήσεις.', side: 'right' },
     { el: 'exercises.more', title: 'Κι άλλο πρόβλημα', text: 'Τελείωσες τις σημερινές; Εδώ ζητάς κι άλλο πρόβλημα, για κι άλλα αστέρια. Αν έχεις αρχίσει ένα, εδώ το συνεχίζεις.', side: 'top', demo: 'tap' },
     { el: 'store.rewards', title: 'Ανταμοιβές', text: 'Πάτα μια ανταμοιβή για να την πάρεις με τα αστέρια σου. Οι γκρίζες θέλουν περισσότερα αστέρια.', side: 'left' },
-    { el: 'store.give', title: 'Δώσε αστέρια', text: 'Μπορείς να χαρίσεις αστέρια στην αδερφή σου. Ένας γονιός το εγκρίνει.', side: 'bottom' },
+    { el: 'store.give', title: 'Δώσε αστέρια', text: 'Μπορείς να χαρίσεις αστέρια σε ένα άλλο παιδί. Ένας γονιός το εγκρίνει.', side: 'bottom' },
     { el: 'store.activity', title: 'Δραστηριότητα', text: 'Τι έχεις πάρει και τι περιμένει έγκριση.', side: 'bottom' },
     { el: 'store.close', title: 'Κλείσιμο', text: 'Από εδώ γυρνάς στην αρχική οθόνη.', side: 'top' },
   ],
@@ -29,7 +29,7 @@ export const transferTour = (userId: string): Tour => ({
   id: 'store-transfer',
   user: userId,
   steps: [
-    { el: 'transfer.to', title: 'Σε ποια;', text: 'Διάλεξε σε ποια θα δώσεις αστέρια.', side: 'bottom' },
+    { el: 'transfer.to', title: 'Σε ποιο παιδί;', text: 'Διάλεξε σε ποιο παιδί θα δώσεις αστέρια.', side: 'bottom' },
     { el: 'transfer.amount', title: 'Πόσα;', text: 'Με το − και το + διαλέγεις πόσα. Δεν μπορείς να δώσεις περισσότερα από όσα έχεις.', side: 'bottom', say: 'Πόσα; Με το μείον και το συν διαλέγεις πόσα. Δεν μπορείς να δώσεις περισσότερα από όσα έχεις.' },
     { el: 'transfer.send', title: 'Στείλ’ τα!', text: 'Τα αστέρια φεύγουν όταν το εγκρίνει ένας γονιός.', side: 'top', demo: 'tap' },
   ],

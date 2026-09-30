@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { api } from '../api';
 import type { User } from '@shared/types';
-import { useAppSounds } from '../hooks/useAppSounds';
 import { help } from '../help/anchors';
 import { HelpScreen } from '../help/HelpProvider';
 import { gameSetupTour } from './ExerciseSetup.help';
+import { sound } from '../sound/sfx';
 
 interface ExerciseSetupProps {
   users: User[];
@@ -15,7 +15,6 @@ interface ExerciseSetupProps {
 }
 
 export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, onStart }) => {
-  const { playClick } = useAppSounds();
   const [categories, setCategories] = useState<any[]>([]); // { id, label, icon? }
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // array of category IDs
@@ -40,14 +39,12 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
   }, []);
 
   const togglePlayer = (id: string) => {
-    playClick();
     setSelectedPlayers(prev => 
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
   };
 
   const toggleCategory = (catId: string) => {
-    playClick();
     setSelectedCategories(prev => 
       prev.includes(catId) ? prev.filter(c => c !== catId) : [...prev, catId]
     );
@@ -62,7 +59,6 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
       alert('Επίλεξε τουλάχιστον μία κατηγορία!');
       return;
     }
-    playClick();
     onStart(selectedPlayers, selectedCategories, totalRounds, questionsPerRound);
   };
 
@@ -81,18 +77,19 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
       >
         <div className="setup-header">
           <h2>Προετοιμασία Παιχνιδιού</h2>
-          <button className="close-btn-circle" onClick={onClose}>✕</button>
+          <button className="close-btn-circle" {...sound('close')} onClick={onClose}>✕</button>
         </div>
 
         <div className="setup-content">
           {/* Players Selection */}
           <section className="setup-section">
-            <h3>Ποιος θα παίξει;</h3>
+            <h3>Ποια παιδιά θα παίξουν;</h3>
             <div className="players-grid" {...help('game.players')}>
               {users.map(user => (
                 <motion.div
                   key={user.id}
                   className={`player-select-item ${selectedPlayers.includes(user.id) ? 'selected' : ''}`}
+                  {...sound(selectedPlayers.includes(user.id) ? 'unselect' : 'select')}
                   onClick={() => togglePlayer(user.id)}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -123,6 +120,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
                     <motion.button
                       key={catId}
                       className={`category-chip ${selectedCategories.includes(catId) ? 'selected' : ''}`}
+                      {...sound(selectedCategories.includes(catId) ? 'unselect' : 'select')}
                       onClick={() => toggleCategory(catId)}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -140,17 +138,17 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
             <div className="setting-item">
               <label>Γύροι (1-5)</label>
               <div className="counter-controls">
-                <button onClick={() => setTotalRounds(Math.max(1, totalRounds - 1))}>-</button>
+                <button {...sound('unselect')} onClick={() => setTotalRounds(Math.max(1, totalRounds - 1))}>-</button>
                 <span>{totalRounds}</span>
-                <button onClick={() => setTotalRounds(Math.min(5, totalRounds + 1))}>+</button>
+                <button {...sound('select')} onClick={() => setTotalRounds(Math.min(5, totalRounds + 1))}>+</button>
               </div>
             </div>
             <div className="setting-item">
               <label>Ερωτήσεις ανά γύρο (1-10)</label>
               <div className="counter-controls">
-                <button onClick={() => setQuestionsPerRound(Math.max(1, questionsPerRound - 1))}>-</button>
+                <button {...sound('unselect')} onClick={() => setQuestionsPerRound(Math.max(1, questionsPerRound - 1))}>-</button>
                 <span>{questionsPerRound}</span>
-                <button onClick={() => setQuestionsPerRound(Math.min(10, questionsPerRound + 1))}>+</button>
+                <button {...sound('select')} onClick={() => setQuestionsPerRound(Math.min(10, questionsPerRound + 1))}>+</button>
               </div>
             </div>
           </section>
@@ -159,6 +157,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
         <div className="setup-actions">
           <motion.button
             className="start-game-btn"
+            {...sound('open')}
             {...help('game.start')}
             onClick={handleStart}
             whileHover={{ scale: 1.05 }}

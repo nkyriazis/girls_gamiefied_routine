@@ -7,19 +7,19 @@ import { answerSteps } from './exercises/answers.help';
 export const gameTour = (type: Exercise['type'] | undefined): Tour => ({
   id: `game-${type ?? 'question'}`,
   steps: [
-    { el: 'game.turn', title: 'Ποια παίζει;', text: 'Η φωτεινή είναι αυτή που απαντάει τώρα. Παίζετε με τη σειρά.', side: 'bottom' },
+    { el: 'game.turn', title: 'Ποιο παιδί παίζει;', text: 'Φωτίζεται το παιδί που απαντάει τώρα. Παίζετε με τη σειρά.', side: 'bottom' },
     { el: 'game.progress', title: 'Γύροι', text: 'Σε ποιο γύρο και σε ποια ερώτηση είστε.', side: 'bottom' },
     { el: 'game.question', title: 'Η ερώτηση', text: 'Διάβασέ την προσεκτικά.', side: 'right' },
-    { el: 'game.answer', title: 'Η απάντηση', text: 'Εδώ απαντάει όποια έχει σειρά. Σωστή απάντηση, αστέρια!', side: 'left' },
+    { el: 'game.answer', title: 'Η απάντηση', text: 'Εδώ απαντάει το παιδί που έχει σειρά. Σωστή απάντηση, αστέρια!', side: 'left' },
     ...answerSteps(type),
-    { el: 'game.exit', title: 'Έξοδος', text: 'Με την Έξοδο σταματάει το παιχνίδι για όλες.', side: 'bottom' },
+    { el: 'game.exit', title: 'Έξοδος', text: 'Με την Έξοδο σταματάει το παιχνίδι για όλα τα παιδιά.', side: 'bottom' },
   ],
 });
 
 export const gameResultsTour = (): Tour => ({
   id: 'game-results',
   steps: [
-    { el: 'game.scores', title: 'Τα αποτελέσματα', text: 'Πόσα αστέρια κέρδισε η καθεμιά. Μπαίνουν κατευθείαν στα αστέρια σας!', side: 'bottom' },
+    { el: 'game.scores', title: 'Τα αποτελέσματα', text: 'Πόσα αστέρια κέρδισε κάθε παιδί. Μπαίνουν κατευθείαν στα αστέρια σας!', side: 'bottom' },
     { el: 'game.finish', title: 'Τέλος', text: 'Πατήστε εδώ για να γυρίσετε στην αρχική οθόνη.', side: 'top', demo: 'tap' },
   ],
 });
