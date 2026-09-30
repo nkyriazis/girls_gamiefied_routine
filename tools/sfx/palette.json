@@ -1,0 +1,223 @@
+{
+ "_": "The sounds of the kids' screens: what each one is for, what it should sound like (CLAP chooses by this), where to look for it (Kenney packs, CC0) or how it's made (synth.py), whether it goes up (a yes, an opening) or down (a no, a closing), how long it may be and how loud it is (dBFS of its loudest 50 ms). pick.py makes frontend/public/sfx from it.",
+ "tap": {
+  "for": "any button",
+  "sounds_like": "a soft short rounded pop of a button being pressed",
+  "from": [
+   "interface-sounds/*/click_*",
+   "interface-sounds/*/select_*",
+   "interface-sounds/*/pluck_*",
+   "ui-audio/*/click*"
+  ],
+  "max": 0.25,
+  "rms": -20
+ },
+ "key": {
+  "for": "a digit on a keypad",
+  "sounds_like": "a tiny soft tick of a key being pressed",
+  "from": [
+   "interface-sounds/*/tick_*",
+   "interface-sounds/*/click_*",
+   "ui-audio/*/click*",
+   "ui-audio/*/switch*"
+  ],
+  "max": 0.15,
+  "rms": -24
+ },
+ "erase": {
+  "for": "⌫, taking a digit back",
+  "sounds_like": "a short soft backwards blip, deleting something",
+  "from": [
+   "interface-sounds/*/back_*",
+   "interface-sounds/*/drop_*",
+   "interface-sounds/*/minimize_*",
+   "interface-sounds/*/scroll_*"
+  ],
+  "max": 0.3,
+  "rms": -22,
+  "goes": "down"
+ },
+ "open": {
+  "for": "a drawer, a popup, a screen opening",
+  "sounds_like": "a bright soft rising swoosh of something opening",
+  "from": [
+   "interface-sounds/*/maximize_*",
+   "interface-sounds/*/open_*"
+  ],
+  "max": 0.7,
+  "rms": -20,
+  "goes": "up"
+ },
+ "close": {
+  "for": "a drawer, a popup, a screen closing",
+  "sounds_like": "a soft falling swoosh of something closing",
+  "from": [
+   "interface-sounds/*/minimize_*",
+   "interface-sounds/*/close_*",
+   "interface-sounds/*/back_*"
+  ],
+  "max": 0.7,
+  "rms": -21,
+  "goes": "down"
+ },
+ "select": {
+  "for": "choosing: an answer, a brush, a player, a subject",
+  "sounds_like": "a light cheerful pluck, choosing something",
+  "from": [
+   "interface-sounds/*/select_*",
+   "interface-sounds/*/pluck_*",
+   "interface-sounds/*/switch_*",
+   "interface-sounds/*/toggle_*",
+   "interface-sounds/*/glass_*"
+  ],
+  "max": 0.4,
+  "rms": -19
+ },
+ "unselect": {
+  "for": "taking a choice back, unpainting",
+  "sounds_like": "a soft low pop, putting something back",
+  "from": [
+   "interface-sounds/*/drop_*",
+   "interface-sounds/*/toggle_*",
+   "interface-sounds/*/switch_*"
+  ],
+  "max": 0.35,
+  "rms": -21,
+  "goes": "down"
+ },
+ "paint": {
+  "for": "a brush stroke over the story",
+  "sounds_like": "a felt-tip marker squeaking across paper",
+  "from": [
+   "interface-sounds/*/scratch_*",
+   "rpg-audio/*/cloth*",
+   "casino-audio/*/card-slide-*"
+  ],
+  "max": 0.5,
+  "rms": -24
+ },
+ "pick": {
+  "for": "picking up a box to move it",
+  "sounds_like": "picking up a playing card",
+  "from": [
+   "casino-audio/*/card-slide-*",
+   "casino-audio/*/cards-pack-take-out-*",
+   "casino-audio/*/card-shove-*"
+  ],
+  "max": 0.5,
+  "rms": -21
+ },
+ "place": {
+  "for": "putting a box down in its place",
+  "sounds_like": "placing a playing card softly down on a table",
+  "from": [
+   "casino-audio/*/card-place-*",
+   "rpg-audio/*/bookPlace*"
+  ],
+  "max": 0.5,
+  "rms": -20
+ },
+ "correct": {
+  "for": "a right answer, a step done",
+  "sounds_like": "a happy bright sparkling chime of success",
+  "from": [
+   "interface-sounds/*/confirmation_*",
+   "interface-sounds/*/glass_*",
+   "digital-audio/*/pepSound*",
+   "digital-audio/*/twoTone*",
+   "digital-audio/*/threeTone*",
+   "digital-audio/*/highUp*"
+  ],
+  "max": 1.2,
+  "rms": -16,
+  "goes": "up"
+ },
+ "wrong": {
+  "for": "not right yet: try again",
+  "sounds_like": "a gentle friendly low uh-oh boop, soft and not harsh",
+  "from": [
+   "interface-sounds/*/error_*",
+   "interface-sounds/*/bong_*",
+   "interface-sounds/*/question_*",
+   "digital-audio/*/lowDown*"
+  ],
+  "max": 0.8,
+  "rms": -20
+ },
+ "done": {
+  "for": "a whole exercise, routine or game finished",
+  "sounds_like": "a triumphant sparkling magical celebration chime",
+  "synth": "fanfare",
+  "max": 2.0,
+  "rms": -16
+ },
+ "stars": {
+  "for": "stars earned: her balance goes up",
+  "sounds_like": "coins jingling, a reward",
+  "from": [
+   "rpg-audio/*/handleCoins*",
+   "casino-audio/*/chips-stack-*",
+   "casino-audio/*/chips-collide-*",
+   "casino-audio/*/chips-handle-*"
+  ],
+  "max": 1.2,
+  "rms": -17,
+  "add": "twinkle"
+ },
+ "spend": {
+  "for": "stars spent on a reward",
+  "sounds_like": "coins sliding across a table, paying for something",
+  "from": [
+   "casino-audio/*/chips-handle-*",
+   "casino-audio/*/chip-lay-*",
+   "casino-audio/*/chips-collide-*",
+   "rpg-audio/*/handleCoins*"
+  ],
+  "max": 1.2,
+  "rms": -18
+ },
+ "send": {
+  "for": "stars sent to her sister, a chore handed in",
+  "sounds_like": "a playful whoosh flying away",
+  "from": [
+   "digital-audio/*/phaserUp*",
+   "digital-audio/*/phaseJump*",
+   "interface-sounds/*/maximize_*"
+  ],
+  "max": 0.9,
+  "rms": -18,
+  "goes": "up"
+ },
+ "nope": {
+  "for": "a button that can't be pressed now",
+  "sounds_like": "a very soft dull thud",
+  "from": [
+   "impact-sounds/*/impactSoft_medium*",
+   "impact-sounds/*/impactGeneric_light*",
+   "interface-sounds/*/drop_*"
+  ],
+  "max": 0.35,
+  "rms": -25
+ },
+ "owl": {
+  "for": "the owl starting a tour",
+  "sounds_like": "a curious bright question chime",
+  "from": [
+   "interface-sounds/*/question_*",
+   "interface-sounds/*/glass_*"
+  ],
+  "max": 0.9,
+  "rms": -19
+ },
+ "page": {
+  "for": "the owl's next bubble",
+  "sounds_like": "a soft page turn, flipping a book page",
+  "from": [
+   "rpg-audio/*/bookFlip*",
+   "casino-audio/*/card-slide-*",
+   "casino-audio/*/card-fan-*"
+  ],
+  "max": 0.6,
+  "rms": -24
+ }
+}
