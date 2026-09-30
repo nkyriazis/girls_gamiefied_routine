@@ -157,3 +157,25 @@ test('a routine left open on an earlier day is closed: on the next trigger and b
   assert.ok(routineRun('u2'));
   assert.equal(store.recentLogs(50).filter(l => l.type === 'ROUTINE_CLOSED_STALE').length, 2);
 });
+
+test('an alarm nobody dismissed stops after settings.alarmMinutes, with the rest of its flow', () => {
+  reset();
+  const hour = 3600_000;
+  db.triggerAction('both');
+  db.dismissAlarm(flowRun('f2').id, 0); // u2 woke up: its routine runs
+  assert.equal(db.expireAlarms(new Date(Date.now() + hour - 60_000)), 0, 'still within the hour');
+  assert.equal(db.expireAlarms(new Date(Date.now() + hour)), 1);
+  assert.equal(flowRun('f1'), undefined, 'the late alarm is gone');
+  assert.equal(routineRun('u1'), undefined, "and its routine doesn't start late");
+  assert.ok(routineRun('u2'), 'what was already under way goes on');
+  assert.ok(flowRun('both'), 'the parent waits for what is still running');
+  db.closeRoutine(routineRun('u2').id);
+  assert.equal(store.flowRuns.count(), 0);
+
+  // Runs recorded before stepStartedAt existed count from when they started
+  db.triggerAction('alarm');
+  const { stepStartedAt: _, ...old } = flowRun('alarm');
+  store.flowRuns.put({ ...old, startedAt: new Date(Date.now() - 2 * hour).toISOString() });
+  assert.equal(db.expireAlarms(), 1);
+  assert.equal(store.recentLogs(50).filter(l => l.type === 'ALARM_EXPIRED').length, 2);
+});

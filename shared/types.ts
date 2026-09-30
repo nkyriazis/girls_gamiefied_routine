@@ -68,6 +68,7 @@ export interface FlowRun {
   stepIndex: number; // current step: an alarm waits for dismissal, a parallel step for its routines and flows
   parentRunId?: string; // set when started by a parallel step of another run
   startedAt: string;
+  stepStartedAt?: string; // when it entered the current step (runs started before it was recorded: startedAt)
 }
 
 // A routine on screen for a user (server state), at most one per user.
@@ -454,7 +455,7 @@ export interface DataConfig {
   schedules: Schedule[];
   rewards: Reward[];
   chores?: Chore[];
-  settings: { timezone: string; exercisesPerDay?: number; extraProblemsPerDay?: number };
+  settings: { timezone: string; exercisesPerDay?: number; extraProblemsPerDay?: number; alarmMinutes?: number };
 }
 
 // --- Realtime protocol (backend -> frontend WebSocket messages) ---

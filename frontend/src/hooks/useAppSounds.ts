@@ -1,6 +1,17 @@
 import { useCallback, useRef } from 'react';
 import { sfx } from '../sound/sfx';
 
+// A page may not make sound before someone touches it (the browsers' autoplay rule). An
+// alarm already running when the page loads is on screen under "Click to Start" and can't
+// sound yet, so it tries again on the first touch: that click.
+function onFirstTouch(fn: () => void): () => void {
+  const events = ['pointerdown', 'keydown'] as const;
+  const go = () => { stop(); fn(); };
+  const stop = () => events.forEach(e => window.removeEventListener(e, go, true));
+  events.forEach(e => window.addEventListener(e, go, true));
+  return stop;
+}
+
 export const useAppSounds = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -51,6 +62,8 @@ export const useAppSounds = () => {
 
     const playMelody = () => {
       const ctx = getAudioContext();
+      // Not allowed to sound yet: its clock stands still, and the notes would pile up
+      if (ctx.state !== 'running') return;
       const now = ctx.currentTime;
       // Simple "Morning" melody: C4 E4 G4 C5
       [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
@@ -83,9 +96,12 @@ export const useAppSounds = () => {
 
   // Audio element for MP3 playback
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const retryRef = useRef<(() => void) | null>(null);
 
   const playCustomSound = useCallback((filename: string, loop: boolean = false) => {
     // Stop any existing audio
+    retryRef.current?.();
+    retryRef.current = null;
     if (audioElementRef.current) {
       audioElementRef.current.pause();
       audioElementRef.current.currentTime = 0;
@@ -96,14 +112,19 @@ export const useAppSounds = () => {
     audio.volume = 0.7;
     audioElementRef.current = audio;
 
-    audio.play().catch(err => {
-      console.error('Failed to play custom sound:', err);
+    const play = () => audio.play().catch(err => {
+      if (err.name === 'NotAllowedError' && audioElementRef.current === audio) {
+        retryRef.current = onFirstTouch(() => { retryRef.current = null; if (audioElementRef.current === audio) void play(); });
+      } else console.error('Failed to play custom sound:', err);
     });
+    void play();
 
     return audio;
   }, []);
 
   const stopCustomSound = useCallback(() => {
+    retryRef.current?.();
+    retryRef.current = null;
     if (audioElementRef.current) {
       audioElementRef.current.pause();
       audioElementRef.current.currentTime = 0;

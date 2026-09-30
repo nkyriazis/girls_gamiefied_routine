@@ -17,7 +17,7 @@ const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 
 // Import shared database layer
 import {
-  store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
+  store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, expireAlarms, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
   readLastLogs, MAX_LOGS, adjustUserStars, awardStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
@@ -107,7 +107,12 @@ async function checkSchedules(date: Date) {
     logAction('CHORE_EXPIRATION_ERROR', { error: (err as Error).message });
   }
   
-  // Close routines left open on an earlier day
+  // Stop alarms that rang too long, and close routines left open on an earlier day
+  try {
+    expireAlarms();
+  } catch (err) {
+    console.error('Error expiring alarms:', err);
+  }
   try {
     closeStaleRoutines();
   } catch (err) {
@@ -894,6 +899,8 @@ const start = async () => {
       : `Legacy files already imported at ${legacy.importedAt}`);
 
     const change = reloadConfig();
+    // An alarm left ringing while the server was down doesn't come back late
+    expireAlarms();
     if (change?.type === 'invalid') {
       console.error('Config is invalid; running with an empty config until it is fixed:', change.error);
     }

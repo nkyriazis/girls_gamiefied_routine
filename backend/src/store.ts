@@ -87,6 +87,10 @@ const MIGRATIONS: string[] = [
   // Help tours already played on the kids' screens
   `
   CREATE TABLE help_seen (id TEXT PRIMARY KEY, seenAt TEXT NOT NULL);
+  `,
+  // When a flow run entered its current step (an alarm rings only for so long)
+  `
+  ALTER TABLE flow_runs ADD COLUMN stepStartedAt TEXT;
   `
 ];
 
@@ -231,7 +235,7 @@ export class Store {
       assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json', extra: 'bool'
     });
     this.flowRuns = new Table<FlowRun>(db, 'flow_runs', onChange, {
-      id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text'
+      id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text', stepStartedAt: 'text'
     });
     this.routineRuns = new Table<Omit<RoutineRun, 'totalStars'>>(db, 'routine_runs', onChange, {
       id: 'text', userId: 'text', routineId: 'text', taskIndex: 'int', taskStartedAt: 'text', finishedAt: 'text', flowRunId: 'text'
