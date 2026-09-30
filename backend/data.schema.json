@@ -260,6 +260,12 @@
           "minimum": 0,
           "maximum": 10,
           "description": "Daily school exercises per kid (default 3)"
+        },
+        "extraProblemsPerDay": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Extra problems a kid may ask for each day, on top of the daily ones (default 10; 0 turns the button off)"
         }
       }
     },

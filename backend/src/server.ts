@@ -22,7 +22,7 @@ import {
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
   cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
-  logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, usersView,
+  logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, startExtraProblem, usersView,
   stateSnapshot, replaceState, ensureDailyAssignments
 } from './db';
 import { config, configError, reloadConfig, watchConfig } from './config';
@@ -754,6 +754,16 @@ server.get('/api/exercise-assignments', async (request, reply) => {
     return await getExerciseAssignments(userId);
   } catch (error) {
     return reply.code(500).send({ error: (error as Error).message });
+  }
+});
+
+// A kid asks for one more problem (see startExtraProblem)
+server.post('/api/exercise-assignments/extra', async (request, reply) => {
+  try {
+    const { userId } = request.body as { userId: string };
+    return await startExtraProblem(userId);
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
   }
 });
 

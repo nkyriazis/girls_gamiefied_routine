@@ -79,6 +79,10 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE exercise_assignments ADD COLUMN stepIndex INTEGER;
   ALTER TABLE exercise_assignments ADD COLUMN mistakes TEXT;
+  `,
+  // Extra problems a kid asks for, on top of the daily set
+  `
+  ALTER TABLE exercise_assignments ADD COLUMN extra INTEGER;
   `
 ];
 
@@ -219,7 +223,7 @@ export class Store {
     });
     this.exerciseAssignments = new Table<ExerciseAssignment>(db, 'exercise_assignments', onChange, {
       id: 'text', userId: 'text', exerciseId: 'text', date: 'text', status: 'text', attempts: 'int',
-      assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json'
+      assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json', extra: 'bool'
     });
     this.flowRuns = new Table<FlowRun>(db, 'flow_runs', onChange, {
       id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text'

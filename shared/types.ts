@@ -293,6 +293,7 @@ export interface ExerciseAssignment {
   starsAwarded?: number;
   stepIndex?: number; // problems: the step on screen (the ones before it are solved)
   mistakes?: number[]; // problems: wrong tries per step
+  extra?: boolean; // a problem the kid asked for, on top of the daily set
 }
 
 // Enriched assignment with the exercise definition for frontend display
@@ -415,7 +416,7 @@ export interface DataConfig {
   schedules: Schedule[];
   rewards: Reward[];
   chores?: Chore[];
-  settings: { timezone: string; exercisesPerDay?: number };
+  settings: { timezone: string; exercisesPerDay?: number; extraProblemsPerDay?: number };
 }
 
 // --- Realtime protocol (backend -> frontend WebSocket messages) ---

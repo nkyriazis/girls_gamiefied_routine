@@ -925,15 +925,32 @@ function localDateStr(timezone: string, date = new Date()): string {
   }).format(date);
 }
 
+// When a kid last had each exercise (daily or extra), for drawing ones they haven't seen.
+function lastSeen(userId: string): Map<string, string> {
+  const seen = new Map<string, string>();
+  for (const a of store.exerciseAssignments.all('userId = ?', userId)) {
+    if ((seen.get(a.exerciseId) ?? '') < a.assignedAt) seen.set(a.exerciseId, a.assignedAt);
+  }
+  return seen;
+}
+
+// Never-seen exercises first, in random order; then the ones seen longest ago.
+// Returned so that pop() takes the freshest.
+function freshLast(list: Exercise[], seen: Map<string, string>): Exercise[] {
+  const unseen = list.filter(e => !seen.has(e.id)).sort(() => Math.random() - 0.5);
+  const old = list.filter(e => seen.has(e.id)).sort((a, b) => seen.get(a.id)!.localeCompare(seen.get(b.id)!));
+  return [...unseen, ...old].reverse();
+}
+
 // Draw `count` exercises from a pool, balancing across categories
-// (round-robin over shuffled per-category buckets).
-function drawBalanced(pool: Exercise[], count: number): Exercise[] {
+// (round-robin over per-category buckets), freshest first within each.
+function drawBalanced(pool: Exercise[], count: number, seen: Map<string, string>): Exercise[] {
   const byCategory = new Map<string, Exercise[]>();
   for (const ex of pool) {
     if (!byCategory.has(ex.category)) byCategory.set(ex.category, []);
     byCategory.get(ex.category)!.push(ex);
   }
-  const buckets = [...byCategory.values()].map(b => [...b].sort(() => Math.random() - 0.5));
+  const buckets = [...byCategory.values()].map(b => freshLast(b, seen));
   // Shuffle bucket order too, so the first category varies day to day
   buckets.sort(() => Math.random() - 0.5);
 
@@ -948,6 +965,51 @@ function drawBalanced(pool: Exercise[], count: number): Exercise[] {
   return drawn;
 }
 
+// The daily set, as opposed to the extra problems a kid asks for.
+const DAILY = '(extra IS NULL OR extra = 0)';
+
+// How many extra problems a kid may ask for in a day unless settings.extraProblemsPerDay says otherwise.
+export const DEFAULT_EXTRA_PROBLEMS_PER_DAY = 10;
+
+/** Extra problems today: how many the kid has had, the day's limit, and the one open now, if any. */
+export function extraProblemsToday(userId: string): { used: number; limit: number; open?: ExerciseAssignment } {
+  const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
+  const extras = store.exerciseAssignments.all('userId = ? AND date = ? AND extra = 1', userId, today);
+  return {
+    used: extras.length,
+    limit: config().settings?.extraProblemsPerDay ?? DEFAULT_EXTRA_PROBLEMS_PER_DAY,
+    open: extras.find(a => a.status === 'pending')
+  };
+}
+
+// A kid asks for one more problem from the dashboard: one they haven't had yet
+// (or had longest ago), paid like any other. An open one is returned instead of a
+// new one, so tapping twice doesn't hand out two; the day's limit caps the rest.
+export async function startExtraProblem(userId: string): Promise<ExerciseAssignmentWithExercise> {
+  if (!config().users.some(u => u.id === userId)) throw new Error('Unknown user');
+  const problems = (await exercisePoolProvider.getPoolForUser(userId)).filter(e => e.type === 'problem');
+  if (problems.length === 0) throw new Error('No problems for this kid (is their class set?)');
+
+  const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
+  const assignment = store.transaction(() => {
+    const { used, limit, open } = extraProblemsToday(userId);
+    if (open) return open;
+    if (used >= limit) throw new Error('No more extra problems today');
+    // Not one of today's own, whether daily or extra
+    const todays = new Set(store.exerciseAssignments.all('userId = ? AND date = ?', userId, today).map(a => a.exerciseId));
+    const candidates = problems.filter(p => !todays.has(p.id));
+    const [problem] = freshLast(candidates.length ? candidates : problems, lastSeen(userId)).slice(-1);
+    const created: ExerciseAssignment = {
+      id: randomUUID(), userId, exerciseId: problem.id, date: today, status: 'pending', attempts: 0,
+      assignedAt: new Date().toISOString(), extra: true
+    };
+    store.exerciseAssignments.put(created);
+    logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit });
+    return created;
+  });
+  return { ...assignment, exercise: await exercisePoolProvider.getExerciseById(assignment.exerciseId) };
+}
+
 // Make sure every user has today's assignments drawn from their pool.
 // Lazy generation: called whenever assignments are fetched.
 export async function ensureDailyAssignments(): Promise<boolean> {
@@ -955,16 +1017,16 @@ export async function ensureDailyAssignments(): Promise<boolean> {
   let created = false;
 
   for (const user of config().users) {
-    const hasToday = store.exerciseAssignments.all('userId = ? AND date = ?', user.id, today).length > 0;
+    const hasToday = store.exerciseAssignments.all(`userId = ? AND date = ? AND ${DAILY}`, user.id, today).length > 0;
     if (hasToday) continue;
 
     const pool = await exercisePoolProvider.getPoolForUser(user.id);
     if (pool.length === 0) continue;
 
-    const drawn = drawBalanced(pool, exercisesPerDay());
+    const drawn = drawBalanced(pool, exercisesPerDay(), lastSeen(user.id));
     // Re-check after the await: a concurrent request may have drawn already.
     store.transaction(() => {
-      if (store.exerciseAssignments.all('userId = ? AND date = ?', user.id, today).length > 0) return;
+      if (store.exerciseAssignments.all(`userId = ? AND date = ? AND ${DAILY}`, user.id, today).length > 0) return;
       for (const exercise of drawn) {
         store.exerciseAssignments.put({
           id: randomUUID(),

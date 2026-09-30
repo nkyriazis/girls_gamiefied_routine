@@ -16,7 +16,7 @@ const cfg: DataConfig = {
     { id: 'u3', name: 'C', avatar: icon, color: 'green' }
   ],
   tasks: [], routines: [], routineTasks: [], routineAssignments: [], flows: [], schedules: [], rewards: [],
-  settings: { timezone: 'Europe/Athens', exercisesPerDay: 2 }
+  settings: { timezone: 'Europe/Athens', exercisesPerDay: 2, extraProblemsPerDay: 2 }
 };
 
 const balloons: ProblemExercise = {
@@ -31,7 +31,9 @@ const balloons: ProblemExercise = {
 };
 const pools = path.join(dir, 'pools');
 mkdirSync(pools);
-writeFileSync(path.join(pools, 'g.json'), JSON.stringify({ grades: [3], exercises: [balloons] }));
+// Three copies of the same problem, so draws can be told apart by id
+const gradeThree = ['p-balloons', 'p-two', 'p-three'].map(id => ({ ...balloons, id }));
+writeFileSync(path.join(pools, 'g.json'), JSON.stringify({ grades: [3], exercises: gradeThree }));
 writeFileSync(path.join(pools, 'e.json'), JSON.stringify({
   grades: [5],
   exercises: [1, 2, 3].map(n => ({ id: `e-${n}`, type: 'number-input', category: 'Μαθηματικά', title: 'x', question: `${n} + ${n}`, correctValue: 2 * n, stars: 1 }))
@@ -93,7 +95,8 @@ test('each kid draws exercisesPerDay from the pools of their grade; no grade, no
   const of = (userId: string) => all.filter(a => a.userId === userId);
   assert.equal(of('u1').length, 2);
   assert.ok(of('u1').every(a => a.exerciseId.startsWith('e-')));
-  assert.deepEqual(of('u2').map(a => a.exerciseId), ['p-balloons']); // the pool has only one
+  assert.equal(of('u2').length, 2);
+  assert.ok(of('u2').every(a => a.exerciseId.startsWith('p-') && !a.extra));
   assert.equal(of('u3').length, 0);
 });
 
@@ -127,4 +130,31 @@ test('a problem is answered step by step: wrong tries count, the last step pays'
   // Stored as answered, and read back the same after a restart
   assert.deepEqual(store.exerciseAssignments.get(assignment.id), r.assignment);
   await assert.rejects(answer(3, ['πρώτο', 'δεύτερο', 'τρίτο']), /already completed/);
+});
+
+test('extra problems: fresh ones first, one open at a time, up to the day\'s limit', async () => {
+  const daily = store.exerciseAssignments.all('userId = ?', 'u2').map(a => a.exerciseId);
+  const first = await db.startExtraProblem('u2');
+  assert.equal(first.extra, true);
+  assert.equal(first.exercise?.type, 'problem');
+  assert.ok(!daily.includes(first.exerciseId), 'the one problem not drawn today');
+
+  // Asking again while it is open returns the same one
+  assert.equal((await db.startExtraProblem('u2')).id, first.id);
+
+  const starsBefore = db.usersWithStars().find(u => u.id === 'u2')!.stars;
+  for (const [i, step] of balloons.steps.entries()) await db.answerExerciseAssignment(first.id, { step: i, value: solution(balloons, step) });
+  assert.equal(db.usersWithStars().find(u => u.id === 'u2')!.stars, starsBefore + 3);
+
+  // All three were had today: the next is the one seen longest ago
+  const second = await db.startExtraProblem('u2');
+  assert.notEqual(second.id, first.id);
+  assert.equal(second.exerciseId, daily[0]);
+  assert.deepEqual(db.extraProblemsToday('u2'), { used: 2, limit: 2, open: store.exerciseAssignments.get(second.id) });
+  for (const [i, step] of balloons.steps.entries()) await db.answerExerciseAssignment(second.id, { step: i, value: solution(balloons, step) });
+  await assert.rejects(db.startExtraProblem('u2'), /No more extra problems today/);
+
+  // Extras don't count as the daily set: nothing is drawn again
+  assert.equal(await db.ensureDailyAssignments(), false);
+  await assert.rejects(db.startExtraProblem('u3'), /class/);
 });
