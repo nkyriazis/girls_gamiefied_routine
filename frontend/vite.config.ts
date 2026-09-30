@@ -19,8 +19,8 @@ export default defineConfig({
         type: 'module'
       },
       workbox: {
-        // mp3: the owl's voice (public/help-voice), there before she needs it
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,mp3}'],
+        // mp3: the owl's voice (public/help-voice), wav: the screens' sounds (public/sfx), there before she needs them
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,mp3,wav}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
