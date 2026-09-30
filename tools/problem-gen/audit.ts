@@ -136,7 +136,8 @@ for (const pool of pools) {
       }
     });
 
-    const fam = (ex.generatorParams as { family?: string } | undefined)?.family ?? `(curated ${pool.file})`;
+    // Family ids are unique within a grade (Γ΄ and Ε΄ both have a missing-info)
+    const fam = `${grade}:${(ex.generatorParams as { family?: string } | undefined)?.family ?? `(curated ${pool.file})`}`;
     const f = families.get(fam) ?? { grade, skeletons: new Set<string>(), n: 0, steps: 0 };
     f.n++;
     f.steps += ex.steps.length;
@@ -145,7 +146,8 @@ for (const pool of pools) {
   }
 }
 
-for (const [id, f] of families) {
+for (const [key, f] of families) {
+  const id = key.slice(2);
   if (!id.startsWith('(') && f.skeletons.size < Math.min(Math.max(5, Math.ceil(f.n / 3)), f.n)) warnings.push(`family ${id}: only ${f.skeletons.size} different story shapes in ${f.n} problems`);
 }
 
@@ -154,7 +156,8 @@ for (const grade of [3, 5]) {
   const fs = [...families].filter(([, f]) => f.grade === grade);
   const total = fs.reduce((n, [, f]) => n + f.n, 0);
   console.log(`\nGrade ${grade}: ${total} problems in ${fs.length} families`);
-  for (const [id, f] of fs) {
+  for (const [key, f] of fs) {
+    const id = key.slice(2);
     console.log(`  ${id.padEnd(40)} ${String(f.n).padStart(3)} problems, ${String(f.skeletons.size).padStart(3)} story shapes, ${(f.steps / f.n).toFixed(1)} steps`);
   }
 }
