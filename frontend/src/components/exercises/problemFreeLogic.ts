@@ -1,23 +1,26 @@
-import type { ProblemCalcStep, ProblemPaintStep } from '@shared/types';
-import { applyOp, nextCalculation, readCalculation, type CalcLine, type CalcOp } from '@shared/problems';
+import type { ProblemCalcStep } from '@shared/types';
+import { applyOp, nextCalculation, readCalculation, type CalcLine, type CalcOp, type PaintTarget } from '@shared/problems';
 
 // What the free steps of a problem say back to her (ProblemFreeSteps.tsx draws them).
 
-export type Brush = 'known' | 'sought';
+export type Brush = 'known' | 'sought' | 'extra';
 /** One brush (or none) per word of the story. */
 export type PaintValue = (Brush | null)[];
 
 /** What to say after a wrong painting: which kind of mistake, in her words. */
-export function paintFeedback(step: ProblemPaintStep, words: string[], wrong: number[]): string {
+export function paintFeedback(targets: PaintTarget[], words: string[], wrong: number[], painted: PaintValue): string {
   const say: string[] = [];
-  const knowns = step.targets.filter(t => t.role === 'known');
-  const missed = step.targets.filter((t, i) => t.role === 'known' && wrong.includes(i)).length;
-  const phrase = (t: ProblemPaintStep['targets'][number]) =>
-    words.slice(t.span[0], t.span[1] + 1).join(' ').replace(/[.,;]$/, '');
-  const extras = step.targets.filter((t, i) => t.role === 'extra' && wrong.includes(i));
-  if (step.targets.some((t, i) => t.role === 'sought' && wrong.includes(i))) say.push('Ποια είναι η ερώτηση; Βάψ’ τη με το 🟡.');
+  const knowns = targets.filter(t => t.role === 'known');
+  const missed = targets.filter((t, i) => t.role === 'known' && wrong.includes(i)).length;
+  const phrase = (t: PaintTarget) => words.slice(t.span[0], t.span[1] + 1).join(' ').replace(/[.,;]$/, '');
+  const extras = targets.filter((t, i) => t.role === 'extra' && wrong.includes(i));
+  const asNeeded = (t: PaintTarget) => t.words.some(w => painted[w] === 'known' || painted[w] === 'sought');
+  if (targets.some((t, i) => t.role === 'sought' && wrong.includes(i))) say.push('Ποια είναι η ερώτηση; Βάψ’ τη με το 🟡.');
   if (missed) say.push(`Βρήκες ${knowns.length - missed} από τα ${knowns.length} που χρειαζόμαστε.`);
-  for (const t of extras) say.push(`Το «${phrase(t)}» δεν το χρειαζόμαστε.`);
+  for (const t of extras.filter(asNeeded)) say.push(`Το «${phrase(t)}» δεν το χρειαζόμαστε.`);
+  // "paint-all": an unneeded fact left unpainted (without saying which)
+  const left = extras.filter(t => !asNeeded(t)).length;
+  if (left) say.push(left === 1 ? 'Κάτι που δεν χρειαζόμαστε έμεινε άβαφο: βάψ’ το με το ⚪.' : `${left} πράγματα που δεν χρειαζόμαστε έμειναν άβαφα: βάψ’ τα με το ⚪.`);
   if (wrong.includes(-1)) say.push('Έβαψες πολλά: βάψε μόνο ό,τι χρειάζεται.');
   return say.join(' ');
 }

@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type {
-  ExerciseAssignmentWithExercise, ProblemExercise, ProblemPaintStep, ProblemPhase, ProblemRole, ProblemStep
+  ExerciseAssignmentWithExercise, ProblemExercise, ProblemPhase, ProblemReading, ProblemRole, ProblemStep
 } from '@shared/types';
-import { storyWords, usefulToAnswer } from '@shared/problems';
+import { storyWords, targetsFromMarks, usefulToAnswer, type PaintTarget } from '@shared/problems';
 import { api } from '../../api';
 import { useAppSounds } from '../../hooks/useAppSounds';
 import { CalcBench, PaintWords } from './ProblemFreeSteps';
-import { calcNudge, emptyCalc, paintFeedback, readLine, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
+import { calcNudge, emptyCalc, paintFeedback, readLine, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 
 // A word problem, one step at a time, the way the Ε' book teaches it (ch. 1.3):
 // read (what we know, what we seek), plan, solve, check. The server checks each
@@ -26,11 +26,16 @@ const PHASES: { id: ProblemPhase; icon: string; label: string }[] = [
   { id: 'check', icon: '✅', label: 'Ελέγχω' },
 ];
 
-type Brush = Exclude<ProblemRole, 'extra'>;
 const BRUSHES: { role: Brush; icon: string; label: string }[] = [
   { role: 'known', icon: '🟢', label: 'Το ξέρω' },
   { role: 'sought', icon: '🟡', label: 'Το ψάχνω' },
+  { role: 'extra', icon: '⚪', label: 'Δεν χρειάζεται' }, // only on "paint-all"
 ];
+
+// The reading step (tag or paint) plays on the kid's rung: tapping the marked phrases,
+// or painting the story freehand.
+const isRead = (s: ProblemStep) => s.kind === 'tag' || s.kind === 'paint';
+type Kind = ProblemStep['kind'];
 
 type Part = { text: string } | { text: string; mark: number; role: ProblemRole };
 
@@ -51,37 +56,37 @@ function parseStory(story: string): Part[] {
 // What the kid has entered on the step on screen, before "Έλεγχος".
 type Draft = { step: number; value: unknown };
 
-function initialValue(step: ProblemStep, marks: number, words: number): unknown {
-  switch (step.kind) {
+function initialValue(kind: Kind, step: ProblemStep, marks: number, words: number): unknown {
+  switch (kind) {
     case 'tag': return Array<ProblemRole>(marks).fill('extra');
     case 'paint': return Array<null>(words).fill(null);
     case 'calc': return emptyCalc();
     case 'choice': return null;
-    case 'numbers': return step.rows.map(() => '');
+    case 'numbers': return step.kind === 'numbers' ? step.rows.map(() => '') : [];
     case 'order': return [];
   }
 }
 
-function isReady(step: ProblemStep, value: unknown): boolean {
-  switch (step.kind) {
+function isReady(kind: Kind, step: ProblemStep, value: unknown): boolean {
+  switch (kind) {
     case 'tag': return true;
     case 'choice': return value !== null;
     case 'numbers': return (value as string[]).every(v => v !== '');
-    case 'order': return (value as string[]).length === step.items.length;
+    case 'order': return step.kind === 'order' && (value as string[]).length === step.items.length;
     case 'paint': return (value as PaintValue).some(Boolean);
     case 'calc': { const v = value as CalcValue; return v.x !== null && v.op !== null && v.y !== null && v.result !== ''; }
   }
 }
 
 // What the server expects for the step
-function answerOf(step: ProblemStep, value: unknown): unknown {
-  if (step.kind === 'numbers') return (value as string[]).map(Number);
-  if (step.kind === 'paint') {
+function answerOf(kind: Kind, value: unknown): unknown {
+  if (kind === 'numbers') return (value as string[]).map(Number);
+  if (kind === 'paint') {
     const v = value as PaintValue;
     const of = (b: string) => v.flatMap((x, i) => (x === b ? [i] : []));
-    return { known: of('known'), sought: of('sought') };
+    return { known: of('known'), sought: of('sought'), extra: of('extra') };
   }
-  if (step.kind === 'calc') {
+  if (kind === 'calc') {
     const v = value as CalcValue;
     return { lines: v.lines.map(({ x, op, y, result }) => ({ x, op, y, result })), slips: v.slips };
   }
@@ -92,9 +97,11 @@ interface Props {
   assignment: ExerciseAssignmentWithExercise;
   exercise: ProblemExercise;
   onSolved: (stars: number) => void;
+  /** The kid's rung on the reading ladder */
+  reading?: ProblemReading;
 }
 
-export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved }) => {
+export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved, reading = 'marked' }) => {
   const { playSuccess, playError } = useAppSounds();
   // The server's step, or ours if its STATE hasn't arrived yet
   const [localStep, setLocalStep] = useState(assignment.stepIndex ?? 0);
@@ -104,12 +111,21 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved 
   const story = useMemo(() => parseStory(exercise.story), [exercise.story]);
   const marks = story.filter(p => 'mark' in p).length;
   const words = useMemo(() => storyWords(exercise.story), [exercise.story]);
+  // The reading step: as marked phrases, or painted (its targets, or ones from the marks)
+  const readIndex = exercise.steps.findIndex(isRead);
+  const kind: Kind = isRead(step) ? (reading === 'marked' ? 'tag' : 'paint') : step.kind;
+  const targets: PaintTarget[] = useMemo(() => {
+    const r = exercise.steps.find(isRead);
+    return r?.kind === 'paint' ? r.targets : targetsFromMarks(exercise.story);
+  }, [exercise]);
+  const unneeded = reading === 'paint-all';
+  const extras = story.flatMap(p => ('mark' in p && p.role === 'extra' ? [p.text] : []));
 
   // Drafts and wrong marks belong to the step they were made on: moving on leaves them behind.
   const [lastWrong, setLastWrong] = useState<{ step: number; parts?: number[] } | null>(null);
   const wrong = lastWrong?.step === stepIndex ? lastWrong : null;
   const [draft, setDraft] = useState<Draft | null>(null);
-  const value = draft?.step === stepIndex ? draft.value : initialValue(step, marks, words.length);
+  const value = draft?.step === stepIndex ? draft.value : initialValue(kind, step, marks, words.length);
   const setValue = (v: unknown) => { setDraft({ step: stepIndex, value: v }); setLastWrong(null); setNote(null); };
   // Working it out: what the last calculation found, said in the hint slot
   const [note, setNoteState] = useState<{ step: number; note: CalcNote } | null>(null);
@@ -121,11 +137,14 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved 
   const [praise, setPraise] = useState(false);
 
   // Once the tag step is solved, the story keeps its colours for the steps after it.
-  const tagIndex = exercise.steps.findIndex(s => s.kind === 'tag' || s.kind === 'paint');
-  const storyMode = step.kind === 'tag' ? 'tag' : step.kind === 'paint' ? 'paint' : tagIndex >= 0 && stepIndex > tagIndex ? 'tagged' : 'plain';
+  // …the unneeded ones greyed out: she sees what the story said that didn't matter
+  const storyMode = kind === 'tag' ? 'tag' : kind === 'paint' ? 'paint' : readIndex >= 0 && stepIndex > readIndex ? 'tagged' : 'plain';
+  // Right after reading, on the forgiving rungs, say which facts weren't needed
+  const unneededNote = !unneeded && readIndex >= 0 && stepIndex === readIndex + 1 && extras.length > 0
+    ? `${extras.length === 1 ? 'Δεν το χρειαζόμαστε' : 'Δεν τα χρειαζόμαστε'}: ${extras.map(e => `«${e}»`).join(', ')}.` : null;
 
   const submit = async () => {
-    if (busy || !isReady(step, value)) return;
+    if (busy || !isReady(kind, step, value)) return;
     let answer = value;
     if (step.kind === 'calc') {
       // Each calculation is read back here; only the one that finds the answer goes to the server
@@ -138,7 +157,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved 
     }
     setBusy(true);
     try {
-      const result = await api.answerExerciseAssignment(assignment.id, { step: stepIndex, value: answerOf(step, answer) });
+      const result = await api.answerExerciseAssignment(assignment.id, { step: stepIndex, value: answerOf(kind, answer) });
       if (result.correct) {
         playSuccess();
         if (result.assignment.status === 'completed') {
@@ -179,26 +198,28 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved 
       </ol>
 
       <StoryCard parts={story} mode={storyMode} override={step.story} roles={value as ProblemRole[]}
-        wrong={step.kind === 'tag' ? wrong?.parts : undefined} disabled={busy} onTap={paint}
-        paint={step.kind === 'paint' ? {
+        wrong={kind === 'tag' ? wrong?.parts : undefined} disabled={busy} onTap={paint}
+        paint={kind === 'paint' ? {
           words, value: value as PaintValue, brush, onChange: setValue,
-          ...paintMarks(step, wrong?.parts, tries),
+          ...paintMarks(targets, wrong?.parts, tries, value as PaintValue),
         } : undefined} />
 
       <div className="problem-prompt">{step.prompt}</div>
 
       <div className="problem-work">
-        {(step.kind === 'tag' || step.kind === 'paint') && (
+        {(kind === 'tag' || kind === 'paint') && (
           <div className="tag-brushes" role="radiogroup" aria-label="Πινέλο">
-            {BRUSHES.map(b => (
+            {BRUSHES.filter(b => b.role !== 'extra' || (kind === 'paint' && unneeded)).map(b => (
               <button key={b.role} type="button" role="radio" aria-checked={brush === b.role}
                 className={`tag-brush role-${b.role} ${brush === b.role ? 'on' : ''}`} onClick={() => setBrush(b.role)}>
                 {b.icon} {b.label}
               </button>
             ))}
-            <span className="tag-legend">{step.kind === 'paint'
-              ? 'Διάλεξε πινέλο και σύρε το δάχτυλο πάνω στις λέξεις. Ξανά πάνω τους, και σβήνουν.'
-              : 'Διάλεξε πινέλο και πάτα τις φράσεις της ιστορίας. Ό,τι δεν χρειάζεται, το αφήνεις άβαφο.'}</span>
+            <span className="tag-legend">{kind === 'tag'
+              ? 'Διάλεξε πινέλο και πάτα τις φράσεις της ιστορίας. Ό,τι δεν χρειάζεται, το αφήνεις άβαφο.'
+              : unneeded
+                ? 'Σύρε το δάχτυλο πάνω στις λέξεις. Βάψε και ό,τι δεν χρειάζεται, με το ⚪. Ξανά πάνω τους, και σβήνουν.'
+                : 'Διάλεξε πινέλο και σύρε το δάχτυλο πάνω στις λέξεις. Ξανά πάνω τους, και σβήνουν.'}</span>
           </div>
         )}
         {step.kind === 'choice' && (
@@ -215,13 +236,13 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved 
         )}
       </div>
 
-      <div className={`problem-hint ${wrong || (calcNote && calcNote.kind !== 'answer') ? 'on' : ''} ${calcNote && calcNote.kind === 'found' ? 'good' : ''}`} aria-live="polite">
+      <div className={`problem-hint ${wrong || (calcNote && calcNote.kind !== 'answer') || unneededNote ? 'on' : ''} ${(calcNote && calcNote.kind === 'found') || (unneededNote && !wrong && !calcNote) ? 'good' : ''}`} aria-live="polite">
         {wrong && (
           <motion.span key={`${stepIndex}-${lastWrong?.parts?.join()}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <strong>Όχι ακόμα. </strong>
-            {step.kind === 'paint' && wrong.parts?.length ? paintFeedback(step, words, wrong.parts) + ' '
+            {kind === 'paint' && wrong.parts?.length ? paintFeedback(targets, words, wrong.parts, value as PaintValue) + ' '
               : step.hint ? <>💡 {step.hint}</> : 'Διάβασε ξανά την ιστορία και ξαναδοκίμασε.'}
-            {step.kind === 'paint' && tries >= 2 && ' Κοίτα τις λέξεις με το κίτρινο πλαίσιο.'}
+            {kind === 'paint' && tries >= 2 && ' Κοίτα τις λέξεις με το κίτρινο πλαίσιο.'}
           </motion.span>
         )}
         {!wrong && calcNote && calcNote.kind !== 'answer' && (
@@ -231,8 +252,11 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved 
               <> 💡 {calcNudge(step, value as CalcValue)}</>}
           </motion.span>
         )}
+        {!wrong && !calcNote && unneededNote && (
+          <motion.span key={`${stepIndex}-unneeded`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>⚪ {unneededNote}</motion.span>
+        )}
       </div>
-      <button type="button" className="problem-check" disabled={busy || !isReady(step, value)} onClick={submit}>Έλεγχος ✓</button>
+      <button type="button" className="problem-check" disabled={busy || !isReady(kind, step, value)} onClick={submit}>Έλεγχος ✓</button>
 
       <AnimatePresence>
         {praise && (
@@ -282,6 +306,8 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved 
         .is-wrong { outline: 3px solid #ff4757 !important; outline-offset: 2px; }
         .role-known { background: rgba(46,213,115,0.3); box-shadow: inset 0 -3px 0 #2ed573; }
         .role-sought { background: rgba(255,200,0,0.28); box-shadow: inset 0 -3px 0 #ffc800; }
+        .role-extra { color: rgba(255,255,255,0.45); text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.5); }
+        .tag-brush.role-extra { color: white; text-decoration: none; background: rgba(255,255,255,0.12); }
         .tag-brushes { display: flex; gap: 0.7rem; align-items: center; justify-content: center; flex-wrap: wrap; }
         .tag-brush { font-size: 1.2rem; padding: 0.6rem 1.2rem; border-radius: 1rem; border: 2px solid transparent; color: white; cursor: pointer; opacity: 0.6; }
         .tag-brush.on { opacity: 1; border-color: white; font-weight: bold; }
@@ -294,13 +320,14 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved 
 // The story, always the same size: the full story sits in the same cell (invisible
 // when a step shows a shorter version), and the phrases keep one shape in every mode,
 // only their colours change.
-// After a wrong painting: the unneeded facts she painted in red; after two, the ones she
-// missed get a dashed frame.
-function paintMarks(step: ProblemPaintStep, wrong: number[] | undefined, tries: number) {
+// After a wrong painting: the unneeded facts she painted as needed in red; after two, the
+// ones she missed get a dashed frame (on "paint-all", an unneeded one left unpainted too).
+function paintMarks(targets: PaintTarget[], wrong: number[] | undefined, tries: number, painted: PaintValue) {
   const wrongWords = new Set<number>(), revealWords = new Set<number>();
-  step.targets.forEach((t, i) => {
+  targets.forEach((t, i) => {
     if (!wrong?.includes(i)) return;
-    if (t.role === 'extra') t.words.forEach(w => wrongWords.add(w));
+    const asNeeded = t.role === 'extra' && t.words.some(w => painted[w] === 'known' || painted[w] === 'sought');
+    if (asNeeded) t.words.forEach(w => wrongWords.add(w));
     else if (tries >= 2) t.words.forEach(w => revealWords.add(w));
   });
   return { wrongWords, revealWords };
@@ -314,7 +341,7 @@ const StoryCard: React.FC<{
   const full = paint ? [<PaintWords key="paint" {...paint} disabled={disabled} />] : parts.map((p, i) => {
     if (!('mark' in p)) return <React.Fragment key={i}>{p.text}</React.Fragment>;
     if (mode !== 'tag') {
-      const role = mode === 'tagged' && p.role !== 'extra' ? `role-${p.role}` : '';
+      const role = mode === 'tagged' ? `role-${p.role}` : '';
       return <span key={i} className={`story-phrase ${role}`}>{p.text}</span>;
     }
     const role = roles[p.mark];

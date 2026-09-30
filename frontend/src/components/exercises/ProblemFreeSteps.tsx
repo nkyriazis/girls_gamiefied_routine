@@ -13,9 +13,10 @@ import { fmt, lower, type Brush, type CalcValue, type PaintValue } from './probl
 
 /**
  * The story as words to paint. A press starts a stroke with the brush in hand, or an
- * eraser when the first word already has that colour; dragging carries it over the
- * words it passes. The words and single spaces are exactly the plain story, so the card
- * wraps as in every other step.
+ * eraser when the first word already has that colour; dragging paints every word from
+ * where it started to where the finger is, in reading order, as selecting text does (so
+ * a stroke that wraps to the next line doesn't catch the words it crosses). The words
+ * and single spaces are exactly the plain story, so the card wraps as in every other step.
  */
 export const PaintWords: React.FC<{
   words: string[]; value: PaintValue; brush: Brush; disabled: boolean;
@@ -23,26 +24,27 @@ export const PaintWords: React.FC<{
   /** Words to outline: red for a mistake, dashed for what she missed. */
   wrongWords: Set<number>; revealWords: Set<number>;
 }> = ({ words, value, brush, disabled, onChange, wrongWords, revealWords }) => {
-  const stroke = useRef<{ paint: Brush | null; value: PaintValue } | null>(null);
+  const stroke = useRef<{ paint: Brush | null; from: number; to: number; before: PaintValue } | null>(null);
   const wordAt = (x: number, y: number) => {
     const el = document.elementFromPoint(x, y)?.closest('[data-w]') as HTMLElement | null;
     return el ? Number(el.dataset.w) : null;
   };
-  const apply = (w: number | null) => {
+  const reach = (w: number | null) => {
     const s = stroke.current;
-    if (w === null || !s || s.value[w] === s.paint) return;
-    s.value = s.value.map((b, i) => (i === w ? s.paint : b));
-    onChange(s.value);
+    if (w === null || !s || (w === s.to && s.to !== s.from)) return;
+    s.to = w;
+    const [lo, hi] = s.from <= w ? [s.from, w] : [w, s.from];
+    onChange(s.before.map((b, i) => (i >= lo && i <= hi ? s.paint : b)));
   };
   const down = (e: React.PointerEvent) => {
     if (disabled) return;
     const w = wordAt(e.clientX, e.clientY);
     if (w === null) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    stroke.current = { paint: value[w] === brush ? null : brush, value };
-    apply(w);
+    stroke.current = { paint: value[w] === brush ? null : brush, from: w, to: w, before: value };
+    reach(w);
   };
-  const move = (e: React.PointerEvent) => { if (stroke.current) apply(wordAt(e.clientX, e.clientY)); };
+  const move = (e: React.PointerEvent) => { if (stroke.current) reach(wordAt(e.clientX, e.clientY)); };
   const up = () => { stroke.current = null; };
   return (
     <span className="paint-words" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
