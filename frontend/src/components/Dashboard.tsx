@@ -15,6 +15,8 @@ import { useTouchDevice } from '../hooks/useTouchDevice';
 import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
 import { ExercisesDrawer } from './ExercisesDrawer';
+import { useHelp } from '../help/context';
+import { dashboardTour, routineTour } from '../help/tours';
 
 // Toast for a chore outcome (from a server event)
 interface ChoreNotification {
@@ -183,6 +185,10 @@ export const Dashboard: React.FC = () => {
   // Determine View Mode based on actual displayed items
   const totalActiveCount = sortedActiveItems.length;
   const viewMode = totalActiveCount === 0 ? 'IDLE' : totalActiveCount === 1 ? 'SINGLE' : totalActiveCount === 2 ? 'DUAL' : 'GRID';
+
+  // The owl explains the home screen, or the routines on it (once the screen is started)
+  const idle = totalActiveCount === 0;
+  useHelp(useMemo(() => (!hasInteracted ? null : idle ? dashboardTour() : routineTour()), [hasInteracted, idle]));
 
   return (
     <div className="dashboard">

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { useGame } from '../context/GameContext';
 import { UserExercises } from './UserExercises';
+import { useHelp } from '../help/context';
+import { exercisesTour } from '../help/tours';
 
 interface ExercisesDrawerProps {
     isOpen: boolean;
@@ -13,6 +15,7 @@ interface ExercisesDrawerProps {
 export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClose }) => {
     const { users, exerciseAssignments, config } = useGame();
     const extraLimit = config.settings.extraProblemsPerDay ?? 10;
+    useHelp(useMemo(() => (isOpen ? exercisesTour() : null), [isOpen]));
 
     return (
         <AnimatePresence>

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { useGame } from '../context/GameContext';
 import { api } from '../api';
+import { useHelp } from '../help/context';
+import { choresTour } from '../help/tours';
 import type { Chore, ChoreInstance, User, ChoreCategory } from '@shared/types';
 
 interface ChoresDrawerProps {
@@ -83,6 +85,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
     const { users, chores, choreInstances } = useGame();
     const config = getDrawerConfig(category);
     const isBonus = category === 'bonus';
+    useHelp(useMemo(() => (isOpen ? choresTour(isBonus) : null), [isOpen, isBonus]));
 
     // Group active chore instances with their chore definitions
     const activeChores = useMemo(() => {

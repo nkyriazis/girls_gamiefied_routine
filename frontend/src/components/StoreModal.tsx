@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { api } from '../api';
@@ -9,6 +9,8 @@ import { useAppSounds } from '../hooks/useAppSounds';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 import { useGame } from '../context/GameContext';
 import { UserExercises } from './UserExercises';
+import { useHelp } from '../help/context';
+import { storeTour } from '../help/tours';
 
 interface StoreModalProps {
   user: User;
@@ -25,6 +27,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   // Earning stars sits next to spending them: her exercises of the day and «Κι άλλο πρόβλημα»
   const { exerciseAssignments, config } = useGame();
   const canEarn = exerciseAssignments.some(a => a.userId === user.id) || (!!user.grade && (config.settings.extraProblemsPerDay ?? 10) > 0);
+  useHelp(useMemo(() => storeTour(user.id), [user.id]));
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   const [justPurchased, setJustPurchased] = useState<{ reward: Reward; cost: number } | null>(null);
   const [showActivity, setShowActivity] = useState(false);

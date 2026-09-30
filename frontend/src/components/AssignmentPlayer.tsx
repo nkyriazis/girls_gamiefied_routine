@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../api';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
@@ -12,6 +12,9 @@ import { OrderingRenderer } from './exercises/OrderingRenderer';
 import { FillBlankRenderer } from './exercises/FillBlankRenderer';
 import { NumberInputRenderer } from './exercises/NumberInputRenderer';
 import { ProblemPlayer } from './exercises/ProblemPlayer';
+import { useHelp } from '../help/context';
+import { HelpButton } from '../help/HelpProvider';
+import { exerciseTour } from '../help/tours';
 
 interface AssignmentPlayerProps {
   assignment: ExerciseAssignmentWithExercise;
@@ -24,6 +27,9 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [attemptKey, setAttemptKey] = useState(0); // remounts the renderer for a clean retry
+  // The owl sits in the header; a problem says what each of its steps needs itself
+  const isProblemType = assignment.exercise?.type === 'problem';
+  useHelp(useMemo(() => (isProblemType ? null : exerciseTour(user.id)), [isProblemType, user.id]), { inline: true });
 
   const exercise = assignment.exercise;
   if (!exercise) return null;
@@ -96,6 +102,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         </div>
         <h1 className="assignment-header-title">{exercise.title}</h1>
         <div className="assignment-reward">⭐ {exercise.stars}</div>
+        <HelpButton inline />
         <button className="exit-game-btn" onClick={onClose}>✕</button>
       </div>
 

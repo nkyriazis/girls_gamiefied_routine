@@ -7,6 +7,8 @@ import { storyWords, targetsFromMarks, usefulToAnswer, type PaintTarget } from '
 import { api } from '../../api';
 import { useAppSounds } from '../../hooks/useAppSounds';
 import { CalcBench, PaintWords } from './ProblemFreeSteps';
+import { useHelp } from '../../help/context';
+import { problemTour, type ProblemHelpKind } from '../../help/tours';
 import { calcNudge, emptyCalc, paintFeedback, readLine, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 
 // A word problem, one step at a time, the way the Ε' book teaches it (ch. 1.3):
@@ -119,6 +121,9 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
     return r?.kind === 'paint' ? r.targets : targetsFromMarks(exercise.story);
   }, [exercise]);
   const unneeded = reading === 'paint-all';
+  // The owl explains the step on screen, as she plays it on her rung
+  const helpKind: ProblemHelpKind = kind === 'paint' && unneeded ? 'paint-all' : kind;
+  useHelp(useMemo(() => problemTour(assignment.userId, helpKind), [assignment.userId, helpKind]), { inline: true });
   const extras = story.flatMap(p => ('mark' in p && p.role === 'extra' ? [p.text] : []));
 
   // Drafts and wrong marks belong to the step they were made on: moving on leaves them behind.

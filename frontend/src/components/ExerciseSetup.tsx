@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { api } from '../api';
 import type { User } from '@shared/types';
 import { useAppSounds } from '../hooks/useAppSounds';
+import { useHelp } from '../help/context';
+import { gameSetupTour } from '../help/tours';
 
 interface ExerciseSetupProps {
   users: User[];
@@ -13,6 +15,7 @@ interface ExerciseSetupProps {
 
 export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, onStart }) => {
   const { playClick } = useAppSounds();
+  useHelp(useMemo(gameSetupTour, []));
   const [categories, setCategories] = useState<any[]>([]); // { id, label, icon? }
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // array of category IDs

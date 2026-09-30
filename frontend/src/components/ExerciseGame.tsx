@@ -5,6 +5,8 @@ import { api } from '../api';
 import type { Exercise, ExerciseSession, User } from '@shared/types';
 import { useAppSounds } from '../hooks/useAppSounds';
 import { SmartIcon } from './SmartIcon';
+import { useHelp } from '../help/context';
+import { gameTour } from '../help/tours';
 
 // Sub-components for exercise types
 import { MultipleChoiceRenderer } from './exercises/MultipleChoiceRenderer';
@@ -22,6 +24,7 @@ interface ExerciseGameProps {
 export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) => {
   const { users, exerciseSessions } = useGame();
   const { playSuccess, playError, playComplete } = useAppSounds();
+  useHelp(useMemo(gameTour, []));
   
   // Get the latest session state from context
   const currentSession = useMemo(() => 
