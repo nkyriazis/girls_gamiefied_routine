@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { useGame } from '../context/GameContext';
+import { api } from '../api';
 import { AssignmentPlayer } from './AssignmentPlayer';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
 
@@ -27,8 +28,23 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClose }) => {
-    const { users, exerciseAssignments } = useGame();
+    const { users, exerciseAssignments, config } = useGame();
     const [playing, setPlaying] = useState<{ assignment: ExerciseAssignmentWithExercise, user: User } | null>(null);
+    const [asking, setAsking] = useState(false);
+    const extraLimit = config.settings.extraProblemsPerDay ?? 10;
+
+    // One more problem, on top of the daily set: the open one if there is one, else a fresh one
+    const askForProblem = async (user: User) => {
+        if (asking) return;
+        setAsking(true);
+        try {
+            setPlaying({ assignment: await api.startExtraProblem(user.id), user });
+        } catch (err) {
+            console.error('Could not start a problem:', err);
+        } finally {
+            setAsking(false);
+        }
+    };
 
     // Keep the player in sync with fresh assignment state (e.g. after answer broadcast)
     const playingAssignment = playing
@@ -63,8 +79,13 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
 
                         <div className="exercises-content">
                             {users.map(user => {
-                                const userAssignments = exerciseAssignments.filter(a => a.userId === user.id);
-                                if (userAssignments.length === 0) return null;
+                                const mine = exerciseAssignments.filter(a => a.userId === user.id);
+                                const userAssignments = mine.filter(a => !a.extra);
+                                const extras = mine.filter(a => a.extra);
+                                const extrasDone = extras.filter(a => a.status === 'completed');
+                                const openExtra = extras.find(a => a.status === 'pending');
+                                const canAsk = !!user.grade && extraLimit > 0;
+                                if (userAssignments.length === 0 && !canAsk) return null;
 
                                 const completedCount = userAssignments.filter(a => a.status === 'completed').length;
                                 const allDone = completedCount === userAssignments.length;
@@ -117,6 +138,28 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
                                                 );
                                             })}
                                         </div>
+
+                                        {canAsk && (
+                                            <div className="extra-problems">
+                                                {extrasDone.length > 0 && (
+                                                    <span className="extra-done">
+                                                        🧩 Έξτρα σήμερα: {extrasDone.length} · ⭐{extrasDone.reduce((n, a) => n + (a.starsAwarded ?? 0), 0)}
+                                                    </span>
+                                                )}
+                                                <motion.button
+                                                    className="extra-btn"
+                                                    disabled={asking || (!openExtra && extras.length >= extraLimit)}
+                                                    whileTap={{ scale: 0.97 }}
+                                                    onClick={() => askForProblem(user)}
+                                                >
+                                                    {openExtra
+                                                        ? <>▶ Συνέχισε το πρόβλημα</>
+                                                        : extras.length >= extraLimit
+                                                            ? <>Για σήμερα φτάνει! 🎉</>
+                                                            : <>🧩 Κι άλλο πρόβλημα <span className="extra-count">{extras.length}/{extraLimit}</span></>}
+                                                </motion.button>
+                                            </div>
+                                        )}
                                     </section>
                                 );
                             })}
@@ -237,6 +280,45 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
           display: flex;
           flex-direction: column;
           gap: 0.75rem;
+        }
+
+        .extra-problems {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-top: 0.75rem;
+        }
+
+        .extra-done {
+          font-size: 0.9rem;
+          opacity: 0.75;
+          padding-left: 0.25rem;
+        }
+
+        .extra-btn {
+          padding: 0.9rem 1rem;
+          border-radius: 16px;
+          border: 2px dashed rgba(255, 214, 10, 0.6);
+          background: rgba(255, 214, 10, 0.08);
+          color: white;
+          font-size: 1.05rem;
+          font-weight: bold;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.6rem;
+        }
+
+        .extra-btn:disabled {
+          opacity: 0.55;
+          cursor: default;
+        }
+
+        .extra-count {
+          font-size: 0.85rem;
+          font-weight: normal;
+          opacity: 0.8;
         }
 
         .assignment-card {

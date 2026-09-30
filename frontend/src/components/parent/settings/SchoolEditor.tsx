@@ -6,11 +6,13 @@ import { SelectField } from './fields';
 
 const GRADES = ['Α΄', 'Β΄', 'Γ΄', 'Δ΄', 'Ε΄', 'ΣΤ΄'];
 
-// Each kid's class, which picks the daily school exercises, and how many a day.
+// Each kid's class, which picks their school exercises, how many a day, and how many
+// extra problems they may ask for on top.
 export function SchoolEditor() {
     const { config } = useGame();
     const save = useConfigSave();
     const perDay = config.settings.exercisesPerDay ?? 3;
+    const extraPerDay = config.settings.extraProblemsPerDay ?? 10;
     const setGrade = (id: string, grade: string) => save('users', config.users.map(u => {
         if (u.id !== id) return u;
         const next: ConfigUser = { ...u, grade: Number(grade) as SchoolGrade };
@@ -28,7 +30,10 @@ export function SchoolEditor() {
                 <SelectField label="Ασκήσεις την ημέρα" value={String(perDay)}
                     options={Array.from({ length: 11 }, (_, n) => ({ value: String(n), label: String(n) }))}
                     onChange={n => save('settings', { ...config.settings, exercisesPerDay: Number(n) })} />
-                <p className="p-hint">Οι αλλαγές ισχύουν από τις ασκήσεις της επόμενης ημέρας.</p>
+                <SelectField label="Έξτρα προβλήματα την ημέρα (τα ζητούν τα παιδιά)" value={String(extraPerDay)}
+                    options={[0, 1, 2, 3, 5, 10, 15, 20, 30, 50].map(n => ({ value: String(n), label: n === 0 ? 'Κανένα' : String(n) }))}
+                    onChange={n => save('settings', { ...config.settings, extraProblemsPerDay: Number(n) })} />
+                <p className="p-hint">Οι ασκήσεις της ημέρας αλλάζουν από την επόμενη ημέρα. Τα έξτρα προβλήματα δίνουν τα αστέρια τους όπως και τα άλλα.</p>
             </div>
         </Section>
     );
