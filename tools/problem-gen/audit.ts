@@ -8,7 +8,9 @@
 //   - every equation in the story, prompts, hints, number rows (label + answer) and right
 //     options holds (wrong options may hold wrong equations: they are wrong on purpose);
 //   - a story with a tag step marks every number it has, and has at least one known,
-//     one sought and one extra phrase;
+//     one sought and one extra phrase (a painted one needs no extra); paint targets
+//     are their marks, as words; in a calc step every relation holds by its numbers
+//     and the answer can be reached from what the story gives;
 //   - options are distinct, indexes in range, order items distinct, answers whole numbers
 //     within the grade's range;
 //   - no leftover template text, doubled spaces, spaces before punctuation, unbalanced marks;
@@ -91,23 +93,63 @@ for (const pool of pools) {
     if (open !== marks.length || close !== marks.length) err(ex, 'unbalanced or malformed [..|..] marks');
     hygiene(ex, 'story', plain(ex.story));
     checkEquations(ex, 'story', plain(ex.story));
-    if (!/[;;]/.test(plain(ex.story)) && !ex.steps.some(s => s.story)) warnings.push(`${ex.id}: the story asks no question`);
+    // A question mark, or asked as the books also do: «Να βρεις…», «Θέλουμε να βρούμε…»
+    const asks = /[;;]/.test(plain(ex.story)) || /Να βρεις|Θέλουμε να βρούμε|αναρωτιέται/i.test(plain(ex.story));
+    if (!asks && !ex.steps.some(s => s.story)) warnings.push(`${ex.id}: the story asks no question`);
     if (plain(ex.story).length > 420) warnings.push(`${ex.id}: long story (${plain(ex.story).length} characters)`);
     if (!/^[Α-ΩΆΈΉΊΌΎΏ\d«]/.test(plain(ex.story))) err(ex, 'story does not start with a capital letter');
     if (!/[.;!;»]$/.test(plain(ex.story))) err(ex, 'story does not end with punctuation');
 
+    // A tag step always has something to leave out; a painted story may have nothing
+    // unneeded (so she can't count on there being something)
     const hasTag = ex.steps.some(s => s.kind === 'tag');
-    if (hasTag) {
+    const paint = ex.steps.find(s => s.kind === 'paint');
+    if (hasTag || paint) {
       const roles = marks.map(m => m[2]);
-      for (const role of ['known', 'sought', 'extra']) {
-        if (!roles.includes(role)) err(ex, `tag step, but no [..|${role}] phrase`);
+      for (const role of hasTag ? ['known', 'sought', 'extra'] : ['known', 'sought']) {
+        if (!roles.includes(role)) err(ex, `${hasTag ? 'tag' : 'paint'} step, but no [..|${role}] phrase`);
       }
       const unmarked = ex.story.replace(MARK, '').match(/\d+/g);
       if (unmarked) err(ex, `numbers outside the marked phrases: ${unmarked.join(', ')}`);
     }
 
+    // Painting: each target is its mark, as words of the plain story, core inside the span
+    if (paint) {
+      const words = plain(ex.story).split(/\s+/).filter(Boolean);
+      if (paint.targets.length !== marks.length) err(ex, `paint: ${paint.targets.length} targets for ${marks.length} marks`);
+      paint.targets.forEach((t, j) => {
+        const m = marks[j];
+        if (!m) return;
+        if (t.role !== m[2]) err(ex, `paint target ${j}: ${t.role}, mark ${m[2]}`);
+        const span = words.slice(t.span[0], t.span[1] + 1).join(' ').replace(/[.,;;]+$/, '');
+        if (span !== m[1].replace(/[.,;;]+$/, '')) err(ex, `paint target ${j}: «${span}» is not the mark «${m[1]}»`);
+        if (!t.words.length || t.words.some(w => w < t.span[0] || w > t.span[1])) err(ex, `paint target ${j}: core words outside «${m[1]}»`);
+      });
+    }
+
     ex.steps.forEach((step, i) => {
       const at = `step ${i} (${step.kind})`;
+      // Working it out: every relation holds by its numbers, and the answer can be reached
+      if (step.kind === 'calc') {
+        const q = new Map(step.quantities.map(x => [x.id, x.value]));
+        const ops: Record<string, (a: number, b: number) => number> = { '+': (a, b) => a + b, '−': (a, b) => a - b, '×': (a, b) => a * b, ':': (a, b) => a / b };
+        for (const r of step.relations) {
+          if (![r.out, r.a, r.b].every(id => q.has(id))) { err(ex, `${at}: relation ${r.out} = ${r.a} ${r.op} ${r.b} names a missing quantity`); continue; }
+          if (ops[r.op](q.get(r.a)!, q.get(r.b)!) !== q.get(r.out)) err(ex, `${at}: ${r.out} = ${r.a} ${r.op} ${r.b} is false (${q.get(r.a)} ${r.op} ${q.get(r.b)} ≠ ${q.get(r.out)})`);
+        }
+        for (const x of step.quantities) if (!Number.isInteger(x.value) || x.value <= 0) err(ex, `${at}: ${x.id} = ${x.value}`);
+        const known = new Set(step.given);
+        for (let grew = true; grew;) {
+          grew = false;
+          for (const r of step.relations) {
+            const missing = [r.out, r.a, r.b].filter(id => !known.has(id));
+            if (missing.length === 1) { known.add(missing[0]); grew = true; }
+          }
+        }
+        if (!known.has(step.sought)) err(ex, `${at}: the answer can't be reached from what the story gives`);
+        if (step.given.includes(step.sought)) err(ex, `${at}: the answer is given`);
+        step.quantities.forEach(x => hygiene(ex, `${at} label`, x.label));
+      }
       kinds.set(step.kind, (kinds.get(step.kind) ?? 0) + 1);
       hygiene(ex, `${at} prompt`, step.prompt);
       checkEquations(ex, `${at} prompt`, step.prompt);

@@ -50,6 +50,9 @@ export interface World {
   title: string;
   /** Quantities that are stated unless asked (the inputs of the world). */
   base: string[];
+  /** Questions that refer to what the story tells («το παζλ», «η νονά της», «αυτές τις
+   * εβδομάδες»): asked at the end, never before the story. */
+  late: Set<string>;
   /** Asked for q, also state these (e.g. the end amount when the start is asked). */
   alsoState: (q: string) => string[];
 }
@@ -186,6 +189,7 @@ export function stockWorld(r: Rng): World | null {
   const cl = P.his; // "της" as an indirect object: "της χάρισε"
   const Things = cap(T.many);
   const sentences: ((stated: Set<string>) => Sentence | null)[] = [];
+  const late = new Set<string>();
   const asks = new Map<string, (subj: string) => string>();
   const say = (s: string) => (s ? `${s} ` : '');
   // The friend in a gift has a collection too, changed by the same gift
@@ -221,20 +225,23 @@ export function stockWorld(r: Rng): World | null {
     const events = r.sample(kinds, r.chance(0.55) ? 2 : 1);
     let cur = 's0';
     const afters: string[] = [];
+    // «χωρίς όσα έδωσε»: each change left out, to name the other order of two
+    const withouts: string[] = [];
     events.forEach((kind, i) => {
       const e = `e${i + 1}`, next = `s${i + 1}`, at = i + 1;
       const have = qs.get(cur)!.value;
-      let op: Op = '+', after = '';
+      let op: Op = '+', after = '', without = '';
       if (kind === 'buy') {
         const [a, the, of] = r.pick(ITEMS);
         add(e, r.int(5, Math.min(60, have - 3)), `Τιμή ${of}`);
-        op = '−'; after = `${Things} μετά την αγορά`;
+        op = '−'; after = `${Things} μετά την αγορά`; without = `την αγορά`;
         const form = r.int(0, 1);
         sentences.push(st => st.has(e) ? {
           at, subj: P, states: [e],
           say: S => form ? [say(S), `αγόρασε ${a} που κόστιζε `, n(e), '.'] : [say(S), 'ξόδεψε ', n(e), ` για ${a}.`],
         } : { at, subj: P, states: [], say: S => [say(S), `αγόρασε ${a}.`] });
         asks.set(e, () => `πόσο κόστιζε ${the}`);
+        late.add(e);
       } else if (kind === 'gift') {
         if (money) {
           const [acc, nom] = r.pick(RELATIVES);
@@ -243,6 +250,7 @@ export function stockWorld(r: Rng): World | null {
             at, subj: P, states: [e], say: S => [say(S), 'πήρε ', n(e), ` δώρο από ${acc} ${P.his}.`],
           } : { at, subj: P, states: [], say: S => [say(S), `πήρε χρήματα δώρο από ${acc} ${P.his}.`] });
           asks.set(e, () => `${pos(T)} ${T.manyAcc} ${cl} έδωσε ${nom} ${P.his}`);
+          late.add(e);
         } else {
           add(e, r.int(3, 25), `${Things} από ${F.acc}`);
           const form = r.int(0, 1);
@@ -251,9 +259,10 @@ export function stockWorld(r: Rng): World | null {
             : { at, subj: F, states: [e], say: () => [`${F.Nom} ${cl} χάρισε `, n(e), '.'] })
             : { at, subj: F, states: [], say: () => [`${F.Nom} ${cl} χάρισε μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} ${T.manyAcc}.`] });
           asks.set(e, () => `${pos(T)} ${T.manyAcc} ${cl} χάρισε ${F.nom}`);
+          late.add(e);
           friendStock(e, '−', at);
         }
-        after = `${Things} μετά το δώρο`;
+        after = `${Things} μετά το δώρο`; without = 'το δώρο';
       } else if (kind === 'give' || kind === 'lose') {
         add(e, r.int(2, Math.max(2, Math.floor(have * 0.6))), kind === 'lose' ? `${Things} που χάθηκαν` : `${Things} που έδωσε`);
         op = '−';
@@ -261,26 +270,26 @@ export function stockWorld(r: Rng): World | null {
           sentences.push(st => st.has(e) ? { at, subj: P, states: [e], say: S => [say(S), 'έχασε ', n(e), ' στο διάλειμμα.'] }
             : { at, subj: P, states: [], say: S => [say(S), `έχασε μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} στο διάλειμμα.`] });
           asks.set(e, S => `${pos(T)} ${T.manyAcc} έχασε${S ? ` ${S}` : ''}`);
-          after = `${Things} αφού έχασε`;
+          after = `${Things} αφού έχασε`; without = 'όσα έχασε';
         } else if (money) {
           const sib = r.pick(SIBLINGS)[1];
           sentences.push(st => st.has(e) ? { at, subj: P, states: [e], say: S => [say(S), 'έδωσε ', n(e), ` σ${sib} ${P.his}.`] }
             : { at, subj: P, states: [], say: S => [say(S), `έδωσε χρήματα σ${sib} ${P.his}.`] });
           asks.set(e, S => `${pos(T)} ${T.manyAcc} έδωσε${S ? ` ${S}` : ''} σ${sib} ${P.his}`);
-          after = `${Things} αφού έδωσε`;
+          after = `${Things} αφού έδωσε`; without = 'όσα έδωσε';
         } else {
           sentences.push(st => st.has(e) ? { at, subj: P, states: [e], say: S => [say(S), 'χάρισε ', n(e), ` σ${F.acc}.`] }
             : { at, subj: P, states: [], say: S => [say(S), `χάρισε μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} σ${F.acc}.`] });
           asks.set(e, S => `${pos(T)} ${T.manyAcc} χάρισε${S ? ` ${S}` : ''} σ${F.acc}`);
           friendStock(e, '+', at);
-          after = `${Things} αφού χάρισε`;
+          after = `${Things} αφού χάρισε`; without = 'όσα χάρισε';
         }
       } else {
         // packs or weekly savings: the change itself is count × each
         const box = money ? WEEK : coll.box;
         const k = `${e}n`, each = `${e}m`;
         add(k, r.int(2, money ? 6 : 5), cap(box.many), box);
-        add(each, money ? r.int(2, 9) : r.int(3, 10), money ? 'Ευρώ κάθε εβδομάδα' : `${Things} σε κάθε ${box.one}`);
+        add(each, money ? r.int(2, 9) : r.int(3, 10), money ? 'Ευρώ κάθε εβδομάδα' : `${Things} σε κάθε ${box.g === 'm' ? box.one.replace(/ος$/, 'ο') : box.one}`);
         add(e, qs.get(k)!.value * qs.get(each)!.value, money ? 'Ευρώ που έβαλε συνολικά' : `${Things} ${coll.boxWhere}`);
         rels.push({ out: e, op: '×', a: k, b: each });
         const words = r.chance(0.8);
@@ -301,19 +310,23 @@ export function stockWorld(r: Rng): World | null {
           asks.set(k, S => `για πόσες εβδομάδες έβαλε χρήματα${S ? ` ${S}` : ''}`);
           asks.set(each, S => `πόσα ευρώ έβαλε${S ? ` ${S}` : ''} κάθε εβδομάδα`);
           asks.set(e, S => `πόσα ευρώ έβαλε${S ? ` ${S}` : ''} στον κουμπαρά όλες αυτές τις εβδομάδες`);
+          late.add(e);
         } else {
           asks.set(k, S => `${pos(box)} ${box.manyAcc} αγόρασε${S ? ` ${S}` : ''}`);
           asks.set(each, () => `${pos(T)} ${T.manyAcc} είχε κάθε ${box.one}`);
           asks.set(e, S => `${posNom(T)} ${T.many} ήταν ${coll.boxWhere} που αγόρασε${S ? ` ${S}` : ''}`);
         }
         after = money ? 'Ευρώ μετά τις εβδομάδες' : `${Things} μετά ${the(box)} ${box.manyAcc}`;
+        without = money ? 'τις εβδομάδες' : `${the(box)} ${box.manyAcc}`;
       }
       afters.push(after);
+      withouts.push(without);
       add(next, apply(op, have, qs.get(e)!.value), after);
       rels.push({ out: next, op, a: cur, b: e });
       cur = next;
     });
     const last = cur, k = events.length;
+    qs.get(last)!.label = `${Things} ${P.gen} τώρα`;
     // Two changes can also be taken the other way round (71 + 24 = 95 with the savings
     // first, 95 − 88 = 7 given away), and two the same way together (50 − 36 = 14 left
     // in all, 14 − 9 = 5 lost): quantities of their own, so those ways read back too
@@ -322,7 +335,7 @@ export function stockWorld(r: Rng): World | null {
       const [e1, e2] = ['e1', 'e2'];
       const alt = apply(ops[1], qs.get('s0')!.value, qs.get(e2)!.value);
       if (alt > 0) {
-        add('alt', alt, afters[1]);
+        add('alt', alt, `${Things} ${P.gen} χωρίς ${withouts[0]}`);
         rels.push({ out: 'alt', op: ops[1], a: 's0', b: e2 }, { out: last, op: ops[0], a: 'alt', b: e1 });
       }
       if (ops[0] === ops[1]) {
@@ -404,7 +417,7 @@ export function stockWorld(r: Rng): World | null {
     if (new Set(values).size < values.length) return null;
     const base = [...qs.keys()].filter(id => !rels.some(rel => rel.out === id));
     return {
-      qs, rels, asks, hero: P, base,
+      qs, rels, asks, hero: P, base, late,
       title: money ? r.pick(['Ο κουμπαράς', 'Τα χρήματα', 'Λογαριασμοί']) : r.pick(['Η συλλογή', 'Ανταλλαγές', 'Μετράμε']),
       alsoState: q => (q === 's0' || /^e\d/.test(q) ? [last] : q === 'd' ? ['f'] : q === 'g0' ? ['g1'] : []),
       sentences: st => sentences.map(f => f(st)).filter((s): s is Sentence => !!s),
@@ -454,8 +467,10 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
   }
 
   const sents = w.sentences(stated).sort((a, b) => a.at - b.at);
-  const where = r.pick(['end', 'end', 'end-imp', 'first', 'wonder'] as const);
+  const picked = w.late.has(sought) ? r.pick(['end', 'end', 'end-imp'] as const) : r.pick(['end', 'end', 'end-imp', 'first', 'wonder'] as const);
   const hero = w.hero;
+  // «Αναρωτιέται…» in the middle only after a sentence about her, or whose question it is is unclear
+  const where = picked === 'wonder' && sents[0]?.subj !== hero ? 'end' : picked;
   const out: Painted[] = [];
   let prev: Person | undefined;
   const push = (ps: Piece[]) => {
