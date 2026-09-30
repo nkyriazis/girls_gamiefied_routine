@@ -146,10 +146,11 @@ test('extra problems: fresh ones first, one open at a time, up to the day\'s lim
   for (const [i, step] of balloons.steps.entries()) await db.answerExerciseAssignment(first.id, { step: i, value: solution(balloons, step) });
   assert.equal(db.usersWithStars().find(u => u.id === 'u2')!.stars, starsBefore + 3);
 
-  // All three were had today: the next is the one seen longest ago
+  // All three were had today: the next is one of the daily ones, seen before the extra
+  // (both were drawn at the same moment, so either)
   const second = await db.startExtraProblem('u2');
   assert.notEqual(second.id, first.id);
-  assert.equal(second.exerciseId, daily[0]);
+  assert.ok(daily.includes(second.exerciseId));
   assert.deepEqual(db.extraProblemsToday('u2'), { used: 2, limit: 2, open: store.exerciseAssignments.get(second.id) });
   for (const [i, step] of balloons.steps.entries()) await db.answerExerciseAssignment(second.id, { step: i, value: solution(balloons, step) });
   await assert.rejects(db.startExtraProblem('u2'), /No more extra problems today/);
