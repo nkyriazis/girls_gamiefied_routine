@@ -29,7 +29,7 @@ fi
 # Ensure uploads directory exists with correct permissions
 echo "📁 Ensuring uploads directory exists..."
 mkdir -p backend/uploads
-chmod 755 backend/uploads
+chmod 755 backend/uploads 2>/dev/null || true  # may be owned by root (created by the container)
 
 # Pull pre-built images
 echo "🐳 Pulling Docker images..."
