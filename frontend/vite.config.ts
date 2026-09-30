@@ -83,6 +83,8 @@ export default defineConfig({
   ],
   server: {
     host: true, // Listen on all addresses (0.0.0.0)
+    // shared/ sits next to the app (mounted at /shared in the dev container): let Vite serve it
+    fs: { allow: [__dirname, path.resolve(__dirname, '../shared')] },
     proxy: {
       '/api': {
         target: process.env.API_URL || 'http://localhost:3000',

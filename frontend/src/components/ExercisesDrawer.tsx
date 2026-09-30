@@ -109,6 +109,7 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
                                                 return (
                                                     <motion.button
                                                         key={assignment.id}
+                                                        data-assignment={assignment.id}
                                                         className={`assignment-card ${isDone ? 'completed' : ''}`}
                                                         onClick={() => !isDone && setPlaying({ assignment, user })}
                                                         disabled={isDone}
