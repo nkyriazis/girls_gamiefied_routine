@@ -83,7 +83,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
         <div className="setup-content">
           {/* Players Selection */}
           <section className="setup-section">
-            <h3>Ποιος θα παίξει;</h3>
+            <h3>Ποια παιδιά θα παίξουν;</h3>
             <div className="players-grid" {...help('game.players')}>
               {users.map(user => (
                 <motion.div

@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "node scripts/check-help.mjs && node scripts/help-lines.mjs --check && node scripts/check-sound.mjs && eslint .",
+    "lint": "node scripts/check-help.mjs && node scripts/help-lines.mjs --check && node scripts/check-sound.mjs && node scripts/check-gender.mjs && eslint .",
     "check-help": "node scripts/check-help.mjs",
     "check-voice": "node scripts/help-lines.mjs --check",
     "check-sound": "node scripts/check-sound.mjs",
+    "check-gender": "node scripts/check-gender.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

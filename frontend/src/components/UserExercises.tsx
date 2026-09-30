@@ -66,7 +66,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
       {header ?? null}
       {daily.length > 0 && (
         <div className="ue-summary">
-          {completed === daily.length ? 'Όλες οι σημερινές έτοιμες! 🎉' : `Σήμερα: ${completed} από ${daily.length}`}
+          {completed === daily.length ? 'Τα σημερινά τελείωσαν! 🎉' : `Σήμερα: ${completed} από ${daily.length}`}
         </div>
       )}
       <div className="assignment-list">

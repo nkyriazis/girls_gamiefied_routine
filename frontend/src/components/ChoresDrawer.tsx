@@ -67,7 +67,7 @@ function getDrawerConfig(category: ChoreCategory) {
             emptyIcon: '🌟',
             emptyText: 'Δεν υπάρχουν διαθέσιμες bonus δραστηριότητες.',
             emptyHint: 'Νέες δραστηριότητες εμφανίζονται καθημερινά!',
-            claimQuestion: 'Ποιος το πέτυχε;',
+            claimQuestion: 'Ποιο παιδί το πέτυχε;',
             doneButtonText: (name: string) => `${name}: Το πέτυχα! 🎉`,
             gradientColors: ['#667eea', '#764ba2']
         };
@@ -77,7 +77,7 @@ function getDrawerConfig(category: ChoreCategory) {
         emptyIcon: '🧹',
         emptyText: 'Δεν υπάρχουν διαθέσιμες δουλειές αυτή τη στιγμή.',
         emptyHint: 'Νέες δουλειές εμφανίζονται σύμφωνα με το πρόγραμμα!',
-        claimQuestion: 'Ποιος το αναλαμβάνει;',
+        claimQuestion: 'Ποιο παιδί το αναλαμβάνει;',
         doneButtonText: (name: string) => `${name}: Το έκανα! ✓`,
         gradientColors: ['#4cc9f0', '#4361ee']
     };
