@@ -23,7 +23,7 @@ import {
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
   cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
   logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, startExtraProblem, usersView,
-  stateSnapshot, replaceState, ensureDailyAssignments
+  stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
 } from './db';
 import { config, configError, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
@@ -777,6 +777,21 @@ server.post('/api/exercise-assignments/:id/answer', async (request, reply) => {
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
   }
+});
+
+// Help tours played on the kids' screens (the owl stops offering them), and a reset
+server.post('/api/help/seen', async (request, reply) => {
+  try {
+    markHelpSeen((request.body as { tourIds?: unknown })?.tourIds);
+    return { ok: true };
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
+  }
+});
+
+server.post('/api/help/reset', async (request) => {
+  const { userId } = (request.body ?? {}) as { userId?: string };
+  return { reset: resetHelp(userId || undefined) };
 });
 
 // Admin: Get the full runtime state (from the database, in state.json shape)

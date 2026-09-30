@@ -18,7 +18,7 @@ class FakeClient implements Client {
 function stateWith(n: number): AppState {
   return {
     config: { users: [], tasks: [], routines: [], routineTasks: [], routineAssignments: [], flows: [], schedules: [], rewards: [], settings: { timezone: 'UTC' } },
-    configError: null, users: [], starTransfers: [], choreInstances: [], exerciseSessions: [], exerciseAssignments: [], flowRuns: [], routineRuns: [],
+    configError: null, users: [], starTransfers: [], choreInstances: [], exerciseSessions: [], exerciseAssignments: [], flowRuns: [], routineRuns: [], helpSeen: [],
     spendings: Array.from({ length: n }, (_, i) => ({ id: String(i), userId: 'u', rewardId: 'r', cost: 1, createdAt: '', status: 'pending' as const }))
   };
 }

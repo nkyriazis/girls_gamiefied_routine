@@ -1,6 +1,6 @@
 import { DatabaseSync, SQLInputValue } from 'node:sqlite';
 import {
-  ActionLog, ChoreInstance, ExerciseAssignment, ExerciseSession, FlowRun, RoutineExecution, RoutineRun,
+  ActionLog, ChoreInstance, ExerciseAssignment, ExerciseSession, FlowRun, HelpSeen, RoutineExecution, RoutineRun,
   Spending, StarTransfer, StateSnapshot, TaskExecution
 } from '../../shared/types';
 
@@ -83,6 +83,10 @@ const MIGRATIONS: string[] = [
   // Extra problems a kid asks for, on top of the daily set
   `
   ALTER TABLE exercise_assignments ADD COLUMN extra INTEGER;
+  `,
+  // Help tours already played on the kids' screens
+  `
+  CREATE TABLE help_seen (id TEXT PRIMARY KEY, seenAt TEXT NOT NULL);
   `
 ];
 
@@ -193,6 +197,7 @@ export class Store {
   readonly logs: Table<ActionLog>;
   readonly flowRuns: Table<FlowRun>;
   readonly routineRuns: Table<Omit<RoutineRun, 'totalStars'>>;
+  readonly helpSeen: Table<HelpSeen>;
 
   constructor(file: string, private readonly onChange: () => void = () => {}) {
     this.db = new DatabaseSync(file);
@@ -231,6 +236,7 @@ export class Store {
     this.routineRuns = new Table<Omit<RoutineRun, 'totalStars'>>(db, 'routine_runs', onChange, {
       id: 'text', userId: 'text', routineId: 'text', taskIndex: 'int', taskStartedAt: 'text', finishedAt: 'text', flowRunId: 'text'
     });
+    this.helpSeen = new Table<HelpSeen>(db, 'help_seen', onChange, { id: 'text', seenAt: 'text' });
     this.logs = new Table<ActionLog>(db, 'action_logs', () => {}, {
       id: 'text', timestamp: 'text', type: 'text', details: 'json'
     }, 'timestamp, rowid');
@@ -301,6 +307,15 @@ export class Store {
 
   setMeta(key: string, value: string): void {
     this.db.prepare('INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value').run(key, value);
+  }
+
+  // --- Help tours played ---
+
+  /** Forget one kid's own tours (ids ending in "@<userId>"), or all of them. Returns how many. */
+  forgetHelp(userId?: string): number {
+    return userId
+      ? this.helpSeen.deleteWhere("instr(id, '@') > 0 AND substr(id, instr(id, '@') + 1) = ?", userId)
+      : this.helpSeen.deleteWhere('1');
   }
 
   // --- Whole-state snapshot (admin editor, legacy import) ---
