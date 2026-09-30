@@ -27,6 +27,8 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
 
   const exercise = assignment.exercise;
   if (!exercise) return null;
+  // A problem gets the whole stage as a fixed frame (title in the header), so nothing moves between its steps
+  const isProblem = exercise.type === 'problem';
 
   const handleAnswer = async (answer: any) => {
     if (submitting || feedback) return;
@@ -92,24 +94,31 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           <SmartIcon value={user.avatar || '👧'} size={40} />
           <span>{user.name}</span>
         </div>
+        <h1 className="assignment-header-title">{exercise.title}</h1>
         <div className="assignment-reward">⭐ {exercise.stars}</div>
         <button className="exit-game-btn" onClick={onClose}>✕</button>
       </div>
 
-      <div className="assignment-stage">
-        <div className="assignment-content" key={attemptKey}>
-          <h1 className="assignment-title">{exercise.title}</h1>
-          {exercise.body && <p className="assignment-body">{exercise.body}</p>}
-          {exercise.figure && (
-            <div className="assignment-figure">
-              <SmartIcon value={exercise.figure} size={220} style={{ borderRadius: '1rem' }} />
+      <div className={`assignment-stage ${isProblem ? 'problem-mode' : ''}`}>
+        {isProblem ? (
+          <div className="assignment-content">{renderExercise()}</div>
+        ) : (
+          // The question on the left, the answer on the right (stacked on narrow screens)
+          <div className="assignment-split" key={attemptKey}>
+            <div className="assignment-ask">
+              {exercise.body && <p className="assignment-body">{exercise.body}</p>}
+              {exercise.figure && (
+                <div className="assignment-figure">
+                  <SmartIcon value={exercise.figure} size={200} style={{ borderRadius: '1rem' }} />
+                </div>
+              )}
+              {'question' in exercise && exercise.question && (
+                <div className="assignment-question">{exercise.question}</div>
+              )}
             </div>
-          )}
-          {'question' in exercise && exercise.question && (
-            <div className="assignment-question">{exercise.question}</div>
-          )}
-          <div className={`assignment-renderer ${exercise.type === 'problem' ? 'wide' : ''}`}>{renderExercise()}</div>
-        </div>
+            <div className="assignment-renderer">{renderExercise()}</div>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -165,6 +174,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         }
 
         .assignment-reward {
+          margin-right: 1rem;
           font-size: 1.4rem;
           font-weight: bold;
           color: gold;
@@ -181,51 +191,103 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           font-weight: bold;
         }
 
-        .assignment-stage {
+        .assignment-header-title {
           flex: 1;
-          display: flex;
-          padding: 2rem;
-          overflow-y: auto;
+          margin: 0 1.5rem;
+          font-size: 1.5rem;
+          text-align: center;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        /* Centred by margin, so a problem taller than the screen scrolls instead of losing its top */
+        /* A fixed frame: the stage never scrolls as a whole, only the part that needs to */
+        .assignment-stage {
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          padding: 1rem 1.5rem;
+          overflow: hidden;
+        }
+
         .assignment-content {
-          margin: auto;
+          flex: 1;
+          display: flex;
+          min-height: 0;
           width: 100%;
-          max-width: 900px;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .assignment-split {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+          min-height: 0;
+          overflow-y: auto;
+          text-align: center;
+        }
+
+        .assignment-ask, .assignment-renderer {
           display: flex;
           flex-direction: column;
           align-items: center;
-          text-align: center;
-          gap: 1.5rem;
+          gap: 1.25rem;
         }
 
-        .assignment-title {
-          font-size: 2rem;
-          margin: 0;
-          text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        /* Stacked: question and answer stay together, centred while they fit */
+        .assignment-ask {
+          margin-top: auto;
+        }
+
+        .assignment-renderer {
+          margin-bottom: auto;
+        }
+
+        .assignment-renderer {
+          width: 100%;
+        }
+
+        @media (min-width: 900px) and (orientation: landscape) {
+          .assignment-split {
+            flex-direction: row;
+            align-items: stretch;
+            overflow: hidden;
+            gap: 2.5rem;
+          }
+          .assignment-ask {
+            flex: 1;
+            margin: 0;
+            justify-content: center;
+          }
+          .assignment-renderer {
+            flex: 1.2;
+            margin: 0;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 0.25rem;
+          }
+          /* centred while it fits, scrolls from the top when it doesn't */
+          .assignment-renderer > * {
+            margin: auto 0;
+          }
         }
 
         .assignment-body {
-          font-size: 1.15rem;
-          opacity: 0.8;
+          font-size: 1.2rem;
+          opacity: 0.85;
           margin: 0;
           max-width: 700px;
         }
 
         .assignment-question {
-          font-size: 1.6rem;
+          font-size: 1.8rem;
           font-weight: bold;
           color: #a0a0ff;
-        }
-
-        .assignment-renderer {
-          width: 100%;
-          max-width: 700px;
-        }
-
-        .assignment-renderer.wide {
-          max-width: 900px;
         }
 
         .feedback-overlay {
