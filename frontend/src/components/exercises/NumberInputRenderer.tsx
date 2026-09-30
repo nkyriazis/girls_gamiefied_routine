@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { NumberInputExercise } from '@shared/types';
+import { help } from '../../help/anchors';
 
 interface Props {
   exercise: NumberInputExercise;
@@ -26,8 +27,8 @@ export const NumberInputRenderer: React.FC<Props> = ({ onAnswer, disabled }) => 
 
   return (
     <div className="number-input">
-      <div className="number-display">{value || ' '}</div>
-      <div className="numpad">
+      <div className="number-display" {...help('answer.number')}>{value || ' '}</div>
+      <div className="numpad" {...help('answer.numpad')}>
         {KEYS.map(key => (
           <motion.button
             key={key}

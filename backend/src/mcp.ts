@@ -15,7 +15,8 @@ import {
   awardStars,
   setUserStars,
   UPLOADS_DIR,
-  logAction
+  logAction,
+  resetHelp
 } from './db';
 import { dataSchema, stateSchema } from './schemas';
 
@@ -895,5 +896,25 @@ mcpServer.registerTool(
         isError: true
       };
     }
+  }
+);
+
+// Let the help owl offer its tours again
+mcpServer.registerTool(
+  'reset_help',
+  {
+    title: 'Reset Help Tours',
+    description: 'Forget which help tours were played on the kids\' screens, so the owl offers them again: one kid\'s own tours, or all',
+    inputSchema: {
+      userId: z.string().optional().describe('User ID; omit to reset every tour')
+    },
+    outputSchema: { reset: z.number() }
+  },
+  async ({ userId }) => {
+    const reset = resetHelp(userId);
+    return {
+      content: [{ type: 'text', text: `Reset ${reset} help tour(s)${userId ? ` for ${userId}` : ''}` }],
+      structuredContent: { reset }
+    };
   }
 );

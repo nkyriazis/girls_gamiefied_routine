@@ -15,6 +15,9 @@ import { useTouchDevice } from '../hooks/useTouchDevice';
 import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
 import { ExercisesDrawer } from './ExercisesDrawer';
+import { help } from '../help/anchors';
+import { HelpScreen } from '../help/HelpProvider';
+import { homeTour, routineTour } from './Dashboard.help';
 
 // Toast for a chore outcome (from a server event)
 interface ChoreNotification {
@@ -184,7 +187,11 @@ export const Dashboard: React.FC = () => {
   const totalActiveCount = sortedActiveItems.length;
   const viewMode = totalActiveCount === 0 ? 'IDLE' : totalActiveCount === 1 ? 'SINGLE' : totalActiveCount === 2 ? 'DUAL' : 'GRID';
 
+  // The owl explains the home screen, or the routines on it (once the screen is started)
+  const tour = !hasInteracted ? null : totalActiveCount === 0 ? homeTour() : routineTour();
+
   return (
+    <HelpScreen tour={tour}>
     <div className="dashboard">
       {timeWarning && (
         <div className="time-warning">
@@ -215,6 +222,7 @@ export const Dashboard: React.FC = () => {
       {totalActiveCount === 0 && (
         <motion.button
           className="chores-fab"
+          {...help('home.chores')}
           onClick={() => setChoresOpen(true)}
           initial={{ x: 100 }}
           animate={{ x: 0 }}
@@ -234,6 +242,7 @@ export const Dashboard: React.FC = () => {
       {totalActiveCount === 0 && (
         <motion.button
           className="bonus-fab"
+          {...help('home.bonus')}
           onClick={() => setBonusOpen(true)}
           initial={{ x: 100 }}
           animate={{ x: 0 }}
@@ -253,6 +262,7 @@ export const Dashboard: React.FC = () => {
       {totalActiveCount === 0 && (
         <motion.button
           className="exercise-fab"
+          {...help('home.game')}
           onClick={() => setSetupOpen(true)}
           initial={{ x: 100 }}
           animate={{ x: 0 }}
@@ -267,6 +277,7 @@ export const Dashboard: React.FC = () => {
       {totalActiveCount === 0 && (
         <motion.button
           className="daily-exercises-fab"
+          {...help('home.exercises')}
           onClick={() => setDailyExercisesOpen(true)}
           initial={{ x: 100 }}
           animate={{ x: 0 }}
@@ -381,6 +392,7 @@ export const Dashboard: React.FC = () => {
           {totalActiveCount === 0 && (
             <motion.div
               className="clock-container"
+              {...help('home.clock')}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -471,6 +483,7 @@ export const Dashboard: React.FC = () => {
             <motion.div
               key={user.id}
               className="dock-item"
+              {...help('home.kid')}
               whileHover={!isTouchDevice ? { scale: 1.05, y: -5 } : {}}
               whileTap={{ scale: 0.95 }}
             >
@@ -870,5 +883,6 @@ export const Dashboard: React.FC = () => {
         }
       `}</style>
     </div>
+    </HelpScreen>
   );
 };

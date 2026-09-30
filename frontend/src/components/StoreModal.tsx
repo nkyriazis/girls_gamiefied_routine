@@ -9,6 +9,9 @@ import { useAppSounds } from '../hooks/useAppSounds';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 import { useGame } from '../context/GameContext';
 import { UserExercises } from './UserExercises';
+import { help } from '../help/anchors';
+import { HelpScreen } from '../help/HelpProvider';
+import { activityTour, storeTour, transferTour } from './StoreModal.help';
 
 interface StoreModalProps {
   user: User;
@@ -112,7 +115,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   };
 
   return (
-    <>
+    <HelpScreen tour={storeTour(user.id)}>
       <motion.div
         className="store-overlay"
         initial={{ opacity: 0 }}
@@ -160,6 +163,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
             <div className="balance-section">
               <motion.div
                 className="user-balance"
+                {...help('store.balance')}
                 key={user.stars}
                 initial={{ scale: 1 }}
                 animate={{ scale: [1, 1.3, 1] }}
@@ -177,7 +181,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
           <div className={`store-content ${canEarn ? 'with-earn' : ''}`}>
             {canEarn && (
-              <div className="earn-section">
+              <div className="earn-section" {...help('store.earn')}>
                 <h3>Κέρδισε αστέρια</h3>
                 <UserExercises user={user} />
               </div>
@@ -189,6 +193,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                   {otherUsers.length > 0 && (
                     <button
                       className="transfer-btn"
+                      {...help('store.give')}
                       onClick={() => setShowTransfer(true)}
                     >
                       🎁 Δώσε Αστέρια
@@ -197,6 +202,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                   {(mySpendings.length > 0 || myPendingOutgoingTransfers.length > 0 || myPendingIncomingTransfers.length > 0) && (
                     <button
                       className="activity-toggle-btn"
+                      {...help('store.activity')}
                       onClick={() => setShowActivity(!showActivity)}
                     >
                       📋 Δραστηριότητα
@@ -204,7 +210,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                   )}
                 </div>
               </div>
-              <div className="rewards-grid">
+              <div className="rewards-grid" {...help('store.rewards')}>
                 {rewards.map(reward => {
                   const canAfford = availableBalance >= reward.cost;
                   const isPurchasing = purchasingId === reward.id;
@@ -242,7 +248,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
             </div>
           </div>
 
-          <button className="close-btn" onClick={onClose}>Κλείσιμο</button>
+          <button className="close-btn" onClick={onClose} {...help('store.close')}>Κλείσιμο</button>
         </motion.div>
 
         {/* Activity Popup */}
@@ -261,7 +267,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.8, y: 50 }}
                 onClick={e => e.stopPropagation()}
+                {...help('activity.list')}
               >
+                <HelpScreen tour={activityTour(user.id)}>
                 <div className="activity-popup-header">
                   <h3>Δραστηριότητα</h3>
                   <button className="popup-close-btn" onClick={() => setShowActivity(false)}>✕</button>
@@ -361,6 +369,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                     </div>
                   </>
                 )}
+                </HelpScreen>
               </motion.div>
             </motion.div>
           )}
@@ -383,6 +392,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                 exit={{ scale: 0.8, y: 50 }}
                 onClick={e => e.stopPropagation()}
               >
+                <HelpScreen tour={transferSuccess ? null : transferTour(user.id)}>
                 {transferSuccess ? (
                   <div className="transfer-success">
                     <div className="success-icon">🎉</div>
@@ -398,7 +408,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                     </div>
 
                     <div className="transfer-form">
-                      <div className="form-field">
+                      <div className="form-field" {...help('transfer.to')}>
                         <label>Προς:</label>
                         <select 
                           value={selectedRecipient} 
@@ -413,7 +423,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
                       <div className="form-field">
                         <label>Ποσό:</label>
-                        <div className="amount-input">
+                        <div className="amount-input" {...help('transfer.amount')}>
                           <button 
                             className="amount-btn"
                             onClick={() => setTransferAmount(Math.max(1, transferAmount - 1))}
@@ -441,6 +451,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
                       <button 
                         className="send-transfer-btn"
+                        {...help('transfer.send')}
                         onClick={handleTransfer}
                         disabled={!selectedRecipient || transferAmount <= 0 || transferAmount > availableBalance || isTransferring}
                       >
@@ -453,6 +464,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                     </div>
                   </>
                 )}
+                </HelpScreen>
               </motion.div>
             </motion.div>
           )}
@@ -1037,6 +1049,6 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           }
         }
       `}</style>
-    </>
+    </HelpScreen>
   );
 };

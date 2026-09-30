@@ -25,7 +25,8 @@ const EMPTY_STATE: AppState = {
     exerciseSessions: [],
     exerciseAssignments: [],
     flowRuns: [],
-    routineRuns: []
+    routineRuns: [],
+    helpSeen: []
 };
 
 type EventListener = (event: ServerEvent) => void;

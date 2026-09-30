@@ -12,6 +12,9 @@ import { OrderingRenderer } from './exercises/OrderingRenderer';
 import { FillBlankRenderer } from './exercises/FillBlankRenderer';
 import { NumberInputRenderer } from './exercises/NumberInputRenderer';
 import { ProblemPlayer } from './exercises/ProblemPlayer';
+import { help } from '../help/anchors';
+import { HelpButton, HelpScreen } from '../help/HelpProvider';
+import { exerciseTour } from './AssignmentPlayer.help';
 
 interface AssignmentPlayerProps {
   assignment: ExerciseAssignmentWithExercise;
@@ -82,7 +85,9 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     }
   };
 
+  // The owl sits in the header; a problem says what each of its steps needs itself
   return (
+    <HelpScreen tour={isProblem ? null : exerciseTour(user.id, exercise.type)} inline>
     <motion.div
       className="assignment-player"
       initial={{ opacity: 0 }}
@@ -95,8 +100,9 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           <span>{user.name}</span>
         </div>
         <h1 className="assignment-header-title">{exercise.title}</h1>
-        <div className="assignment-reward">⭐ {exercise.stars}</div>
-        <button className="exit-game-btn" onClick={onClose}>✕</button>
+        <div className="assignment-reward" {...help('exercise.stars')}>⭐ {exercise.stars}</div>
+        <HelpButton inline />
+        <button className="exit-game-btn" onClick={onClose} {...help('exercise.exit')}>✕</button>
       </div>
 
       <div className={`assignment-stage ${isProblem ? 'problem-mode' : ''}`}>
@@ -105,7 +111,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         ) : (
           // The question on the left, the answer on the right (stacked on narrow screens)
           <div className="assignment-split" key={attemptKey}>
-            <div className="assignment-ask">
+            <div className="assignment-ask" {...help('exercise.ask')}>
               {exercise.body && <p className="assignment-body">{exercise.body}</p>}
               {exercise.figure && (
                 <div className="assignment-figure">
@@ -116,7 +122,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
                 <div className="assignment-question">{exercise.question}</div>
               )}
             </div>
-            <div className="assignment-renderer">{renderExercise()}</div>
+            <div className="assignment-renderer" {...help('exercise.answer')}>{renderExercise()}</div>
           </div>
         )}
       </div>
@@ -327,5 +333,6 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         }
       `}</style>
     </motion.div>
+    </HelpScreen>
   );
 };

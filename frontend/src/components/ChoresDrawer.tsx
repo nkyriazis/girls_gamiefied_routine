@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { useGame } from '../context/GameContext';
 import { api } from '../api';
+import { help } from '../help/anchors';
+import { HelpScreen } from '../help/HelpProvider';
+import { choresTour } from './ChoresDrawer.help';
 import type { Chore, ChoreInstance, User, ChoreCategory } from '@shared/types';
 
 interface ChoresDrawerProps {
@@ -143,6 +146,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
     };
 
     return (
+        <HelpScreen tour={isOpen ? choresTour(isBonus) : null}>
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -170,7 +174,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
 
                         <div className="chores-content">
                             {activeChores.length === 0 ? (
-                                <div className="empty-state">
+                                <div className="empty-state" {...help('chores.empty')}>
                                     <span className="empty-icon">{config.emptyIcon}</span>
                                     <p>{config.emptyText}</p>
                                     <p className="hint">{config.emptyHint}</p>
@@ -188,6 +192,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
                                             <motion.div
                                                 key={instance.id}
                                                 className={`chore-card ${instance.status} ${isBonus ? 'bonus' : ''}`}
+                                                {...help('chores.card')}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                             >
@@ -223,6 +228,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
                                                                 <button
                                                                     key={user.id}
                                                                     className="user-claim-btn"
+                                                                    {...help('chores.claim')}
                                                                     onClick={() => handleClaim(instance.id, user.id)}
                                                                     style={{ '--user-color': user.color } as React.CSSProperties}
                                                                 >
@@ -239,6 +245,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
                                                     <div className="chore-actions">
                                                         <button
                                                             className={`done-btn ${isBonus ? 'bonus' : ''}`}
+                                                            {...help('chores.done')}
                                                             onClick={() => handleAttempt(instance.id)}
                                                             style={{ '--user-color': claimedByUser.color } as React.CSSProperties}
                                                         >
@@ -251,7 +258,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
                                                 {/* Attempted: Show waiting indicator */}
                                                 {isAttempted && (
                                                     <div className="chore-actions">
-                                                        <span className="waiting-text">⏳ Περιμένει επιβεβαίωση από γονέα</span>
+                                                        <span className="waiting-text" {...help('chores.waiting')}>⏳ Περιμένει επιβεβαίωση από γονέα</span>
                                                     </div>
                                                 )}
                                             </motion.div>
@@ -523,5 +530,6 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
         }
       `}</style>
         </AnimatePresence>
+        </HelpScreen>
     );
 };

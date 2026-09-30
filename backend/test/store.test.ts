@@ -104,3 +104,16 @@ test('constraint violations other than a duplicate id are errors, not silently d
   assert.throws(() => store.routineExecutions.insertNew(broken), /NOT NULL/);
   assert.throws(() => store.routineExecutions.put(broken), /NOT NULL/);
 });
+
+test('help tours played are remembered once, and survive a state replace', () => {
+  const { store } = openStore();
+  store.helpSeen.insertNew({ id: 'store@u1', seenAt: 'a' });
+  assert.equal(store.helpSeen.insertNew({ id: 'store@u1', seenAt: 'b' }), false);
+  store.helpSeen.insertNew({ id: 'dashboard', seenAt: 'a' });
+  store.replaceState(store.snapshot());
+  assert.deepEqual(store.helpSeen.all().map(h => h.id), ['store@u1', 'dashboard']);
+  store.helpSeen.insertNew({ id: 'store@u12', seenAt: 'a' });
+  assert.equal(store.forgetHelp('u1'), 1);
+  assert.deepEqual(store.helpSeen.all().map(h => h.id), ['dashboard', 'store@u12']);
+  assert.equal(store.forgetHelp(), 2);
+});

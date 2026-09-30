@@ -1,0 +1,133 @@
+/* The owl's bubbles: driver.js places them, this dresses them like the rest of the kids' screens
+   (dark glass, the lavender of the problem player, gold for "go on"). */
+
+.driver-popover.help-pop {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background: linear-gradient(160deg, rgba(48, 43, 99, 0.98), rgba(26, 26, 46, 0.98));
+  color: white;
+  border: 2px solid rgba(160, 160, 255, 0.7);
+  border-radius: 1.4rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55), 0 0 24px rgba(160, 160, 255, 0.25);
+  min-width: 260px;
+  max-width: min(380px, calc(100vw - 32px));
+  padding: 1.1rem 1.3rem 1rem 1.3rem;
+  overflow: visible;
+}
+
+.help-pop .help-owl {
+  position: absolute;
+  top: -1.9rem;
+  left: -1.2rem;
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+  animation: help-bob 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.help-pop .driver-popover-title {
+  font-size: 1.35rem;
+  color: #ffd60a;
+  padding-left: 1.6rem;
+  padding-right: 1.5rem;
+}
+
+.help-pop .driver-popover-description {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+
+.help-pop .driver-popover-close-btn {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1.4rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  top: 0.3rem;
+  right: 0.3rem;
+}
+.help-pop .driver-popover-close-btn:hover,
+.help-pop .driver-popover-close-btn:focus { color: white; }
+.help-pop .driver-popover-close-btn:focus:not(:focus-visible),
+.help-pop .driver-popover-footer-btn:focus:not(:focus-visible) { outline: none; }
+
+.help-pop .driver-popover-footer { margin-top: 1rem; gap: 0.6rem; }
+
+.help-pop .driver-popover-footer-btn {
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 1rem;
+  padding: 0.55rem 1.1rem;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-shadow: none;
+}
+.help-pop .driver-popover-footer-btn:hover,
+.help-pop .driver-popover-footer-btn:focus { background: rgba(255, 255, 255, 0.18); }
+.help-pop .driver-popover-next-btn {
+  background: linear-gradient(135deg, #ffd60a, #fb8500);
+  border-color: transparent;
+  color: #2a1a00;
+}
+.help-pop .driver-popover-next-btn:hover,
+.help-pop .driver-popover-next-btn:focus { background: linear-gradient(135deg, #ffe14d, #ff9a1f); }
+.help-pop .driver-popover-navigation-btns button + button { margin-left: 0.5rem; }
+
+.help-pop .help-dots { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+.help-pop .help-dots span {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+.help-pop .help-dots span.past { background: rgba(160, 160, 255, 0.7); }
+.help-pop .help-dots span.on { background: #ffd60a; transform: scale(1.3); }
+
+/* The arrow takes the bubble's colour */
+.help-pop .driver-popover-arrow { border-width: 9px; border-color: rgba(160, 160, 255, 0.9); }
+.help-pop .driver-popover-arrow-side-left { border-top-color: transparent; border-bottom-color: transparent; border-right-color: transparent; }
+.help-pop .driver-popover-arrow-side-right { border-top-color: transparent; border-bottom-color: transparent; border-left-color: transparent; }
+.help-pop .driver-popover-arrow-side-top { border-bottom-color: transparent; border-left-color: transparent; border-right-color: transparent; }
+.help-pop .driver-popover-arrow-side-bottom { border-top-color: transparent; border-left-color: transparent; border-right-color: transparent; }
+
+/* The finger that shows how */
+.help-finger {
+  position: fixed;
+  z-index: 999999;
+  font-size: 2.8rem;
+  line-height: 1;
+  pointer-events: none;
+  translate: -35% -10%;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+}
+.help-finger.tap { animation: help-tap 1.3s ease-in-out infinite; }
+.help-finger.swipe { animation: help-swipe 2.2s ease-in-out infinite; }
+.help-finger::after {
+  content: '';
+  position: absolute;
+  left: 22%;
+  top: -12%;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 214, 10, 0.9);
+  opacity: 0;
+  animation: help-ripple 1.3s ease-out infinite;
+}
+.help-finger.swipe::after { display: none; }
+
+@keyframes help-bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-5px) rotate(4deg); } }
+@keyframes help-tap { 0%, 100% { transform: translateY(8px) scale(1); } 45% { transform: translateY(0) scale(0.88); } }
+@keyframes help-ripple { 0%, 40% { opacity: 0; transform: scale(0.4); } 50% { opacity: 1; } 100% { opacity: 0; transform: scale(2.4); } }
+@keyframes help-swipe {
+  0% { transform: translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  75% { transform: translateX(var(--swipe, 160px)); opacity: 1; }
+  100% { transform: translateX(var(--swipe, 160px)); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-pop .help-owl, .help-finger, .help-finger::after { animation: none; }
+}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, Reorder } from 'framer-motion';
 import type { OrderingExercise } from '@shared/types';
+import { help } from '../../help/anchors';
 
 interface Props {
   exercise: OrderingExercise;
@@ -19,7 +20,7 @@ export const OrderingRenderer: React.FC<Props> = ({ exercise, onAnswer, disabled
 
   return (
     <div className="ordering-container">
-      <Reorder.Group axis="y" values={items} onReorder={setItems} className="reorder-list">
+      <Reorder.Group axis="y" values={items} onReorder={setItems} className="reorder-list" {...help('answer.order')}>
         {items.map(item => (
           <Reorder.Item 
             key={item.id} 
@@ -35,6 +36,7 @@ export const OrderingRenderer: React.FC<Props> = ({ exercise, onAnswer, disabled
 
       <motion.button
         className="submit-order-btn"
+        {...help('answer.order-submit')}
         onClick={handleSubmit}
         disabled={disabled}
         whileHover={!disabled ? { scale: 1.05 } : {}}

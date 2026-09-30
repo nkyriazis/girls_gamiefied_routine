@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../context/GameContext';
 import { api } from '../api';
 import { AssignmentPlayer } from './AssignmentPlayer';
+import { help } from '../help/anchors';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
 
 // One kid's exercises: today's set and «Κι άλλο πρόβλημα» for more stars. On her own
@@ -76,6 +77,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
             <motion.button
               key={assignment.id}
               data-assignment={assignment.id}
+              {...help('exercises.card')}
               className={`assignment-card ${isDone ? 'completed' : ''}`}
               onClick={() => !isDone && setPlayingId(assignment.id)}
               disabled={isDone}
@@ -112,6 +114,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
           <motion.button
             className="extra-btn"
             data-extra={user.id}
+            {...help('exercises.more')}
             disabled={asking || (!openExtra && extras.length >= extraLimit)}
             whileTap={{ scale: 0.97 }}
             onClick={askForProblem}

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { ProblemCalcStep } from '@shared/types';
 import type { CalcOp } from '@shared/problems';
+import { help } from '../../help/anchors';
 import { fmt, lower, type Brush, type CalcValue, type PaintValue } from './problemFreeLogic';
 
 // The two free steps of a problem: painting the story freehand (nothing marked on
@@ -47,7 +48,7 @@ export const PaintWords: React.FC<{
   const move = (e: React.PointerEvent) => { if (stroke.current) reach(wordAt(e.clientX, e.clientY)); };
   const up = () => { stroke.current = null; };
   return (
-    <span className="paint-words" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+    <span className="paint-words" {...help('problem.paint')} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
       {words.map((w, i) => (
         <React.Fragment key={i}>
           {i > 0 && <span className={value[i - 1] && value[i - 1] === value[i] ? `role-${value[i]}` : ''}> </span>}
@@ -96,7 +97,7 @@ export const CalcBench: React.FC<{
   const slot = (n: number | null, what: string) => <span className={`calc-slot ${n === null ? 'empty' : ''}`}>{n === null ? what : fmt(n)}</span>;
   return (
     <div className="calc">
-      <ol className="calc-lines">
+      <ol className="calc-lines" {...help('calc.lines')}>
         {value.lines.map((l, i) => (
           <motion.li key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className={l.onPath ? '' : 'off-path'}>
             <span className="calc-eq">{fmt(l.x)} {l.op} {fmt(l.y)} = <b>{fmt(l.result)}</b></span>
@@ -104,7 +105,7 @@ export const CalcBench: React.FC<{
           </motion.li>
         ))}
       </ol>
-      <div className="calc-build" aria-label="Η πράξη σου">
+      <div className="calc-build" aria-label="Η πράξη σου" {...help('calc.build')}>
         {slot(value.x, '?')}
         <span className={`calc-slot op ${value.op === null ? 'empty' : ''}`}>{value.op ?? '○'}</span>
         {slot(value.y, '?')}
@@ -113,7 +114,7 @@ export const CalcBench: React.FC<{
           {value.result ? fmt(Number(value.result)) : '…'}
         </span>
       </div>
-      <div className="calc-chips">
+      <div className="calc-chips" {...help('calc.chips')}>
         {story.map(q => (
           <button key={q.id} type="button" className="calc-chip" disabled={disabled} onClick={() => pick(q.value)}>
             {fmt(q.value)} <small>{q.unit}</small>
@@ -125,7 +126,7 @@ export const CalcBench: React.FC<{
           </button>
         ))}
       </div>
-      <div className="calc-pad">
+      <div className="calc-pad" {...help('calc.pad')}>
         {OPS.map(op => (
           <motion.button key={op} type="button" className={`calc-key op ${value.op === op ? 'on' : ''}`} disabled={disabled || value.x === null}
             whileTap={{ scale: 0.92 }} onClick={() => setValue({ ...value, op })}>{op}</motion.button>

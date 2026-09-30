@@ -4,6 +4,9 @@ import { SmartIcon } from './SmartIcon';
 import { api } from '../api';
 import type { User } from '@shared/types';
 import { useAppSounds } from '../hooks/useAppSounds';
+import { help } from '../help/anchors';
+import { HelpScreen } from '../help/HelpProvider';
+import { gameSetupTour } from './ExerciseSetup.help';
 
 interface ExerciseSetupProps {
   users: User[];
@@ -64,6 +67,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
   };
 
   return (
+    <HelpScreen tour={gameSetupTour()}>
     <motion.div
       className="setup-overlay"
       initial={{ opacity: 0 }}
@@ -84,7 +88,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
           {/* Players Selection */}
           <section className="setup-section">
             <h3>Ποιος θα παίξει;</h3>
-            <div className="players-grid">
+            <div className="players-grid" {...help('game.players')}>
               {users.map(user => (
                 <motion.div
                   key={user.id}
@@ -108,7 +112,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
             {isLoading ? (
               <div className="loading-spinner">Φόρτωση...</div>
             ) : (
-              <div className="categories-chips">
+              <div className="categories-chips" {...help('game.subjects')}>
                 {categories.map(cat => {
                   // handle both {id, label, icon} and fallback string
                   const catId = cat.id || cat;
@@ -132,7 +136,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
           </section>
 
           {/* Settings Selection */}
-          <section className="setup-section settings-row">
+          <section className="setup-section settings-row" {...help('game.length')}>
             <div className="setting-item">
               <label>Γύροι (1-5)</label>
               <div className="counter-controls">
@@ -155,6 +159,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
         <div className="setup-actions">
           <motion.button
             className="start-game-btn"
+            {...help('game.start')}
             onClick={handleStart}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -403,5 +408,6 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
         }
       `}</style>
     </motion.div>
+    </HelpScreen>
   );
 };

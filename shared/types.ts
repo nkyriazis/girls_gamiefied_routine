@@ -367,6 +367,14 @@ export interface ActionLog {
   details: unknown;
 }
 
+// A help tour played on the kids' screens, so the owl stops offering it. The id names the
+// tour, and ends in "@<userId>" for a tour of a kid's own screen ("store@u2"). Not history:
+// it isn't part of the state snapshot.
+export interface HelpSeen {
+  id: string;
+  seenAt: string;
+}
+
 // Full runtime state, in the shape of the legacy state.json. Used by the admin
 // state editor and by the one-time import from state.json.
 export interface StateSnapshot {
@@ -473,6 +481,7 @@ export interface AppState {
   exerciseAssignments: ExerciseAssignmentWithExercise[]; // today's
   flowRuns: FlowRun[];
   routineRuns: RoutineRun[];
+  helpSeen: string[]; // help tours already played (see HelpSeen)
 }
 
 export interface ChoreEventPayload {

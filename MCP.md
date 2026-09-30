@@ -101,6 +101,7 @@ npx @modelcontextprotocol/inspector
 | `trigger_action` | Manually trigger a routine or flow |
 | `award_stars` | Award stars to a user (adds to balance) |
 | `set_user_stars` | Set a user's star balance to an absolute value |
+| `reset_help` | Let the help owl offer its tours again: one kid's own, or all |
 
 ## Available Resources
 

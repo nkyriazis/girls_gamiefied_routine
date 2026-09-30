@@ -52,7 +52,8 @@ export async function appState(): Promise<AppState> {
     exerciseSessions: activeExerciseSessions(),
     exerciseAssignments: await todaysAssignments(),
     flowRuns: store.flowRuns.all(),
-    routineRuns: routineRunsView()
+    routineRuns: routineRunsView(),
+    helpSeen: store.helpSeen.all().map(h => h.id)
   };
 }
 
@@ -1164,4 +1165,26 @@ function answerProblemStep(
     });
   }
   return reply;
+}
+
+// ============================================
+// HELP
+// ============================================
+
+const HELP_ID = /^[\w.-]{1,80}(@[\w-]{1,40})?$/;
+
+/** Help tours played on the kids' screens: the owl stops offering them. */
+export function markHelpSeen(ids: unknown): void {
+  if (!Array.isArray(ids) || ids.length === 0 || ids.length > 20 || !ids.every(id => typeof id === 'string' && HELP_ID.test(id))) {
+    throw new Error('tourIds: 1 to 20 tour ids');
+  }
+  const seenAt = new Date().toISOString();
+  store.transaction(() => ids.forEach(id => store.helpSeen.insertNew({ id, seenAt })));
+}
+
+/** The owl offers again: one kid's own tours (her screen, her exercises), or every tour. */
+export function resetHelp(userId?: string): number {
+  const n = store.forgetHelp(userId);
+  logAction('HELP_RESET', { userId: userId ?? null, tours: n });
+  return n;
 }

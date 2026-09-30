@@ -5,6 +5,9 @@ import { api } from '../api';
 import type { Exercise, ExerciseSession, User } from '@shared/types';
 import { useAppSounds } from '../hooks/useAppSounds';
 import { SmartIcon } from './SmartIcon';
+import { help } from '../help/anchors';
+import { HelpScreen } from '../help/HelpProvider';
+import { gameResultsTour, gameTour } from './ExerciseGame.help';
 
 // Sub-components for exercise types
 import { MultipleChoiceRenderer } from './exercises/MultipleChoiceRenderer';
@@ -104,6 +107,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
   // Final Results Screen
   if (currentSession.completedAt) {
     return (
+      <HelpScreen tour={gameResultsTour()}>
       <motion.div 
         className="game-container results-screen"
         initial={{ opacity: 0 }}
@@ -113,7 +117,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           <h1>Μπράβο! 🎉</h1>
           <h3>Το παιχνίδι ολοκληρώθηκε!</h3>
           
-          <div className="final-scores">
+          <div className="final-scores" {...help('game.scores')}>
             {players.map((player: User) => (
               <div key={player.id} className="player-result">
                 <div className="player-avatar">
@@ -129,6 +133,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
 
           <motion.button 
             className="finish-btn"
+            {...help('game.finish')}
             onClick={onClose}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -137,6 +142,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           </motion.button>
         </div>
       </motion.div>
+      </HelpScreen>
     );
   }
 
@@ -160,15 +166,16 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
   };
 
   return (
+    <HelpScreen tour={gameTour(currentExercise?.type)}>
     <div className="game-container">
       {/* Header Info */}
       <div className="game-header">
-        <div className="game-progress">
+        <div className="game-progress" {...help('game.progress')}>
           <div className="round-indicator">Γύρος {currentSession.currentRound} / {currentSession.totalRounds}</div>
           <div className="question-indicator">Ερώτηση {currentSession.currentQuestionIndex + 1} / {currentSession.questionsPerRound}</div>
         </div>
         
-        <div className="players-scores">
+        <div className="players-scores" {...help('game.turn')}>
           {players.map((player: User) => (
             <div key={player.id} className={`player-puck ${nextPlayerId === player.id ? 'active-turn' : ''}`}>
               <span className="player-puck-name">{player.name}</span>
@@ -177,7 +184,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           ))}
         </div>
 
-        <button className="exit-game-btn" onClick={onClose}>✕ Έξοδος</button>
+        <button className="exit-game-btn" onClick={onClose} {...help('game.exit')}>✕ Έξοδος</button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -189,7 +196,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           exit={{ x: -300, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <div className="exercise-content">
+          <div className="exercise-content" {...help('game.question')}>
             <div className="exercise-reward">⭐ {currentExercise.stars}</div>
             <h1 className="exercise-title">{currentExercise.title}</h1>
             {currentExercise.body && <p className="exercise-body">{currentExercise.body}</p>}
@@ -206,7 +213,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
               </div>
             )}
 
-            <div className="renderer-container">
+            <div className="renderer-container" {...help('game.answer')}>
                {renderExercise()}
             </div>
           </div>
@@ -523,5 +530,6 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
         }
       `}</style>
     </div>
+    </HelpScreen>
   );
 };
