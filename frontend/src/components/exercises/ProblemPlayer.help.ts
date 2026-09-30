@@ -1,0 +1,60 @@
+import type { ProblemStep } from '@shared/types';
+import type { HelpStep, Tour } from '../../help/tour';
+
+// The owl in a word problem: what the step on screen asks of her, on her rung, and the
+// first time (per kid) the frame around it: the phases, the story, hints and «Έλεγχος».
+
+export type ProblemHelpKind = 'tag' | 'paint' | 'paint-all' | Exclude<ProblemStep['kind'], 'tag' | 'paint'>;
+
+const BRUSHES: HelpStep = { el: 'problem.brushes', title: 'Δύο πινέλα', text: '🟢 για ό,τι ξέρουμε από την ιστορία, 🟡 για ό,τι ψάχνουμε. Διάλεξε ένα.', side: 'top' };
+
+const KIND: Record<ProblemHelpKind, HelpStep[]> = {
+  tag: [
+    BRUSHES,
+    { el: 'problem.phrase', title: 'Βάψε τις φράσεις', text: 'Πάτα μια φράση για να τη βάψεις. Ξαναπάτα τη, και σβήνει. Ό,τι δεν χρειάζεται, το αφήνεις άβαφο.', demo: 'tap' },
+  ],
+  paint: [
+    BRUSHES,
+    { el: 'problem.paint', title: 'Βάψε με το δάχτυλο', text: 'Σύρε το δάχτυλο πάνω στις λέξεις, σαν μαρκαδόρο. Δεν πειράζει αν βάψεις μια λέξη παραπάνω. Ξανά πάνω τους, και σβήνουν.', demo: 'swipe' },
+  ],
+  'paint-all': [
+    { el: 'problem.brushes', title: 'Τρία πινέλα', text: '🟢 ό,τι ξέρουμε και χρειαζόμαστε, 🟡 ό,τι ψάχνουμε, ⚪ ό,τι λέει η ιστορία αλλά δεν χρειάζεται.', side: 'top' },
+    { el: 'problem.paint', title: 'Βάψε με το δάχτυλο', text: 'Σύρε το δάχτυλο πάνω στις λέξεις, σαν μαρκαδόρο. Ξανά πάνω τους, και σβήνουν.', demo: 'swipe' },
+    { el: 'problem.brush-extra', title: 'Το λευκό πινέλο', text: 'Κάποιοι αριθμοί είναι παγίδες! Βρες τους και βάψ’ τους λευκούς.', side: 'top', demo: 'tap' },
+  ],
+  calc: [
+    { el: 'calc.chips', title: 'Οι αριθμοί σου', text: 'Οι αριθμοί της ιστορίας. Πάτα έναν για να ξεκινήσεις μια πράξη.', side: 'top', demo: 'tap' },
+    { el: 'calc.pad', title: 'Πράξη και αποτέλεσμα', text: 'Διάλεξε πράξη, πάτα τον δεύτερο αριθμό και γράψε το αποτέλεσμα με τα πλήκτρα.', side: 'top' },
+    { el: 'calc.build', title: 'Η πράξη σου', text: 'Εδώ φτιάχνεται. Με τον Έλεγχο σου λέω τι βρήκες, και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.', side: 'bottom' },
+    { el: 'calc.lines', title: 'Όσα βρήκες', text: 'Οι πράξεις σου μένουν εδώ, με το τι βρήκες σε καθεμιά. Οι πράσινες σε φέρνουν πιο κοντά στην απάντηση.', side: 'bottom' },
+  ],
+  choice: [
+    { el: 'problem.choices', title: 'Διάλεξε', text: 'Πάτα την απάντηση που ταιριάζει και μετά Έλεγχο.', side: 'left', demo: 'tap' },
+  ],
+  numbers: [
+    { el: 'problem.numbers', title: 'Συμπλήρωσε', text: 'Πάτα ένα κουτάκι και γράψε τον αριθμό.', side: 'left', demo: 'tap' },
+    { el: 'problem.keypad', title: 'Τα πλήκτρα', text: 'Με το ⌫ σβήνεις, με το ↵ πας στο επόμενο κουτάκι.', side: 'top' },
+  ],
+  order: [
+    { el: 'problem.order', title: 'Βάλε σειρά', text: 'Πάτα τα βήματα με τη σειρά που γίνονται. Πάτα ένα με αριθμό για να το πάρεις πίσω.', side: 'left', demo: 'tap' },
+  ],
+};
+
+export const problemTour = (userId: string, kind: ProblemHelpKind): Tour => ({
+  id: `problem-${kind}`,
+  user: userId,
+  steps: KIND[kind],
+  intro: {
+    id: 'problem',
+    steps: [
+      { id: 'hello', title: 'Ένα πρόβλημα! 🦉', text: 'Θα το λύσουμε βήμα βήμα, όπως στο βιβλίο. Έλα να σου δείξω.' },
+      { el: 'problem.phases', title: 'Τέσσερα βήματα', text: 'Διαβάζω, Σχεδιάζω, Λύνω, Ελέγχω. Εδώ βλέπεις σε ποιο είσαι.', side: 'bottom' },
+      { el: 'problem.story', title: 'Η ιστορία', text: 'Διάβασέ τη προσεκτικά, μέχρι το τέλος. Μένει εδώ σε όλα τα βήματα.', side: 'bottom' },
+      { el: 'problem.prompt', title: 'Τι ζητάει το βήμα', text: 'Κάθε βήμα σου λέει εδώ τι να κάνεις.', side: 'bottom' },
+    ],
+    after: [
+      { el: 'problem.hint', title: 'Συμβουλές', text: 'Αν κάτι δεν πάει καλά, εδώ σου λέω τι να κοιτάξεις.', side: 'top' },
+      { el: 'problem.check', title: 'Έλεγχος', text: 'Όταν είσαι έτοιμη, πάτα Έλεγχος. Τα λάθη δεν πειράζουν: ξαναδοκιμάζεις!', side: 'top', demo: 'tap' },
+    ],
+  },
+});

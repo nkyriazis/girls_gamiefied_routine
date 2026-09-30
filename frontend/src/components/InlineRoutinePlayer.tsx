@@ -4,6 +4,7 @@ import { type User, type Routine, type RoutineRun } from '@shared/types';
 import { RewardOverlay } from './RewardOverlay';
 import { useAppSounds } from '../hooks/useAppSounds';
 import { api } from '../api';
+import { help } from '../help/anchors';
 import { SmartIcon } from './SmartIcon';
 
 interface InlineRoutinePlayerProps {
@@ -120,12 +121,12 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
             />
           </div>
         </div>
-        <button className="btn-exit" onClick={onClose}>✕</button>
+        <button className="btn-exit" {...help('routine.exit')} onClick={onClose}>✕</button>
       </div>
 
       <div className="player-body">
         {/* Timeline (Compact) */}
-        <div className="timeline-compact">
+        <div className="timeline-compact" {...help('routine.timeline')}>
           {routine.tasks.map((task, index) => {
             const status = index < currentTaskIndex ? 'past' : index === currentTaskIndex ? 'current' : 'future';
             return (
@@ -139,6 +140,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
             <motion.div
               key={currentTask?.id}
               className="active-task-container"
+              {...help('routine.task')}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -156,7 +158,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         </AnimatePresence>
 
         {!isCompleted && (
-          <button className="btn-done" onClick={handleNextTask}>
+          <button className="btn-done" {...help('routine.done')} onClick={handleNextTask}>
             Έτοιμο!
           </button>
         )}

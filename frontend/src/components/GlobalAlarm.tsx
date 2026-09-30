@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAppSounds } from '../hooks/useAppSounds';
+import { help } from '../help/anchors';
 import { type User, type AlarmProps } from '@shared/types';
 
 interface GlobalAlarmProps {
@@ -77,7 +78,7 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
         )}
         {message && <p>{message}</p>}
 
-        <button className="btn-dismiss-global" onClick={handleDismiss}>
+        <button className="btn-dismiss-global" {...help('alarm.dismiss')} onClick={handleDismiss}>
           {dismissText}
         </button>
       </motion.div>

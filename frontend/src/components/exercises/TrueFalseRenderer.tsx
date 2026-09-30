@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TrueFalseExercise } from '@shared/types';
+import { help } from '../../help/anchors';
 
 interface Props {
   exercise: TrueFalseExercise;
@@ -10,7 +11,7 @@ interface Props {
 
 export const TrueFalseRenderer: React.FC<Props> = ({ onAnswer, disabled }) => {
   return (
-    <div className="tf-container">
+    <div className="tf-container" {...help('answer.truefalse')}>
       <motion.button
         className="tf-btn true"
         onClick={() => onAnswer(true)}

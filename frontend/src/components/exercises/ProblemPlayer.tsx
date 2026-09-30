@@ -7,8 +7,9 @@ import { storyWords, targetsFromMarks, usefulToAnswer, type PaintTarget } from '
 import { api } from '../../api';
 import { useAppSounds } from '../../hooks/useAppSounds';
 import { CalcBench, PaintWords } from './ProblemFreeSteps';
-import { useHelp } from '../../help/context';
-import { problemTour, type ProblemHelpKind } from '../../help/tours';
+import { help } from '../../help/anchors';
+import { HelpScreen } from '../../help/HelpProvider';
+import { problemTour, type ProblemHelpKind } from './ProblemPlayer.help';
 import { calcNudge, emptyCalc, paintFeedback, readLine, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 
 // A word problem, one step at a time, the way the Ε' book teaches it (ch. 1.3):
@@ -123,7 +124,6 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
   const unneeded = reading === 'paint-all';
   // The owl explains the step on screen, as she plays it on her rung
   const helpKind: ProblemHelpKind = kind === 'paint' && unneeded ? 'paint-all' : kind;
-  useHelp(useMemo(() => problemTour(assignment.userId, helpKind), [assignment.userId, helpKind]), { inline: true });
   const extras = story.flatMap(p => ('mark' in p && p.role === 'extra' ? [p.text] : []));
 
   // Drafts and wrong marks belong to the step they were made on: moving on leaves them behind.
@@ -192,8 +192,9 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
   };
 
   return (
+    <HelpScreen tour={problemTour(assignment.userId, helpKind)} inline>
     <div className="problem">
-      <ol className="problem-phases" aria-label="Βήματα">
+      <ol className="problem-phases" aria-label="Βήματα" {...help('problem.phases')}>
         {PHASES.map(p => (
           <li key={p.id} className={p.id === step.phase ? 'on' : ''}>
             <span aria-hidden>{p.icon}</span> {p.label}
@@ -209,14 +210,15 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
           ...paintMarks(targets, wrong?.parts, tries, value as PaintValue),
         } : undefined} />
 
-      <div className="problem-prompt">{step.prompt}</div>
+      <div className="problem-prompt" {...help('problem.prompt')}>{step.prompt}</div>
 
       <div className="problem-work">
         {(kind === 'tag' || kind === 'paint') && (
-          <div className="tag-brushes" role="radiogroup" aria-label="Πινέλο">
+          <div className="tag-brushes" role="radiogroup" aria-label="Πινέλο" {...help('problem.brushes')}>
             {BRUSHES.filter(b => b.role !== 'extra' || (kind === 'paint' && unneeded)).map(b => (
               <button key={b.role} type="button" role="radio" aria-checked={brush === b.role}
-                className={`tag-brush role-${b.role} ${brush === b.role ? 'on' : ''}`} onClick={() => setBrush(b.role)}>
+                className={`tag-brush role-${b.role} ${brush === b.role ? 'on' : ''}`} onClick={() => setBrush(b.role)}
+                {...(b.role === 'extra' ? help('problem.brush-extra') : {})}>
                 {b.icon} {b.label}
               </button>
             ))}
@@ -241,7 +243,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
         )}
       </div>
 
-      <div className={`problem-hint ${wrong || (calcNote && calcNote.kind !== 'answer') || unneededNote ? 'on' : ''} ${(calcNote && calcNote.kind === 'found') || (unneededNote && !wrong && !calcNote) ? 'good' : ''}`} aria-live="polite">
+      <div {...help('problem.hint')} className={`problem-hint ${wrong || (calcNote && calcNote.kind !== 'answer') || unneededNote ? 'on' : ''} ${(calcNote && calcNote.kind === 'found') || (unneededNote && !wrong && !calcNote) ? 'good' : ''}`} aria-live="polite">
         {wrong && (
           <motion.span key={`${stepIndex}-${lastWrong?.parts?.join()}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <strong>Όχι ακόμα. </strong>
@@ -261,7 +263,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
           <motion.span key={`${stepIndex}-unneeded`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>⚪ {unneededNote}</motion.span>
         )}
       </div>
-      <button type="button" className="problem-check" disabled={busy || !isReady(kind, step, value)} onClick={submit}>Έλεγχος ✓</button>
+      <button type="button" className="problem-check" {...help('problem.check')} disabled={busy || !isReady(kind, step, value)} onClick={submit}>Έλεγχος ✓</button>
 
       <AnimatePresence>
         {praise && (
@@ -319,6 +321,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
         .tag-legend { flex-basis: 100%; text-align: center; opacity: 0.7; font-size: 1rem; }
       `}</style>
     </div>
+    </HelpScreen>
   );
 };
 
@@ -355,13 +358,13 @@ const StoryCard: React.FC<{
     return (
       <span key={i} role="button" tabIndex={0} aria-disabled={disabled} onClick={tap}
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } }}
-        className={`story-phrase tappable ${role !== 'extra' ? `role-${role}` : ''} ${wrong?.includes(p.mark) ? 'is-wrong' : ''}`}>
+        {...help('problem.phrase')} className={`story-phrase tappable ${role !== 'extra' ? `role-${role}` : ''} ${wrong?.includes(p.mark) ? 'is-wrong' : ''}`}>
         {p.text}
       </span>
     );
   });
   return (
-    <div className="problem-story">
+    <div className="problem-story" {...help('problem.story')}>
       <div className={override ? 'story-layer hidden' : 'story-layer'} aria-hidden={!!override}>{full}</div>
       {override && <div className="story-layer">{override}</div>}
       <style>{`
@@ -387,7 +390,7 @@ interface StepProps<T> {
 
 // Tap to pick, "Έλεγχος" to answer.
 const ChoiceStep: React.FC<StepProps<number | null> & { options: string[] }> = ({ options, value, setValue, disabled }) => (
-  <div className="choice-list">
+  <div className="choice-list" {...help('problem.choices')}>
     {options.map((option, i) => (
       <motion.button key={i} type="button" className={`choice-btn ${value === i ? 'picked' : ''}`} disabled={disabled}
         aria-pressed={value === i} whileTap={!disabled ? { scale: 0.98 } : {}} onClick={() => setValue(i)}>
@@ -420,7 +423,7 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
   const stacked = rows.some(row => row.label.length > 22);
   return (
     <div className={`numbers-step ${stacked ? 'stacked' : ''}`}>
-      <div className="numbers-rows">
+      <div className="numbers-rows" {...help('problem.numbers')}>
         {rows.map((row, i) => (
           <div key={i} className="numbers-row">
             <span className="numbers-label">{row.label}</span>
@@ -432,7 +435,7 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
           </div>
         ))}
       </div>
-      <div className="numbers-pad">
+      <div className="numbers-pad" {...help('problem.keypad')}>
         {KEYS.map(k => (
           <motion.button key={k} type="button" className="numbers-key" disabled={disabled} whileTap={!disabled ? { scale: 0.92 } : {}}
             onClick={() => key(k)}>{k}</motion.button>
@@ -468,7 +471,7 @@ const OrderStep: React.FC<StepProps<string[]> & { items: string[] }> = ({ items,
     setValue(at >= 0 ? value.slice(0, at) : [...value, item]);
   };
   return (
-    <div className="order-step">
+    <div className="order-step" {...help('problem.order')}>
       {shuffled.map(item => {
         const at = value.indexOf(item);
         return (

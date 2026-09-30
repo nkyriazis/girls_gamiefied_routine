@@ -1,39 +1,27 @@
 import { driver, type DriveStep, type Driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import './help.css';
-import type { HelpStep, Tour } from './tours';
+import { anchorSelector } from './anchors';
+import { seenId, type HelpStep, type Tour } from './tour';
 
 // Plays a tour with driver.js: the screen dims around one widget at a time, the owl
 // explains it in a bubble next to it, and a finger shows how to use it. The look is
 // ours (help.css); driver.js only places things.
 
-const SEEN_KEY = 'help-seen';
-
-// Per device: which tours were played. A convenience only, so a blocked storage just
-// means the owl offers again.
-function seenSet(): Record<string, true> {
-  try { return JSON.parse(localStorage.getItem(SEEN_KEY) ?? '{}') ?? {}; } catch { return {}; }
-}
-export function isSeen(id: string): boolean {
-  return !!seenSet()[id];
-}
-function markSeen(ids: string[]) {
-  try { localStorage.setItem(SEEN_KEY, JSON.stringify({ ...seenSet(), ...Object.fromEntries(ids.map(id => [id, true])) })); } catch { /* not remembered */ }
-}
-
 // A widget is there if it takes up room on screen
-function onScreen(sel: string): Element | null {
-  const el = document.querySelector(sel);
+function onScreen(step: HelpStep): Element | null {
+  if (!step.el) return null;
+  const el = document.querySelector(anchorSelector(step.el));
   if (!el) return null;
   const r = el.getBoundingClientRect();
   return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden' ? el : null;
 }
 
-/** The steps the owl will actually say now (the intro only the first time). */
-export function stepsNow(tour: Tour): HelpStep[] {
-  const intro = tour.intro && !isSeen(tour.intro.id) ? tour.intro : null;
+/** The steps the owl will say now: the intro only if it hasn't been played. */
+export function stepsNow(tour: Tour, seen: (id: string) => boolean): HelpStep[] {
+  const intro = tour.intro && !seen(seenId(tour.intro.id, tour.user)) ? tour.intro : null;
   const steps = [...(intro?.steps ?? []), ...tour.steps, ...(intro?.after ?? [])];
-  return steps.filter(s => !s.el || onScreen(s.el));
+  return steps.filter(s => !s.el || onScreen(s));
 }
 
 let finger: HTMLElement | null = null;
@@ -57,22 +45,26 @@ function hideFinger() {
 
 let active: Driver | null = null;
 
-/** Plays the tour; `onEnd` runs however it ends (finished or closed). */
-export function playTour(tour: Tour, onEnd?: () => void) {
-  const steps = stepsNow(tour);
-  if (!steps.length) return;
+/**
+ * Plays the tour. `onEnd` gets the ids to remember as played (the tour, and its intro if
+ * it was said), however it ends: finished or closed.
+ */
+export function playTour(tour: Tour, { seen, onEnd }: { seen: (id: string) => boolean; onEnd: (played: string[]) => void }) {
+  const steps = stepsNow(tour, seen);
+  if (!steps.length) return false;
+  const introSaid = !!tour.intro && !seen(seenId(tour.intro.id, tour.user));
   active?.destroy();
   const total = steps.length;
   const d = driver({
     steps: steps.map((s, i): DriveStep => ({
-      element: s.el,
+      element: s.el && anchorSelector(s.el),
       data: { demo: s.demo },
       popover: {
         title: s.title,
         description: s.text,
         side: s.side,
         align: 'center',
-        nextBtnText: i === total - 1 ? 'Το βρήκα! 🎉' : 'Επόμενο ▶',
+        nextBtnText: i < total - 1 ? 'Επόμενο ▶' : 'Το βρήκα! 🎉',
       },
     })),
     popoverClass: 'help-pop',
@@ -105,11 +97,11 @@ export function playTour(tour: Tour, onEnd?: () => void) {
     onDeselected: hideFinger,
     onDestroyed: () => {
       hideFinger();
-      markSeen([tour.id, ...(tour.intro ? [tour.intro.id] : [])]);
       if (active === d) active = null;
-      onEnd?.();
+      onEnd([seenId(tour.id, tour.user), ...(introSaid && tour.intro ? [seenId(tour.intro.id, tour.user)] : [])]);
     },
   });
   active = d;
   d.drive();
+  return true;
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { MultipleChoiceExercise } from '@shared/types';
+import { help } from '../../help/anchors';
 
 interface Props {
   exercise: MultipleChoiceExercise;
@@ -10,7 +11,7 @@ interface Props {
 
 export const MultipleChoiceRenderer: React.FC<Props> = ({ exercise, onAnswer, disabled }) => {
   return (
-    <div className="options-grid">
+    <div className="options-grid" {...help('answer.options')}>
       {exercise.options.map((option, index) => (
         <motion.button
           key={index}

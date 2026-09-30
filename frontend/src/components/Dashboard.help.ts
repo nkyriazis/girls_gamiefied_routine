@@ -1,0 +1,31 @@
+import type { HelpStep, Tour } from '../help/tour';
+
+// The owl on the home screen: what each button opens, or the routine on screen.
+
+const OWL: HelpStep = { el: 'help.owl', title: 'Είμαι πάντα εδώ', text: 'Όποτε δεν ξέρεις τι να κάνεις, πάτα την κουκουβάγια και θα σου δείξω.' };
+
+export const homeTour = (): Tour => ({
+  id: 'home',
+  steps: [
+    { id: 'hello', title: 'Γεια σου! 🦉', text: 'Είμαι η κουκουβάγια-βοηθός. Έλα να σου δείξω τι κάνει κάθε κουμπί.' },
+    { el: 'home.clock', title: 'Η ώρα', text: 'Η ώρα και η μέρα. Όταν είναι ώρα για ρουτίνα, εμφανίζεται εδώ.' },
+    { el: 'home.kid', title: 'Η δική σου γωνιά', text: 'Πάτα τη φωτογραφία σου: βλέπεις τα αστέρια σου, κερδίζεις κι άλλα και τα ξοδεύεις σε ανταμοιβές.', side: 'top', demo: 'tap' },
+    { el: 'home.exercises', title: 'Ασκήσεις της ημέρας', text: 'Οι σημερινές ασκήσεις όλων. Ο αριθμός λέει πόσες περιμένουν.', side: 'left' },
+    { el: 'home.chores', title: 'Δουλειές', text: 'Δουλειές του σπιτιού. Αναλαμβάνεις μία, την κάνεις και παίρνεις αστέρια.', side: 'left' },
+    { el: 'home.bonus', title: 'Έξτρα', text: 'Έξτρα δραστηριότητες, για ακόμα περισσότερα αστέρια.', side: 'left' },
+    { el: 'home.game', title: 'Παιχνίδι για όλους', text: 'Ασκήσεις που παίζετε μαζί, όλοι μπροστά στην οθόνη.', side: 'left' },
+    OWL,
+  ],
+});
+
+export const routineTour = (): Tour => ({
+  id: 'routine',
+  steps: [
+    { el: 'routine.timeline', title: 'Η ρουτίνα σου', text: 'Κάθε τελεία είναι μια δουλειά της ρουτίνας. Η φωτεινή είναι αυτή που κάνεις τώρα.' },
+    { el: 'routine.task', title: 'Τι κάνεις τώρα', text: 'Αυτή είναι η δουλειά σου. Το ρολόι μετράει πόσος χρόνος μένει.' },
+    { el: 'routine.done', title: 'Έτοιμη;', text: 'Μόλις την τελειώσεις, πάτα εδώ. Όσο πιο γρήγορα, τόσο περισσότερα αστέρια!', side: 'top', demo: 'tap' },
+    { el: 'routine.exit', title: 'Κλείσιμο', text: 'Με το ✕ κλείνει η ρουτίνα. Καλύτερα να την τελειώσεις πρώτα!', side: 'bottom' },
+    { el: 'alarm.dismiss', title: 'Ξυπνητήρι', text: 'Πάτα εδώ για να το σταματήσεις.', side: 'top', demo: 'tap' },
+    OWL,
+  ],
+});

@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { useGame } from '../context/GameContext';
 import { UserExercises } from './UserExercises';
-import { useHelp } from '../help/context';
-import { exercisesTour } from '../help/tours';
+import { help } from '../help/anchors';
+import { HelpScreen } from '../help/HelpProvider';
+import { exercisesTour } from './ExercisesDrawer.help';
 
 interface ExercisesDrawerProps {
     isOpen: boolean;
@@ -15,9 +16,9 @@ interface ExercisesDrawerProps {
 export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClose }) => {
     const { users, exerciseAssignments, config } = useGame();
     const extraLimit = config.settings.extraProblemsPerDay ?? 10;
-    useHelp(useMemo(() => (isOpen ? exercisesTour() : null), [isOpen]));
 
     return (
+        <HelpScreen tour={isOpen ? exercisesTour() : null}>
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -50,7 +51,7 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
                                 const done = mine.filter(a => a.status === 'completed').length;
                                 return (
                                     <UserExercises key={user.id} user={user} header={
-                                        <div className="user-header" style={{ '--user-color': user.color } as React.CSSProperties}>
+                                        <div className="user-header" {...help('exercises.kid')} style={{ '--user-color': user.color } as React.CSSProperties}>
                                             <SmartIcon value={user.avatar || '👧'} size={36} />
                                             <h3>{user.name}</h3>
                                             <span className={`progress-pill ${done === mine.length ? 'done' : ''}`}>
@@ -177,5 +178,6 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
         }
       `}</style>
         </AnimatePresence>
+        </HelpScreen>
     );
 };

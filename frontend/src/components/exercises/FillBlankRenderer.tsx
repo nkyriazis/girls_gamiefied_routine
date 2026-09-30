@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { FillBlankExercise } from '@shared/types';
+import { help } from '../../help/anchors';
 
 interface Props {
   exercise: FillBlankExercise;
@@ -76,6 +77,7 @@ export const FillBlankRenderer: React.FC<Props> = ({ exercise, onAnswer, disable
               <motion.button
                 key={`gap-${index}`}
                 className={`fb-gap ${filled ? 'filled' : ''} ${isActive ? 'active' : ''}`}
+                {...help('answer.blank')}
                 onClick={() => handleGapTap(gapIndex)}
                 disabled={disabled}
                 whileTap={{ scale: 0.95 }}
@@ -89,7 +91,7 @@ export const FillBlankRenderer: React.FC<Props> = ({ exercise, onAnswer, disable
       </div>
 
       {/* Word bank */}
-      <div className="fb-word-bank">
+      <div className="fb-word-bank" {...help('answer.words')}>
         {shuffledOptions.map((word, i) => {
           const isUsed = usedWords.includes(word);
           return (

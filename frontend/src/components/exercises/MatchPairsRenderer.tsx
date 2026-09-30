@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { MatchPairsExercise } from '@shared/types';
+import { help } from '../../help/anchors';
 
 interface Props {
   exercise: MatchPairsExercise;
@@ -57,7 +58,7 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
 
   return (
     <div className="match-container">
-      <div className="match-column">
+      <div className="match-column" {...help('answer.match-left')}>
         {leftItems.map(item => {
           const isMatched = matchedPairs.some(m => m.leftIdx === item.idx);
           const isSelected = selectedLeftIdx === item.idx;
@@ -76,7 +77,7 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
         })}
       </div>
 
-      <div className="match-column">
+      <div className="match-column" {...help('answer.match-right')}>
         {rightItems.map(item => {
           const isMatched = matchedPairs.some(m => m.rightIdx === item.idx);
           const canMatch = selectedLeftIdx !== null;

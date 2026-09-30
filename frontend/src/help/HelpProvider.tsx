@@ -1,43 +1,56 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { HelpContext, useHelpApi, type HelpApi } from './context';
-import { isSeen, playTour } from './runTour';
-import type { Tour } from './tours';
+import { api } from '../api';
+import { useGame } from '../context/GameContext';
+import { help } from './anchors';
+import { HelpContext, HelpDepth, useHelpApi, type HelpApi } from './context';
+import { playTour } from './runTour';
+import { seenId, type Tour } from './tour';
 
-// The owl: always in a corner of the kids' screens, explaining whatever is on top.
-// Until a screen's tour has been played, it wiggles and offers to show.
+// The owl: always in a corner of the screen, explaining whatever is on top. Until a
+// screen's tour has been played, it wiggles and offers to show. What has been played is
+// server state (AppState.helpSeen), so it's the same on every device and per kid.
 
-type Entry = { tour: Tour; inline: boolean; seq: number };
+type Entry = { tour: Tour; depth: number; inline: boolean; seq: number };
 let seq = 0;
 
 export const HelpProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { helpSeen } = useGame();
   const [entries, setEntries] = useState<Map<symbol, Entry>>(new Map());
   const [playing, setPlaying] = useState(false);
-  const [played, setPlayed] = useState(0); // re-reads what has been seen
+  // Played here but maybe not on the server yet (offline, or its STATE hasn't come back)
+  const [playedHere, setPlayedHere] = useState<string[]>([]);
+  const seen = useMemo(() => new Set([...(helpSeen ?? []), ...playedHere]), [helpSeen, playedHere]);
 
-  const register = useCallback((key: symbol, tour: Tour, inline: boolean) => {
-    setEntries(prev => new Map(prev).set(key, { tour, inline, seq: ++seq }));
+  const register = useCallback((key: symbol, entry: Omit<Entry, 'seq'>) => {
+    setEntries(prev => new Map(prev).set(key, { ...entry, seq: ++seq }));
   }, []);
   const unregister = useCallback((key: symbol) => {
     setEntries(prev => { const next = new Map(prev); next.delete(key); return next; });
   }, []);
 
-  // The top layer wins; on the same layer, the screen that opened last
-  const top = [...entries.values()].sort((a, b) => b.tour.layer - a.tour.layer || b.seq - a.seq)[0] ?? null;
+  // The deepest screen wins; between siblings, the one that opened last
+  const top = [...entries.values()].sort((a, b) => b.depth - a.depth || b.seq - a.seq)[0] ?? null;
   const current = top?.tour ?? null;
 
   const play = useCallback(() => {
     if (!current) return;
-    setPlaying(true);
-    playTour(current, () => { setPlaying(false); setPlayed(n => n + 1); });
-  }, [current]);
+    const started = playTour(current, {
+      seen: id => seen.has(id),
+      onEnd: played => {
+        setPlaying(false);
+        setPlayedHere(prev => [...prev, ...played]);
+        api.markHelpSeen(played).catch(err => console.warn('Help: not remembered on the server', err));
+      },
+    });
+    if (started) setPlaying(true);
+  }, [current, seen]);
 
   const value = useMemo<HelpApi>(() => ({
     register, unregister, current, playing, play,
     inline: !!top?.inline,
-    // `played` makes this recompute once a tour ends
-    fresh: !!current && played >= 0 && !isSeen(current.id),
-  }), [register, unregister, current, top?.inline, playing, play, played]);
+    fresh: !!current && !seen.has(seenId(current.id, current.user)),
+  }), [register, unregister, current, top?.inline, playing, play, seen]);
 
   return (
     <HelpContext.Provider value={value}>
@@ -47,12 +60,34 @@ export const HelpProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+/**
+ * A screen the owl can explain. Wrap the screen's content; nested screens (a drawer in the
+ * home screen, a problem in the player) sit deeper and win while they're open. `tour`
+ * null: nothing to explain right now, but the screens inside still count as nested.
+ */
+export const HelpScreen: React.FC<{ tour: Tour | null; inline?: boolean; children: React.ReactNode }> = ({ tour, inline = false, children }) => {
+  const helpApi = useContext(HelpContext);
+  const depth = useContext(HelpDepth) + 1;
+  const [key] = useState(() => Symbol('help'));
+  const register = helpApi?.register, unregister = helpApi?.unregister;
+  // A tour is known by its id: the same id is the same tour, whatever object carries it
+  const tourKey = tour ? `${seenId(tour.id, tour.user)}` : null;
+  const latestTour = useEffectEvent(() => tour);
+  useEffect(() => {
+    const t = latestTour();
+    if (!register || !unregister || !tourKey || !t) return;
+    register(key, { tour: t, depth, inline });
+    return () => unregister(key);
+  }, [register, unregister, key, tourKey, depth, inline]);
+  return <HelpDepth.Provider value={depth}>{children}</HelpDepth.Provider>;
+};
+
 /** The owl button. Floating by default; `inline` sits in a screen's own header. */
 export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) => {
-  const help = useHelpApi();
-  const tourId = help?.current?.id;
-  const fresh = !!help?.fresh && !help.playing;
-  // "Να σου δείξω;" for a while when a screen is new to her; the wiggle stays
+  const helpApi = useHelpApi();
+  const tourId = helpApi?.current ? seenId(helpApi.current.id, helpApi.current.user) : undefined;
+  const fresh = !!helpApi?.fresh && !helpApi.playing;
+  // "Να σου δείξω;" for a while when a screen is new; the wiggle stays
   const [offerFor, setOfferFor] = useState<string | null>(null);
   useEffect(() => {
     if (!fresh || !tourId) return;
@@ -60,7 +95,7 @@ export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) =
     const hide = setTimeout(() => setOfferFor(null), 12000);
     return () => { clearTimeout(show); clearTimeout(hide); };
   }, [fresh, tourId]);
-  if (!help?.current || (inline !== help.inline)) return null;
+  if (!helpApi?.current || inline !== helpApi.inline) return null;
   const offer = fresh && offerFor === tourId;
 
   return (
@@ -69,10 +104,11 @@ export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) =
         type="button"
         className={`help-btn ${fresh ? 'fresh' : ''}`}
         aria-label="Βοήθεια"
-        onClick={help.play}
+        onClick={helpApi.play}
         whileTap={{ scale: 0.9 }}
         animate={fresh ? { rotate: [0, -14, 12, -8, 6, 0], y: [0, -6, 0, -3, 0, 0] } : { rotate: 0, y: 0 }}
         transition={fresh ? { duration: 1.1, repeat: Infinity, repeatDelay: 2.2 } : { duration: 0.2 }}
+        {...help('help.owl')}
       >
         <span className="help-btn-owl" aria-hidden>🦉</span>
         <span className="help-btn-q" aria-hidden>{fresh ? '!' : '?'}</span>
@@ -82,7 +118,7 @@ export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) =
           <motion.button
             type="button"
             className="help-offer"
-            onClick={help.play}
+            onClick={helpApi.play}
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.6 }}
