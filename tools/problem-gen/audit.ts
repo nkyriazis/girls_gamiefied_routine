@@ -1,0 +1,192 @@
+// Audit the problem pools, independently of the generator that wrote them:
+//
+//   node tools/problem-gen/audit.ts                    every problem in backend/exercise-pools
+//   node tools/problem-gen/audit.ts --sample out.md 40  also write 40 random problems per grade, as text, for reading
+//   node tools/problem-gen/audit.ts --dir DIR           audit the pools in DIR instead
+//
+// Errors (exit 1):
+//   - every equation in the story, prompts, hints, number rows (label + answer) and right
+//     options holds (wrong options may hold wrong equations: they are wrong on purpose);
+//   - a story with a tag step marks every number it has, and has at least one known,
+//     one sought and one extra phrase;
+//   - options are distinct, indexes in range, order items distinct, answers whole numbers
+//     within the grade's range;
+//   - no leftover template text, doubled spaces, spaces before punctuation, unbalanced marks;
+//   - no id or story twice.
+// Warnings: a family with little variety (few distinct story skeletons), a story without
+// a question, very long stories.
+
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import type { Exercise, ProblemExercise } from '../../shared/types.ts';
+import { PEOPLE, rng } from './lib.ts';
+
+// --dir DIR audits another folder (e.g. gen.ts --out DIR while trying out families)
+const dirAt = process.argv.indexOf('--dir');
+const POOLS = dirAt > 0 ? process.argv[dirAt + 1] : path.join(import.meta.dirname, '../../backend/exercise-pools');
+const MAX_ANSWER: Record<number, number> = { 3: 10_000, 5: 100_000_000 };
+
+type Pool = { file: string; grades: number[]; exercises: Exercise[] };
+const pools: Pool[] = readdirSync(POOLS).filter(f => f.endsWith('.json')).sort()
+  .map(file => ({ file, ...JSON.parse(readFileSync(path.join(POOLS, file), 'utf-8')) }));
+
+const errors: string[] = [];
+const warnings: string[] = [];
+const err = (ex: ProblemExercise, msg: string) => errors.push(`${ex.id}: ${msg}`);
+
+const MARK = /\[([^\]|]+)\|(known|sought|extra)\]/g;
+const plain = (story: string) => story.replace(MARK, '$1');
+
+// "76 − 35 = 41", "8 × 19 + 4 = 156", "(146 : 2) − 35 = 38"; numbers as written (1.229)
+const NUM = String.raw`\d{1,3}(?:\.\d{3})+|\d+`;
+const TERM = String.raw`\(?\s*(?:${NUM})\s*\)?`;
+// Operators have a space on each side, as the books write them: a colon right after a word
+// or number ("έχει 4: 328 : 4 = 82") is punctuation, not division.
+const EQUATION = new RegExp(String.raw`(${TERM}(?:\s+[+−×:]\s+${TERM})+)\s*=\s*(${NUM})(?![\d.]*\d)`, 'g');
+
+const toNumber = (s: string) => Number(s.replace(/\./g, ''));
+function evaluate(expr: string): number {
+  const js = expr.replace(/\d{1,3}(?:\.\d{3})+|\d+/g, m => String(toNumber(m)))
+    .replace(/−/g, '-').replace(/×/g, '*').replace(/:/g, '/');
+  if (!/^[\d\s+\-*/().]+$/.test(js)) throw new Error(`not arithmetic: ${expr}`);
+  return Function(`"use strict"; return (${js});`)() as number;
+}
+
+function checkEquations(ex: ProblemExercise, where: string, text: string) {
+  for (const m of text.matchAll(EQUATION)) {
+    const got = evaluate(m[1]);
+    const said = toNumber(m[2]);
+    if (Math.abs(got - said) > 1e-9) err(ex, `${where}: «${m[0].trim()}» is false (${m[1].trim()} = ${got})`);
+  }
+}
+
+function hygiene(ex: ProblemExercise, where: string, text: string) {
+  if (/undefined|NaN|null|\[object|\$\{|\bInfinity\b/.test(text)) err(ex, `${where}: template leftovers in «${text}»`);
+  if (/ {2}/.test(text)) err(ex, `${where}: doubled space in «${text}»`);
+  if (/ [,.;·!]/.test(text)) err(ex, `${where}: space before punctuation in «${text}»`);
+  if (/[,;]\S/.test(text.replace(MARK, '$1').replace(/\d[.,]\d/g, '').replace(/ό,τι/gi, 'ότι'))) err(ex, `${where}: no space after punctuation in «${text}»`);
+}
+
+const stories = new Map<string, string>();
+const ids = new Set<string>();
+const families = new Map<string, { grade: number; skeletons: Set<string>; n: number; steps: number }>();
+const kinds = new Map<string, number>();
+
+// A story with numbers and names blanked out: how many really different stories a family has.
+const names = PEOPLE.flatMap(p => [p.bare, p.gen.split(' ')[1], p.acc.split(' ')[1]]);
+const namesRe = new RegExp(`(${[...new Set(names)].sort((a, b) => b.length - a.length).join('|')})`, 'g');
+const skeleton = (story: string) => plain(story).replace(namesRe, '@').replace(/\d[\d.]*/g, '#');
+
+for (const pool of pools) {
+  for (const ex of pool.exercises) {
+    if (ex.type !== 'problem') continue;
+    const grade = pool.grades[0];
+    if (ids.has(ex.id)) err(ex, 'duplicate id');
+    ids.add(ex.id);
+    if (stories.has(ex.story)) err(ex, `same story as ${stories.get(ex.story)}`);
+    stories.set(ex.story, ex.id);
+
+    const marks = [...ex.story.matchAll(MARK)];
+    const open = (ex.story.match(/\[/g) ?? []).length, close = (ex.story.match(/\]/g) ?? []).length;
+    if (open !== marks.length || close !== marks.length) err(ex, 'unbalanced or malformed [..|..] marks');
+    hygiene(ex, 'story', plain(ex.story));
+    checkEquations(ex, 'story', plain(ex.story));
+    if (!/[;;]/.test(plain(ex.story)) && !ex.steps.some(s => s.story)) warnings.push(`${ex.id}: the story asks no question`);
+    if (plain(ex.story).length > 420) warnings.push(`${ex.id}: long story (${plain(ex.story).length} characters)`);
+    if (!/^[Α-ΩΆΈΉΊΌΎΏ\d«]/.test(plain(ex.story))) err(ex, 'story does not start with a capital letter');
+    if (!/[.;!;»]$/.test(plain(ex.story))) err(ex, 'story does not end with punctuation');
+
+    const hasTag = ex.steps.some(s => s.kind === 'tag');
+    if (hasTag) {
+      const roles = marks.map(m => m[2]);
+      for (const role of ['known', 'sought', 'extra']) {
+        if (!roles.includes(role)) err(ex, `tag step, but no [..|${role}] phrase`);
+      }
+      const unmarked = ex.story.replace(MARK, '').match(/\d+/g);
+      if (unmarked) err(ex, `numbers outside the marked phrases: ${unmarked.join(', ')}`);
+    }
+
+    ex.steps.forEach((step, i) => {
+      const at = `step ${i} (${step.kind})`;
+      kinds.set(step.kind, (kinds.get(step.kind) ?? 0) + 1);
+      hygiene(ex, `${at} prompt`, step.prompt);
+      checkEquations(ex, `${at} prompt`, step.prompt);
+      if (step.hint) { hygiene(ex, `${at} hint`, step.hint); checkEquations(ex, `${at} hint`, step.hint); }
+      if (step.story) { hygiene(ex, `${at} story`, step.story); checkEquations(ex, `${at} story`, step.story); }
+      if (step.kind === 'choice') {
+        const opts = step.options.map(o => o.trim());
+        if (new Set(opts).size !== opts.length) err(ex, `${at}: repeated options ${JSON.stringify(opts)}`);
+        if (step.correctIndex < 0 || step.correctIndex >= opts.length) err(ex, `${at}: correctIndex out of range`);
+        else checkEquations(ex, `${at} right option`, opts[step.correctIndex]);
+        opts.forEach(o => hygiene(ex, `${at} option`, o));
+        if (opts.length < 2 || opts.length > 5) err(ex, `${at}: ${opts.length} options`);
+      }
+      if (step.kind === 'numbers') {
+        step.rows.forEach((row, j) => {
+          if (!Number.isInteger(row.answer) || row.answer < 0) err(ex, `${at} row ${j}: answer ${row.answer} is not a whole number`);
+          if (row.answer > MAX_ANSWER[grade]) err(ex, `${at} row ${j}: answer ${row.answer} beyond the grade's range`);
+          if (String(row.answer).length > 6) err(ex, `${at} row ${j}: ${row.answer} does not fit the keypad (6 digits)`);
+          hygiene(ex, `${at} row ${j}`, row.label);
+          checkEquations(ex, `${at} row ${j}`, /=\s*$/.test(row.label) ? `${row.label} ${row.answer}` : row.label);
+        });
+      }
+      if (step.kind === 'order') {
+        if (new Set(step.items).size !== step.items.length) err(ex, `${at}: repeated items`);
+        step.items.forEach(o => hygiene(ex, `${at} item`, o));
+      }
+    });
+
+    const fam = (ex.generatorParams as { family?: string } | undefined)?.family ?? `(curated ${pool.file})`;
+    const f = families.get(fam) ?? { grade, skeletons: new Set<string>(), n: 0, steps: 0 };
+    f.n++;
+    f.steps += ex.steps.length;
+    f.skeletons.add(skeleton(ex.story));
+    families.set(fam, f);
+  }
+}
+
+for (const [id, f] of families) {
+  if (!id.startsWith('(') && f.skeletons.size < Math.min(Math.max(5, Math.ceil(f.n / 3)), f.n)) warnings.push(`family ${id}: only ${f.skeletons.size} different story shapes in ${f.n} problems`);
+}
+
+// Report
+for (const grade of [3, 5]) {
+  const fs = [...families].filter(([, f]) => f.grade === grade);
+  const total = fs.reduce((n, [, f]) => n + f.n, 0);
+  console.log(`\nGrade ${grade}: ${total} problems in ${fs.length} families`);
+  for (const [id, f] of fs) {
+    console.log(`  ${id.padEnd(40)} ${String(f.n).padStart(3)} problems, ${String(f.skeletons.size).padStart(3)} story shapes, ${(f.steps / f.n).toFixed(1)} steps`);
+  }
+}
+console.log(`\nSteps by kind: ${[...kinds].map(([k, n]) => `${k} ${n}`).join(', ')}`);
+console.log(`\n${errors.length} errors, ${warnings.length} warnings`);
+for (const e of errors.slice(0, 80)) console.log(`  ✘ ${e}`);
+if (errors.length > 80) console.log(`  … and ${errors.length - 80} more`);
+for (const w of warnings.slice(0, 40)) console.log(`  ! ${w}`);
+
+// A sample to read, as a kid would see it
+const at = process.argv.indexOf('--sample');
+if (at > 0) {
+  const file = process.argv[at + 1];
+  const n = Number(process.argv[at + 2] ?? 30);
+  const r = rng(Date.now() & 0xffffffff);
+  let md = '# Problems to read\n';
+  for (const grade of [3, 5]) {
+    const all = pools.filter(p => p.grades.includes(grade)).flatMap(p => p.exercises).filter((e): e is ProblemExercise => e.type === 'problem');
+    md += `\n## Grade ${grade} (${n} of ${all.length})\n`;
+    for (const ex of r.sample(all, n)) {
+      md += `\n### ${ex.title} · ${ex.id}\n\n${ex.story.replace(MARK, (_m, t, role) => role === 'known' ? `**${t}**` : role === 'sought' ? `__?${t}?__` : `~~${t}~~`)}\n\n`;
+      ex.steps.forEach((s, i) => {
+        md += `${i + 1}. [${s.phase}/${s.kind}] ${s.prompt}${s.story ? ` (story: ${s.story})` : ''}\n`;
+        if (s.kind === 'choice') s.options.forEach((o, j) => (md += `   - ${j === s.correctIndex ? '✔' : '✗'} ${o}\n`));
+        if (s.kind === 'numbers') s.rows.forEach(row => (md += `   - ${row.label} **${row.answer}** ${row.unit ?? ''}\n`));
+        if (s.kind === 'order') s.items.forEach((o, j) => (md += `   ${j + 1}) ${o}\n`));
+        if (s.hint) md += `   - 💡 ${s.hint}\n`;
+      });
+    }
+  }
+  writeFileSync(file, md);
+  console.log(`\nwrote a sample to ${file}`);
+}
+
+process.exit(errors.length ? 1 : 0);
