@@ -3,10 +3,11 @@ import 'driver.js/dist/driver.css';
 import './help.css';
 import { anchorSelector } from './anchors';
 import { seenId, type HelpStep, type Tour } from './tour';
+import { hasVoice, hush, isMuted, preload, setMuted, speak } from './voice';
 
 // Plays a tour with driver.js: the screen dims around one widget at a time, the owl
 // explains it in a bubble next to it, and a finger shows how to use it. The look is
-// ours (help.css); driver.js only places things.
+// ours (help.css); driver.js only places things. The owl says each bubble aloud (voice.ts).
 
 // A widget is there if it takes up room on screen
 function onScreen(step: HelpStep): Element | null {
@@ -54,6 +55,7 @@ export function playTour(tour: Tour, { seen, onEnd }: { seen: (id: string) => bo
   if (!steps.length) return false;
   const introSaid = !!tour.intro && !seen(seenId(tour.intro.id, tour.user));
   active?.destroy();
+  preload(steps);
   const total = steps.length;
   const d = driver({
     steps: steps.map((s, i): DriveStep => ({
@@ -81,22 +83,42 @@ export function playTour(tour: Tour, { seen, onEnd }: { seen: (id: string) => bo
     // A tap anywhere moves on: easier than finding the button
     overlayClickBehavior: 'nextStep',
     onPopoverRender: (pop, { driver: dr }) => {
-      const owl = document.createElement('div');
+      const at = dr.getActiveIndex() ?? 0;
+      // The owl says it again when she taps it
+      const owl = document.createElement('button');
+      owl.type = 'button';
       owl.className = 'help-owl';
       owl.textContent = '🦉';
+      owl.setAttribute('aria-label', 'Πες το ξανά');
+      owl.onclick = () => { if (isMuted()) setMuted(false); speak(steps[at]); sound.textContent = '🔊'; };
       pop.wrapper.prepend(owl);
       pop.closeButton.setAttribute('aria-label', 'Κλείσιμο');
-      const at = dr.getActiveIndex() ?? 0;
+      const sound = document.createElement('button');
+      sound.type = 'button';
+      sound.className = 'help-sound';
+      sound.textContent = isMuted() ? '🔇' : '🔊';
+      sound.setAttribute('aria-label', 'Φωνή');
+      sound.onclick = () => {
+        const mute = !isMuted();
+        setMuted(mute);
+        sound.textContent = mute ? '🔇' : '🔊';
+        if (!mute) speak(steps[at]);
+      };
+      if (hasVoice(steps[at])) pop.wrapper.appendChild(sound);
       const dots = document.createElement('div');
       dots.className = 'help-dots';
       for (let i = 0; i < total; i++) dots.appendChild(Object.assign(document.createElement('span'), { className: i === at ? 'on' : i < at ? 'past' : '' }));
       pop.footer.prepend(dots);
       if (at === 0) pop.previousButton.style.display = 'none';
     },
-    onHighlighted: (el, step) => showFinger(el, step.data?.demo),
-    onDeselected: hideFinger,
+    onHighlighted: (el, step, { driver: dr }) => {
+      showFinger(el, step.data?.demo);
+      speak(steps[dr.getActiveIndex() ?? 0]);
+    },
+    onDeselected: () => { hideFinger(); hush(); },
     onDestroyed: () => {
       hideFinger();
+      hush();
       if (active === d) active = null;
       onEnd([seenId(tour.id, tour.user), ...(introSaid && tour.intro ? [seenId(tour.intro.id, tour.user)] : [])]);
     },

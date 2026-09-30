@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "node scripts/check-help.mjs && eslint .",
+    "lint": "node scripts/check-help.mjs && node scripts/help-lines.mjs --check && eslint .",
     "check-help": "node scripts/check-help.mjs",
+    "check-voice": "node scripts/help-lines.mjs --check",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -6,7 +6,8 @@ import type { HelpStep, Tour } from '../../help/tour';
 
 export type ProblemHelpKind = 'tag' | 'paint' | 'paint-all' | Exclude<ProblemStep['kind'], 'tag' | 'paint'>;
 
-const BRUSHES: HelpStep = { el: 'problem.brushes', title: 'Δύο πινέλα', text: '🟢 για ό,τι ξέρουμε από την ιστορία, 🟡 για ό,τι ψάχνουμε. Διάλεξε ένα.', side: 'top' };
+const BRUSHES: HelpStep = { el: 'problem.brushes', title: 'Δύο πινέλα', text: '🟢 για ό,τι ξέρουμε από την ιστορία, 🟡 για ό,τι ψάχνουμε. Διάλεξε ένα.', side: 'top',
+  say: 'Δύο πινέλα. Το πράσινο για ό,τι ξέρουμε από την ιστορία, το κίτρινο για ό,τι ψάχνουμε. Διάλεξε ένα.' };
 
 const KIND: Record<ProblemHelpKind, HelpStep[]> = {
   tag: [
@@ -18,9 +19,10 @@ const KIND: Record<ProblemHelpKind, HelpStep[]> = {
     { el: 'problem.paint', title: 'Βάψε με το δάχτυλο', text: 'Σύρε το δάχτυλο πάνω στις λέξεις, σαν μαρκαδόρο. Δεν πειράζει αν βάψεις μια λέξη παραπάνω. Ξανά πάνω τους, και σβήνουν.', demo: 'swipe' },
   ],
   'paint-all': [
-    { el: 'problem.brushes', title: 'Τρία πινέλα', text: '🟢 ό,τι ξέρουμε και χρειαζόμαστε, 🟡 ό,τι ψάχνουμε, ⚪ ό,τι λέει η ιστορία αλλά δεν χρειάζεται.', side: 'top' },
+    { el: 'problem.brushes', title: 'Τρία πινέλα', text: '🟢 ό,τι ξέρουμε και χρειαζόμαστε, 🟡 ό,τι ψάχνουμε, ⚪ ό,τι λέει η ιστορία αλλά δεν χρειάζεται.', side: 'top',
+      say: 'Τρία πινέλα. Το πράσινο για ό,τι ξέρουμε και χρειαζόμαστε, το κίτρινο για ό,τι ψάχνουμε, και το λευκό για ό,τι λέει η ιστορία αλλά δεν χρειάζεται.' },
     { el: 'problem.paint', title: 'Βάψε με το δάχτυλο', text: 'Σύρε το δάχτυλο πάνω στις λέξεις, σαν μαρκαδόρο. Ξανά πάνω τους, και σβήνουν.', demo: 'swipe' },
-    { el: 'problem.brush-extra', title: 'Το λευκό πινέλο', text: 'Κάποιοι αριθμοί είναι παγίδες! Βρες τους και βάψ’ τους λευκούς.', side: 'top', demo: 'tap' },
+    { el: 'problem.brush-extra', title: 'Το λευκό πινέλο', text: 'Μερικοί αριθμοί είναι παγίδες! Βρες τους και βάψ’ τους λευκούς.', side: 'top', demo: 'tap' },
   ],
   calc: [
     { el: 'calc.chips', title: 'Οι αριθμοί σου', text: 'Οι αριθμοί της ιστορίας. Πάτα έναν για να ξεκινήσεις μια πράξη.', side: 'top', demo: 'tap' },
@@ -33,7 +35,7 @@ const KIND: Record<ProblemHelpKind, HelpStep[]> = {
   ],
   numbers: [
     { el: 'problem.numbers', title: 'Συμπλήρωσε', text: 'Πάτα ένα κουτάκι και γράψε τον αριθμό.', side: 'left', demo: 'tap' },
-    { el: 'problem.keypad', title: 'Τα πλήκτρα', text: 'Με το ⌫ σβήνεις, με το ↵ πας στο επόμενο κουτάκι.', side: 'top' },
+    { el: 'problem.keypad', title: 'Τα πλήκτρα', text: 'Με το ⌫ σβήνεις, με το ↵ πας στο επόμενο κουτάκι.', side: 'top', say: 'Τα πλήκτρα. Με το βελάκι πίσω σβήνεις, και με το γυριστό βελάκι πας στο επόμενο κουτάκι.' },
   ],
   order: [
     { el: 'problem.order', title: 'Βάλε σειρά', text: 'Πάτα τα βήματα με τη σειρά που γίνονται. Πάτα ένα με αριθμό για να το πάρεις πίσω.', side: 'left', demo: 'tap' },

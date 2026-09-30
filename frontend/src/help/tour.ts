@@ -12,6 +12,8 @@ interface StepText {
   side?: 'top' | 'right' | 'bottom' | 'left';
   /** A finger shows how: a tap on the widget, or a drag across its first line */
   demo?: 'tap' | 'swipe';
+  /** What the owl says aloud, when the bubble has symbols a voice can't read (🟢, ⌫) */
+  say?: string;
 }
 
 export type HelpStep = StepText & ({ el: HelpAnchor; id?: undefined } | { el?: undefined; id: string });
