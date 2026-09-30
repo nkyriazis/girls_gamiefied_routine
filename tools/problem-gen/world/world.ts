@@ -528,13 +528,16 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
   if (chainRels.length && chainStated.every(id => used.has(id)) &&
     (chainIds.has(sought) || [...chainIds].some(id => w.asks.has(sought) && sought.startsWith(id)))) {
     const last = chainRels[chainRels.length - 1].out;
-    const terms = chainRels.map(rel => `${rel.op} ${fmt(val(rel.b))}`).join(' ');
+    // A change asked by its parts shows them, so the check holds her answer: 37 + (6 × 3) = 55
+    const term = (e: string) => (w.qs.has(`${e}n`) && sought.startsWith(e) && sought !== e
+      ? `(${fmt(val(`${e}n`))} × ${fmt(val(`${e}m`))})` : fmt(val(e)));
+    const terms = chainRels.map(rel => `${rel.op} ${term(rel.b)}`).join(' ');
     const right = `${fmt(val('s0'))} ${terms} = ${fmt(val(last))}`;
     const flip = (op: Op) => (op === '+' ? '−' : '+');
-    const flipped = chainRels.map((rel, i) => ({ op: i === 0 ? flip(rel.op) : rel.op, v: val(rel.b) }));
+    const flipped = chainRels.map((rel, i) => ({ op: i === 0 ? flip(rel.op) : rel.op, v: val(rel.b), t: term(rel.b) }));
     const flippedValue = flipped.reduce((acc, t) => apply(t.op, acc, t.v), val('s0'));
     const wrongs = [
-      ...(flippedValue > 0 ? [`${fmt(val('s0'))} ${flipped.map(t => `${t.op} ${fmt(t.v)}`).join(' ')} = ${fmt(flippedValue)}`] : []),
+      ...(flippedValue > 0 ? [`${fmt(val('s0'))} ${flipped.map(t => `${t.op} ${t.t}`).join(' ')} = ${fmt(flippedValue)}`] : []),
       `${fmt(val(last))} ${terms} = ${fmt(chainRels.reduce((acc, rel) => apply(rel.op, acc, val(rel.b)), val(last)))}`,
     ].filter(o => o !== right && !/= [-−]/.test(o));
     if (wrongs.length) {
