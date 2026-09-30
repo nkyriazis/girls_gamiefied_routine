@@ -7,6 +7,8 @@ import { el } from 'date-fns/locale';
 import type { User, Reward, Spending, StarTransfer } from '@shared/types';
 import { useAppSounds } from '../hooks/useAppSounds';
 import { useTouchDevice } from '../hooks/useTouchDevice';
+import { useGame } from '../context/GameContext';
+import { UserExercises } from './UserExercises';
 
 interface StoreModalProps {
   user: User;
@@ -20,6 +22,9 @@ interface StoreModalProps {
 export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings, starTransfers, allUsers, onClose }) => {
   const { playClick, playSuccess } = useAppSounds();
   const isTouchDevice = useTouchDevice();
+  // Earning stars sits next to spending them: her exercises of the day and «Κι άλλο πρόβλημα»
+  const { exerciseAssignments, config } = useGame();
+  const canEarn = exerciseAssignments.some(a => a.userId === user.id) || (!!user.grade && (config.settings.extraProblemsPerDay ?? 10) > 0);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   const [justPurchased, setJustPurchased] = useState<{ reward: Reward; cost: number } | null>(null);
   const [showActivity, setShowActivity] = useState(false);
@@ -145,7 +150,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
         </AnimatePresence>
 
         <motion.div
-          className="store-card"
+          className={`store-card ${canEarn ? 'with-earn' : ''}`}
           initial={{ scale: 0.8, y: 50 }}
           animate={{ scale: 1, y: 0 }}
           onClick={e => e.stopPropagation()}
@@ -170,7 +175,13 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
             </div>
           </div>
 
-          <div className="store-content">
+          <div className={`store-content ${canEarn ? 'with-earn' : ''}`}>
+            {canEarn && (
+              <div className="earn-section">
+                <h3>Κέρδισε αστέρια</h3>
+                <UserExercises user={user} />
+              </div>
+            )}
             <div className="rewards-section">
               <div className="rewards-header">
                 <h3>Εξαργύρωση</h3>
@@ -540,6 +551,17 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           flex-direction: column;
           overflow: hidden;
           flex: 1;
+        }
+
+        /* Earning next to spending: side by side in landscape, stacked (and scrolling) otherwise */
+        .store-content.with-earn { overflow-y: auto; gap: 1.5rem; }
+        .store-content.with-earn .rewards-section { flex: none; overflow: visible; }
+        .earn-section { display: flex; flex-direction: column; gap: 0.75rem; }
+        .earn-section h3 { margin: 0; }
+        @media (min-width: 900px) and (orientation: landscape) {
+          .store-card.with-earn { max-width: 1150px; }
+          .store-content.with-earn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); overflow: hidden; }
+          .store-content.with-earn .earn-section, .store-content.with-earn .rewards-section { min-height: 0; overflow-y: auto; padding-right: 0.3rem; }
         }
 
         .rewards-section {

@@ -1,55 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { useGame } from '../context/GameContext';
-import { api } from '../api';
-import { AssignmentPlayer } from './AssignmentPlayer';
-import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
+import { UserExercises } from './UserExercises';
 
 interface ExercisesDrawerProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-    'Μαθηματικά': '🔢',
-    'Γλώσσα': '📖',
-    'Προβλήματα': '🧩',
-};
-
-const TYPE_LABELS: Record<string, string> = {
-    'multiple-choice': 'Επίλεξε τη σωστή απάντηση',
-    'true-false': 'Σωστό ή Λάθος',
-    'match-pairs': 'Σύνδεσε τα ζευγάρια',
-    'ordering': 'Βάλε στη σειρά',
-    'fill-blank': 'Συμπλήρωσε τα κενά',
-    'number-input': 'Γράψε τον αριθμό',
-    'problem': 'Πρόβλημα σε βήματα',
-};
-
+// Every kid's exercises of the day at a glance; each kid also has hers on her own screen.
 export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClose }) => {
     const { users, exerciseAssignments, config } = useGame();
-    const [playing, setPlaying] = useState<{ assignment: ExerciseAssignmentWithExercise, user: User } | null>(null);
-    const [asking, setAsking] = useState(false);
     const extraLimit = config.settings.extraProblemsPerDay ?? 10;
-
-    // One more problem, on top of the daily set: the open one if there is one, else a fresh one
-    const askForProblem = async (user: User) => {
-        if (asking) return;
-        setAsking(true);
-        try {
-            setPlaying({ assignment: await api.startExtraProblem(user.id), user });
-        } catch (err) {
-            console.error('Could not start a problem:', err);
-        } finally {
-            setAsking(false);
-        }
-    };
-
-    // Keep the player in sync with fresh assignment state (e.g. after answer broadcast)
-    const playingAssignment = playing
-        ? exerciseAssignments.find(a => a.id === playing.assignment.id) || playing.assignment
-        : null;
 
     return (
         <AnimatePresence>
@@ -79,89 +42,19 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
 
                         <div className="exercises-content">
                             {users.map(user => {
-                                const mine = exerciseAssignments.filter(a => a.userId === user.id);
-                                const userAssignments = mine.filter(a => !a.extra);
-                                const extras = mine.filter(a => a.extra);
-                                const extrasDone = extras.filter(a => a.status === 'completed');
-                                const openExtra = extras.find(a => a.status === 'pending');
-                                const canAsk = !!user.grade && extraLimit > 0;
-                                if (userAssignments.length === 0 && !canAsk) return null;
-
-                                const completedCount = userAssignments.filter(a => a.status === 'completed').length;
-                                const allDone = completedCount === userAssignments.length;
-
+                                const mine = exerciseAssignments.filter(a => a.userId === user.id && !a.extra);
+                                if (mine.length === 0 && !(user.grade && extraLimit > 0)) return null;
+                                const done = mine.filter(a => a.status === 'completed').length;
                                 return (
-                                    <section key={user.id} className="user-section">
+                                    <UserExercises key={user.id} user={user} header={
                                         <div className="user-header" style={{ '--user-color': user.color } as React.CSSProperties}>
                                             <SmartIcon value={user.avatar || '👧'} size={36} />
                                             <h3>{user.name}</h3>
-                                            <span className={`progress-pill ${allDone ? 'done' : ''}`}>
-                                                {allDone ? 'Όλα έτοιμα! 🎉' : `${completedCount} / ${userAssignments.length}`}
+                                            <span className={`progress-pill ${done === mine.length ? 'done' : ''}`}>
+                                                {done === mine.length ? 'Όλα έτοιμα! 🎉' : `${done} / ${mine.length}`}
                                             </span>
                                         </div>
-
-                                        <div className="assignment-list">
-                                            {userAssignments.map(assignment => {
-                                                const ex = assignment.exercise;
-                                                if (!ex) return null;
-                                                const isDone = assignment.status === 'completed';
-
-                                                return (
-                                                    <motion.button
-                                                        key={assignment.id}
-                                                        data-assignment={assignment.id}
-                                                        className={`assignment-card ${isDone ? 'completed' : ''}`}
-                                                        onClick={() => !isDone && setPlaying({ assignment, user })}
-                                                        disabled={isDone}
-                                                        whileTap={!isDone ? { scale: 0.97 } : {}}
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                    >
-                                                        <div className="assignment-icon">
-                                                            {CATEGORY_ICONS[ex.category] || '📚'}
-                                                        </div>
-                                                        <div className="assignment-info">
-                                                            <h4>{ex.title}</h4>
-                                                            <span className="assignment-meta">
-                                                                {ex.category} · {TYPE_LABELS[ex.type] || ex.type}
-                                                                {ex.type === 'problem' && !isDone && (assignment.stepIndex ?? 0) > 0 &&
-                                                                    ` · βήμα ${(assignment.stepIndex ?? 0) + 1} από ${ex.steps.length}`}
-                                                            </span>
-                                                        </div>
-                                                        <div className="assignment-status">
-                                                            {isDone ? (
-                                                                <span className="done-badge">✓ ⭐{assignment.starsAwarded ?? ex.stars}</span>
-                                                            ) : (
-                                                                <span className="star-badge">⭐ {ex.stars}</span>
-                                                            )}
-                                                        </div>
-                                                    </motion.button>
-                                                );
-                                            })}
-                                        </div>
-
-                                        {canAsk && (
-                                            <div className="extra-problems">
-                                                {extrasDone.length > 0 && (
-                                                    <span className="extra-done">
-                                                        🧩 Έξτρα σήμερα: {extrasDone.length} · ⭐{extrasDone.reduce((n, a) => n + (a.starsAwarded ?? 0), 0)}
-                                                    </span>
-                                                )}
-                                                <motion.button
-                                                    className="extra-btn"
-                                                    disabled={asking || (!openExtra && extras.length >= extraLimit)}
-                                                    whileTap={{ scale: 0.97 }}
-                                                    onClick={() => askForProblem(user)}
-                                                >
-                                                    {openExtra
-                                                        ? <>▶ Συνέχισε το πρόβλημα</>
-                                                        : extras.length >= extraLimit
-                                                            ? <>Για σήμερα φτάνει! 🎉</>
-                                                            : <>🧩 Κι άλλο πρόβλημα <span className="extra-count">{extras.length}/{extraLimit}</span></>}
-                                                </motion.button>
-                                            </div>
-                                        )}
-                                    </section>
+                                    } />
                                 );
                             })}
 
@@ -175,15 +68,6 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
                         </div>
                     </motion.div>
 
-                    <AnimatePresence key="player">
-                        {playing && playingAssignment && (
-                            <AssignmentPlayer
-                                assignment={playingAssignment}
-                                user={playing.user}
-                                onClose={() => setPlaying(null)}
-                            />
-                        )}
-                    </AnimatePresence>
                 </>
             )}
 
@@ -242,12 +126,6 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
           gap: 1.5rem;
         }
 
-        .user-section {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-        }
-
         .user-header {
           display: flex;
           align-items: center;
@@ -275,112 +153,6 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
         .progress-pill.done {
           background: rgba(6, 214, 160, 0.2);
           color: #06d6a0;
-        }
-
-        .assignment-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-        }
-
-        .extra-problems {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          margin-top: 0.75rem;
-        }
-
-        .extra-done {
-          font-size: 0.9rem;
-          opacity: 0.75;
-          padding-left: 0.25rem;
-        }
-
-        .extra-btn {
-          padding: 0.9rem 1rem;
-          border-radius: 16px;
-          border: 2px dashed rgba(255, 214, 10, 0.6);
-          background: rgba(255, 214, 10, 0.08);
-          color: white;
-          font-size: 1.05rem;
-          font-weight: bold;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.6rem;
-        }
-
-        .extra-btn:disabled {
-          opacity: 0.55;
-          cursor: default;
-        }
-
-        .extra-count {
-          font-size: 0.85rem;
-          font-weight: normal;
-          opacity: 0.8;
-        }
-
-        .assignment-card {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 16px;
-          padding: 1rem;
-          color: white;
-          cursor: pointer;
-          text-align: left;
-          transition: all 0.2s;
-        }
-
-        .assignment-card:hover:not(:disabled) {
-          border-color: rgba(255, 214, 10, 0.5);
-          background: rgba(255, 214, 10, 0.05);
-        }
-
-        .assignment-card.completed {
-          opacity: 0.6;
-          cursor: default;
-          border-color: rgba(6, 214, 160, 0.4);
-          background: rgba(6, 214, 160, 0.05);
-        }
-
-        .assignment-icon {
-          font-size: 2rem;
-          flex-shrink: 0;
-        }
-
-        .assignment-info {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .assignment-info h4 {
-          margin: 0 0 0.2rem 0;
-          font-size: 1.05rem;
-        }
-
-        .assignment-meta {
-          font-size: 0.8rem;
-          opacity: 0.6;
-        }
-
-        .assignment-status {
-          flex-shrink: 0;
-          font-weight: bold;
-        }
-
-        .star-badge {
-          color: #ffd60a;
-          font-size: 1rem;
-        }
-
-        .done-badge {
-          color: #06d6a0;
-          font-size: 0.95rem;
         }
 
         .empty-state {
