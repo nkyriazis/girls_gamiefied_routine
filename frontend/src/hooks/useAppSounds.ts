@@ -1,10 +1,9 @@
 import { useCallback, useRef } from 'react';
 import { sfx } from '../sound/sfx';
 
-// A page may not make sound before someone touches it (the browsers' autoplay rule), and
-// a reload (a deploy, an update) starts over. An alarm that rings then is silent, so it
-// tries again on the first touch anywhere. A kiosk that must wake the house on its own
-// needs the browser started with --autoplay-policy=no-user-gesture-required.
+// A page may not make sound before someone touches it (the browsers' autoplay rule). An
+// alarm already running when the page loads is on screen under "Click to Start" and can't
+// sound yet, so it tries again on the first touch: that click.
 function onFirstTouch(fn: () => void): () => void {
   const events = ['pointerdown', 'keydown'] as const;
   const go = () => { stop(); fn(); };
