@@ -2,11 +2,11 @@ import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
 import {
   AppState, Chore, ChoreInstance, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
-  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ProblemExercise, ProblemStepAnswer, Spending,
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ProblemExercise, ProblemReading, ProblemStepAnswer, Spending,
   StarTransfer, StateSnapshot, ActionLog, User
 } from '../../shared/types';
 import { exercisePoolProvider, exercisesPerDay, storyMarks } from './exercisePool';
-import { checkCalc, checkPaint, storyWords } from '../../shared/problems';
+import { checkCalc, checkPaint, storyWords, targetsFromMarks } from '../../shared/problems';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
@@ -762,7 +762,8 @@ export function checkExerciseAnswer(exercise: Exercise, answer: any): boolean {
 export function checkProblemStep(
   exercise: ProblemExercise,
   stepIndex: number,
-  value: any
+  value: any,
+  reading: ProblemReading = 'marked'
 ): { correct: boolean; wrong?: number[] } {
   const step = exercise.steps[stepIndex];
   if (!step) return { correct: false };
@@ -772,16 +773,18 @@ export function checkProblemStep(
     return wrong.length ? { correct: false, wrong } : { correct: true };
   };
   switch (step.kind) {
+    // Reading the story, on the kid's rung: roles for the marked phrases, or a painting
     case 'tag':
-      return compare(storyMarks(exercise.story).map(m => m.role));
+    case 'paint':
+      if (Array.isArray(value)) return compare(storyMarks(exercise.story).map(m => m.role));
+      return checkPaint(step.kind === 'paint' ? step.targets : targetsFromMarks(exercise.story),
+        storyWords(exercise.story).length, value, { unneeded: reading === 'paint-all' });
     case 'choice':
       return { correct: value === step.correctIndex };
     case 'numbers':
       return compare(step.rows.map(r => r.answer));
     case 'order':
       return compare(step.items);
-    case 'paint':
-      return checkPaint(step.targets, storyWords(exercise.story).length, value);
     case 'calc':
       return checkCalc(step, value?.lines);
   }
@@ -1126,7 +1129,8 @@ function answerProblemStep(
     // An answer to a step already solved (a second device, a double tap) changes nothing.
     if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true };
 
-    const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value);
+    const reading = config().users.find(u => u.id === current.userId)?.problemReading;
+    const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
     const mistakes = exercise.steps.map((_, i) => current.mistakes?.[i] ?? 0);
     const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
     let stars = 0;

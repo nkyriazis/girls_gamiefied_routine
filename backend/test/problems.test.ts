@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import { DataConfig, ProblemExercise, ProblemStep } from '../../shared/types';
 import { tempDir } from './helpers';
-import { applyOp, checkCalc, checkPaint, readCalculation, storyWords, type CalcLine, type CalcWorld } from '../../shared/problems';
+import { applyOp, checkCalc, checkPaint, readCalculation, storyWords, targetsFromMarks, type CalcLine, type CalcWorld } from '../../shared/problems';
 
 // db.ts and the pool provider read their files from the environment when they
 // load, so point them at a temp dir first and load them afterwards.
@@ -61,14 +61,18 @@ function solution(ex: ProblemExercise, step: ProblemStep): unknown {
     case 'choice': return step.correctIndex;
     case 'numbers': return step.rows.map(r => r.answer);
     case 'order': return step.items;
-    // Whole phrases painted, as a careful kid would
-    case 'paint': {
-      const words = (role: string) => step.targets.filter(t => t.role === role)
-        .flatMap(t => Array.from({ length: t.span[1] - t.span[0] + 1 }, (_, i) => t.span[0] + i));
-      return { known: words('known'), sought: words('sought') };
-    }
+    case 'paint': return painting(ex, true);
     case 'calc': return { lines: workOut(step), slips: 0 };
   }
+}
+
+// The story painted as a careful kid would, whole phrases (the unneeded ones too, for "paint-all")
+function painting(ex: ProblemExercise, unneeded: boolean) {
+  const read = ex.steps.find(s => s.kind === 'tag' || s.kind === 'paint')!;
+  const targets = read.kind === 'paint' ? read.targets : targetsFromMarks(ex.story);
+  const words = (role: string) => targets.filter(t => t.role === role)
+    .flatMap(t => Array.from({ length: t.span[1] - t.span[0] + 1 }, (_, i) => t.span[0] + i));
+  return { known: words('known'), sought: words('sought'), ...(unneeded ? { extra: words('extra') } : {}) };
 }
 
 // Every calculation the story allows, from what it gives, until the answer turns up.
@@ -105,6 +109,14 @@ test('every shipped pool is valid, and every problem can be solved step by step'
     if (ex.type !== 'problem') continue;
     ex.steps.forEach((step, i) => {
       assert.deepEqual(db.checkProblemStep(ex, i, solution(ex, step)), { correct: true }, `${ex.id} step ${i}`);
+      // The reading step plays on every rung of the ladder
+      if (step.kind === 'tag' || step.kind === 'paint') {
+        assert.deepEqual(db.checkProblemStep(ex, i, pool.storyMarks(ex.story).map(m => m.role), 'marked'), { correct: true }, `${ex.id} marked`);
+        assert.deepEqual(db.checkProblemStep(ex, i, painting(ex, false), 'paint'), { correct: true }, `${ex.id} paint`);
+        assert.deepEqual(db.checkProblemStep(ex, i, painting(ex, true), 'paint-all'), { correct: true }, `${ex.id} paint-all`);
+        const hasExtra = pool.storyMarks(ex.story).some(m => m.role === 'extra');
+        assert.equal(db.checkProblemStep(ex, i, painting(ex, false), 'paint-all').correct, !hasExtra, `${ex.id} paint-all needs the unneeded painted`);
+      }
     });
   }
 });
@@ -208,6 +220,17 @@ test('painting freehand forgives a sloppy stroke, not a wrong fact', () => {
   assert.deepEqual(checkPaint(targets, n, { known: [3], sought: [11, 12] }), { correct: false, wrong: [1] }, 'a fact missed');
   assert.deepEqual(checkPaint(targets, n, { known: [3, 6, 9], sought: [11, 12] }), { correct: false, wrong: [2] }, 'the age is not needed');
   assert.deepEqual(checkPaint(targets, n, { known: [3, 6], sought: [13] }), { correct: false, wrong: [3] }, 'the question missed');
+  // "paint-all": the unneeded fact must be painted as such
+  assert.deepEqual(checkPaint(targets, n, { known: [3, 6], sought: [11, 12] }, { unneeded: true }), { correct: false, wrong: [2] });
+  assert.deepEqual(checkPaint(targets, n, { known: [3, 6], sought: [11, 12], extra: [9, 10] }, { unneeded: true }), { correct: true });
+  assert.deepEqual(checkPaint(targets, n, { known: [3], sought: [11, 12], extra: [6, 9] }, { unneeded: true }), { correct: false, wrong: [1] }, 'a needed fact painted as unneeded');
+  // From the marks: the number is the core; a fact without one, any two of its words
+  const derived = targetsFromMarks(story);
+  assert.deepEqual(derived, targets);
+  const noNumber = targetsFromMarks('Στο τέλος [θα έχουν τον ίδιο αριθμό|known]. [Πόσες κάρτες δίνει|sought];');
+  assert.deepEqual(noNumber[0], { role: 'known', words: [2, 3, 4, 5, 6], span: [2, 6], need: 2 });
+  assert.equal(checkPaint(noNumber, 11, { known: [4, 6], sought: [7, 8] }).correct, true);
+  assert.equal(checkPaint(noNumber, 11, { known: [5], sought: [7, 8] }).correct, false);
   const all = Array.from({ length: n }, (_, i) => i).filter(i => i !== 9);
   assert.equal(checkPaint(targets, n, { known: all, sought: [11, 12] }).wrong?.includes(-1), true, 'painting everything is too much');
 });

@@ -23,9 +23,47 @@ export interface PaintTarget {
   words: number[];
   /** First and last word of the whole phrase. */
   span: [number, number];
+  /** How many of `words` must be painted (all when absent): a fact without a number
+   * («θα έχουν τον ίδιο αριθμό») is found by any two of its words. */
+  need?: number;
 }
 
-export interface Painting { known: number[]; sought: number[] }
+export interface Painting { known: number[]; sought: number[]; extra?: number[] }
+
+// Words that carry a fact without digits: numbers in words, «διπλάσια», «τα μισά»
+const FACT_WORD = /^(δύο|τρία|τρεις|τέσσερα|τέσσερις|πέντε|έξι|επτά|εφτά|οκτώ|οχτώ|εννέα|εννιά|δέκα|έντεκα|δώδεκα|είκοσι|τριάντα|σαράντα|πενήντα|εκατό|διπλάσι\S*|τριπλάσι\S*|τετραπλάσι\S*|μισ\S*|ζευγάρι\S*|ντουζίν\S*|δωδεκάδ\S*)$/;
+const QUESTION_WORD = /^(πόσ|ποι|πότε|πού|τι$)/;
+
+/**
+ * Paint targets from a story's marks, for problems written before painting (their
+ * steps have no targets): the core of a fact is its number, digits or words (the whole
+ * phrase if it has none, of which any two words will do); of a question, «πόσα ευρώ»
+ * (the question word and the next).
+ */
+export function targetsFromMarks(story: string): PaintTarget[] {
+  const plain = plainStory(story);
+  const words = [...plain.matchAll(/\S+/g)].map(m => ({ from: m.index!, to: m.index! + m[0].length, w: m[0] }));
+  const bare = (i: number) => words[i].w.replace(/[.,;:!«»()]+/g, '').toLowerCase();
+  const out: PaintTarget[] = [];
+  let removed = 0;
+  for (const m of story.matchAll(MARK)) {
+    const from = m.index! - removed, to = from + m[1].length;
+    removed += m[0].length - m[1].length;
+    const inside = words.flatMap((x, i) => (x.to > from && x.from < to ? [i] : []));
+    const role = m[2] as PaintTarget['role'];
+    let core: number[];
+    if (role === 'sought') {
+      const at = inside.find(i => QUESTION_WORD.test(bare(i)));
+      core = at !== undefined ? [at, at + 1].filter(i => inside.includes(i)) : [];
+    } else {
+      core = inside.filter(i => /\d/.test(bare(i)) || FACT_WORD.test(bare(i)));
+    }
+    const span: [number, number] = [inside[0], inside[inside.length - 1]];
+    if (core.length) out.push({ role, words: core, span });
+    else out.push({ role, words: inside, span, ...(inside.length > 2 ? { need: 2 } : {}) });
+  }
+  return out;
+}
 
 /** Words painted outside any phrase that are forgiven; beyond this, "too much". */
 export const PAINT_SLACK = 3;
@@ -37,26 +75,31 @@ const MARGIN = 2;
  * question its core words painted "sought", nothing unneeded is painted, and not much
  * else. `wrong` lists the targets to look at again; -1 means too much was painted.
  */
-export function checkPaint(targets: PaintTarget[], words: number, value: unknown): { correct: boolean; wrong?: number[] } {
+export function checkPaint(
+  targets: PaintTarget[], words: number, value: unknown, opts: { unneeded?: boolean } = {}
+): { correct: boolean; wrong?: number[] } {
   const v = value as Painting;
   if (!v || !Array.isArray(v.known) || !Array.isArray(v.sought)) return { correct: false };
-  const known = new Set(v.known.filter(i => Number.isInteger(i) && i >= 0 && i < words));
-  const sought = new Set(v.sought.filter(i => Number.isInteger(i) && i >= 0 && i < words));
+  const valid = (xs: unknown) => new Set((Array.isArray(xs) ? xs : []).filter(i => Number.isInteger(i) && i >= 0 && i < words) as number[]);
+  const known = valid(v.known), sought = valid(v.sought), extra = valid(v.extra);
   const wrong: number[] = [];
   targets.forEach((t, i) => {
     if (t.role === 'extra') {
+      // Painted as needed is wrong; on "paint-all", left unpainted is too
       if (t.words.some(w => known.has(w) || sought.has(w))) wrong.push(i);
+      else if (opts.unneeded && t.words.filter(w => extra.has(w)).length < (t.need ?? t.words.length)) wrong.push(i);
     } else {
       const brush = t.role === 'known' ? known : sought;
-      if (!t.words.every(w => brush.has(w))) wrong.push(i);
+      if (t.words.filter(w => brush.has(w)).length < (t.need ?? t.words.length)) wrong.push(i);
     }
   });
   // Strays: painted words that aren't near a phrase of their colour (an unneeded fact
   // painted is its own mistake, above, not also "too much")
   const inExtra = (w: number) => targets.some(t => t.role === 'extra' && w >= t.span[0] && w <= t.span[1]);
-  const near = (w: number, role: 'known' | 'sought') =>
+  const near = (w: number, role: PaintTarget['role']) =>
     inExtra(w) || targets.some(t => t.role === role && w >= t.span[0] - MARGIN && w <= t.span[1] + MARGIN);
-  const strays = [...known].filter(w => !near(w, 'known')).length + [...sought].filter(w => !near(w, 'sought')).length;
+  const strays = [...known].filter(w => !near(w, 'known')).length + [...sought].filter(w => !near(w, 'sought')).length
+    + [...extra].filter(w => !near(w, 'extra')).length;
   if (strays > PAINT_SLACK) wrong.push(-1);
   return wrong.length ? { correct: false, wrong } : { correct: true };
 }

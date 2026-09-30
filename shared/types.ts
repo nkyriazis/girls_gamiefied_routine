@@ -29,6 +29,7 @@ export interface User {
   avatar: IconValue; // Emoji, URL, SVG, or Object
   color: string;
   grade?: SchoolGrade;
+  problemReading?: ProblemReading;
   stars: number;
   routines: Routine[];
 }
@@ -247,10 +248,12 @@ export interface ProblemOrderStep extends ProblemStepBase {
 // Paint the story freehand, word by word: nothing is marked on screen. `targets` are the
 // story's marked phrases, in order, as words of storyWords(story) (shared/problems.ts):
 // the core words a painting must cover and the phrase's whole span.
-// Answer: { known: word indexes, sought: word indexes }. Wrong: target indexes, -1 = too much.
+// Answer: { known, sought, extra? } word indexes (extra: the unneeded ones, on "paint-all").
+// Wrong: target indexes, -1 = too much. On "marked" it plays as a tag step. A tag step
+// plays as paint on the painting rungs, its targets derived from the marks.
 export interface ProblemPaintStep extends ProblemStepBase {
   kind: 'paint';
-  targets: { role: ProblemRole; words: number[]; span: [number, number] }[];
+  targets: { role: ProblemRole; words: number[]; span: [number, number]; need?: number }[];
 }
 
 // Work it out her own way: pick two numbers she has, an operation, and the result. The
@@ -382,12 +385,18 @@ export interface StateSnapshot {
 // Δημοτικό: 1 = Α' … 6 = ΣΤ'. Picks the daily exercise pool.
 export type SchoolGrade = 1 | 2 | 3 | 4 | 5 | 6;
 
+// How a kid reads a word problem, a ladder every problem plays on (its first step, tag
+// or paint): "marked" taps pre-marked phrases; "paint" paints the story freehand, the
+// unneeded facts greyed out for her once she's right; "paint-all" paints those too.
+export type ProblemReading = 'marked' | 'paint' | 'paint-all';
+
 export interface ConfigUser {
   id: string;
   name: string;
   avatar: IconValue;
   color: string;
   grade?: SchoolGrade;
+  problemReading?: ProblemReading; // default "marked"
 }
 
 export interface ConfigTask {

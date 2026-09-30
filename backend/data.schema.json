@@ -241,6 +241,10 @@
             "minimum": 1,
             "maximum": 6,
             "description": "School grade (Δημοτικό: 1 = Α' … 6 = ΣΤ'). Picks the daily exercise pool; without it the kid gets no daily exercises"
+          },
+          "problemReading": {
+            "enum": ["marked", "paint", "paint-all"],
+            "description": "How the kid reads word problems: tap pre-marked phrases (default), paint the story freehand (unneeded facts greyed out for her), or paint the unneeded facts too"
           }
         }
       }
