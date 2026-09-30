@@ -244,7 +244,28 @@ export interface ProblemOrderStep extends ProblemStepBase {
   items: string[];
 }
 
-export type ProblemStep = ProblemTagStep | ProblemChoiceStep | ProblemNumbersStep | ProblemOrderStep;
+// Paint the story freehand, word by word: nothing is marked on screen. `targets` are the
+// story's marked phrases, in order, as words of storyWords(story) (shared/problems.ts):
+// the core words a painting must cover and the phrase's whole span.
+// Answer: { known: word indexes, sought: word indexes }. Wrong: target indexes, -1 = too much.
+export interface ProblemPaintStep extends ProblemStepBase {
+  kind: 'paint';
+  targets: { role: ProblemRole; words: number[]; span: [number, number] }[];
+}
+
+// Work it out her own way: pick two numbers she has, an operation, and the result. The
+// step carries the story's quantities and how they relate (out = a op b), so every
+// calculation can be read back: what it found, or that it means nothing here.
+// Answer: { lines: [{ x, op, y, result }], slips } (slips: the calculations taken back).
+export interface ProblemCalcStep extends ProblemStepBase {
+  kind: 'calc';
+  quantities: { id: string; value: number; label: string; unit?: string }[];
+  relations: { out: string; op: '+' | '−' | '×' | ':'; a: string; b: string }[];
+  given: string[]; // what the story says
+  sought: string;
+}
+
+export type ProblemStep = ProblemTagStep | ProblemChoiceStep | ProblemNumbersStep | ProblemOrderStep | ProblemPaintStep | ProblemCalcStep;
 
 export interface ProblemExercise extends BaseExercise {
   type: 'problem';

@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'fs';
 import path from 'path';
 import { Exercise, SchoolGrade } from '../../shared/types';
+import { pathToAnswer, storyWords } from '../../shared/problems';
 import { config } from './config';
 import { EXERCISE_POOLS_DIR } from './paths';
 import { check, exercisePoolSchema } from './schemas';
@@ -64,6 +65,20 @@ export function validateExercise(ex: Exercise): string | null {
     if (step.kind === 'tag') {
       if (!marked.some(m => m.role === 'known') || !marked.some(m => m.role === 'sought'))
         return `step ${i}: the story needs at least one [..|known] and one [..|sought] phrase`;
+    }
+    if (step.kind === 'paint') {
+      const words = storyWords(ex.story).length;
+      if (step.targets.length !== marked.length || step.targets.some((t, j) => t.role !== marked[j].role))
+        return `step ${i}: paint targets don't match the story's marks`;
+      if (step.targets.some(t => t.span[0] > t.span[1] || t.span[1] >= words || t.words.some(w => w < t.span[0] || w > t.span[1])))
+        return `step ${i}: paint target words out of range`;
+      if (!step.targets.some(t => t.role === 'sought')) return `step ${i}: nothing to paint as sought`;
+    }
+    if (step.kind === 'calc') {
+      const ids = new Set(step.quantities.map(q => q.id));
+      const refs = [...step.given, step.sought, ...step.relations.flatMap(r => [r.out, r.a, r.b])];
+      if (refs.some(id => !ids.has(id))) return `step ${i}: calc refers to a quantity it doesn't have`;
+      if (!pathToAnswer(step).has(step.sought)) return `step ${i}: the answer can't be worked out from what the story gives`;
     }
   }
   return null;

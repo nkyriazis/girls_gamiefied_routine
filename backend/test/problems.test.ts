@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import { DataConfig, ProblemExercise, ProblemStep } from '../../shared/types';
 import { tempDir } from './helpers';
+import { applyOp, checkCalc, checkPaint, readCalculation, storyWords, type CalcLine, type CalcWorld } from '../../shared/problems';
 
 // db.ts and the pool provider read their files from the environment when they
 // load, so point them at a temp dir first and load them afterwards.
@@ -60,7 +61,38 @@ function solution(ex: ProblemExercise, step: ProblemStep): unknown {
     case 'choice': return step.correctIndex;
     case 'numbers': return step.rows.map(r => r.answer);
     case 'order': return step.items;
+    // Whole phrases painted, as a careful kid would
+    case 'paint': {
+      const words = (role: string) => step.targets.filter(t => t.role === role)
+        .flatMap(t => Array.from({ length: t.span[1] - t.span[0] + 1 }, (_, i) => t.span[0] + i));
+      return { known: words('known'), sought: words('sought') };
+    }
+    case 'calc': return { lines: workOut(step), slips: 0 };
   }
+}
+
+// Every calculation the story allows, from what it gives, until the answer turns up.
+function workOut(w: CalcWorld): CalcLine[] {
+  const value = new Map(w.quantities.map(q => [q.id, q.value]));
+  const have = new Set(w.given);
+  const lines: CalcLine[] = [];
+  for (let changed = true; changed && !have.has(w.sought);) {
+    changed = false;
+    for (const r of w.relations) {
+      const missing = [r.out, r.a, r.b].filter(id => !have.has(id));
+      if (missing.length !== 1) continue;
+      const [t] = missing;
+      const back = { '+': '−', '−': '+', '×': ':', ':': '×' } as const;
+      const [op, x, y] = t === r.out ? [r.op, r.a, r.b]
+        : t === r.a ? [back[r.op], r.out, r.b]
+          : r.op === '+' || r.op === '×' ? [r.op === '+' ? '−' : ':', r.out, r.a] as const : [r.op, r.a, r.out] as const;
+      const line = { x: value.get(x)!, op, y: value.get(y)!, result: applyOp(op, value.get(x)!, value.get(y)!) };
+      lines.push(line);
+      have.add(t);
+      changed = true;
+    }
+  }
+  return lines;
 }
 
 test('every shipped pool is valid, and every problem can be solved step by step', () => {
@@ -158,4 +190,45 @@ test('extra problems: fresh ones first, one open at a time, up to the day\'s lim
   // Extras don't count as the daily set: nothing is drawn again
   assert.equal(await db.ensureDailyAssignments(), false);
   await assert.rejects(db.startExtraProblem('u3'), /class/);
+});
+
+test('painting freehand forgives a sloppy stroke, not a wrong fact', () => {
+  // «Η Άννα είχε 40 ευρώ. Ξόδεψε 15 ευρώ. Είναι 9 χρονών. Πόσα ευρώ της έμειναν;»
+  const story = 'Η Άννα είχε [40 ευρώ|known]. Ξόδεψε [15 ευρώ|known]. Είναι [9 χρονών|extra]. [Πόσα ευρώ της έμειναν|sought];';
+  assert.equal(storyWords(story).length, 15);
+  const targets = [
+    { role: 'known' as const, words: [3], span: [3, 4] as [number, number] },
+    { role: 'known' as const, words: [6], span: [6, 7] as [number, number] },
+    { role: 'extra' as const, words: [9], span: [9, 10] as [number, number] },
+    { role: 'sought' as const, words: [11, 12], span: [11, 14] as [number, number] },
+  ];
+  const n = 15;
+  assert.deepEqual(checkPaint(targets, n, { known: [3, 6], sought: [11, 12] }), { correct: true });
+  assert.deepEqual(checkPaint(targets, n, { known: [2, 3, 4, 5, 6, 7], sought: [11, 12, 13, 14] }), { correct: true }, 'a word around is fine');
+  assert.deepEqual(checkPaint(targets, n, { known: [3], sought: [11, 12] }), { correct: false, wrong: [1] }, 'a fact missed');
+  assert.deepEqual(checkPaint(targets, n, { known: [3, 6, 9], sought: [11, 12] }), { correct: false, wrong: [2] }, 'the age is not needed');
+  assert.deepEqual(checkPaint(targets, n, { known: [3, 6], sought: [13] }), { correct: false, wrong: [3] }, 'the question missed');
+  const all = Array.from({ length: n }, (_, i) => i).filter(i => i !== 9);
+  assert.equal(checkPaint(targets, n, { known: all, sought: [11, 12] }).wrong?.includes(-1), true, 'painting everything is too much');
+});
+
+test('working it out: each calculation is read back, the answer ends it', () => {
+  const w: CalcWorld = {
+    quantities: [
+      { id: 's0', value: 22, label: 'Ευρώ στην αρχή' }, { id: 'e1', value: 16, label: 'Τιμή της μπάλας' },
+      { id: 's1', value: 6, label: 'Ευρώ μετά την αγορά' }, { id: 'e2', value: 25, label: 'Ευρώ από τον θείο' },
+      { id: 's2', value: 31, label: 'Ευρώ τώρα' }, { id: 'd', value: 2, label: 'Φορές' }, { id: 'f', value: 62, label: 'Ευρώ του Άρη' },
+      { id: 'z', value: 13, label: 'Ευρώ του Πυθαγόρα' },
+    ],
+    relations: [{ out: 's1', op: '−', a: 's0', b: 'e1' }, { out: 's2', op: '+', a: 's1', b: 'e2' }, { out: 'f', op: '×', a: 's2', b: 'd' }],
+    given: ['s0', 'e1', 'e2', 'd', 'z'], sought: 's2',
+  };
+  assert.equal(readCalculation(w, 22, '−', 16)?.label, 'Ευρώ μετά την αγορά');
+  assert.equal(readCalculation(w, 25, '+', 6)?.id, 's2', 'either order for +');
+  assert.equal(readCalculation(w, 22, '+', 13), null, 'means nothing here');
+  const right = [{ x: 22, op: '−', y: 16, result: 6 }, { x: 6, op: '+', y: 25, result: 31 }] as CalcLine[];
+  assert.deepEqual(checkCalc(w, right), { correct: true });
+  assert.deepEqual(checkCalc(w, right.slice(0, 1)), { correct: false }, 'not there yet');
+  assert.deepEqual(checkCalc(w, [{ x: 22, op: '−', y: 16, result: 5 }]), { correct: false, wrong: [0] }, 'miscounted');
+  assert.deepEqual(checkCalc(w, [{ x: 6, op: '+', y: 25, result: 31 }]), { correct: false, wrong: [0] }, '6 is not hers yet');
 });

@@ -6,6 +6,7 @@ import {
   StarTransfer, StateSnapshot, ActionLog, User
 } from '../../shared/types';
 import { exercisePoolProvider, exercisesPerDay, storyMarks } from './exercisePool';
+import { checkCalc, checkPaint, storyWords } from '../../shared/problems';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
@@ -779,6 +780,10 @@ export function checkProblemStep(
       return compare(step.rows.map(r => r.answer));
     case 'order':
       return compare(step.items);
+    case 'paint':
+      return checkPaint(step.targets, storyWords(exercise.story).length, value);
+    case 'calc':
+      return checkCalc(step, value?.lines);
   }
 }
 
@@ -1125,6 +1130,11 @@ function answerProblemStep(
     const mistakes = exercise.steps.map((_, i) => current.mistakes?.[i] ?? 0);
     const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
     let stars = 0;
+    // Working it out, the screen reads each calculation back as she goes: the ones she
+    // took back count as mistakes of the step
+    const step = exercise.steps[stepIndex];
+    const slips = (answer.value as { slips?: unknown } | null)?.slips;
+    if (step.kind === 'calc' && typeof slips === 'number' && Number.isInteger(slips)) mistakes[stepIndex] += Math.max(0, Math.min(99, slips));
     if (!correct) {
       mistakes[stepIndex]++;
     } else if (stepIndex + 1 < exercise.steps.length) {

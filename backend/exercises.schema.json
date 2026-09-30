@@ -9,7 +9,7 @@
       "type": "object",
       "required": ["kind", "phase", "prompt"],
       "properties": {
-        "kind": { "enum": ["tag", "choice", "numbers", "order"] },
+        "kind": { "enum": ["tag", "choice", "numbers", "order", "paint", "calc"] },
         "phase": { "enum": ["read", "plan", "solve", "check"], "description": "Which part of the method the step belongs to" },
         "prompt": { "type": "string", "minLength": 1 },
         "hint": { "type": "string", "description": "Shown after a wrong try" },
@@ -26,13 +26,52 @@
             "properties": { "label": { "type": "string" }, "answer": { "type": "number" }, "unit": { "type": "string" } }
           }
         },
-        "items": { "type": "array", "minItems": 2, "items": { "type": "string" } }
+        "items": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "targets": {
+          "type": "array",
+          "minItems": 2,
+          "description": "Paint: the story's marked phrases, in order, as word indexes (core words and span)",
+          "items": {
+            "type": "object",
+            "required": ["role", "words", "span"],
+            "additionalProperties": false,
+            "properties": {
+              "role": { "enum": ["known", "sought", "extra"] },
+              "words": { "type": "array", "minItems": 1, "items": { "type": "integer", "minimum": 0 } },
+              "span": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } }
+            }
+          }
+        },
+        "quantities": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["id", "value", "label"],
+            "additionalProperties": false,
+            "properties": { "id": { "type": "string" }, "value": { "type": "number" }, "label": { "type": "string" }, "unit": { "type": "string" } }
+          }
+        },
+        "relations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["out", "op", "a", "b"],
+            "additionalProperties": false,
+            "properties": { "out": { "type": "string" }, "op": { "enum": ["+", "−", "×", ":"] }, "a": { "type": "string" }, "b": { "type": "string" } }
+          }
+        },
+        "given": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "sought": { "type": "string" }
       },
       "additionalProperties": false,
       "allOf": [
         { "if": { "properties": { "kind": { "const": "choice" } } }, "then": { "required": ["options", "correctIndex"] } },
         { "if": { "properties": { "kind": { "const": "numbers" } } }, "then": { "required": ["rows"] } },
-        { "if": { "properties": { "kind": { "const": "order" } } }, "then": { "required": ["items"] } }
+        { "if": { "properties": { "kind": { "const": "order" } } }, "then": { "required": ["items"] } },
+        { "if": { "properties": { "kind": { "const": "paint" } } }, "then": { "required": ["targets"] } },
+        { "if": { "properties": { "kind": { "const": "calc" } } }, "then": { "required": ["quantities", "relations", "given", "sought"] } }
       ]
     }
   },
