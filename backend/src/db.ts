@@ -237,7 +237,7 @@ const starting = new Set<string>();
 function enterStep(run: FlowRun, stepIndex: number): void {
   const step = run.steps[stepIndex];
   if (!step) return endFlow(run);
-  store.flowRuns.put({ ...run, stepIndex });
+  store.flowRuns.put({ ...run, stepIndex, stepStartedAt: new Date().toISOString() });
   if (step.type === 'alarm') return; // waits for dismissAlarm
 
   const actions = step.type === 'routine' ? [{ type: 'routine' as const, routineId: step.routineId }] : step.actions;
@@ -273,6 +273,28 @@ function childClosed(runId: string): void {
   if (!run || starting.has(runId) || run.steps[run.stepIndex]?.type === 'alarm') return;
   const waiting = store.routineRuns.all('flowRunId = ?', runId).length + store.flowRuns.all('parentRunId = ?', runId).length;
   if (waiting === 0) enterStep(run, run.stepIndex + 1);
+}
+
+/**
+ * Alarms nobody dismissed within `settings.alarmMinutes` (default 60) stop, and their
+ * flow with them: the moment has passed, so a screen opened later doesn't wake anyone,
+ * and the routines after it don't start late. A parent flow waiting for it moves on.
+ * Runs every minute and at startup.
+ */
+export function expireAlarms(now: Date = new Date()): number {
+  return store.transaction(() => {
+    const limit = (config().settings?.alarmMinutes ?? 60) * 60_000;
+    const expired = store.flowRuns.all().filter(run =>
+      run.steps[run.stepIndex]?.type === 'alarm' &&
+      now.getTime() - new Date(run.stepStartedAt ?? run.startedAt).getTime() >= limit);
+    for (const run of expired) {
+      if (!store.flowRuns.get(run.id)) continue; // gone with a parent that expired first
+      logAction('ALARM_EXPIRED', { runId: run.id, flowId: run.flowId, stepIndex: run.stepIndex });
+      dropFlow(run.id);
+      if (run.parentRunId) childClosed(run.parentRunId);
+    }
+    return expired.length;
+  });
 }
 
 /** A kid dismissed the alarm at `stepIndex` of a run. Repeats (a second device) are no-ops. */

@@ -270,6 +270,12 @@
           "minimum": 0,
           "maximum": 100,
           "description": "Extra problems a kid may ask for each day, on top of the daily ones (default 10; 0 turns the button off)"
+        },
+        "alarmMinutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440,
+          "description": "How long an alarm rings before it gives up, with the rest of its flow (default 60)"
         }
       }
     },
