@@ -98,3 +98,14 @@ The audit can't read Greek; you must. The traps the generator has already hit:
 - `families/g3/`, `families/e5/`: one file per family; `index.ts` lists them (sets
   `set-*.ts` group families written together).
 - `gen.ts`, `audit.ts`: see the top of each.
+
+## World models (prototype, `world/`)
+
+A world is quantities and relations (out = a op b); a problem picks a question and
+states the rest, and a solver finds which facts are needed, so the same sentence is
+needed in one problem and extra in another. Pieces of text remember their quantity, so
+the painting check knows each fact's words, and the calc step can read back any
+calculation. `world/run.ts` prints a sample and how far lazy strategies get;
+`world/gen-world.ts` writes `backend/exercise-pools/g-dimotikou-world.json`. Every
+other valid way to work it out must be a quantity too (the other order of two changes,
+two changes taken together), or a right calculation reads back as meaning nothing.
