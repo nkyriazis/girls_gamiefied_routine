@@ -15,6 +15,10 @@ Stack: Fastify 5 + TypeScript + WebSockets + node-cron (backend), React 19 + Vit
 - Before committing, always check `git status` and `git diff`. Avoid `git add .`. Split commits into logical chunks using `<type>(<scope>): <subject>` (types: feat, fix, docs, refactor, chore…; scopes: backend, frontend, shared, docker, config).
 - If the data model changes, update `shared/types.ts` **and** the matching JSON schema in `backend/*.schema.json`. Otherwise config validation will reject the data.
 
+## Pull requests
+
+One issue per PR, kept compact, written for the owner to review from the PR page alone. Follow `.github/pull_request_template.md`: **Before** (the problem shown: screenshot, video with sound, failing test, code at file:line), **Problem**, **Fix**, **After** (the same evidence, now right), **Blast radius** (what else it touched, any manual step for piserve's live data). Capture screens on the dev stack with Playwright at the kiosk size (1280×800) and any other size the change affects. Before closing the issue, record the decision where the next agent will look (this file or the tool's README).
+
 ## Commands
 
 Everything runs in containers. The dependencies live in the container-mounted `node_modules`.
