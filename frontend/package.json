@@ -11,7 +11,8 @@
     "check-voice": "node scripts/help-lines.mjs --check",
     "check-sound": "node scripts/check-sound.mjs",
     "check-gender": "node scripts/check-gender.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test 'src/**/*.test.ts'"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

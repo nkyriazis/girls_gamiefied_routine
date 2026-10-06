@@ -21,7 +21,10 @@ scenario first, against master, and play the same one after the fix: the two vid
 ## How the sound gets in
 
 Playwright's video has no sound. `kit.mjs` logs every clip and screen sound the page plays, with the time,
-and a corner square flips every second. `mix.sh` finds the flips in the video, so it knows the video's
+and a corner square flips every second. Web Audio tones (the alarm's built-in melody, a routine's time-up
+beeps) have no file: each tone that sounds is logged with its wave, pitch and length, and `mix.sh` makes it
+again with ffmpeg at the page's level. A tone started while the page may not make sound yet isn't heard, so
+it isn't logged either. `mix.sh` finds the flips in the video, so it knows the video's
 clock against the page's (frames come late under load), speeds the video back to the page's pace, and lays
 each sound from `frontend/public` where it played. Both logs live on the Node side and the square shows the page
 clock's second, so a scenario may navigate (`open()` again, `page.goto`) without losing either.

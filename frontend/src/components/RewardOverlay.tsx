@@ -38,14 +38,17 @@ export const RewardOverlay: React.FC<RewardOverlayProps> = ({ starsEarned, onClo
           >
             ⭐
           </motion.div>
-          <motion.div 
-            className="stars-text"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            +{starsEarned}
-          </motion.div>
+          {/* What the server gave for the routine (run.totalStars); none at all, just the star */}
+          {starsEarned > 0 && (
+            <motion.div
+              className="stars-text"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              +{starsEarned}
+            </motion.div>
+          )}
         </div>
 
         {particles.map(p => (

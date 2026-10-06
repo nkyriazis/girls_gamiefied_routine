@@ -98,7 +98,9 @@ export const useAppSounds = () => {
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const retryRef = useRef<(() => void) | null>(null);
 
-  const playCustomSound = useCallback((filename: string, loop: boolean = false) => {
+  // onFail: called once when the file can't play (missing, broken), while it is still the
+  // sound wanted (not after a stop or another sound). The autoplay rule is no failure: it waits.
+  const playCustomSound = useCallback((filename: string, loop: boolean = false, onFail?: () => void) => {
     // Stop any existing audio
     retryRef.current?.();
     retryRef.current = null;
@@ -112,10 +114,19 @@ export const useAppSounds = () => {
     audio.volume = 0.7;
     audioElementRef.current = audio;
 
+    let failed = false;
+    const fail = (err: unknown) => {
+      if (failed) return;
+      failed = true;
+      console.error('Failed to play custom sound:', err);
+      if (audioElementRef.current === audio) onFail?.();
+    };
+    // A missing file (404) fails as it loads, before or without play()
+    audio.addEventListener('error', () => fail(audio.error), { once: true });
     const play = () => audio.play().catch(err => {
       if (err.name === 'NotAllowedError' && audioElementRef.current === audio) {
         retryRef.current = onFirstTouch(() => { retryRef.current = null; if (audioElementRef.current === audio) void play(); });
-      } else console.error('Failed to play custom sound:', err);
+      } else fail(err);
     });
     void play();
 

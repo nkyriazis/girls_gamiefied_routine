@@ -28,6 +28,8 @@ export interface Tour {
   steps: HelpStep[];
   /** Said only the first time, before and after the tour's own steps, and remembered on its own */
   intro?: { id: string; steps: HelpStep[]; after?: HelpStep[] };
+  /** A time-pressed screen (routines, alarms): the owl wiggles with its «!» but offers no «Να σου δείξω;» bubble */
+  quiet?: boolean;
 }
 
 /** How a tour is remembered as played (see HelpSeen in shared/types.ts) */

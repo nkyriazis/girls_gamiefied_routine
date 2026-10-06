@@ -1,5 +1,6 @@
 #!/bin/bash
 # mix.sh <out>: lays what the page played (<out>.sound.json, from kit.mjs) over <out>.webm -> <out>.mp4.
+# Clips and sounds come from frontend/public; Web Audio tones (/tone/<wave>/<Hz>) are made with ffmpeg.
 # The page's clock and the video's differ (frames come late under load), so each clip is
 # placed by the corner square: it flips every second, logged in page time, seen in video time.
 # The video is sped back to the page's pace (it runs slow), and each clip lands where it played.
@@ -9,7 +10,13 @@ PUB=${PUB:-/pub}   # frontend/public, mounted by record.sh
 ffmpeg -v error -i "$out.webm" -vf "crop=6:6:iw-7:ih-7,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=$out.corner.txt" -f null -
 args=(-y -v error -i "$out.webm"); filt=""; n=0
 while IFS=$'\t' read -r src at dur; do
-  n=$((n+1)); args+=(-i "$PUB$src")
+  n=$((n+1))
+  if [[ $src == /tone/* ]]; then
+    # A Web Audio tone (kit.mjs): made again, at the page's level (gain 0.15, fading out)
+    IFS=/ read -r _ _ wave freq <<< "$src"
+    wav="sin(2*PI*$freq*t)"; [ "$wave" = square ] && wav="sgn(sin(2*PI*$freq*t))"
+    args+=(-f lavfi -i "aevalsrc=0.15*$wav*exp(-2.7*t/$dur):s=48000:d=$dur")
+  else args+=(-i "$PUB$src"); fi
   filt+="[$n:a]atrim=0:${dur},adelay=${at}:all=1[a$n];"
 done < <(python3 - "$out" <<'PY'
 import json, re, sys
@@ -45,6 +52,10 @@ ev = d['said']
 for i, e in enumerate(ev):
     if e['ev'] != 'play': continue
     # A clip stops where it was stopped, or where the next one began; a sound plays out
+    if e.get('tone'):
+        start = video_ms(e['at']) / r
+        print(f"{e['src']}\t{max(0, round(start))}\t{e['tone']['secs']:.3f}")
+        continue
     stop = None if e.get('sfx') else next((f['at'] for f in ev[i+1:] if (f['src'] == e['src'] and f['ev'] == 'stop') or (f['ev'] == 'play' and not f.get('sfx'))), None)
     start = video_ms(e['at']) / r
     dur = (video_ms(stop) / r - start) / 1000 if stop else 60
