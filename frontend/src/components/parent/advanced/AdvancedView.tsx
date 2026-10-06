@@ -20,7 +20,7 @@ const stateSchema = () => api.getSchema('state');
 // Rare admin work: raw JSON for everything the forms don't cover, files, the log.
 // Loaded on demand, so the everyday views don't download the code editor.
 export default function AdvancedView() {
-    const { config, configError } = useGame();
+    const { config, configError, hasState } = useGame();
     const [panel, setPanel] = useState<Panel>('config');
     // A file the server couldn't read since the start: the editor holds the file's own text, to fix
     // and save, never the empty config that runs meanwhile (saving that would replace the family's file).
@@ -37,7 +37,10 @@ export default function AdvancedView() {
                         className={panel === p.id ? 'p-chip on' : 'p-chip'} onClick={() => setPanel(p.id)}>{p.label}</button>
                 ))}
             </div>
-            {panel === 'config' && (unread('data.json')
+            {/* The config editor reads `initial` once: never mount it before the first state, or it
+                holds the empty config, and one Αποθήκευση would write that over the family's file. */}
+            {panel === 'config' && !hasState && <p className="p-empty">Φόρτωση…</p>}
+            {panel === 'config' && hasState && (unread('data.json')
                 ? <JsonEditor key="config-text" loadText={api.getConfigText} save={api.saveRawConfig} schema={dataSchema} validate={api.validateConfig} warning={fixWarning('data.json')} />
                 : <JsonEditor key="config" initial={config} save={api.saveRawConfig} schema={dataSchema} validate={api.validateConfig} />)}
             {panel === 'exercises' && (unread('exercises.json')

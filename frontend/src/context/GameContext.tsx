@@ -36,6 +36,9 @@ interface GameState extends AppState {
     rewards: Reward[];
     chores: Chore[];
     isConnected: boolean;
+    // The first STATE has arrived. Until then the state is EMPTY_STATE, which no
+    // screen may save back: a config editor or form must wait for this.
+    hasState: boolean;
     subscribe: (listener: EventListener) => () => void; // returns unsubscribe
 }
 
@@ -52,6 +55,7 @@ export const useGame = () => {
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [state, setState] = useState<AppState>(EMPTY_STATE);
     const [isConnected, setIsConnected] = useState(false);
+    const [hasState, setHasState] = useState(false);
     const listeners = useRef(new Set<EventListener>());
 
     const subscribe = useCallback((listener: EventListener) => {
@@ -91,6 +95,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 const message: ServerMessage = JSON.parse(data);
                 if (message.type === 'STATE') {
                     setState(message.payload);
+                    setHasState(true);
                 } else if (message.type !== 'HEARTBEAT') {
                     listeners.current.forEach(listener => listener(message));
                 }
@@ -114,6 +119,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             rewards: state.config.rewards,
             chores: state.config.chores ?? [],
             isConnected,
+            hasState,
             subscribe
         }}>
             {children}
