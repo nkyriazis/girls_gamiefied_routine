@@ -134,6 +134,7 @@ export const RewardOverlay: React.FC<RewardOverlayProps> = ({ starsEarned, onClo
           color: #000;
           font-size: clamp(1rem, 4.1cqmin, 1.5rem);
           padding: clamp(0.5rem, 2.8cqmin, 1rem) clamp(1rem, 8.2cqmin, 3rem);
+          min-height: 44px; /* big enough for a finger in the smallest card */
           border-radius: 2rem;
           font-weight: bold;
           margin-top: clamp(0.5rem, 5.5cqmin, 2rem);
