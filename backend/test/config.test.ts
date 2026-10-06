@@ -85,7 +85,7 @@ test('after a start with an unreadable file, a plain save is refused and the fil
   assert.equal(cfg.reload(), 'invalid');
   assert.equal(cfg.problem()?.emptyFallback, true);
 
-  // What the forms, MCP and the old Advanced editor did: save the live (empty) config back
+  // What the forms and the old Advanced editor did: save the live (empty) config back
   const refused = cfg.save(cfg.raw());
   assert.ok(refused);
   assert.match(refused!.message, /never loaded/);

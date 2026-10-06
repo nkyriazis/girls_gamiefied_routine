@@ -8,14 +8,14 @@ import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 // ============================================================================
 // Config (data.json + exercises.json), cached in memory.
 //
-// Files are read at startup, after an edit through the admin API/MCP, and when
+// Files are read at startup, after an edit through the admin API, and when
 // they change on disk — never per request. An invalid file on disk never
 // replaces the cached config: the last valid version stays live and the error
 // is reported, so a bad edit can't take the app (or its state) down.
 //
 // Saving never writes over a file the server couldn't load (issue #45). While
 // the file on disk is invalid, save() refuses, so no read-modify-write editor
-// (the forms, MCP) can put the live copy over the file being fixed. The one
+// (the forms) can put the live copy over the file being fixed. The one
 // override is `replace`, sent only by the Advanced JSON editor: it replaces the
 // invalid file deliberately, keeping it beside as <file>.invalid-<stamp>. Even
 // then the empty fallback (live when the file was unreadable at startup) is

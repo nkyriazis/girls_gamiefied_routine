@@ -6,7 +6,7 @@
 # Dev stack only: never against piserve.
 set -e
 repo=$(cd "$(dirname "$0")/../.." && pwd)
-dc() { docker compose -f "$repo/docker-compose.yml" -f "$repo/docker-compose.dev.yml" "$@" 2> >(grep -v NGROK >&2); }
+dc() { docker compose -f "$repo/docker-compose.yml" -f "$repo/docker-compose.dev.yml" "$@"; }
 [ -n "$1" ] || { sed -n "2,6p" "$0" | sed "s/^# //"; exit 1; }
 h=$1; shift
 dc cp "$repo/tools/evidence/dev/$h.js" "backend:/tmp/$h.js" >/dev/null 2>&1
