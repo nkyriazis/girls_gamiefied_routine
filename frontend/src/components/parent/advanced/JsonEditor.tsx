@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
-import Editor, { type BeforeMount } from '@monaco-editor/react';
+import { useEffect, useRef, useState } from 'react';
+import Editor, { type BeforeMount, type OnMount, type OnValidate } from '@monaco-editor/react';
 import type { ValidationResult } from '../../../api';
 import { useFeedback } from '../useFeedback';
 
 interface Props {
     initial?: unknown; // the document, when it is already at hand...
     load?: () => Promise<unknown>; // ...or how to fetch it
+    loadText?: () => Promise<string>; // ...or the file's own text, when it doesn't parse
     save: (data: unknown) => Promise<unknown>;
     schema?: () => Promise<object>;
     validate?: (data: unknown) => Promise<ValidationResult>;
@@ -14,7 +15,7 @@ interface Props {
 
 // Raw JSON editing, for what the forms don't cover. The text is loaded once
 // when the editor opens and doesn't follow later changes while you edit.
-export function JsonEditor({ initial, load, save, schema, validate, warning }: Props) {
+export function JsonEditor({ initial, load, loadText, save, schema, validate, warning }: Props) {
     const { run } = useFeedback();
     const [text, setText] = useState<string | null>(() => (initial === undefined ? null : JSON.stringify(initial, null, 2)));
     const [errors, setErrors] = useState<string[]>([]);
@@ -22,8 +23,20 @@ export function JsonEditor({ initial, load, save, schema, validate, warning }: P
 
     useEffect(() => {
         load?.().then(data => setText(JSON.stringify(data, null, 2)), err => setErrors([(err as Error).message]));
+        loadText?.().then(setText, err => setErrors([(err as Error).message]));
         schema?.().then(setSchemaJson, () => undefined);
-    }, [load, schema]);
+    }, [load, loadText, schema]);
+
+    // A file loaded as text is there to be fixed: open it at its first error (a phone shows ~15 lines)
+    const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+    const revealed = useRef(false);
+    const onValidate: OnValidate = markers => {
+        const first = markers.find(m => m.severity === 8); // MarkerSeverity.Error
+        if (!loadText || revealed.current || !first || !editorRef.current) return;
+        revealed.current = true;
+        editorRef.current.revealLineInCenter(first.startLineNumber);
+        editorRef.current.setPosition({ lineNumber: first.startLineNumber, column: first.startColumn });
+    };
 
     const beforeMount: BeforeMount = monaco => {
         if (schemaJson) {
@@ -59,6 +72,7 @@ export function JsonEditor({ initial, load, save, schema, validate, warning }: P
             {warning && <p className="p-warning">{warning}</p>}
             <div className="p-json-editor">
                 <Editor height="100%" defaultLanguage="json" value={text} theme="vs-dark" beforeMount={beforeMount}
+                    onMount={ed => { editorRef.current = ed; }} onValidate={onValidate}
                     onChange={v => setText(v ?? '')}
                     options={{ minimap: { enabled: false }, scrollBeyondLastLine: false, fontSize: 13, tabSize: 2, automaticLayout: true, wordWrap: 'on' }} />
             </div>

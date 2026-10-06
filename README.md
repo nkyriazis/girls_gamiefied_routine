@@ -127,5 +127,8 @@ If you prefer building on the Pi itself (takes 10-15 minutes):
 docker-compose up --build -d
 ```
 
+**Backups:** the backend backs up the database, config and uploads every day. Until `BACKUP_DIR` in `.env` points
+at a USB disk or NAS they stay on the SD card. See [BACKUP.md](BACKUP.md) to set the destination and to restore.
+
 **Performance Tip:**
 Do **not** use Development mode on the Pi. The file-watching mechanism consumes too much CPU on low-power devices.

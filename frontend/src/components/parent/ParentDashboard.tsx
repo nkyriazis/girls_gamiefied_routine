@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import type { AppState } from '@shared/types';
 import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../../context/GameContext';
 import { FeedbackProvider } from './feedback';
@@ -45,11 +46,7 @@ export function ParentDashboard() {
                         <h1>{VIEWS.find(v => v.id === view)?.label}</h1>
                         <span className={isConnected ? 'p-live on' : 'p-live'}>{isConnected ? 'Συνδεδεμένο' : 'Επανασύνδεση…'}</span>
                     </header>
-                    {configError && (
-                        <div className="p-banner" role="alert">
-                            <strong>Το data.json δεν είναι έγκυρο.</strong> Ισχύουν οι τελευταίες έγκυρες ρυθμίσεις. {configError.message}
-                        </div>
-                    )}
+                    {configError && <ConfigBanner error={configError} />}
                     {view === 'today' && <TodayView />}
                     {view === 'history' && <HistoryView />}
                     {view === 'settings' && <SettingsView />}
@@ -57,5 +54,25 @@ export function ParentDashboard() {
                 </main>
             </div>
         </FeedbackProvider>
+    );
+}
+
+// Says what is live while a config file is invalid: the last valid version, or, when the file
+// couldn't be read since the start, an empty one (no kids). Saving is off either way.
+function ConfigBanner({ error }: { error: NonNullable<AppState['configError']> }) {
+    const data = error.file === 'data.json';
+    const where = `Προχωρημένα → ${data ? 'Ρυθμίσεις' : 'Ασκήσεις'} (JSON)`;
+    return (
+        <div className="p-banner" role="alert">
+            {error.emptyFallback ? <>
+                <strong>Το {error.file} δεν διαβάζεται από την εκκίνηση.</strong>{' '}
+                Η εφαρμογή τρέχει {data ? 'με κενές ρυθμίσεις: χωρίς παιδιά, ρουτίνες και ανταμοιβές' : 'χωρίς τις ασκήσεις του'}.
+                Οι αλλαγές δεν αποθηκεύονται μέχρι να διορθωθεί το αρχείο ({where}) ή να επανέλθει από αντίγραφο ασφαλείας.{' '}
+            </> : <>
+                <strong>Το {error.file} στον δίσκο δεν είναι έγκυρο.</strong>{' '}
+                Ισχύουν οι τελευταίες έγκυρες ρυθμίσεις. Οι αλλαγές δεν αποθηκεύονται μέχρι να διορθωθεί ({where}).{' '}
+            </>}
+            {error.message}
+        </div>
     );
 }

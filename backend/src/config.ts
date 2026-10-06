@@ -1,5 +1,6 @@
-import { readFileSync, renameSync, unwatchFile, watchFile, writeFileSync } from 'fs';
+import { copyFileSync, existsSync, readFileSync, renameSync, unwatchFile, watchFile, writeFileSync } from 'fs';
 import path from 'path';
+import { isDeepStrictEqual } from 'util';
 import { DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
 import { DATA_FILE, EXERCISES_FILE } from './paths';
 import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
@@ -11,6 +12,14 @@ import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 // they change on disk — never per request. An invalid file on disk never
 // replaces the cached config: the last valid version stays live and the error
 // is reported, so a bad edit can't take the app (or its state) down.
+//
+// Saving never writes over a file the server couldn't load (issue #45). While
+// the file on disk is invalid, save() refuses, so no read-modify-write editor
+// (the forms, MCP) can put the live copy over the file being fixed. The one
+// override is `replace`, sent only by the Advanced JSON editor: it replaces the
+// invalid file deliberately, keeping it beside as <file>.invalid-<stamp>. Even
+// then the empty fallback (live when the file was unreadable at startup) is
+// never written: there the editor shows the file's own text to fix instead.
 // ============================================================================
 
 /** exercises.json, as described by exercises.schema.json. */
@@ -25,6 +34,14 @@ const EMPTY_DATA: DataConfig = {
 };
 const EMPTY_EXERCISES: ExercisesConfig = { categories: [], exercises: [] };
 
+const refusal = (message: string): ValidationError => ({ message, errors: [] });
+
+/** YYYY-MM-DD_HHMMSS in the process's time zone, like the backups' folders. */
+function localStamp(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
+
 function deepFreeze<T>(value: T): T {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
     Object.freeze(value);
@@ -33,13 +50,21 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
+/** What is wrong with a config file, as the parents' screen shows it. */
+export interface ConfigProblem extends ValidationError {
+  file: string; // data.json or exercises.json
+  emptyFallback: boolean; // never loaded since the start: the empty config is live, not the last valid one
+}
+
 /**
  * One cached, validated JSON config file. The cached value is deep-frozen:
  * callers that want to edit it take a copy via `raw()` and `save()` it.
  */
 export class ConfigFile<T> {
   private value: T;
-  private text: string | null = null;
+  private liveText: string | null = null;
+  /** A valid version was read (or saved) since the start: `value` is the file's, not the fallback. */
+  private loaded = false;
   error: ValidationError | null = null;
 
   constructor(
@@ -60,6 +85,20 @@ export class ConfigFile<T> {
     return structuredClone(this.value);
   }
 
+  /** The current problem with the file, or null. */
+  problem(): ConfigProblem | null {
+    return this.error && { ...this.error, file: path.basename(this.file), emptyFallback: !this.loaded };
+  }
+
+  /** The file's text as it is on disk now (to fix a file that doesn't parse), or null when missing. */
+  text(): string | null {
+    try {
+      return readFileSync(this.file, 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Re-read the file. Returns 'unchanged', 'updated', or 'invalid' (the
    * cached value is kept and `error` explains why).
@@ -76,7 +115,7 @@ export class ConfigFile<T> {
         return 'invalid';
       }
     }
-    if (text === this.text) {
+    if (text === this.liveText) {
       // Back to the live version after a broken edit: the error is resolved.
       if (!this.error) return 'unchanged';
       this.error = null;
@@ -95,22 +134,49 @@ export class ConfigFile<T> {
       this.error = error;
       return 'invalid';
     }
-    this.text = text;
+    this.liveText = text;
     this.value = deepFreeze(parsed as T);
+    this.loaded = true;
     this.error = null;
     return 'updated';
   }
 
-  /** Validate and atomically write a new version, then make it live. */
-  save(value: unknown): ValidationError | null {
-    const error = check(this.schema, value, `${path.basename(this.file)} failed schema validation`);
+  /**
+   * Validate and atomically write a new version, then make it live. Refused
+   * (nothing written) while the file on disk is invalid, unless `replace`
+   * asks to replace it; and never with the empty fallback over a file that
+   * was never loaded, nor over a live config that has content. A replaced
+   * invalid file is kept as <file>.invalid-<stamp>.
+   */
+  save(value: unknown, { replace = false }: { replace?: boolean } = {}): ValidationError | null {
+    const name = path.basename(this.file);
+    const error = check(this.schema, value, `${name} failed schema validation`);
     if (error) return error;
+    if (!this.loaded && (!replace || isDeepStrictEqual(value, this.fallback))) {
+      return refusal(`${name} was never loaded (it could not be read at startup), so saving would replace it ` +
+        `with ${replace ? 'the empty config' : 'what is live, the empty config'}. Fix the file itself ` +
+        `(Γονείς → Προχωρημένα shows its text) or restore it from a backup.`);
+    }
+    if (isDeepStrictEqual(value, this.fallback) && !isDeepStrictEqual(this.value, this.fallback)) {
+      // What a screen holds before its first state arrives: never the family's config wiped by one tap
+      return refusal(`Refused: this would replace ${name} with the empty config, which has nothing in it. ` +
+        `A screen that saved before it had loaded the config sends exactly that; reload the page and try again.`);
+    }
+    if (this.error && !replace) {
+      return refusal(`${name} on disk is not valid, so saving is off: it would replace the file being fixed. ` +
+        `Fix the file, or replace it from Γονείς → Προχωρημένα. (${this.error.message})`);
+    }
+    if (this.error && existsSync(this.file)) {
+      // Keep the invalid file beside, so a replace never loses what was in it
+      copyFileSync(this.file, `${this.file}.invalid-${localStamp(new Date())}`);
+    }
     const text = JSON.stringify(value, null, 2);
     const tmp = `${this.file}.tmp`;
     writeFileSync(tmp, text);
     renameSync(tmp, this.file);
-    this.text = text;
+    this.liveText = text;
     this.value = deepFreeze(structuredClone(value as T));
+    this.loaded = true;
     this.error = null;
     return null;
   }
@@ -129,9 +195,9 @@ export function exercisesFile(): ExercisesConfig {
   return exercisesConfig.get();
 }
 
-/** Current config problem, if any (the app keeps running on the last valid config). */
-export function configError(): ValidationError | null {
-  return dataConfig.error ?? exercisesConfig.error;
+/** Current config problem, if any: the app runs on the last valid config, or on the empty one if none was ever loaded. */
+export function configError(): ConfigProblem | null {
+  return dataConfig.problem() ?? exercisesConfig.problem();
 }
 
 export type ConfigChange = { type: 'updated' } | { type: 'invalid'; error: ValidationError };

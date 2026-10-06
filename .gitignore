@@ -13,6 +13,7 @@ backend/routine.db*
 backend/state.json
 backend/logs.jsonl
 backend/*.tmp
+backend/*.invalid-*
 backups/
 backend/uploads/
 backend/test-*.json

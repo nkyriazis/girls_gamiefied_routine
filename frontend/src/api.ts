@@ -75,13 +75,17 @@ export const api = {
 
   // Config and admin
   saveConfig: (config: DataConfig) => post('/admin/data', config, 'Failed to save data'),
-  saveRawConfig: (data: unknown) => post('/admin/data', data, 'Failed to save data'),
+  // The Advanced JSON editor replaces the whole file on purpose, so it may replace an invalid one
+  // (replace=1; the server keeps the invalid file beside). The forms never do.
+  saveRawConfig: (data: unknown) => post('/admin/data?replace=1', data, 'Failed to save data'),
+  getConfigText: () => get<{ text: string }>('/admin/data/text', 'Failed to read data.json').then(r => r.text),
   validateConfig: (data: unknown) => post<ValidationResult>('/admin/validate', data, 'Failed to validate config'),
   getRawState: () => get<StateSnapshot>('/admin/state', 'Failed to fetch state'),
   saveRawState: (data: unknown) => post('/admin/state', data, 'Failed to save state'),
   validateState: (data: unknown) => post<ValidationResult>('/admin/validate-state', data, 'Failed to validate state'),
   getRawExercises: () => get<unknown>('/admin/exercises', 'Failed to fetch exercises'),
-  saveRawExercises: (data: unknown) => post('/admin/exercises', data, 'Failed to save exercises'),
+  saveRawExercises: (data: unknown) => post('/admin/exercises?replace=1', data, 'Failed to save exercises'),
+  getExercisesText: () => get<{ text: string }>('/admin/exercises/text', 'Failed to read exercises.json').then(r => r.text),
   getSchema: (name: 'data' | 'state') => get<object>(`/admin/schema/${name}`, 'Failed to fetch schema'),
   getExerciseSchema: () => get<object>('/exercises/schema', 'Failed to fetch exercise schema'),
   listUploads: () => get<string[]>('/admin/uploads/list', 'Failed to list uploads'),
