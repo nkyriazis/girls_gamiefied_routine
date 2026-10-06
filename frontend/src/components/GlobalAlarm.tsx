@@ -16,7 +16,7 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
     title = 'Ειδοποίηση',
     message,
     icon = '🔔',
-    dismissText = 'OK'
+    dismissText = 'Εντάξει!'
   } = alarmProps;
 
   const handleDismiss = () => {
@@ -47,10 +47,11 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
           <div className={`alarm-users${users.length > 1 ? ' several' : ''}`}>
             {users.map(user => (
               <div key={user.id} className="alarm-user-info">
-                <div className="alarm-user-badge" style={{ background: user.color }}>
+                {/* The kid's colour rings the avatar; the name is white on a dark plate, readable on the orange */}
+                <div className="alarm-user-badge" style={{ background: user.color, borderColor: user.color }}>
                   <SmartIcon value={user.avatar} size={96} style={{ width: '100%', height: '100%', fontSize: 'inherit' }} />
                 </div>
-                <p className="user-name" style={{ color: user.color }}>{user.name}</p>
+                <p className="user-name">{user.name}</p>
               </div>
             ))}
           </div>
@@ -134,8 +135,8 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
           align-items: center;
           justify-content: center;
           overflow: hidden;
-          border: 4px solid white;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          border: 4px solid; /* the kid's colour (inline) */
+          box-shadow: 0 0 0 3px white, 0 4px 20px rgba(0, 0, 0, 0.3);
           font-size: 12cqmin; /* an emoji avatar, sized with its badge */
         }
 
@@ -144,11 +145,17 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
           height: 15cqmin;
         }
 
-        .user-name {
-          font-size: max(1rem, 6cqmin);
+        /* White on a dark plate: at least 4.5:1 against every part of the orange gradient.
+           Scoped to the card (this style is global) and the size it had: the card's p rule won before. */
+        .global-alarm-container .user-name {
+          font-size: max(1rem, 5cqmin);
           font-weight: 900;
           margin: 0;
-          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+          color: white;
+          opacity: 1;
+          background: rgba(20, 10, 40, 0.75);
+          padding: 0.1em 0.6em;
+          border-radius: 1em;
         }
 
         .global-alarm-container p {
