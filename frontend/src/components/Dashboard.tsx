@@ -11,11 +11,11 @@ import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
 import { ChoresDrawer } from './ChoresDrawer';
 import { useGame } from '../context/GameContext';
-import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
 import { ExercisesDrawer } from './ExercisesDrawer';
+import { waitingCount } from './exerciseCounts';
 import { help } from '../help/anchors';
 import { sound } from '../sound/sfx';
 import { HelpCover, HelpScreen } from '../help/HelpProvider';
@@ -50,7 +50,6 @@ export const Dashboard: React.FC = () => {
   }, []);
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { isInstallable, promptInstall } = useInstallPrompt();
 
   // Store State
   const [storeUserId, setStoreUserId] = useState<string | null>(null);
@@ -80,10 +79,8 @@ export const Dashboard: React.FC = () => {
     }).length;
   }, [choreInstances, chores]);
 
-  // Count pending daily exercise assignments
-  const pendingExercisesCount = useMemo(() => {
-    return exerciseAssignments.filter(a => a.status === 'pending').length;
-  }, [exerciseAssignments]);
+  // The daily sets still to do (the drawer counts the same; extra problems are apart)
+  const pendingExercisesCount = useMemo(() => waitingCount(exerciseAssignments), [exerciseAssignments]);
 
   // Count active bonus activities
   const activeBonusCount = useMemo(() => {
@@ -131,10 +128,9 @@ export const Dashboard: React.FC = () => {
 
         console.log(`[TimeSync] Server: ${serverTime.toISOString()} | Client: ${clientTime.toISOString()} | Diff: ${diff}ms`);
 
-        // If difference is more than 2 minutes
+        // More than 2 minutes apart: say so, for a parent (not which clock is wrong; either may be)
         if (diff > 2 * 60 * 1000) {
-          const diffMinutes = Math.round(diff / 60000);
-          const msg = `Time mismatch: Server is ${diffMinutes}m ${serverTime > clientTime ? 'ahead' : 'behind'}`;
+          const msg = `Η ώρα αυτής της οθόνης διαφέρει από τον server κατά ${Math.round(diff / 60000)} λεπτά`;
           setTimeWarning(msg);
           console.warn(`[TimeSync] ${msg}`);
         }
@@ -200,15 +196,9 @@ export const Dashboard: React.FC = () => {
   return (
     <HelpScreen tour={tour}>
     <div className="dashboard">
-      {timeWarning && (
-        <div className="time-warning">
-          ⚠️ {timeWarning}
-        </div>
-      )}
-
       {!hasInteracted && (
         <div className="interaction-overlay" {...sound('open')} onClick={() => setHasInteracted(true)}>
-          <div className="start-btn">Click to Start</div>
+          <div className="start-btn">Πάτα για να ξεκινήσουμε!</div>
         </div>
       )}
 
@@ -334,8 +324,8 @@ export const Dashboard: React.FC = () => {
           <ExerciseSetup
             users={users}
             onClose={() => setSetupOpen(false)}
-            onStart={(p, c, r, q) => {
-              api.startExerciseSession(p, c, r, q);
+            onStart={async (p, c, r, q) => {
+              await api.startExerciseSession(p, c, r, q);   // a refusal stays in the setup, which says why
               setSetupOpen(false);
             }}
           />
@@ -472,20 +462,6 @@ export const Dashboard: React.FC = () => {
       </div>
       </div>
 
-      {/* Install PWA Button */}
-      {isInstallable && (
-        <motion.button
-          className="install-pwa-btn"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={!isTouchDevice ? { scale: 1.05 } : {}}
-          whileTap={{ scale: 0.95 }}
-          onClick={promptInstall}
-        >
-          📲 Install App
-        </motion.button>
-      )}
-
       {/* Dock (Inactive Users) */}
       {totalActiveCount === 0 && (
         <motion.div
@@ -512,17 +488,22 @@ export const Dashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Time Sync Warning */}
-      {timeWarning && (
-        <motion.div
-          className="time-warning"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-        >
-          {timeWarning}
-        </motion.div>
-      )}
+      {/* The screen's clock and the server's disagree: for a parent, rare. A tap hides it, so it
+          never stays over a game's round or a kid's badge. No tour step: a kid can't fix a clock. */}
+      <AnimatePresence>
+        {timeWarning && (
+          <motion.button
+            className="time-warning"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            {...sound('close')}
+            onClick={() => setTimeWarning(null)}
+          >
+            ⚠️ {timeWarning}
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .dashboard {
@@ -539,8 +520,8 @@ export const Dashboard: React.FC = () => {
           /* The side buttons' column (60 px each, every --fab-step), its second at --fab-at:
              at 800 px tall and more the middle of the screen, as always; on shorter screens
              it moves up and closes up, between the top right corner and the dock. That corner
-             holds the Install button (top 1rem, 44 px) and the chore toasts (3.5rem each, 0.5rem
-             apart): --fab-top leaves room for one toast and a gap. More toasts stack over the
+             holds the chore toasts (3.5rem each, 0.5rem apart, from top 1rem): --fab-top leaves
+             room for one toast and a gap. More toasts stack over the
              column for their 5 s, as they always did on short screens. */
           --fab: 60px;
           --fab-top: 5.25rem;
@@ -569,14 +550,18 @@ export const Dashboard: React.FC = () => {
           cursor: pointer;
         }
 
+        /* Whole and centred on any screen: a phone (390 px) as well as the kiosk */
         .start-btn {
-          font-size: 3rem;
+          font-size: clamp(1.75rem, 6vw, 3rem);
           font-weight: 900;
           color: white;
-          padding: 2rem 4rem;
+          padding: clamp(1.25rem, 4vw, 2rem) clamp(1.5rem, 6vw, 4rem);
           border: 4px solid white;
           border-radius: 2rem;
-          letter-spacing: 4px;
+          letter-spacing: 2px;
+          text-align: center;
+          max-width: min(40rem, calc(100vw - 2rem));
+          box-sizing: border-box;
           animation: pulse 2s infinite;
         }
 
@@ -672,21 +657,21 @@ export const Dashboard: React.FC = () => {
           position: fixed;
           top: 1rem;
           left: 1rem;
+          max-width: calc(100vw - 2rem);
           background: rgba(255, 50, 50, 0.9);
           color: white;
+          font: inherit;
+          font-weight: bold;
+          text-align: left;
           padding: 0.75rem 1.25rem;
           border-radius: 0.5rem;
           z-index: var(--z-toasts);
-          font-weight: bold;
           backdrop-filter: blur(5px);
           box-shadow: 0 4px 12px rgba(0,0,0,0.3);
           border: 1px solid rgba(255,255,255,0.2);
-          animation: slideDown 0.5s ease-out;
-        }
-
-        @keyframes slideDown {
-          from { transform: translateY(-100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
         }
 
         @media (max-width: 768px) {
@@ -942,28 +927,6 @@ export const Dashboard: React.FC = () => {
 
         .toast-text {
           font-size: 0.9rem;
-        }
-
-        .install-pwa-btn {
-          position: fixed;
-          top: 1rem;
-          right: 1rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          padding: 0.75rem 1.5rem;
-          border-radius: 2rem;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-          z-index: var(--z-dock); /* a home affordance: under every overlay, never over an ✕ */
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          -webkit-tap-highlight-color: transparent;
-          touch-action: manipulation;
-          user-select: none;
         }
       `}</style>
     </div>

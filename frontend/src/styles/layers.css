@@ -3,18 +3,19 @@
    its own popups), and npm run check-help fails on a bare one anywhere else.
    Routines and alarms sit above everything a kid can open: while they run they own the
    screen, and what they cover stays mounted underneath and comes back as it was. The owl
-   explains what is on top, and «Click to Start» covers everything until the first touch.
+   explains what is on top, and the start overlay
+   «Πάτα για να ξεκινήσουμε!» covers everything until the first touch.
    The .dashboard makes no stacking context, so these hold across the exercise player
    (portalled to <body>) and the owl as well. Small values inside a card stay local. */
 :root {
-  --z-dock: 100;      /* the dock, the side buttons and the Install button, over the clock */
-  --z-drawer: 200;    /* the chores, bonus and exercises drawers: the shade; the panel is +1 */
+  --z-dock: 100;      /* the dock and the side buttons, over the clock */
+  --z-drawer: 200;    /* the chores, extras (🌟) and exercises drawers: the shade; the panel is +1 */
   --z-modal: 300;     /* the store and the game setup; their popups are +10 */
   --z-player: 400;    /* the exercise player and the group game; their feedback is +10 */
   --z-routines: 500;  /* routines and alarms */
   --z-toasts: 600;    /* the chore toasts and the time warning: over routines, so also over the
                          player and the game (a toast covers the player's ✕ until tapped or 5 s) */
   --z-owl: 700;       /* the floating owl */
-  --z-start: 800;     /* «Click to Start» */
+  --z-start: 800;     /* the start overlay, «Πάτα για να ξεκινήσουμε!» */
   --z-tour: 999999;   /* a tour's finger: over driver.js's shade (10000), under its bubble (1000000000) */
 }

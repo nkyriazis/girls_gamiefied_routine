@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
-import { api } from '../api';
+import { api, ApiError } from '../api';
 import type { User } from '@shared/types';
 import { help } from '../help/anchors';
 import { HelpScreen } from '../help/HelpProvider';
 import { gameSetupTour } from './ExerciseSetup.help';
-import { sound } from '../sound/sfx';
+import { sfx, sound } from '../sound/sfx';
 
 interface ExerciseSetupProps {
   users: User[];
   onClose: () => void;
-  onStart: (playerIds: string[], categories: string[], totalRounds: number, questionsPerRound: number) => void;
+  // Resolves once the game has started; rejects with the server's refusal (the setup then says why)
+  onStart: (playerIds: string[], categories: string[], totalRounds: number, questionsPerRound: number) => Promise<void>;
 }
 
 export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, onStart }) => {
@@ -21,6 +22,8 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
   const [totalRounds, setTotalRounds] = useState(3);
   const [questionsPerRound, setQuestionsPerRound] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
+  const [refusal, setRefusal] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -50,16 +53,22 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
     );
   };
 
-  const handleStart = () => {
-    if (selectedPlayers.length === 0) {
-      alert('Επίλεξε τουλάχιστον ένα παιδί!');
-      return;
+  // The start button is disabled until a kid and a category are chosen. A start the server
+  // refuses keeps the setup open and says why, in place (never a browser alert()).
+  const handleStart = async () => {
+    if (starting) return;
+    setStarting(true);
+    setRefusal(null);
+    try {
+      await onStart(selectedPlayers, selectedCategories, totalRounds, questionsPerRound);
+    } catch (err) {
+      console.error('Could not start the game:', err);
+      sfx('nope');
+      setRefusal(err instanceof ApiError && err.message === 'No exercises found for these categories'
+        ? 'Δεν βρέθηκαν ασκήσεις για αυτά τα παιδιά και τις κατηγορίες. Διάλεξε άλλες κατηγορίες.'
+        : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.');
+      setStarting(false);
     }
-    if (selectedCategories.length === 0) {
-      alert('Επίλεξε τουλάχιστον μία κατηγορία!');
-      return;
-    }
-    onStart(selectedPlayers, selectedCategories, totalRounds, questionsPerRound);
   };
 
   return (
@@ -154,6 +163,15 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
           </section>
         </div>
 
+        <AnimatePresence>
+          {refusal && (
+            <motion.div className="setup-refusal" role="alert"
+              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
+              {refusal}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="setup-actions">
           <motion.button
             className="start-game-btn"
@@ -162,9 +180,9 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
             onClick={handleStart}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            disabled={selectedPlayers.length === 0 || selectedCategories.length === 0}
+            disabled={selectedPlayers.length === 0 || selectedCategories.length === 0 || starting}
           >
-            🎮 Έναρξη Παιχνιδιού
+            {starting ? 'Ξεκινάει…' : '🎮 Έναρξη Παιχνιδιού'}
           </motion.button>
         </div>
       </motion.div>
@@ -374,6 +392,17 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
           font-weight: bold;
           min-width: 30px;
           text-align: center;
+        }
+
+        .setup-refusal {
+          margin-top: 1.5rem;
+          font-size: 1rem;
+          font-weight: 600;
+          text-align: center;
+          color: #ff6b6b;
+          background: rgba(255,107,107,0.12);
+          padding: 0.6rem 1rem;
+          border-radius: 0.75rem;
         }
 
         .setup-actions {

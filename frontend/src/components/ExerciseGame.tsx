@@ -257,13 +257,29 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           overflow: hidden;
         }
 
+        /* One row on the kiosk. On a phone it wraps: the round and «✕ Έξοδος» on the first row,
+           the players' pucks on their own row under them, so the exit is never off screen. */
         .game-header {
           padding: 1.5rem 2rem;
           display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
           justify-content: space-between;
           align-items: center;
           background: rgba(255, 255, 255, 0.05);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @media (max-width: 600px) {
+          .game-header { padding: 0.75rem 1rem; row-gap: 0.6rem; }
+          .game-header .players-scores {
+            order: 3;
+            flex-basis: 100%;
+            min-width: 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+          }
+          .game-header .player-puck.active-turn { transform: scale(1.05); }
         }
 
         .game-progress {

@@ -28,6 +28,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   const { exerciseAssignments, config } = useGame();
   const canEarn = exerciseAssignments.some(a => a.userId === user.id) || (!!user.grade && (config.settings.extraProblemsPerDay ?? 10) > 0);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  // A purchase asks first, inside the reward's own card: a kid can't undo it (only a parent can)
+  const [askingId, setAskingId] = useState<string | null>(null);
   const [justPurchased, setJustPurchased] = useState<{ reward: Reward; cost: number } | null>(null);
   const [showActivity, setShowActivity] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
@@ -47,12 +49,16 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
   // Incoming pending transfers
   const myPendingIncomingTransfers = starTransfers.filter(t => t.toUserId === user.id && t.status === 'pending');
+  // What the activity popup lists (a revoked purchase isn't shown, so it doesn't count)
+  const hasActivity = pendingSpendings.length + historySpendings.length
+    + myPendingOutgoingTransfers.length + myPendingIncomingTransfers.length > 0;
 
   // Other users for transfer
   const otherUsers = allUsers.filter(u => u.id !== user.id);
 
   // A purchase or gift the server refused (a gift made on another screen took the stars first, say).
-  // It shows where she is looking: under the balance, or in the gift form while that is open.
+  // It shows where she is looking: under the balance, or in the gift form or the activity popup
+  // while one is open. Never a browser alert().
   const refuse = (text: string) => {
     sfx('nope');
     setRefusal(text);
@@ -111,7 +117,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
       await api.cancelTransfer(transferId);
     } catch (err) {
       console.error(err);
-      alert('Error cancelling transfer');
+      // 400: a parent decided on it meanwhile
+      refuse(err instanceof ApiError && err.status === 400 ? 'Αυτό το δώρο δεν ακυρώνεται πια.' : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.');
     }
   };
 
@@ -179,7 +186,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                 </div>
               )}
               <AnimatePresence>
-                {refusal && !showTransfer && (
+                {refusal && !showTransfer && !showActivity && (
                   <motion.div className="store-refusal" role="alert"
                     initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
                     {refusal}
@@ -210,7 +217,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                       🎁 Δώσε Αστέρια
                     </button>
                   )}
-                  {(mySpendings.length > 0 || myPendingOutgoingTransfers.length > 0 || myPendingIncomingTransfers.length > 0) && (
+                  {hasActivity && (
                     <button
                       className="activity-toggle-btn"
                       {...help('store.activity')}
@@ -226,34 +233,51 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                 {rewards.map(reward => {
                   const canAfford = availableBalance >= reward.cost;
                   const isPurchasing = purchasingId === reward.id;
+                  const isAsking = askingId === reward.id && canAfford && !isPurchasing;
+                  const tappable = canAfford && !isPurchasing && !isAsking;
                   return (
                     <motion.div
                       key={reward.id}
-                      className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''}`}
-                      {...sound(canAfford && !isPurchasing ? 'select' : 'nope')}
-                      onClick={() => canAfford && !isPurchasing && handleBuy(reward)}
-                      whileHover={!isTouchDevice && canAfford && !isPurchasing ? { scale: 1.05 } : {}}
-                      whileTap={canAfford && !isPurchasing ? { scale: 0.95 } : {}}
+                      className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''} ${isAsking ? 'asking' : ''}`}
+                      {...sound(isAsking ? 'none' : tappable ? 'select' : 'nope')}
+                      onClick={() => tappable && setAskingId(reward.id)}
+                      whileHover={!isTouchDevice && tappable ? { scale: 1.05 } : {}}
+                      whileTap={tappable ? { scale: 0.95 } : {}}
                       animate={isPurchasing ? {
                         scale: [1, 1.1, 0.9, 1],
                         rotate: [0, -5, 5, 0]
                       } : {}}
                       transition={{ duration: 0.3 }}
                     >
-                      <motion.div
-                        className="reward-icon"
-                        animate={isPurchasing ? {
-                          scale: [1, 1.3, 1],
-                          rotate: [0, 360]
-                        } : {}}
-                        transition={{ duration: 0.5 }}
-                      >
-                        <SmartIcon value={reward.icon} />
-                      </motion.div>
-                      <div className="reward-info">
-                        <span className="reward-title">{reward.title}</span>
-                        <span className="reward-cost">⭐ {reward.cost}</span>
-                      </div>
+                      {isAsking ? (
+                        <div className="buy-ask" role="dialog" aria-label={`Να πάρεις «${reward.title}»;`}>
+                          <p className="buy-ask-text">Να πάρεις «{reward.title}» για ⭐ {reward.cost};</p>
+                          <div className="buy-ask-buttons">
+                            {/* handleBuy plays 'spend' (or 'nope' if the server refuses) */}
+                            <button className="buy-ask-btn buy-ask-yes" {...sound('none')}
+                              onClick={e => { e.stopPropagation(); setAskingId(null); void handleBuy(reward); }}>Ναι</button>
+                            <button className="buy-ask-btn buy-ask-no" {...sound('unselect')}
+                              onClick={e => { e.stopPropagation(); setAskingId(null); }}>Όχι</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <motion.div
+                            className="reward-icon"
+                            animate={isPurchasing ? {
+                              scale: [1, 1.3, 1],
+                              rotate: [0, 360]
+                            } : {}}
+                            transition={{ duration: 0.5 }}
+                          >
+                            <SmartIcon value={reward.icon} />
+                          </motion.div>
+                          <div className="reward-info">
+                            <span className="reward-title">{reward.title}</span>
+                            <span className="reward-cost">⭐ {reward.cost}</span>
+                          </div>
+                        </>
+                      )}
                     </motion.div>
                   );
                 })}
@@ -289,7 +313,16 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                   <button className="popup-close-btn" {...sound('close')} onClick={() => setShowActivity(false)}>✕</button>
                 </div>
 
-                {mySpendings.length === 0 && myPendingOutgoingTransfers.length === 0 && myPendingIncomingTransfers.length === 0 && (
+                <AnimatePresence>
+                  {refusal && (
+                    <motion.div className="store-refusal activity-refusal" role="alert"
+                      initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
+                      {refusal}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {!hasActivity && (
                   <div className="empty-state">Καμία δραστηριότητα</div>
                 )}
 
@@ -302,7 +335,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         <div key={transfer.id} className="pending-item transfer-incoming">
                           <div className="pending-icon">🎁</div>
                           <div className="pending-info">
-                            <span className="pending-title">⭐ {transfer.amount} από {transfer.fromUser?.name || 'Unknown'}</span>
+                            <span className="pending-title">⭐ {transfer.amount} από {transfer.fromUser?.name || 'άλλο παιδί'}</span>
                             <span className="pending-date">
                               {format(new Date(transfer.createdAt), 'd MMM HH:mm', { locale: el })}
                             </span>
@@ -323,7 +356,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         <div key={transfer.id} className="pending-item transfer-outgoing">
                           <div className="pending-icon">📤</div>
                           <div className="pending-info">
-                            <span className="pending-title">⭐ {transfer.amount} προς {transfer.toUser?.name || 'Unknown'}</span>
+                            <span className="pending-title">⭐ {transfer.amount} προς {transfer.toUser?.name || 'άλλο παιδί'}</span>
                             <span className="pending-date">
                               {format(new Date(transfer.createdAt), 'd MMM HH:mm', { locale: el })}
                             </span>
@@ -764,6 +797,58 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           font-size: 2.5rem;
         }
 
+        /* The question before a purchase, in the reward's card: two buttons a finger can hit
+           (48 px), side by side (one over the other only in a card too narrow for both), so the
+           card stays about its own height and fits the grid's visible rows down to 800x480 */
+        .reward-item.asking {
+          background: rgba(255,215,0,0.12);
+          border-color: rgba(255,215,0,0.6);
+          padding: 0.6rem;
+          cursor: default;
+          justify-content: center;
+        }
+        .buy-ask {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
+          width: 100%;
+          text-align: center;
+        }
+        .buy-ask-text {
+          margin: 0;
+          font-size: 0.85rem;
+          font-weight: 700;
+          overflow-wrap: anywhere;
+        }
+        .buy-ask-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.4rem;
+        }
+        .buy-ask-btn {
+          flex: 1 1 3rem;
+          min-height: 48px;
+          padding: 0.4rem 0.5rem;
+          border: none;
+          border-radius: 0.8rem;
+          font-size: 1rem;
+          font-weight: 800;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+        }
+        .buy-ask-yes {
+          background: transparent;
+          color: white;
+          border: 2px solid rgba(255,255,255,0.7);
+        }
+        /* «Όχι» keeps her stars: the bright one, as in the routine's question */
+        .buy-ask-no {
+          background: gold;
+          color: #1a1a2e;
+        }
+
         .reward-info {
           display: flex;
           flex-direction: column;
@@ -924,8 +1009,12 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           gap: 1rem;
         }
 
-        .transfer-form .store-refusal {
+        .transfer-form .store-refusal,
+        .activity-refusal {
           text-align: center;
+        }
+        .activity-refusal {
+          margin-bottom: 0.75rem;
         }
 
         .form-field {

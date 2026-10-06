@@ -575,15 +575,17 @@ export function resolveGift(id: string, action: 'approve' | 'reject' | 'cancel')
   const transfer = store.starTransfers.get(id);
   if (!transfer) throw new StarsError(404, 'Transfer not found');
   if (transfer.status !== 'pending') throw new StarsError(400, 'Transfer is already resolved');
-  const from = findUser(transfer.fromUserId);
-  if (!from || !findUser(transfer.toUserId)) throw new StarsError(404, 'User not found');
   const outcomes = { approve: 'approved', reject: 'rejected', cancel: 'cancelled' } as const;
   const status = outcomes[action];
   if (!status) throw new StarsError(400, 'Invalid action');
+  // Approving moves the stars, so both kids must still be in the config. Cancelling or rejecting
+  // moves none and only releases the promise: it works for a kid who has left the config too (#47).
+  const from = findUser(transfer.fromUserId);
+  if (status === 'approved' && (!from || !findUser(transfer.toUserId))) throw new StarsError(404, 'User not found');
 
   const resolved: StarTransfer = { ...transfer, status, resolvedAt: new Date().toISOString() };
   store.transaction(() => {
-    if (status === 'approved') {
+    if (status === 'approved' && from) {
       // The promise was checked when the gift was made; only a whole-state write can have broken it since.
       if (store.getStars(from.id) < transfer.amount) {
         throw new StarsError(400, `${from.name}: δεν υπάρχουν πια ⭐ ${transfer.amount} για αυτό το δώρο`);

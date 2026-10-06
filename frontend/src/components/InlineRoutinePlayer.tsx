@@ -85,7 +85,8 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  if (!user || !routine) return <div>Error loading routine</div>;
+  // The dashboard draws no run whose kid or routine left the config (#59): nothing to show
+  if (!user || !routine) return null;
 
   return (
     <div className="inline-player" style={{ '--theme-color': routine.themeColor } as React.CSSProperties}>

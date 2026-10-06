@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../context/GameContext';
-import { api } from '../api';
+import { api, ApiError } from '../api';
 import { AssignmentPlayer } from './AssignmentPlayer';
 import { help } from '../help/anchors';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
-import { sound } from '../sound/sfx';
+import { sfx, sound } from '../sound/sfx';
 
 // One kid's exercises: today's set and «Κι άλλο πρόβλημα» for more stars. On her own
 // screen (the store, from her avatar) and in the exercises drawer. The player opens
@@ -33,6 +33,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [started, setStarted] = useState<ExerciseAssignmentWithExercise | null>(null);
   const [asking, setAsking] = useState(false);
+  const [refusal, setRefusal] = useState<string | null>(null);
   const extraLimit = config.settings.extraProblemsPerDay ?? 10;
 
   const mine = exerciseAssignments.filter(a => a.userId === user.id);
@@ -52,7 +53,15 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
       setStarted(a);
       setPlayingId(a.id);
     } catch (err) {
+      // The server refused: say why, under the button (never a browser alert())
       console.error('Could not start a problem:', err);
+      sfx('nope');
+      const why = err instanceof ApiError ? err.message : '';
+      const text = why.startsWith('No problems for this kid') ? 'Δεν υπάρχουν ακόμα προβλήματα για την τάξη σου.'
+        : why === 'No more extra problems today' ? 'Για σήμερα φτάνει! Αύριο κι άλλα.'
+        : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.';
+      setRefusal(text);
+      setTimeout(() => setRefusal(current => current === text ? null : current), 3500);
     } finally {
       setAsking(false);
     }
@@ -128,6 +137,14 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
                 ? <>Για σήμερα φτάνει! 🎉</>
                 : <>🧩 Κι άλλο πρόβλημα <span className="extra-count">{extras.length}/{extraLimit}</span></>}
           </motion.button>
+          <AnimatePresence>
+            {refusal && (
+              <motion.div className="ue-refusal" role="alert"
+                initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
+                {refusal}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
@@ -148,6 +165,8 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
           background: rgba(255, 214, 10, 0.08); color: white; font-size: 1.05rem; font-weight: bold; cursor: pointer;
           display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
         .extra-btn:disabled { opacity: 0.55; cursor: default; }
+        .ue-refusal { font-size: 0.95rem; font-weight: 600; text-align: center; color: #ff6b6b;
+          background: rgba(255,107,107,0.12); padding: 0.4rem 0.75rem; border-radius: 0.75rem; }
         .extra-count { font-size: 0.85rem; font-weight: normal; opacity: 0.8; }
         .assignment-card { display: flex; align-items: center; gap: 1rem; background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 0.8rem 1rem; color: white; cursor: pointer;

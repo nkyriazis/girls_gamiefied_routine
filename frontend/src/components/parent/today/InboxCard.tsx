@@ -62,7 +62,7 @@ function ChoreCard({ item: { instance, chore, user, at } }: { item: Extract<Inbo
     const [stars, setStars] = useState(chore?.defaultStars ?? 0);
     return (
         <Card icon={chore ? <SmartIcon value={chore.icon} size={44} /> : '🧹'} at={at}
-            kind={chore?.category === 'bonus' ? 'Bonus δραστηριότητα' : 'Δουλειά'} title={chore?.title ?? instance.choreId}
+            kind={chore?.category === 'bonus' ? 'Έξτρα δραστηριότητα' : 'Δουλειά'} title={chore?.title ?? instance.choreId}
             who={user && <><Avatar icon={user.avatar} color={user.color} size={24} /> {user.name}</>}
             stars={
                 <span className="p-stepper">
