@@ -85,9 +85,14 @@ test('⌫ erases in the focused box; on an empty box it steps back and erases th
   assert.deepEqual([r.shown, r.focus], [[55, null, null, ''], 'op']);
   r = play([ERASE, ERASE, ERASE, ERASE, ERASE], line(55, '−', 37, '18'), 'result');
   assert.deepEqual([r.shown, r.focus], [[null, null, null, ''], 'x']);
-  r = play([ERASE], line(null, '+', 4, '7'), 'x');
-  assert.deepEqual([r.shown, r.focus], [[null, '+', 4, ''], 'result'], 'from the first box it goes round to the end');
   assert.deepEqual(calcInput(empty, 'x', ERASE), { value: empty, focus: 'x', sound: 'nope', refused: 'x' });
+});
+
+test('⌫ never goes past the start of the line: on an empty box with nothing filled before it, «nope»', () => {
+  const v = line(null, '−', 55);
+  assert.deepEqual(calcInput(v, 'x', ERASE), { value: v, focus: 'x', sound: 'nope', refused: 'x' }, 'the third box stays');
+  const w = line(null, null, 55, '7');
+  assert.deepEqual(calcInput(w, 'op', ERASE), { value: w, focus: 'op', sound: 'nope', refused: 'op' });
 });
 
 test('C empties the focused box only', () => {

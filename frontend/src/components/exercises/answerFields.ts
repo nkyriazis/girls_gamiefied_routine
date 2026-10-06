@@ -47,7 +47,8 @@ export const nextCalcFocus = (v: CalcValue): CalcField => CALC_FIELDS.find(f => 
  * One input on the calc line. A chip goes into the selected x or y, or else the first
  * empty of the two; an operator always into op; a digit into the result (the only box
  * that takes digits: typed trial numbers in x and y are #50), from op or the result.
- * ⌫ erases in the selected box, or steps back to the last filled one; C empties the selected box.
+ * ⌫ erases in the selected box, or steps back to the last filled one before it (never past
+ * the start of the line); C empties the selected box.
  */
 export function calcInput(v: CalcValue, focus: CalcField, input: CalcInput): FieldEdit<CalcValue, CalcField> {
   const refuse = (at: CalcField = focus): FieldEdit<CalcValue, CalcField> => ({ value: v, focus, sound: 'nope', refused: at });
@@ -66,9 +67,8 @@ export function calcInput(v: CalcValue, focus: CalcField, input: CalcInput): Fie
       if (v.result.length >= RESULT_DIGITS) return refuse('result');
       return { value: { ...v, result: v.result + input.d }, focus: 'result', sound: 'key' };
     case 'erase': {
-      // The selected box, or the nearest filled one before it (round from the end)
-      const at = CALC_FIELDS.indexOf(focus);
-      const back = [0, 1, 2, 3].map(i => CALC_FIELDS[(at - i + 4) % 4]).find(f => !isEmpty(v, f));
+      // The selected box, or the nearest filled one before it; nothing filled up to the start: refused
+      const back = CALC_FIELDS.slice(0, CALC_FIELDS.indexOf(focus) + 1).reverse().find(f => !isEmpty(v, f));
       if (!back) return refuse();
       const value = back === 'result' ? { ...v, result: v.result.slice(0, -1) } : emptied(v, back);
       return { value, focus: back, sound: 'erase' };
