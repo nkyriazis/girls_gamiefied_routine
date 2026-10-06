@@ -502,10 +502,11 @@ export const Dashboard: React.FC = () => {
               whileTap={{ scale: 0.95 }}
             >
               <div className="dock-avatar" style={{ background: user.color }} {...sound('open')} onClick={() => setStoreUserId(user.id)}>
-                <SmartIcon value={user.avatar} size={80} />
+                {/* 80% of the avatar, an emoji's glyph too (SmartIcon's size={80} is the kiosk's) */}
+                <SmartIcon value={user.avatar} size={80} style={{ width: '80%', height: '80%', fontSize: 'calc(var(--dock-avatar) * 0.6)' }} />
+                <span className="dock-stars">⭐ {user.stars}</span>
               </div>
               <span className="dock-name">{user.name}</span>
-              <span className="dock-stars">⭐ {user.stars}</span>
             </motion.div>
           ))}
         </motion.div>
@@ -528,8 +529,13 @@ export const Dashboard: React.FC = () => {
           height: 100vh; /* Fallback */
           height: 100dvh;
           width: 100vw;
-          overflow: hidden;
+          overflow: hidden; /* Fallback */
+          overflow: clip; /* not even a script (a tour's scrollIntoView) can scroll it */
           position: relative;
+          /* The dock's size, from its content: the avatar (100 px down to 800 px tall, never
+             under a finger's 44 px) + 1rem over it + the gap and the name's line + 0.625rem */
+          --dock-avatar: clamp(48px, 12.5dvh, 100px);
+          --dock-h: calc(var(--dock-avatar) + 3.5rem);
           display: flex;
           flex-direction: column;
           color: white;
@@ -679,16 +685,19 @@ export const Dashboard: React.FC = () => {
           .stage { padding: 1rem; gap: 1rem; }
         }
 
+        /* As tall as what it holds (--dock-h), so nothing hangs off it: the last child of a
+           100dvh column, whatever hung under it was under the screen's edge */
         .dock {
-          height: 120px;
+          height: var(--dock-h);
+          flex: none;
           background: rgba(255,255,255,0.1);
           backdrop-filter: blur(20px);
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: center;
-          gap: 3rem;
-          padding: 0 2rem;
-          overflow: visible;
+          gap: 1rem;
+          padding: 1rem 2rem 0.625rem;
+          overflow: hidden;
           width: 100%;
           z-index: var(--z-dock);
           position: relative;
@@ -702,9 +711,9 @@ export const Dashboard: React.FC = () => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.375rem;
+          padding: 0 1rem; /* room for the star badge, inside the item (a tour lights all of it) */
           cursor: pointer;
-          padding: 10px 0;
           z-index: 1;
           position: relative;
           -webkit-tap-highlight-color: transparent;
@@ -713,8 +722,9 @@ export const Dashboard: React.FC = () => {
         }
 
         .dock-avatar {
-          width: 100px;
-          height: 100px;
+          position: relative;
+          width: var(--dock-avatar);
+          height: var(--dock-avatar);
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -725,12 +735,26 @@ export const Dashboard: React.FC = () => {
 
         .dock-name {
           font-size: 1rem;
+          line-height: 1.5rem;
           font-weight: 600;
         }
-        
+
+        /* Her balance, a badge on her avatar like the side buttons' counts: gold, readable
+           across the room */
         .dock-stars {
-          font-size: 0.8rem;
-          color: gold;
+          position: absolute;
+          top: -0.5rem;
+          right: -1rem;
+          background: linear-gradient(135deg, #ffd60a, #fb8500);
+          color: #1a1a2e;
+          font-size: clamp(0.95rem, calc(var(--dock-avatar) * 0.18), 1.1rem);
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+          line-height: 1;
+          padding: 0.3rem 0.55rem;
+          border-radius: 1rem;
+          white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.35);
         }
 
         /* Floating Chores Button */
@@ -744,7 +768,6 @@ export const Dashboard: React.FC = () => {
           min-width: 60px;
           min-height: 60px;
           padding: 0;
-          border-radius: 50%;
           background: linear-gradient(135deg, #4cc9f0, #4361ee);
           border: none;
           font-size: 2rem;
@@ -781,7 +804,6 @@ export const Dashboard: React.FC = () => {
           min-width: 60px;
           min-height: 60px;
           padding: 0;
-          border-radius: 50%;
           background: linear-gradient(135deg, #667eea, #764ba2);
           border: none;
           font-size: 2rem;
@@ -818,7 +840,6 @@ export const Dashboard: React.FC = () => {
           min-width: 60px;
           min-height: 60px;
           padding: 0;
-          border-radius: 50%;
           background: linear-gradient(135deg, #f72585, #7209b7);
           border: none;
           font-size: 2rem;
@@ -841,7 +862,6 @@ export const Dashboard: React.FC = () => {
           min-width: 60px;
           min-height: 60px;
           padding: 0;
-          border-radius: 50%;
           background: linear-gradient(135deg, #ffd60a, #fb8500);
           border: none;
           font-size: 2rem;
