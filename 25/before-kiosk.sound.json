@@ -1,0 +1,197 @@
+{
+ "said": [
+  {
+   "src": "/sfx/open.wav",
+   "at": 2286,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 5438,
+   "ev": "play"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 5441,
+   "ev": "stop"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 5441,
+   "ev": "play"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 11088,
+   "ev": "stop"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 11089,
+   "ev": "play"
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 11129,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 11177,
+   "ev": "stop"
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 13748,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 13800,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 14150,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 15169,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 15286,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 15637,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 16540,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 16593,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 16943,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 17967,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 18076,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 18427,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/done.wav",
+   "at": 18080,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 23077,
+   "ev": "play"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 23078,
+   "ev": "stop"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 23084,
+   "ev": "play"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 29344,
+   "ev": "stop"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 29346,
+   "ev": "play"
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 29406,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 29448,
+   "ev": "stop"
+  }
+ ],
+ "sync": [
+  1542,
+  2542,
+  3542,
+  4545,
+  5545,
+  6543,
+  7544,
+  8542,
+  9542,
+  10543,
+  11542,
+  12542,
+  13542,
+  14545,
+  15542,
+  16552,
+  17542,
+  18543,
+  19543,
+  20543,
+  21542,
+  22543,
+  23542,
+  24542,
+  25545,
+  26544,
+  27583,
+  28543,
+  29543,
+  30542,
+  31542,
+  32543,
+  33542,
+  34544,
+  35544
+ ]
+}

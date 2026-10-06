@@ -1,0 +1,69 @@
+{
+ "steps": [
+  {
+   "label": "1 by hand",
+   "flowRuns": [],
+   "routineRuns": [
+    "u1 u1-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "2 flow started",
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @0 (alarm)",
+    "u2-morning-flow @0 (alarm)"
+   ],
+   "routineRuns": [
+    "u1 u1-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "3 u2 dismissed",
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @0 (alarm)",
+    "u2-morning-flow @1 (parallel)"
+   ],
+   "routineRuns": [
+    "u1 u1-assign-morning task 0",
+    "u2 u2-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "4 u1 dismissed",
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u2-morning-flow @1 (parallel)"
+   ],
+   "routineRuns": [
+    "u1 u1-assign-morning task 0",
+    "u2 u2-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "5 u1 closed",
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u2-morning-flow @1 (parallel)"
+   ],
+   "routineRuns": [
+    "u2 u2-assign-morning task 0"
+   ]
+  }
+ ],
+ "log": [
+  "2026-10-06T15:17:51.715Z TRIGGER_FLOW {\"id\":\"u2-morning-flow\",\"source\":\"push_hook\",\"runId\":\"aac412dc-f3a7-4362-9469-094f0206787f\"}",
+  "2026-10-06T15:17:54.741Z TRIGGER_ROUTINE {\"id\":\"u1-assign-evening\",\"source\":\"schedule:sch-evening\",\"runId\":\"bd797519-eceb-4f5d-b3b1-cc4f3253559a\"}",
+  "2026-10-06T15:18:12.885Z TRIGGER_FLOW {\"id\":\"u2-morning-flow\",\"source\":\"push_hook\",\"runId\":\"9e642326-52ba-4cf4-b805-5f45a95d752c\"}",
+  "2026-10-06T15:18:15.941Z TRIGGER_ROUTINE {\"id\":\"u1-assign-evening\",\"source\":\"schedule:sch-evening\",\"runId\":\"904e045a-ec6d-4381-90d2-dde46cede8c6\"}",
+  "2026-10-06T15:19:38.599Z TRIGGER_ROUTINE {\"id\":\"u1-assign-evening\",\"source\":\"schedule:sch-evening\",\"runId\":\"7926d23d-3b23-4683-a99f-dcf197ed8389\"}",
+  "2026-10-06T15:19:38.621Z TRIGGER_ROUTINE {\"id\":\"u2-assign-morning\",\"source\":\"push_hook\",\"runId\":\"5a63ff62-d314-4583-b8a0-086ca269f0e0\"}",
+  "2026-10-06T15:19:38.637Z TRIGGER_FLOW {\"id\":\"alarm\",\"source\":\"push_hook\",\"runId\":\"c8981432-fea3-47f3-95c3-d1779cbbee14\"}",
+  "2026-10-06T15:30:34.091Z TRIGGER_ROUTINE {\"id\":\"u1-assign-morning\",\"source\":\"push_hook\",\"runId\":\"4e760540-98c6-4db2-87e6-594e58614713\"}",
+  "2026-10-06T15:30:36.889Z TRIGGER_FLOW {\"id\":\"morning-flow\",\"source\":\"schedule:sch-morning\",\"runId\":\"6c3882cc-c3e0-4a40-a8ca-dea89e4a107a\"}",
+  "2026-10-06T15:30:42.738Z ALARM_DISMISSED {\"runId\":\"a2e7a508-2c15-46cb-a871-0128403eb11e\",\"flowId\":\"u2-morning-flow\",\"stepIndex\":0}",
+  "2026-10-06T15:30:45.817Z ALARM_DISMISSED {\"runId\":\"0b7b5852-2876-45df-a3e5-ce2ed9bad32f\",\"flowId\":\"u1-morning-flow\",\"stepIndex\":0}",
+  "2026-10-06T15:30:57.813Z ROUTINE_CLOSED {\"runId\":\"4e760540-98c6-4db2-87e6-594e58614713\",\"userId\":\"u1\",\"finished\":true}"
+ ]
+}

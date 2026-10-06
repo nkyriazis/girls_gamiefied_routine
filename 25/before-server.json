@@ -1,0 +1,71 @@
+{
+ "steps": [
+  {
+   "label": "1 by hand",
+   "flowRuns": [],
+   "routineRuns": [
+    "u1 u1-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "2 flow started",
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @0 (alarm)",
+    "u2-morning-flow @0 (alarm)"
+   ],
+   "routineRuns": [
+    "u1 u1-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "3 u2 dismissed",
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @0 (alarm)",
+    "u2-morning-flow @1 (parallel)"
+   ],
+   "routineRuns": [
+    "u1 u1-assign-morning task 0",
+    "u2 u2-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "4 u1 closed",
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @0 (alarm)",
+    "u2-morning-flow @1 (parallel)"
+   ],
+   "routineRuns": [
+    "u2 u2-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "5 u1 dismissed",
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @1 (parallel)",
+    "u2-morning-flow @1 (parallel)"
+   ],
+   "routineRuns": [
+    "u2 u2-assign-morning task 0",
+    "u1 u1-assign-morning task 0"
+   ]
+  }
+ ],
+ "log": [
+  "2026-10-03T17:00:00.040Z TRIGGER_ROUTINE {\"id\":\"u1-assign-evening\",\"source\":\"schedule:sch-evening\",\"runId\":\"64a74d83-a6e6-4c73-a6f0-a74c8edcb3ce\"}",
+  "2026-10-03T21:00:00.007Z ROUTINE_CLOSED_STALE {\"runId\":\"64a74d83-a6e6-4c73-a6f0-a74c8edcb3ce\",\"userId\":\"u1\",\"finished\":false}",
+  "2026-10-04T17:00:00.040Z TRIGGER_ROUTINE {\"id\":\"u1-assign-evening\",\"source\":\"schedule:sch-evening\",\"runId\":\"ca7e20c5-4146-49dd-abfd-14a2dbb8d091\"}",
+  "2026-10-04T21:00:00.005Z ROUTINE_CLOSED_STALE {\"runId\":\"ca7e20c5-4146-49dd-abfd-14a2dbb8d091\",\"userId\":\"u1\",\"finished\":false}",
+  "2026-10-05T04:00:00.016Z TRIGGER_FLOW {\"id\":\"morning-flow\",\"source\":\"schedule:sch-morning\",\"runId\":\"ac120de1-1897-46f6-ae86-a12590cf724b\"}",
+  "2026-10-05T05:01:00.006Z ALARM_EXPIRED {\"runId\":\"deaa5a0b-e48f-45bb-a212-adce32c29e16\",\"flowId\":\"u1-morning-flow\",\"stepIndex\":0}",
+  "2026-10-05T05:01:00.006Z ALARM_EXPIRED {\"runId\":\"9b5fee5f-bf1c-43c0-bcef-08e0fdc71d5e\",\"flowId\":\"u2-morning-flow\",\"stepIndex\":0}",
+  "2026-10-06T15:16:33.950Z TRIGGER_ROUTINE {\"id\":\"u1-assign-morning\",\"source\":\"push_hook\",\"runId\":\"5531fa85-325c-4703-8e35-9eb6796bd532\"}",
+  "2026-10-06T15:16:36.897Z TRIGGER_FLOW {\"id\":\"morning-flow\",\"source\":\"schedule:sch-morning\",\"runId\":\"2296ebaa-ff73-428a-a63d-ff88a8389622\"}",
+  "2026-10-06T15:16:42.746Z ALARM_DISMISSED {\"runId\":\"9234f0e5-0ca2-4c8b-a318-ecbccc4df7db\",\"flowId\":\"u2-morning-flow\",\"stepIndex\":0}",
+  "2026-10-06T15:16:54.626Z ROUTINE_CLOSED {\"runId\":\"5531fa85-325c-4703-8e35-9eb6796bd532\",\"userId\":\"u1\",\"finished\":true}",
+  "2026-10-06T15:17:01.017Z ALARM_DISMISSED {\"runId\":\"4447e1c9-eeb8-454e-a2d7-21061e1ef1f7\",\"flowId\":\"u1-morning-flow\",\"stepIndex\":0}"
+ ]
+}

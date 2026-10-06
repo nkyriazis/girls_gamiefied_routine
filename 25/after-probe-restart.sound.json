@@ -1,0 +1,47 @@
+{
+ "said": [
+  {
+   "src": "/sfx/open.wav",
+   "at": 2458,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 2574,
+   "ev": "play"
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 8637,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 8666,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 9016,
+   "ev": "play",
+   "sfx": true
+  }
+ ],
+ "sync": [
+  852,
+  1853,
+  2852,
+  3855,
+  4854,
+  5854,
+  6852,
+  7853,
+  8857,
+  9852,
+  10852,
+  11853
+ ]
+}

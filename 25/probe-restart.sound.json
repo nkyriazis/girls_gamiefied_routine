@@ -1,0 +1,78 @@
+{
+ "said": [
+  {
+   "src": "/sfx/open.wav",
+   "at": 2127,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 2194,
+   "ev": "play"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 2196,
+   "ev": "stop"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 2196,
+   "ev": "play"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 5254,
+   "ev": "stop"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 5254,
+   "ev": "play"
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 8325,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 8425,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 8776,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 8474,
+   "ev": "stop"
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 8479,
+   "ev": "play"
+  }
+ ],
+ "sync": [
+  329,
+  1338,
+  2332,
+  3340,
+  4333,
+  5332,
+  6332,
+  7339,
+  8348,
+  9335,
+  10344,
+  11337,
+  12331
+ ]
+}

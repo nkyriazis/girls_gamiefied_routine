@@ -1,0 +1,159 @@
+
+> app@1.0.0 test
+> node --require ts-node/register --test test/*.test.ts
+
+✔ a backup holds a consistent copy of the database, the config files and uploads (80.065847ms)
+✔ SHA256SUMS lists every file in sha256sum -c format, and verifies (59.662252ms)
+✔ rotation keeps the newest N complete backups and leaves anything else alone (139.969855ms)
+✔ a backup that never completed is not counted as the newest (67.40345ms)
+✔ a backup on the same filesystem as the database says so (68.958686ms)
+✔ a missing database fails the backup and leaves nothing half-made (53.859443ms)
+✔ a backup that runs past its deadline is killed, logged as failed, and the next run can start (826.369237ms)
+✔ a backup that ends in time is logged from its output, and its deadline is cleared (450.451617ms)
+✔ loads, caches, and reports unchanged files (6.293934ms)
+✔ an invalid file on disk keeps the last valid config live (1.547693ms)
+✔ an invalid file at startup yields the empty fallback, not a crash (4.188041ms)
+✔ save validates, writes, and updates the cache; the cache is frozen (2.89079ms)
+✔ after a start with an unreadable file, a plain save is refused and the file stays as it is (3.072061ms)
+✔ even the deliberate replace never writes the empty fallback over a file it never loaded (3.275433ms)
+✔ the broken text can be fixed and saved with replace; the broken file is kept beside (5.183564ms)
+✔ over an invalid file with the last valid config live: refused, unless replace asks (6.017293ms)
+✔ a missing optional file counts as loaded and can be created (4.385142ms)
+✔ a missing required file is never loaded: saving is refused (1.207272ms)
+✔ the empty config never goes over a loaded file that has content, with or without replace (3.188079ms)
+✔ a file that is itself the empty config can be saved as the empty config (1.382201ms)
+✔ imports every record, balance and log line, and verifies clean (62.856382ms)
+✔ is idempotent: a second run imports nothing and never overwrites newer state (64.859783ms)
+✔ lines without an id get a stable id, so re-reading them is a no-op (94.966347ms)
+✔ an invalid state.json aborts the import without writing anything (46.733734ms)
+✔ verification flags missing and altered records and balances (63.386891ms)
+✔ a fresh install without legacy files starts empty (48.95319ms)
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u1","date":"2026-10-06","exerciseIds":["e-3","e-2"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u2","date":"2026-10-06","exerciseIds":["p-balloons","p-two"]}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"be837919-fa06-4cf6-b2d5-5fb8d1ff1c60","userId":"u2","exerciseId":"p-balloons","step":0,"kind":"tag","correct":false,"wrong":[2],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"be837919-fa06-4cf6-b2d5-5fb8d1ff1c60","userId":"u2","exerciseId":"p-balloons","step":0,"kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"be837919-fa06-4cf6-b2d5-5fb8d1ff1c60","userId":"u2","exerciseId":"p-balloons","step":1,"kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"be837919-fa06-4cf6-b2d5-5fb8d1ff1c60","userId":"u2","exerciseId":"p-balloons","step":1,"kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"be837919-fa06-4cf6-b2d5-5fb8d1ff1c60","userId":"u2","exerciseId":"p-balloons","step":2,"kind":"numbers","correct":false,"wrong":[1],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"be837919-fa06-4cf6-b2d5-5fb8d1ff1c60","userId":"u2","exerciseId":"p-balloons","step":2,"kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":3}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"be837919-fa06-4cf6-b2d5-5fb8d1ff1c60","userId":"u2","exerciseId":"p-balloons","step":3,"kind":"order","correct":true,"completed":true,"starsAwarded":3}
+[ACTION:EXERCISE_EXTRA_PROBLEM] {"userId":"u2","exerciseId":"p-three","number":1,"limit":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"fce679b6-a4c8-4010-a6a8-135f38e9399e","userId":"u2","exerciseId":"p-three","step":0,"kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"fce679b6-a4c8-4010-a6a8-135f38e9399e","userId":"u2","exerciseId":"p-three","step":1,"kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"fce679b6-a4c8-4010-a6a8-135f38e9399e","userId":"u2","exerciseId":"p-three","step":2,"kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":6}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"fce679b6-a4c8-4010-a6a8-135f38e9399e","userId":"u2","exerciseId":"p-three","step":3,"kind":"order","correct":true,"completed":true,"starsAwarded":3}
+[ACTION:EXERCISE_EXTRA_PROBLEM] {"userId":"u2","exerciseId":"p-balloons","number":2,"limit":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"240d177a-4c4b-453f-bfd4-0aa9a7f837fd","userId":"u2","exerciseId":"p-balloons","step":0,"kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"240d177a-4c4b-453f-bfd4-0aa9a7f837fd","userId":"u2","exerciseId":"p-balloons","step":1,"kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"240d177a-4c4b-453f-bfd4-0aa9a7f837fd","userId":"u2","exerciseId":"p-balloons","step":2,"kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":9}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"240d177a-4c4b-453f-bfd4-0aa9a7f837fd","userId":"u2","exerciseId":"p-balloons","step":3,"kind":"order","correct":true,"completed":true,"starsAwarded":3}
+✔ every shipped pool is valid, and every problem can be solved step by step (290.900215ms)
+✔ a broken pool file is refused (2.577961ms)
+✔ each kid draws exercisesPerDay from the pools of their grade; no grade, no exercises (33.013765ms)
+✔ a problem is answered step by step: wrong tries count, the last step pays (54.638529ms)
+✔ extra problems: fresh ones first, one open at a time, up to the day's limit (58.6351ms)
+✔ painting freehand forgives a sloppy stroke, not a wrong fact (0.536098ms)
+✔ working it out: each calculation is read back, the answer ends it (0.270929ms)
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"ec627d1f-7d1b-4fa7-a4e5-dbb8ad3c13c0"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"ecca32b6-ed46-461b-8cbf-7fbc50da17e9"}
+[ACTION:ALARM_DISMISSED] {"runId":"30e33b03-0fe9-48cb-90e9-eb1efe0e0aa1","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":10}
+[ACTION:TASK_COMPLETE] {"executionId":"eb987765-d649-4497-a618-62e2fbae9b59","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":15}
+[ACTION:TASK_COMPLETE] {"executionId":"eb987765-d649-4497-a618-62e2fbae9b59","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"eb987765-d649-4497-a618-62e2fbae9b59","userId":"u1","finished":true}
+[ACTION:ALARM_DISMISSED] {"runId":"4428e253-5b37-49c0-ac4b-dab1b348db14","flowId":"f2","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"703286fd-b2eb-413f-a9ab-ef48178bacc7","userId":"u2","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"1254c583-10a7-47b3-aea0-333082112027"}
+[ACTION:TRIGGER_ROUTINE_SKIPPED] {"id":"a1","source":"unknown","runId":"1254c583-10a7-47b3-aea0-333082112027"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":1,"newBalance":16}
+[ACTION:TASK_COMPLETE] {"executionId":"1254c583-10a7-47b3-aea0-333082112027","taskId":"t1","starsAwarded":1,"userId":"u1","duration":120,"isOnTime":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"40a8d860-54fe-4a2b-ba0a-1953fcbc0c66"}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"abedf19f-2ad2-4595-b8aa-d4ab5b4722f1"}
+[ACTION:ALARM_DISMISSED] {"runId":"abedf19f-2ad2-4595-b8aa-d4ab5b4722f1","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"01425152-496b-4962-8315-ea69b2d3e031"}
+[ACTION:ALARM_DISMISSED] {"runId":"01425152-496b-4962-8315-ea69b2d3e031","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"6955218f-6ce0-4d8c-b425-41dd6126529a"}
+[ACTION:ALARM_DISMISSED] {"runId":"e170261d-9823-4fde-b109-3adb4ca03066","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":26}
+[ACTION:TASK_COMPLETE] {"executionId":"bb1c97b2-4e6a-40b8-a9a7-a36d2488ec44","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"ef5ec30f-d48f-46b5-96fc-de0e7cd77ddb"}
+[ACTION:ALARM_DISMISSED] {"runId":"ef5ec30f-d48f-46b5-96fc-de0e7cd77ddb","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"757f9ad3-2bdf-489f-9322-8b752c4b65eb","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"a91eab12-53b2-46fe-a6f3-f8e2d46d23c4"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"unknown","runId":"6442319b-16ae-4e66-8e3d-5535c0bf6b54"}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"a91eab12-53b2-46fe-a6f3-f8e2d46d23c4","userId":"u1","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"154251be-1d24-42d3-865e-109e38f6c2ce"}
+[ACTION:ALARM_DISMISSED] {"runId":"72340d4a-e1a0-4f55-bded-0bd200c551d4","flowId":"f2","stepIndex":0}
+[ACTION:ALARM_EXPIRED] {"runId":"72d0fb77-015b-4364-bfa5-d35f1ac19704","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"7ff28c5c-296d-4929-a49e-d91cf876412b","userId":"u2","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"1a2b3f72-18a4-4391-b3b9-b1e9a7b17a48"}
+[ACTION:ALARM_EXPIRED] {"runId":"1a2b3f72-18a4-4391-b3b9-b1e9a7b17a48","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"together","source":"unknown","runId":"b210f1a3-d1c5-48bc-ae39-d5159b6897df"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"6b3335d4-6852-4047-8705-4981445299b8"}
+[ACTION:TRIGGER_FLOW] {"id":"wake","source":"unknown","runId":"cab80c92-1711-4f87-a8f3-bd0f63672e18"}
+[ACTION:TRIGGER_FLOW] {"id":"cycle","source":"unknown","runId":"39f575fc-9a81-427a-99a0-e2772427bc6c"}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"c88baa6e-3840-4014-b9e8-d0ae5e6f94bf"}
+[ACTION:TRIGGER_FLOW] {"id":"twice","source":"unknown","runId":"57b0a0b3-628c-4102-8452-96dc6b1bab50"}
+[ACTION:ALARM_DISMISSED] {"runId":"57b0a0b3-628c-4102-8452-96dc6b1bab50","flowId":"twice","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"32a492ec-47cc-4eb7-a8a0-64236566345a","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"d91d01d9-6d52-43d9-bcb0-3275899972eb"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":36}
+[ACTION:TASK_COMPLETE] {"executionId":"d91d01d9-6d52-43d9-bcb0-3275899972eb","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"f552c135-af5e-4dc0-93b7-0d5347b05f8f"}
+[ACTION:ALARM_DISMISSED] {"runId":"f552c135-af5e-4dc0-93b7-0d5347b05f8f","flowId":"f1","stepIndex":0}
+✔ a flow runs on the server: alarms, parallel routines, sub-flows, then it ends (62.225295ms)
+✔ a user has one routine at a time; a late task earns lateStars (19.231459ms)
+✔ a flow whose routines are all busy moves on at once (16.47894ms)
+✔ push "alarm" shows a plain alarm until dismissed (14.567413ms)
+✔ runs are in the client state and in the database (a restart resumes them) (25.46468ms)
+✔ a routine left open on an earlier day is closed: on the next trigger and by the minute cron (36.654817ms)
+✔ an alarm nobody dismissed stops after settings.alarmMinutes, with the rest of its flow (34.655354ms)
+✔ the server says whom an alarm is for: the kids of the routines after it (35.779189ms)
+✔ she is in her routine and dismisses her alarm: her routine goes on, nothing new starts (15.44767ms)
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"7eb9c7e8-dee9-4248-b25d-3e7ec2a1fc14"}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"5f1239be-3e75-47cf-8d07-fd643f7eca71"}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"0c96f325-3a06-4639-81ea-91e3a0ced58c"}
+[ACTION:TRANSFER_APPROVED] {"transferId":"0c96f325-3a06-4639-81ea-91e3a0ced58c","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"7c9a2e77-3997-407d-9c50-4f58883c1108"}
+[ACTION:TRANSFER_APPROVED] {"transferId":"7c9a2e77-3997-407d-9c50-4f58883c1108","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"54d664b9-f92e-4d45-b439-afc2055b7179"}
+[ACTION:TRANSFER_REJECTED] {"transferId":"54d664b9-f92e-4d45-b439-afc2055b7179","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":40,"transferId":"e7bad82e-c32f-454b-b628-54287588cdeb"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":-10,"newBalance":90}
+[ACTION:SPEND_STARS] {"userId":"u1","rewardId":"tv","cost":50,"newBalance":40}
+[ACTION:TRANSFER_APPROVED] {"transferId":"e7bad82e-c32f-454b-b628-54287588cdeb","fromUserId":"u1","toUserId":"u2","amount":40}
+[ACTION:SPENDING_REVOKED] {"spendingId":"122f0e00-bdbf-402d-af58-5fd474ad83e6","userId":"u1","rewardId":"tv","cost":50}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":55}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":-10,"newBalance":0}
+✔ a purchase cannot spend stars promised in a pending gift, and nothing changes (21.655451ms)
+✔ a parent cannot take away stars promised in a pending gift, and nothing changes (9.933453ms)
+✔ the issue: gift, then a take-away or a purchase, then approve: nobody goes below zero (45.607734ms)
+✔ approving a gift the sender no longer has stars for is refused, and the gift stays pending (37.225991ms)
+✔ within the available stars everything still works (49.647075ms)
+✔ awardStars only adds; taking away is takeStars (17.980265ms)
+✔ records round-trip exactly, including optional, boolean and JSON fields (55.300514ms)
+✔ put replaces, insertNew never overwrites (41.846456ms)
+✔ enrichment fields are not stored (38.045404ms)
+✔ transactions roll back on error and nest into the outer one (52.245806ms)
+✔ data persists across reopening the file (50.76005ms)
+✔ recentLogs returns the newest entries first (52.065657ms)
+✔ replaceState swaps all runtime state but keeps the log (83.316925ms)
+✔ constraint violations other than a duplicate id are errors, not silently dropped (54.792859ms)
+✔ help tours played are remembered once, and survive a state replace (55.676222ms)
+✔ a connecting client gets the current state (5.549894ms)
+✔ changes in the same turn go out as one snapshot, to open clients only (3.621335ms)
+✔ a change during a slow build is followed by a snapshot of the final state; builds never overlap (2.550509ms)
+✔ a disconnected client gets nothing more; events and heartbeats go out immediately (1.621511ms)
+✔ the store reports every runtime-state write, and only those (75.707917ms)
+ℹ tests 62
+ℹ suites 0
+ℹ pass 62
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3476.637767

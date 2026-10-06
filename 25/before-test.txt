@@ -1,0 +1,112 @@
+# backend/test/runs.test.ts from branch issue-25-alarm-for-busy-kid (a175768), run against master 0f02aef:
+# the branch's file copied over master's in a master worktree, master's src and shared unchanged.
+# TS_NODE_TRANSPILE_ONLY=true: with type checking on, master doesn't compile it (TS2339: Property 'userIds' does not exist on type 'FlowRun').
+# docker run --rm -e TS_NODE_TRANSPILE_ONLY=true -v <master>/backend:/app -v <master>/shared:/shared -v backend/node_modules:/app/node_modules:ro -w /app node:24-alpine node --require ts-node/register --test test/runs.test.ts
+
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"37839b3a-7d02-4bbd-8e60-c6b10a8e484f"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"e726e38f-e47c-4387-ac13-cc0372be5c56"}
+[ACTION:ALARM_DISMISSED] {"runId":"35413b69-b08b-49cb-8eb9-9b4695f94a9c","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":10}
+[ACTION:TASK_COMPLETE] {"executionId":"90deb6a1-b7a3-4421-8a0d-e41bc8b3596d","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":15}
+[ACTION:TASK_COMPLETE] {"executionId":"90deb6a1-b7a3-4421-8a0d-e41bc8b3596d","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"90deb6a1-b7a3-4421-8a0d-e41bc8b3596d","userId":"u1","finished":true}
+[ACTION:ALARM_DISMISSED] {"runId":"e287d6e5-1582-4ecc-97ac-7f51cb9e2f6c","flowId":"f2","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"e59faa15-19e7-47ed-a324-27bfca6f83a9","userId":"u2","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"4789e615-69cf-49c5-a249-c578f66f8822"}
+[ACTION:TRIGGER_ROUTINE_SKIPPED] {"id":"a1","source":"unknown","runId":"4789e615-69cf-49c5-a249-c578f66f8822"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":1,"newBalance":16}
+[ACTION:TASK_COMPLETE] {"executionId":"4789e615-69cf-49c5-a249-c578f66f8822","taskId":"t1","starsAwarded":1,"userId":"u1","duration":120,"isOnTime":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"e30faefc-9121-4870-8e05-72ee1638a664"}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"24fdba01-7158-4bf0-99cb-577ed36368d8"}
+[ACTION:ALARM_DISMISSED] {"runId":"24fdba01-7158-4bf0-99cb-577ed36368d8","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"a4560827-988b-4a21-99bb-9524f81066d2"}
+[ACTION:ALARM_DISMISSED] {"runId":"a4560827-988b-4a21-99bb-9524f81066d2","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"2300c9ec-24d9-4e10-98e0-8b6d1ee3b364"}
+[ACTION:ALARM_DISMISSED] {"runId":"0f15d333-b62c-4232-86d4-6d3d80230efd","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":26}
+[ACTION:TASK_COMPLETE] {"executionId":"4b43a8fe-e141-4051-985a-3143873e78d3","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"0c185892-f0ec-43f6-9fb2-e9c3592a8cde"}
+[ACTION:ALARM_DISMISSED] {"runId":"0c185892-f0ec-43f6-9fb2-e9c3592a8cde","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"a9c99c31-72a2-480b-801a-9bb4cfed6f18","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"22a1dba0-1088-438e-9333-d7dcdeb8a0cd"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"unknown","runId":"733cd012-a2f7-411d-9714-c8c9ee833808"}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"22a1dba0-1088-438e-9333-d7dcdeb8a0cd","userId":"u1","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"7bee69f2-9e86-4fb7-bf9c-ea1391726240"}
+[ACTION:ALARM_DISMISSED] {"runId":"6b5f389c-c6d8-4ac8-afa3-df0f049d5150","flowId":"f2","stepIndex":0}
+[ACTION:ALARM_EXPIRED] {"runId":"d38b793e-7334-4432-b7ae-68235c28b706","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"067d99c5-4000-4acf-9f54-aa062e87e716","userId":"u2","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"7be7be27-8dc4-46cb-be11-870d892e36c4"}
+[ACTION:ALARM_EXPIRED] {"runId":"7be7be27-8dc4-46cb-be11-870d892e36c4","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"together","source":"unknown","runId":"11b1e0b3-2095-4537-ad69-c36851eda0ee"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"974cb5ed-bed7-4cc6-970d-d8e6fc054a8b"}
+[ACTION:TRIGGER_FLOW] {"id":"wake","source":"unknown","runId":"b71cb5e4-3495-472d-b673-c127d156e26f"}
+[ACTION:TRIGGER_FLOW] {"id":"cycle","source":"unknown","runId":"3409867e-1668-48b8-812b-e21d78313eb8"}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"f5db72fc-5d6c-4997-b614-a12270ae3032"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"79de6be9-149b-45b0-9288-de4fc022e279"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":36}
+[ACTION:TASK_COMPLETE] {"executionId":"79de6be9-149b-45b0-9288-de4fc022e279","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"e417b523-fd37-49d3-bee4-78d758a6fa4f"}
+[ACTION:ALARM_DISMISSED] {"runId":"e417b523-fd37-49d3-bee4-78d758a6fa4f","flowId":"f1","stepIndex":0}
+✔ a flow runs on the server: alarms, parallel routines, sub-flows, then it ends (71.858663ms)
+✔ a user has one routine at a time; a late task earns lateStars (16.43075ms)
+✔ a flow whose routines are all busy moves on at once (14.295912ms)
+✔ push "alarm" shows a plain alarm until dismissed (9.844836ms)
+✔ runs are in the client state and in the database (a restart resumes them) (10.278492ms)
+✔ a routine left open on an earlier day is closed: on the next trigger and by the minute cron (24.801301ms)
+✔ an alarm nobody dismissed stops after settings.alarmMinutes, with the rest of its flow (23.485856ms)
+✖ the server says whom an alarm is for: the kids of the routines after it (23.326887ms)
+✔ she is in her routine and dismisses her alarm: her routine goes on, nothing new starts (11.121428ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1180.115284
+
+✖ failing tests:
+
+test at test/runs.test.ts:189:22
+✖ the server says whom an alarm is for: the kids of the routines after it (23.326887ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   alarm: undefined,
+  +   cycle: undefined,
+  +   f1: undefined,
+  +   f2: undefined,
+  +   together: undefined,
+  +   wake: undefined
+  -   alarm: [],
+  -   cycle: [
+  -     'u2'
+  -   ],
+  -   f1: [
+  -     'u1'
+  -   ],
+  -   f2: [
+  -     'u2'
+  -   ],
+  -   together: [
+  -     'u1',
+  -     'u2'
+  -   ],
+  -   wake: [
+  -     'u1',
+  -     'u2'
+  -   ]
+    }
+  
+      at TestContext.<anonymous> (/app/test/runs.test.ts:209:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { together: undefined, f1: undefined, f2: undefined, wake: undefined, cycle: undefined, alarm: undefined },
+    expected: { together: [ 'u1', 'u2' ], f1: [ 'u1' ], f2: [ 'u2' ], wake: [ 'u1', 'u2' ], cycle: [ 'u2' ], alarm: [] },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

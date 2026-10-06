@@ -1,0 +1,147 @@
+{
+ "said": [
+  {
+   "src": "/sfx/open.wav",
+   "at": 2203,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 5123,
+   "ev": "play"
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 10924,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 13999,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+   "at": 14041,
+   "ev": "stop"
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 16870,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 16895,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 17245,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 18238,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 18287,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 18638,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 19596,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 19648,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 19998,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/tap.wav",
+   "at": 20990,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/correct.wav",
+   "at": 21030,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/stars.wav",
+   "at": 21381,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/done.wav",
+   "at": 21063,
+   "ev": "play",
+   "sfx": true
+  }
+ ],
+ "sync": [
+  1200,
+  2200,
+  3200,
+  4202,
+  5200,
+  6200,
+  7200,
+  8203,
+  9202,
+  10200,
+  11200,
+  12200,
+  13203,
+  14202,
+  15200,
+  16200,
+  17202,
+  18200,
+  19200,
+  20201,
+  21200,
+  22203,
+  23200,
+  24200,
+  25199,
+  26200,
+  27200,
+  28202,
+  29200,
+  30200,
+  31201,
+  32200,
+  33200,
+  34200,
+  35200
+ ]
+}
