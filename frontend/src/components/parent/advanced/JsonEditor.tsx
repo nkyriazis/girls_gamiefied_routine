@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import Editor, { type BeforeMount } from '@monaco-editor/react';
+import { useEffect, useRef, useState } from 'react';
+import Editor, { type BeforeMount, type OnMount, type OnValidate } from '@monaco-editor/react';
 import type { ValidationResult } from '../../../api';
 import { useFeedback } from '../useFeedback';
 
@@ -26,6 +26,17 @@ export function JsonEditor({ initial, load, loadText, save, schema, validate, wa
         loadText?.().then(setText, err => setErrors([(err as Error).message]));
         schema?.().then(setSchemaJson, () => undefined);
     }, [load, loadText, schema]);
+
+    // A file loaded as text is there to be fixed: open it at its first error (a phone shows ~15 lines)
+    const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+    const revealed = useRef(false);
+    const onValidate: OnValidate = markers => {
+        const first = markers.find(m => m.severity === 8); // MarkerSeverity.Error
+        if (!loadText || revealed.current || !first || !editorRef.current) return;
+        revealed.current = true;
+        editorRef.current.revealLineInCenter(first.startLineNumber);
+        editorRef.current.setPosition({ lineNumber: first.startLineNumber, column: first.startColumn });
+    };
 
     const beforeMount: BeforeMount = monaco => {
         if (schemaJson) {
@@ -61,6 +72,7 @@ export function JsonEditor({ initial, load, loadText, save, schema, validate, wa
             {warning && <p className="p-warning">{warning}</p>}
             <div className="p-json-editor">
                 <Editor height="100%" defaultLanguage="json" value={text} theme="vs-dark" beforeMount={beforeMount}
+                    onMount={ed => { editorRef.current = ed; }} onValidate={onValidate}
                     onChange={v => setText(v ?? '')}
                     options={{ minimap: { enabled: false }, scrollBeyondLastLine: false, fontSize: 13, tabSize: 2, automaticLayout: true, wordWrap: 'on' }} />
             </div>
