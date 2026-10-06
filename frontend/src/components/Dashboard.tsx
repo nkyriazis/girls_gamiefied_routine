@@ -536,6 +536,13 @@ export const Dashboard: React.FC = () => {
              under a finger's 44 px) + 1rem over it + the gap and the name's line + 0.625rem */
           --dock-avatar: clamp(48px, 12.5dvh, 100px);
           --dock-h: calc(var(--dock-avatar) + 3.5rem);
+          /* The side buttons' column (60 px each, every --fab-step), its second at --fab-at:
+             at 800 px tall and more the middle of the screen, as always; on shorter screens
+             it moves up and closes up, between the Install button (top 1rem, 44 px) and the dock */
+          --fab: 60px;
+          --fab-top: 4.5rem;
+          --fab-step: min(80px, (100dvh - var(--dock-h) - 1rem - var(--fab-top) - var(--fab)) / 3);
+          --fab-at: min(50%, 100dvh - var(--dock-h) - 1rem - var(--fab) - 2 * var(--fab-step));
           display: flex;
           flex-direction: column;
           color: white;
@@ -757,17 +764,19 @@ export const Dashboard: React.FC = () => {
           box-shadow: 0 2px 8px rgba(0,0,0,0.35);
         }
 
+        /* The side buttons. top is each one's top edge: framer-motion's transform (x) replaces
+           any translate here. Spaced by --fab-step from --fab-at (see .dashboard). */
         /* Floating Chores Button */
         .chores-fab {
           position: fixed;
           right: 1.5rem;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 60px;
-          height: 60px;
-          min-width: 60px;
-          min-height: 60px;
+          top: var(--fab-at);
+          width: var(--fab);
+          height: var(--fab);
+          min-width: var(--fab);
+          min-height: var(--fab);
           padding: 0;
+          border-radius: 50%;
           background: linear-gradient(135deg, #4cc9f0, #4361ee);
           border: none;
           font-size: 2rem;
@@ -797,13 +806,13 @@ export const Dashboard: React.FC = () => {
         .bonus-fab {
           position: fixed;
           right: 1.5rem;
-          top: calc(50% + 80px);
-          transform: translateY(-50%);
-          width: 60px;
-          height: 60px;
-          min-width: 60px;
-          min-height: 60px;
+          top: calc(var(--fab-at) + var(--fab-step));
+          width: var(--fab);
+          height: var(--fab);
+          min-width: var(--fab);
+          min-height: var(--fab);
           padding: 0;
+          border-radius: 50%;
           background: linear-gradient(135deg, #667eea, #764ba2);
           border: none;
           font-size: 2rem;
@@ -833,13 +842,13 @@ export const Dashboard: React.FC = () => {
         .exercise-fab {
           position: fixed;
           right: 1.5rem;
-          top: calc(50% + 160px);
-          transform: translateY(-50%);
-          width: 60px;
-          height: 60px;
-          min-width: 60px;
-          min-height: 60px;
+          top: calc(var(--fab-at) + 2 * var(--fab-step));
+          width: var(--fab);
+          height: var(--fab);
+          min-width: var(--fab);
+          min-height: var(--fab);
           padding: 0;
+          border-radius: 50%;
           background: linear-gradient(135deg, #f72585, #7209b7);
           border: none;
           font-size: 2rem;
@@ -855,13 +864,13 @@ export const Dashboard: React.FC = () => {
         .daily-exercises-fab {
           position: fixed;
           right: 1.5rem;
-          top: calc(50% - 80px);
-          transform: translateY(-50%);
-          width: 60px;
-          height: 60px;
-          min-width: 60px;
-          min-height: 60px;
+          top: calc(var(--fab-at) - var(--fab-step));
+          width: var(--fab);
+          height: var(--fab);
+          min-width: var(--fab);
+          min-height: var(--fab);
           padding: 0;
+          border-radius: 50%;
           background: linear-gradient(135deg, #ffd60a, #fb8500);
           border: none;
           font-size: 2rem;
