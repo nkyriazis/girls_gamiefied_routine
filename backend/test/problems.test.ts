@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import { DataConfig, ProblemExercise, ProblemStep } from '../../shared/types';
 import { tempDir } from './helpers';
-import { applyOp, checkCalc, checkPaint, readCalculation, storyWords, targetsFromMarks, type CalcLine, type CalcWorld } from '../../shared/problems';
+import { applyOp, checkCalc, checkPaint, readCalculation, storyWords, targetsFromMarks, workedAnswer, type CalcLine, type CalcWorld } from '../../shared/problems';
 
 // db.ts and the pool provider read their files from the environment when they
 // load, so point them at a temp dir first and load them afterwards.
@@ -125,6 +125,21 @@ test('every shipped pool is valid, and every problem can be solved step by step'
       }
     });
   }
+});
+
+test('«Δείξε μου»: every step of every shipped problem, shown worked, passes its check on every rung', () => {
+  const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
+  let steps = 0;
+  for (const ex of shipped.flatMap(p => p.exercises)) {
+    if (ex.type !== 'problem') continue;
+    for (const reading of ['marked', 'paint', 'paint-all'] as const) {
+      ex.steps.forEach((_, i) => {
+        assert.deepEqual(db.checkProblemStep(ex, i, workedAnswer(ex, i, reading), reading), { correct: true }, `${ex.id} step ${i} on ${reading}`);
+        steps++;
+      });
+    }
+  }
+  assert.ok(steps > 3000, `${steps} steps`);
 });
 
 test('a broken pool file is refused', () => {
