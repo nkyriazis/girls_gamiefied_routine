@@ -8,7 +8,8 @@ import { BackupResult, newestBackup, SAME_FILESYSTEM_WARNING, sameFilesystem } f
 // USB stick or NAS can't block the server's event loop: the kids' screens
 // keep their heartbeat. One at a time; the schedule is in the process's time
 // zone (TZ). At startup it catches up when the newest backup is over a day old
-// (a Pi switched off at night would otherwise never back up).
+// (a Pi switched off at night would otherwise never back up). A run still going
+// after BACKUP_TIMEOUT is killed and logged as failed (backupRunner).
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -19,8 +20,21 @@ export interface BackupJob {
   run(why: string): boolean;
 }
 
-export function scheduleBackups({ cron: expression, dir, dbFile, log }: {
-  cron: string; dir: string; dbFile: string; log: Log;
+/** The child's command: the same entry point as `npm run backup`, from the sources in dev (ts-node) or dist in prod. */
+function backupCommand(): string[] {
+  const ext = path.extname(__filename);
+  const cli = path.join(__dirname, `backup-cli${ext}`);
+  return ext === '.ts' ? ['--require', 'ts-node/register', cli, '--json'] : [cli, '--json'];
+}
+
+/**
+ * Runs backups in a child process, one at a time. A run that passes its
+ * deadline (a disk or share that hangs for good) is killed and logged as
+ * BACKUP_FAILED, and the next run may start: without it the guard would stay
+ * set until a restart and every later run would only be skipped.
+ */
+export function backupRunner({ dir, log, timeoutMs, command = backupCommand() }: {
+  dir: string; log: Log; timeoutMs: number; command?: string[];
 }): BackupJob {
   let running = false;
 
@@ -30,24 +44,36 @@ export function scheduleBackups({ cron: expression, dir, dbFile, log }: {
       return false;
     }
     running = true;
-    // The same entry point as `npm run backup`, from the sources in dev (ts-node) or dist in prod
-    const ext = path.extname(__filename);
-    const cli = path.join(__dirname, `backup-cli${ext}`);
-    const args = ext === '.ts' ? ['--require', 'ts-node/register', cli, '--json'] : [cli, '--json'];
-    const child = spawn(process.execPath, args, {
+    let over = false; // this run has ended: in time, failed, or timed out
+    let deadline: NodeJS.Timeout | undefined = undefined;
+    const end = () => {
+      if (over) return false;
+      over = true;
+      clearTimeout(deadline);
+      running = false;
+      return true;
+    };
+    const child = spawn(process.execPath, command, {
       env: { ...process.env, TS_NODE_TRANSPILE_ONLY: 'true' },
       stdio: ['ignore', 'pipe', 'pipe']
     });
+    // A process stuck in the kernel on a dead disk may not die even from SIGKILL until
+    // the disk answers, so the run counts as over now, whether or not the child exits.
+    deadline = setTimeout(() => {
+      if (!end()) return;
+      child.kill('SIGKILL');
+      log('BACKUP_FAILED', { why, dir, reason: 'timed out', error: `still running after ${Math.round(timeoutMs / 1000)} s (BACKUP_TIMEOUT); killed` });
+    }, timeoutMs);
     let out = '';
     let err = '';
     child.stdout.on('data', chunk => { out += chunk; });
     child.stderr.on('data', chunk => { err += chunk; });
     child.on('error', error => {
-      running = false;
-      log('BACKUP_FAILED', { why, error: error.message });
+      if (!end()) return;
+      log('BACKUP_FAILED', { why, dir, error: error.message });
     });
     child.on('close', code => {
-      running = false;
+      if (!end()) return;
       if (code !== 0) {
         log('BACKUP_FAILED', { why, dir, error: err.trim().split('\n').slice(-3).join(' ') || `exit code ${code}` });
         return;
@@ -66,6 +92,13 @@ export function scheduleBackups({ cron: expression, dir, dbFile, log }: {
     });
     return true;
   };
+  return { run };
+}
+
+export function scheduleBackups({ cron: expression, dir, dbFile, timeoutMs, log }: {
+  cron: string; dir: string; dbFile: string; timeoutMs: number; log: Log;
+}): BackupJob {
+  const { run } = backupRunner({ dir, log, timeoutMs });
 
   try {
     mkdirSync(dir, { recursive: true });

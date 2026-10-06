@@ -28,7 +28,7 @@ import {
 import { config, configError, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
 import { HEARTBEAT_MS } from './sync';
-import { BACKUP_CRON, BACKUP_DIR, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
+import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
 import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 
@@ -946,7 +946,7 @@ const start = async () => {
     });
     console.log('Scheduler started');
     // The daily backup, in a child process (backupSchedule.ts)
-    backups = scheduleBackups({ cron: BACKUP_CRON, dir: BACKUP_DIR, dbFile: DB_FILE, log: logAction });
+    backups = scheduleBackups({ cron: BACKUP_CRON, dir: BACKUP_DIR, dbFile: DB_FILE, timeoutMs: BACKUP_TIMEOUT_MS, log: logAction });
     console.log('MCP endpoint available at POST /mcp');
 
     await server.listen({ port: 3000, host: '0.0.0.0' });
