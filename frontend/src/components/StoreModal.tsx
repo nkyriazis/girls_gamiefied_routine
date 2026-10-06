@@ -51,7 +51,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   // Other users for transfer
   const otherUsers = allUsers.filter(u => u.id !== user.id);
 
-  // A purchase the server refused (a gift made on another screen took the stars first, say)
+  // A purchase or gift the server refused (a gift made on another screen took the stars first, say).
+  // It shows where she is looking: under the balance, or in the gift form while that is open.
   const refuse = (text: string) => {
     sfx('nope');
     setRefusal(text);
@@ -99,7 +100,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
       }, 2000);
     } catch (err) {
       console.error(err);
-      alert((err as Error).message || 'Error creating transfer');
+      refuse(err instanceof ApiError && err.status === 400 ? 'Δεν έχεις αρκετά διαθέσιμα αστέρια' : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.');
     } finally {
       setIsTransferring(false);
     }
@@ -178,7 +179,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                 </div>
               )}
               <AnimatePresence>
-                {refusal && (
+                {refusal && !showTransfer && (
                   <motion.div className="store-refusal" role="alert"
                     initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
                     {refusal}
@@ -465,6 +466,15 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         </div>
                         <span className="available-hint">Διαθέσιμα: ⭐ {availableBalance}</span>
                       </div>
+
+                      <AnimatePresence>
+                        {refusal && (
+                          <motion.div className="store-refusal" role="alert"
+                            initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
+                            {refusal}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
                       <button 
                         className="send-transfer-btn"
@@ -912,6 +922,10 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           display: flex;
           flex-direction: column;
           gap: 1rem;
+        }
+
+        .transfer-form .store-refusal {
+          text-align: center;
         }
 
         .form-field {
