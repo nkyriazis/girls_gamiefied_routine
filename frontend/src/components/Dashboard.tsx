@@ -324,8 +324,8 @@ export const Dashboard: React.FC = () => {
           <ExerciseSetup
             users={users}
             onClose={() => setSetupOpen(false)}
-            onStart={(p, c, r, q) => {
-              api.startExerciseSession(p, c, r, q);
+            onStart={async (p, c, r, q) => {
+              await api.startExerciseSession(p, c, r, q);   // a refusal stays in the setup, which says why
               setSetupOpen(false);
             }}
           />
