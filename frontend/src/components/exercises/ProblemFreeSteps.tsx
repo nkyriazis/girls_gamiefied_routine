@@ -1,10 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { ProblemCalcStep } from '@shared/types';
 import type { CalcOp } from '@shared/problems';
 import { help } from '../../help/anchors';
-import { fmt, lower, type Brush, type CalcValue, type PaintValue } from './problemFreeLogic';
+import { fmt, lower, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 import { sfx, sound } from '../../sound/sfx';
+import { calcFocusAfterCheck, calcInput, type CalcField, type CalcInput } from './answerFields';
+import { ANSWER_BOX_CSS, wiggle } from './answerBox';
 
 // The two free steps of a problem: painting the story freehand (nothing marked on
 // screen, word by word, with a finger drag) and working it out her own way (two
@@ -72,32 +74,48 @@ export const PaintWords: React.FC<{
 
 const OPS: CalcOp[] = ['+', '−', '×', ':'];
 const DIGITS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'C'];
+const BOX_NAME: Record<CalcField, string> = { x: 'Πρώτος αριθμός', op: 'Πράξη', y: 'Δεύτερος αριθμός', result: 'Αποτέλεσμα' };
 
-/** Numbers she has (the story's and the ones she found), a line to build, a keypad. */
+/**
+ * Numbers she has (the story's and the ones she found), a line to build, a keypad. She taps
+ * a box of the line to select it and fills it (answerFields.ts says where each input goes);
+ * the selection is screen state only, so the line she sends doesn't change.
+ */
 export const CalcBench: React.FC<{
   step: ProblemCalcStep; value: CalcValue; setValue: (v: CalcValue) => void; disabled: boolean;
-}> = ({ step, value, setValue, disabled }) => {
+  /** What the last «Έλεγχος» said: where the focus goes after it */
+  note?: CalcNote['kind'];
+}> = ({ step, value, setValue, disabled, note }) => {
   const byId = new Map(step.quantities.map(q => [q.id, q]));
   const story = step.given.map(id => byId.get(id)!);
-  const pick = (n: number) => {
+  const [focus, setFocus] = useState<CalcField>('x');
+  // «Έλεγχος» happens outside the line: a found line starts the next at x, a wrong sum puts the focus on its result
+  const [checked, setChecked] = useState({ lines: value.lines.length, slips: value.slips });
+  if (checked.lines !== value.lines.length || checked.slips !== value.slips) {
+    setChecked({ lines: value.lines.length, slips: value.slips });
+    setFocus(calcFocusAfterCheck(checked, value, focus, note));
+  }
+  const boxes = useRef<Partial<Record<CalcField, HTMLButtonElement | null>>>({});
+  const input = (i: CalcInput) => {
     if (disabled) return;
-    if (value.x === null) setValue({ ...value, x: n });
-    else if (value.op === null) setValue({ ...value, x: n });
-    else setValue({ ...value, y: n });
+    const e = calcInput(value, focus, i);
+    sfx(e.sound);
+    if (e.refused) { wiggle(boxes.current[e.refused]); return; }
+    setFocus(e.focus);
+    if (e.value !== value) setValue(e.value);
   };
-  const key = (k: string) => {
-    if (disabled) return;
-    if (k === 'C') { setValue({ ...value, x: null, op: null, y: null, result: '' }); return; }
-    if (k === '⌫') {
-      if (value.result) setValue({ ...value, result: value.result.slice(0, -1) });
-      else if (value.y !== null) setValue({ ...value, y: null });
-      else if (value.op !== null) setValue({ ...value, op: null });
-      else setValue({ ...value, x: null });
-      return;
-    }
-    if (value.y !== null && value.result.length < 7) setValue({ ...value, result: value.result + k });
+  const key = (k: string) => input(k === '⌫' ? { kind: 'erase' } : k === 'C' ? { kind: 'clear' } : { kind: 'digit', d: k });
+  const shown: Record<CalcField, string | null> = {
+    x: value.x === null ? null : fmt(value.x), op: value.op, y: value.y === null ? null : fmt(value.y),
+    result: value.result ? fmt(Number(value.result)) : null,
   };
-  const slot = (n: number | null, what: string) => <span className={`calc-slot ${n === null ? 'empty' : ''}`}>{n === null ? what : fmt(n)}</span>;
+  const box = (f: CalcField, placeholder: string) => (
+    <button type="button" ref={el => { boxes.current[f] = el; }} disabled={disabled}
+      className={`calc-slot answer-box ${f === 'op' || f === 'result' ? f : ''} ${shown[f] === null ? 'empty' : ''} ${focus === f ? 'focused' : ''}`}
+      aria-pressed={focus === f} aria-label={`${BOX_NAME[f]} ${shown[f] ?? ''}`.trim()} {...sound('none')} onClick={() => input({ kind: 'tap', field: f })}>
+      {shown[f] ?? placeholder}
+    </button>
+  );
   return (
     <div className="calc">
       <ol className="calc-lines" {...help('calc.lines')}>
@@ -109,33 +127,31 @@ export const CalcBench: React.FC<{
         ))}
       </ol>
       <div className="calc-build" aria-label="Η πράξη σου" {...help('calc.build')}>
-        {slot(value.x, '?')}
-        <span className={`calc-slot op ${value.op === null ? 'empty' : ''}`}>{value.op ?? '○'}</span>
-        {slot(value.y, '?')}
+        {box('x', '?')}
+        {box('op', '○')}
+        {box('y', '?')}
         <span>=</span>
-        <span className={`calc-slot result ${value.result ? '' : 'empty'} ${value.y !== null && !value.result ? 'active' : ''}`}>
-          {value.result ? fmt(Number(value.result)) : '…'}
-        </span>
+        {box('result', '…')}
       </div>
       <div className="calc-chips" {...help('calc.chips')}>
         {story.map(q => (
-          <button key={q.id} type="button" className="calc-chip" disabled={disabled} {...sound('place')} onClick={() => pick(q.value)}>
+          <button key={q.id} type="button" className="calc-chip answer-key" disabled={disabled} {...sound('none')} onClick={() => input({ kind: 'chip', n: q.value })}>
             {fmt(q.value)} <small>{q.unit}</small>
           </button>
         ))}
         {value.lines.map((l, i) => (
-          <button key={`l${i}`} type="button" className="calc-chip found" disabled={disabled} {...sound('place')} onClick={() => pick(l.result)}>
+          <button key={`l${i}`} type="button" className="calc-chip found answer-key" disabled={disabled} {...sound('none')} onClick={() => input({ kind: 'chip', n: l.result })}>
             {fmt(l.result)} <small>{lower(l.label)}</small>
           </button>
         ))}
       </div>
       <div className="calc-pad" {...help('calc.pad')}>
         {OPS.map(op => (
-          <motion.button key={op} type="button" className={`calc-key op ${value.op === op ? 'on' : ''}`} disabled={disabled || value.x === null}
-            whileTap={{ scale: 0.92 }} {...sound('select')} onClick={() => setValue({ ...value, op })}>{op}</motion.button>
+          <motion.button key={op} type="button" className={`calc-key op answer-key ${value.op === op ? 'on' : ''}`} disabled={disabled}
+            whileTap={{ scale: 0.92 }} {...sound('none')} onClick={() => input({ kind: 'op', op })}>{op}</motion.button>
         ))}
         {DIGITS.map(k => (
-          <motion.button key={k} type="button" className="calc-key" disabled={disabled} whileTap={{ scale: 0.92 }} {...sound(k === '⌫' || k === 'C' ? 'erase' : 'key')} onClick={() => key(k)}>{k}</motion.button>
+          <motion.button key={k} type="button" className="calc-key answer-key" disabled={disabled} whileTap={{ scale: 0.92 }} {...sound('none')} onClick={() => key(k)}>{k}</motion.button>
         ))}
       </div>
       <style>{`
@@ -146,23 +162,24 @@ export const CalcBench: React.FC<{
         .calc-lines li.off-path { background: rgba(255,255,255,0.06); opacity: 0.75; }
         .calc-means { opacity: 0.8; font-size: 1rem; }
         .calc-build { display: flex; align-items: center; justify-content: center; gap: 0.6rem; font-size: 1.5rem; }
-        .calc-slot { min-width: 4.2rem; padding: 0.35rem 0.6rem; text-align: center; border-radius: 0.8rem; font-weight: bold;
+        .calc-slot { min-width: 4.2rem; padding: 0.35rem 0.6rem; text-align: center; border-radius: 0.8rem; font-weight: bold; font-size: 1em;
           background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.25); }
         .calc-slot.op { min-width: 2.8rem; color: gold; }
         .calc-slot.empty { opacity: 0.55; font-weight: normal; }
         .calc-slot.result { min-width: 5.5rem; }
-        .calc-slot.active { border-color: gold; box-shadow: 0 0 0 3px rgba(255,215,0,0.25); opacity: 1; }
         .calc-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
         .calc-chip { font-size: 1.2rem; font-weight: bold; color: white; cursor: pointer; padding: 0.4rem 0.9rem; border-radius: 2rem;
           background: rgba(160,160,255,0.2); border: 2px solid rgba(160,160,255,0.55); }
         .calc-chip small { font-weight: normal; opacity: 0.8; font-size: 0.85rem; }
-        .calc-chip.found { background: rgba(46,213,115,0.2); border-color: rgba(46,213,115,0.6); }
+        .calc-chip:hover { border-color: rgba(160,160,255,0.55); } /* not the page's hover border: it stays on after a touch */
+        .calc-chip.found, .calc-chip.found:hover { background: rgba(46,213,115,0.2); border-color: rgba(46,213,115,0.6); }
         .calc-pad { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.4rem; }
         .calc-key { font-size: 1.35rem; padding: 0.45rem 0; border-radius: 0.8rem; border: none; color: white; background: rgba(255,255,255,0.12); cursor: pointer; }
         .calc-key.op { color: gold; font-weight: bold; }
         .calc-key.op.on { background: rgba(255,215,0,0.3); }
         .calc-key:disabled { opacity: 0.35; }
         @container (max-width: 480px) { .calc-pad { grid-template-columns: repeat(4, 1fr); } }
+        ${ANSWER_BOX_CSS}
       `}</style>
     </div>
   );
