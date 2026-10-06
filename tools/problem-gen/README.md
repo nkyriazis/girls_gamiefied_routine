@@ -4,7 +4,8 @@ The daily and extra problems (`type: "problem"`, see `ProblemExercise` in `share
 come from here. Each **family** is a kind of problem from the textbooks. It tells its story
 in several ways and settings, picks numbers within the grade's range, and computes every
 answer from those numbers. `gen.ts` writes 500 problems per grade into
-`backend/exercise-pools/*-generated.json`, and `audit.ts` checks them independently.
+`backend/exercise-pools/*-generated.json`, and `audit.ts` checks them independently. The daily
+plain maths of Γ΄ and Ε΄ comes from `maths/` the same way (see «Plain maths» below).
 
 It runs with Node 24 alone (no packages): in Docker, from the repo root:
 
@@ -93,11 +94,104 @@ The audit can't read Greek; you must. The traps the generator has already hit:
   the four operations with large numbers; multiples, divisors, LCM, divisibility by 2, 3,
   5, 9, 10; Euclidean division (Δ = δ × π + υ). No fractions or decimals yet. Stars: 4.
 
+## Plain maths (`maths/`)
+
+The daily maths card of the Γ΄ and Ε΄ kids (#49 part 2): plain exercises in the six existing
+types, no new widget. `maths/gen-maths.ts` writes 120 per grade, ⭐1 each, into
+`backend/exercise-pools/g-dimotikou-maths.json` and `e-dimotikou-maths.json`; `audit.ts` checks
+them with the problems (`maths/check.ts`, which re-solves each one from its text).
+
+```bash
+$N node tools/problem-gen/maths/gen-maths.ts          # write the two pools
+$N node tools/problem-gen/audit.ts                    # audit everything (problems and maths)
+$N node tools/problem-gen/maths/gen-maths.ts --families round,lcm --target 20 --out tools/problem-gen/.out/me
+```
+
+**Keyed by grade.** `maths/curriculum.ts` holds, per grade, the units the class covers by
+autumn (Γ΄ 1–3, Ε΄ 1–2, as for the problems), the largest number (Γ΄ 3.000, Ε΄ 999.999.999),
+the tables' limit (Γ΄: one factor at most 11, divisors at most 11) and the book's chapters, as
+committed data (from the student book's contents; nothing reads `materials/`). `maths/grades.ts`
+gives each grade its families, id prefix and file. Δ΄ or ΣΤ΄ is one entry in each, plus a file of
+families. No month gating yet: every family of the covered units plays from September (follow-up).
+
+**A family** (`maths/g3.ts`, `maths/e5.ts`): `{ id, grade, chapter, skill, weight?, make(r) }`.
+`chapter` is a chapter of the TOC within the grade's units; it becomes the item's `source`
+(«Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)») and `generatorParams.unit`. `make`
+picks numbers and returns one item through the builders in `maths/lib.ts` (`num`, `mc`, `tf`,
+`match`, `order`, `fill`), or `null` to try other numbers. List the right option first; the
+builder shuffles. Model it on its chapter's workbook exercise, and make the wrong options the
+typical slips: the carry forgotten (`forgotCarry`), the smaller digit taken from the larger, a
+group of digits in the wrong place, rounding the other way or at the next place, a remainder as
+big as the divisor. Ids are `g3-math-<family>-NNN` / `e5-math-<family>-NNN` (never `-gen-`).
+
+**The wordings the audit reads** (`skill` → text; numbers as the books write them, `1.229`):
+
+| skill | wording |
+|---|---|
+| `calc` | «Πόσο κάνει 348 + 275;» (any of + − × : and parentheses); match pairs «7 × 5» – «35» |
+| `equation` | fill-blank «6 × {0} = 42», «2.279 = 25 × {0} + 4»; body «Συμπλήρωσε τον αριθμό που λείπει.» |
+| `words` | «Πώς γράφεται με ψηφία ο αριθμός «δύο χιλιάδες σαράντα»;» (multiple choice, not a match: see «Δείξε μου») |
+| `neighbour` | «Γράψε/Κύκλωσε τον αμέσως επόμενο/προηγούμενο αριθμό του 1.299.» |
+| `group-count` | «Πόσες δεκάδες/εκατοντάδες έχει συνολικά το 368;» |
+| `digit-value` | «Ποια είναι η αξία του ψηφίου 3 στον αριθμό 2.375;» (the digit once in the number) |
+| `digits-extreme` | «Γράψε τον μεγαλύτερο/μικρότερο τριψήφιο αριθμό με τα ψηφία 4, 0 και 7, από μία φορά το καθένα.» |
+| `compare` | true-false «Το 2.408 είναι μεγαλύτερο/μικρότερο από το 2.480.» |
+| `extreme` | «Κύκλωσε τον μεγαλύτερο/μικρότερο αριθμό.» |
+| `order` | ordering, body «Βάλε τους αριθμούς στη σειρά, από τον μικρότερο στον μεγαλύτερο.» (or the reverse) |
+| `round` | «Στρογγυλοποίησε το 2.541 στην πλησιέστερη εκατοντάδα.» (δεκάδα … εκατοντάδα χιλιάδων, «στο πλησιέστερο εκατομμύριο») |
+| `count-by` | «Συνέχισε το μοτίβο: 250, 500, 750, … Γράψε τον επόμενο αριθμό.» / «Κύκλωσε τον επόμενο αριθμό του μοτίβου: …, …» |
+| `fact-family` | «Κύκλωσε την πράξη που ανήκει στην ίδια οικογένεια με την 6 × 7 = 42.» |
+| `div-rem` | «Πόσο κάνει 67 : 8;» with options «8 και περισσεύουν 3» («περισσεύει 1») |
+| `division-part` | «Βρες το πηλίκο/υπόλοιπο της διαίρεσης 1.584 : 9.» |
+| `dividend` | «Σε μια διαίρεση ο διαιρέτης είναι 48, το πηλίκο 7 και το υπόλοιπο 25. Βρες τον διαιρετέο.» |
+| `div-check` | true-false «Στη διαίρεση 100 : 7 το πηλίκο είναι 14 και το υπόλοιπο 2.» |
+| `bad-remainder` | «Μια διαίρεση έχει διαιρέτη 6. Κύκλωσε τον αριθμό που δεν μπορεί να είναι το υπόλοιπό της.» |
+| `length` | «Πόσα χιλιοστά/εκατοστά είναι 3 μέτρα και 53 εκατοστά;» |
+| `money` | «Έχεις 2 χαρτονομίσματα των 10 ευρώ και 1 κέρμα του 1 λεπτού. Πόσα ευρώ/λεπτά έχεις;» (real notes and coins, one currency) |
+| `multiple` | «Κύκλωσε τον αριθμό που είναι πολλαπλάσιο/διαιρέτης του 8.» |
+| `lcm` | «Βρες το Ε.Κ.Π. των 4 και 6.» (or «των 3, 4 και 6.») |
+| `divisible` | true-false «Το 4.581 διαιρείται με το 9.» / «Κύκλωσε τον αριθμό που διαιρείται με το 9.» |
+
+A new wording needs its solver in `maths/check.ts`, written from the text, not from the family.
+
+**Types.** Each grade's set: true-false at most 10 % (and «Σωστό» 40–60 %: the true-false
+families share one alternating `nextTruth`), fill-blank at most 10 % with exactly one gap
+(`FillBlankRenderer` submits on the last gap, #50). number-input only for answers below 10.000
+(the numpad has no digit grouping and takes 6 digits); larger answers are multiple choice.
+Multiple choice and fill-blank: exactly one right option, no repeats, and the right option must not
+be the only longest one (the options are shuffled on screen, so its length is the only tell;
+the generator drops such items). Numeric wrong options are whole and at most 100 times off.
+
+**«Δείξε μου».** On a wrong try (forgiving) and after the last try (unforgiving), the screen shows
+`answerText` in one run, «a – b, c – d, …» for a match and «a → b → …» for an ordering, at 2.5rem
+for 4.5 seconds, then closes by itself. A line holds about 40 characters at 1280×800 (35 in
+words). Keep it at most 60 characters, two lines; an ordering's items have no spaces, so it breaks
+only between them. A match breaks at any space, inside a pair too, so a match keeps to one line,
+40 characters: `match()` keeps 3 or 4 pairs, as many as fit, and the audit fails a longer one. A
+times table of four pairs (47) left «4 × 3 –» on one line and «12» on the next; three are 34–36.
+Three pairs of numbers in words came to 75–99 characters, three lines with pairs split across
+them, too much for a Γ΄ child in 4.5 s; so the `words` families are multiple choice, the same
+digits in other places as the options. The 4.5 s is the screen's limit, not the pool's: holding
+the answer until a tap is a follow-up.
+
+**Greek and realism.** Speak to the child in the imperative or second person («Υπολόγισε»,
+«Κύκλωσε», «Βάλε», «Έχεις»), the same to every child: the audit fails check-gender's words (the
+list is `frontend/scripts/gendered.mjs`), so no «Ποιος αριθμός…» (say «Γράψε τον αριθμό…»), no
+«όλους». Number words agree: thousands are feminine («τρεις χιλιάδες», «διακόσιες χιλιάδες», «είκοσι
+μία χιλιάδες», «χίλια» alone), the rest neuter («τρία εκατομμύρια», «εκατόν»/«εκατό»); nouns
+agree with 1 («1 κέρμα του 1 λεπτού», «2 κέρματα των 5 λεπτών»). The books' symbols: `:`, `×`, `−`
+(U+2212), numbers with their dots. Γ΄ uses «εφτά, οχτώ, εννιά» in words. Magnitudes as in the book:
+Γ΄ money up to a few hundred euros, Ε΄ numbers into the millions.
+
+**Counts.** 120 per grade (four months of one a day); the audit fails under 60. `npm test`
+(dailyMix.test.ts) prints how many days pass before an item comes back and only warns under 30.
+
 ## Layout
 - `lib.ts`: randomness, names, counted nouns, step builders, `Family`.
 - `families/g3/`, `families/e5/`: one file per family; `index.ts` lists them (sets
   `set-*.ts` group families written together).
 - `gen.ts`, `audit.ts`: see the top of each.
+- `maths/`: the plain maths (`curriculum.ts`, `grades.ts`, `lib.ts`, `g3.ts`, `e5.ts`, `gen-maths.ts`, `check.ts`).
 
 ## World models (`world/`)
 

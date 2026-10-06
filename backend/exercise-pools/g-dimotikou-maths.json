@@ -1,0 +1,2210 @@
+{
+ "description": "Γ΄ Δημοτικού: μαθηματικά από τις ενότητες 1–3 του βιβλίου, παραγόμενα από το tools/problem-gen/maths (μία οικογένεια ανά είδος άσκησης του τετραδίου εργασιών, με το κεφάλαιο στο source). Μην τα διορθώνετε εδώ: αλλάξτε την οικογένεια και ξανατρέξτε το gen-maths.ts.",
+ "grades": [
+  3
+ ],
+ "exercises": [
+  {
+   "id": "g3-math-words-places-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 1.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «εννιακόσια τριάντα οχτώ»;",
+   "options": [
+    "389",
+    "398",
+    "893",
+    "938"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-words-places-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 1.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «οχτακόσια πενήντα»;",
+   "options": [
+    "580",
+    "850",
+    "508",
+    "805"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-words-places-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 1.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «πεντακόσια τριάντα»;",
+   "options": [
+    "305",
+    "530",
+    "503",
+    "350"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-words-places-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 1.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «τετρακόσια εβδομήντα ένα»;",
+   "options": [
+    "741",
+    "147",
+    "174",
+    "471"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-words-places-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 1.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «εκατόν είκοσι τέσσερα»;",
+   "options": [
+    "124",
+    "412",
+    "241",
+    "142"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-tens-in-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Δεκάδες και μονάδες",
+   "question": "Πόσες δεκάδες έχει συνολικά το 551;",
+   "correctValue": 55,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "tens-in",
+    "unit": 1,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-tens-in-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Δεκάδες και μονάδες",
+   "question": "Πόσες δεκάδες έχει συνολικά το 134;",
+   "correctValue": 13,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "tens-in",
+    "unit": 1,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-tens-in-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Δεκάδες και μονάδες",
+   "question": "Πόσες δεκάδες έχει συνολικά το 126;",
+   "correctValue": 12,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "tens-in",
+    "unit": 1,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-tens-in-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Δεκάδες και μονάδες",
+   "question": "Πόσες δεκάδες έχει συνολικά το 993;",
+   "correctValue": 99,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "tens-in",
+    "unit": 1,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-tens-in-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Δεκάδες και μονάδες",
+   "question": "Πόσες δεκάδες έχει συνολικά το 929;",
+   "correctValue": 92,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "generatorParams": {
+    "family": "tens-in",
+    "unit": 1,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-add-mental-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση με το μυαλό",
+   "question": "Πόσο κάνει 10 + 55 + 5;",
+   "correctValue": 70,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-mental",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-mental-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση με το μυαλό",
+   "question": "Πόσο κάνει 32 + 8 + 20;",
+   "correctValue": 60,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-mental",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-mental-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση με το μυαλό",
+   "question": "Πόσο κάνει 10 + 27 + 3;",
+   "correctValue": 40,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-mental",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-mental-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση με το μυαλό",
+   "question": "Πόσο κάνει 34 + 40 + 6;",
+   "correctValue": 80,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-mental",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-mental-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση με το μυαλό",
+   "question": "Πόσο κάνει 40 + 28 + 2;",
+   "correctValue": 70,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-mental",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-money-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Τα χρήματα",
+   "question": "Έχεις 2 χαρτονομίσματα των 10 ευρώ, 4 χαρτονομίσματα των 5 ευρώ και 5 κέρματα των 2 ευρώ. Πόσα ευρώ έχεις;",
+   "correctValue": 50,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "money",
+    "unit": 1,
+    "skill": "money"
+   }
+  },
+  {
+   "id": "g3-math-money-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Τα χρήματα",
+   "question": "Έχεις 2 χαρτονομίσματα των 10 ευρώ, 2 χαρτονομίσματα των 5 ευρώ και 5 κέρματα των 2 ευρώ. Πόσα ευρώ έχεις;",
+   "correctValue": 40,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "money",
+    "unit": 1,
+    "skill": "money"
+   }
+  },
+  {
+   "id": "g3-math-money-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Τα χρήματα",
+   "question": "Έχεις 1 κέρμα των 50 λεπτών, 2 κέρματα των 5 λεπτών και 1 κέρμα των 2 λεπτών. Πόσα λεπτά έχεις;",
+   "correctValue": 62,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "money",
+    "unit": 1,
+    "skill": "money"
+   }
+  },
+  {
+   "id": "g3-math-money-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Τα χρήματα",
+   "question": "Έχεις 2 κέρματα των 20 λεπτών, 4 κέρματα των 5 λεπτών και 4 κέρματα των 2 λεπτών. Πόσα λεπτά έχεις;",
+   "correctValue": 68,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "money",
+    "unit": 1,
+    "skill": "money"
+   }
+  },
+  {
+   "id": "g3-math-money-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Τα χρήματα",
+   "question": "Έχεις 5 χαρτονομίσματα των 50 ευρώ, 4 χαρτονομίσματα των 20 ευρώ και 6 χαρτονομίσματα των 5 ευρώ. Πόσα ευρώ έχεις;",
+   "correctValue": 360,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "money",
+    "unit": 1,
+    "skill": "money"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-a-001",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 5",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "5 × 6",
+     "right": "30"
+    },
+    {
+     "left": "5 × 3",
+     "right": "15"
+    },
+    {
+     "left": "7 × 5",
+     "right": "35"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "generatorParams": {
+    "family": "tables-match-a",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-a-002",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 4",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "2 × 4",
+     "right": "8"
+    },
+    {
+     "left": "4 × 10",
+     "right": "40"
+    },
+    {
+     "left": "4 × 6",
+     "right": "24"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "generatorParams": {
+    "family": "tables-match-a",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-a-003",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 2",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "2 × 5",
+     "right": "10"
+    },
+    {
+     "left": "2 × 3",
+     "right": "6"
+    },
+    {
+     "left": "2 × 9",
+     "right": "18"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "generatorParams": {
+    "family": "tables-match-a",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-a-004",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 4",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "6 × 4",
+     "right": "24"
+    },
+    {
+     "left": "8 × 4",
+     "right": "32"
+    },
+    {
+     "left": "9 × 4",
+     "right": "36"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "generatorParams": {
+    "family": "tables-match-a",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-a-005",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 4",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "9 × 4",
+     "right": "36"
+    },
+    {
+     "left": "4 × 5",
+     "right": "20"
+    },
+    {
+     "left": "10 × 4",
+     "right": "40"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "generatorParams": {
+    "family": "tables-match-a",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-b-001",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 6",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "6 × 7",
+     "right": "42"
+    },
+    {
+     "left": "8 × 6",
+     "right": "48"
+    },
+    {
+     "left": "4 × 6",
+     "right": "24"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "generatorParams": {
+    "family": "tables-match-b",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-b-002",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 7",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "7 × 5",
+     "right": "35"
+    },
+    {
+     "left": "7 × 9",
+     "right": "63"
+    },
+    {
+     "left": "7 × 7",
+     "right": "49"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "generatorParams": {
+    "family": "tables-match-b",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-b-003",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 9",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "9 × 4",
+     "right": "36"
+    },
+    {
+     "left": "9 × 9",
+     "right": "81"
+    },
+    {
+     "left": "9 × 10",
+     "right": "90"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "generatorParams": {
+    "family": "tables-match-b",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-b-004",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 7",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "7 × 3",
+     "right": "21"
+    },
+    {
+     "left": "7 × 9",
+     "right": "63"
+    },
+    {
+     "left": "6 × 7",
+     "right": "42"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "generatorParams": {
+    "family": "tables-match-b",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-tables-match-b-005",
+   "type": "match-pairs",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 8",
+   "body": "Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.",
+   "pairs": [
+    {
+     "left": "8 × 10",
+     "right": "80"
+    },
+    {
+     "left": "3 × 8",
+     "right": "24"
+    },
+    {
+     "left": "8 × 7",
+     "right": "56"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "generatorParams": {
+    "family": "tables-match-b",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-table-gap-001",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός και διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "32 : {0} = 4",
+   "options": [
+    "10",
+    "7",
+    "8",
+    "9"
+   ],
+   "correctAnswers": [
+    "8"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "table-gap",
+    "unit": 1,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "g3-math-table-gap-002",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός και διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "72 : {0} = 9",
+   "options": [
+    "8",
+    "10",
+    "7",
+    "9"
+   ],
+   "correctAnswers": [
+    "8"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "table-gap",
+    "unit": 1,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "g3-math-table-gap-003",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός και διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "8 × {0} = 72",
+   "options": [
+    "8",
+    "9",
+    "10",
+    "11"
+   ],
+   "correctAnswers": [
+    "9"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "table-gap",
+    "unit": 1,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "g3-math-table-gap-004",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός και διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "8 × {0} = 48",
+   "options": [
+    "8",
+    "6",
+    "7",
+    "5"
+   ],
+   "correctAnswers": [
+    "6"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "table-gap",
+    "unit": 1,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "g3-math-table-gap-005",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός και διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "{0} × 5 = 45",
+   "options": [
+    "8",
+    "11",
+    "9",
+    "10"
+   ],
+   "correctAnswers": [
+    "9"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "table-gap",
+    "unit": 1,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "g3-math-divide-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση",
+   "question": "Πόσο κάνει 80 : 8;",
+   "correctValue": 10,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "divide",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-divide-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση",
+   "question": "Πόσο κάνει 14 : 7;",
+   "correctValue": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "divide",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-divide-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση",
+   "question": "Πόσο κάνει 30 : 6;",
+   "correctValue": 5,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "divide",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-divide-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση",
+   "question": "Πόσο κάνει 27 : 9;",
+   "correctValue": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "divide",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-divide-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση",
+   "question": "Πόσο κάνει 15 : 5;",
+   "correctValue": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "divide",
+    "unit": 1,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-fact-family-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Η οικογένεια των πράξεων",
+   "question": "Κύκλωσε την πράξη που ανήκει στην ίδια οικογένεια με την 4 × 3 = 12.",
+   "options": [
+    "12 − 4 = 8",
+    "4 + 3 = 7",
+    "12 : 4 = 4",
+    "12 : 3 = 4"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "fact-family",
+    "unit": 1,
+    "skill": "fact-family"
+   }
+  },
+  {
+   "id": "g3-math-fact-family-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Η οικογένεια των πράξεων",
+   "question": "Κύκλωσε την πράξη που ανήκει στην ίδια οικογένεια με την 7 × 5 = 35.",
+   "options": [
+    "5 × 7 = 35",
+    "7 + 5 = 12",
+    "35 − 5 = 30",
+    "35 − 7 = 28"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "fact-family",
+    "unit": 1,
+    "skill": "fact-family"
+   }
+  },
+  {
+   "id": "g3-math-fact-family-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Η οικογένεια των πράξεων",
+   "question": "Κύκλωσε την πράξη που ανήκει στην ίδια οικογένεια με την 6 × 3 = 18.",
+   "options": [
+    "18 − 6 = 12",
+    "6 + 3 = 9",
+    "18 : 6 = 3",
+    "18 : 6 = 4"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "fact-family",
+    "unit": 1,
+    "skill": "fact-family"
+   }
+  },
+  {
+   "id": "g3-math-fact-family-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Η οικογένεια των πράξεων",
+   "question": "Κύκλωσε την πράξη που ανήκει στην ίδια οικογένεια με την 4 × 6 = 24.",
+   "options": [
+    "24 − 4 = 20",
+    "24 : 4 = 7",
+    "24 − 6 = 18",
+    "24 : 6 = 4"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "fact-family",
+    "unit": 1,
+    "skill": "fact-family"
+   }
+  },
+  {
+   "id": "g3-math-fact-family-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Η οικογένεια των πράξεων",
+   "question": "Κύκλωσε την πράξη που ανήκει στην ίδια οικογένεια με την 5 × 6 = 30.",
+   "options": [
+    "5 + 6 = 11",
+    "30 : 6 = 5",
+    "30 − 6 = 24",
+    "30 − 5 = 25"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "generatorParams": {
+    "family": "fact-family",
+    "unit": 1,
+    "skill": "fact-family"
+   }
+  },
+  {
+   "id": "g3-math-length-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Εκατοστά και χιλιοστά",
+   "question": "Πόσα χιλιοστά είναι 2 εκατοστά;",
+   "correctValue": 20,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "generatorParams": {
+    "family": "length",
+    "unit": 2,
+    "skill": "length"
+   }
+  },
+  {
+   "id": "g3-math-length-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Μέτρα και εκατοστά",
+   "question": "Πόσα εκατοστά είναι 7 μέτρα;",
+   "correctValue": 700,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "generatorParams": {
+    "family": "length",
+    "unit": 2,
+    "skill": "length"
+   }
+  },
+  {
+   "id": "g3-math-length-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Εκατοστά και χιλιοστά",
+   "question": "Πόσα χιλιοστά είναι 15 εκατοστά και 2 χιλιοστά;",
+   "correctValue": 152,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "generatorParams": {
+    "family": "length",
+    "unit": 2,
+    "skill": "length"
+   }
+  },
+  {
+   "id": "g3-math-length-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Μέτρα και εκατοστά",
+   "question": "Πόσα εκατοστά είναι 3 μέτρα και 53 εκατοστά;",
+   "correctValue": 353,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "generatorParams": {
+    "family": "length",
+    "unit": 2,
+    "skill": "length"
+   }
+  },
+  {
+   "id": "g3-math-length-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Εκατοστά και χιλιοστά",
+   "question": "Πόσα χιλιοστά είναι 23 εκατοστά;",
+   "correctValue": 230,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "generatorParams": {
+    "family": "length",
+    "unit": 2,
+    "skill": "length"
+   }
+  },
+  {
+   "id": "g3-math-subtract-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 937 − 476;",
+   "correctValue": 461,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "subtract",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-subtract-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 266 − 83;",
+   "correctValue": 183,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "subtract",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-subtract-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 308 − 272;",
+   "correctValue": 36,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "subtract",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-subtract-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 500 − 351;",
+   "correctValue": 149,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "subtract",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-subtract-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 752 − 384;",
+   "correctValue": 368,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "subtract",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-2x1-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 32 × 8;",
+   "correctValue": 256,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "times-2x1",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-2x1-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 27 × 6;",
+   "correctValue": 162,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "times-2x1",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-2x1-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 15 × 9;",
+   "correctValue": 135,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "times-2x1",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-2x1-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 25 × 3;",
+   "correctValue": 75,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "times-2x1",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-2x1-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 33 × 4;",
+   "correctValue": 132,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "times-2x1",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-table-11-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 11",
+   "question": "Πόσο κάνει 3 × 11;",
+   "correctValue": 33,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "table-11",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-table-11-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 11",
+   "question": "Πόσο κάνει 7 × 11;",
+   "correctValue": 77,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "table-11",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-table-11-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 11",
+   "question": "Πόσο κάνει 2 × 11;",
+   "correctValue": 22,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "table-11",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-table-11-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 11",
+   "question": "Πόσο κάνει 11 × 10;",
+   "correctValue": 110,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "table-11",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-table-11-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προπαίδεια του 11",
+   "question": "Πόσο κάνει 11 × 7;",
+   "correctValue": 77,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "generatorParams": {
+    "family": "table-11",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-words-digits-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 3.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «δύο χιλιάδες σαράντα»;",
+   "options": [
+    "2.040",
+    "2.004",
+    "2.400"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 3,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-words-digits-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 3.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «χίλια οχτώ»;",
+   "options": [
+    "1.008",
+    "1.800",
+    "1.080"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 3,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-words-digits-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 3.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «δύο χιλιάδες εννιά»;",
+   "options": [
+    "2.090",
+    "2.900",
+    "2.009"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 3,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-words-digits-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 3.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «χίλια εννιακόσια δύο»;",
+   "options": [
+    "1.092",
+    "1.902",
+    "1.209",
+    "1.920"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 3,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-words-digits-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμοί μέχρι το 3.000",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «χίλια εξακόσια ένα»;",
+   "options": [
+    "1.610",
+    "1.106",
+    "1.061",
+    "1.601"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 3,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "g3-math-neighbours-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Γράψε τον αμέσως προηγούμενο αριθμό του 1.100.",
+   "correctValue": 1099,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 3,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "g3-math-neighbours-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Γράψε τον αμέσως επόμενο αριθμό του 1.789.",
+   "correctValue": 1790,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 3,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "g3-math-neighbours-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Γράψε τον αμέσως προηγούμενο αριθμό του 2.000.",
+   "correctValue": 1999,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 3,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "g3-math-neighbours-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Γράψε τον αμέσως επόμενο αριθμό του 999.",
+   "correctValue": 1000,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 3,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "g3-math-neighbours-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Γράψε τον αμέσως επόμενο αριθμό του 2.589.",
+   "correctValue": 2590,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 3,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "g3-math-hundreds-in-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Εκατοντάδες",
+   "question": "Πόσες εκατοντάδες έχει συνολικά το 1.463;",
+   "correctValue": 14,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "hundreds-in",
+    "unit": 3,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-hundreds-in-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Εκατοντάδες",
+   "question": "Πόσες εκατοντάδες έχει συνολικά το 2.171;",
+   "correctValue": 21,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "hundreds-in",
+    "unit": 3,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-hundreds-in-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Εκατοντάδες",
+   "question": "Πόσες εκατοντάδες έχει συνολικά το 2.441;",
+   "correctValue": 24,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "hundreds-in",
+    "unit": 3,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-hundreds-in-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Εκατοντάδες",
+   "question": "Πόσες εκατοντάδες έχει συνολικά το 1.072;",
+   "correctValue": 10,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "hundreds-in",
+    "unit": 3,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-hundreds-in-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Εκατοντάδες",
+   "question": "Πόσες εκατοντάδες έχει συνολικά το 1.367;",
+   "correctValue": 13,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "hundreds-in",
+    "unit": 3,
+    "skill": "group-count"
+   }
+  },
+  {
+   "id": "g3-math-digit-value-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η αξία του ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 2 στον αριθμό 2.903;",
+   "correctValue": 2000,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 3,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "g3-math-digit-value-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η αξία του ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 8 στον αριθμό 2.683;",
+   "correctValue": 80,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 3,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "g3-math-digit-value-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η αξία του ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 9 στον αριθμό 2.954;",
+   "correctValue": 900,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 3,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "g3-math-digit-value-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η αξία του ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 1 στον αριθμό 2.518;",
+   "correctValue": 10,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 3,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "g3-math-digits-extreme-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Φτιάχνω αριθμούς",
+   "question": "Γράψε τον μικρότερο τριψήφιο αριθμό με τα ψηφία 9, 2 και 1, από μία φορά το καθένα.",
+   "correctValue": 129,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "digits-extreme",
+    "unit": 3,
+    "skill": "digits-extreme"
+   }
+  },
+  {
+   "id": "g3-math-digits-extreme-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Φτιάχνω αριθμούς",
+   "question": "Γράψε τον μικρότερο τριψήφιο αριθμό με τα ψηφία 6, 0 και 7, από μία φορά το καθένα.",
+   "correctValue": 607,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "digits-extreme",
+    "unit": 3,
+    "skill": "digits-extreme"
+   }
+  },
+  {
+   "id": "g3-math-digits-extreme-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Φτιάχνω αριθμούς",
+   "question": "Γράψε τον μεγαλύτερο τριψήφιο αριθμό με τα ψηφία 4, 9 και 2, από μία φορά το καθένα.",
+   "correctValue": 942,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "digits-extreme",
+    "unit": 3,
+    "skill": "digits-extreme"
+   }
+  },
+  {
+   "id": "g3-math-digits-extreme-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Φτιάχνω αριθμούς",
+   "question": "Γράψε τον μεγαλύτερο τριψήφιο αριθμό με τα ψηφία 7, 8 και 5, από μία φορά το καθένα.",
+   "correctValue": 875,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "digits-extreme",
+    "unit": 3,
+    "skill": "digits-extreme"
+   }
+  },
+  {
+   "id": "g3-math-compare-001",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Το 1.326 είναι μικρότερο από το 2.316.",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "compare",
+    "unit": 3,
+    "skill": "compare"
+   }
+  },
+  {
+   "id": "g3-math-compare-002",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Το 2.585 είναι μικρότερο από το 2.558.",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "compare",
+    "unit": 3,
+    "skill": "compare"
+   }
+  },
+  {
+   "id": "g3-math-compare-003",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Το 1.047 είναι μικρότερο από το 1.407.",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "compare",
+    "unit": 3,
+    "skill": "compare"
+   }
+  },
+  {
+   "id": "g3-math-compare-004",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Το 2.144 είναι μεγαλύτερο από το 2.414.",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "compare",
+    "unit": 3,
+    "skill": "compare"
+   }
+  },
+  {
+   "id": "g3-math-order-001",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μεγαλύτερο στον μικρότερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "2.520"
+    },
+    {
+     "id": "b",
+     "content": "2.250"
+    },
+    {
+     "id": "c",
+     "content": "2.205"
+    },
+    {
+     "id": "d",
+     "content": "2.052"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "order",
+    "unit": 3,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "g3-math-order-002",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μικρότερο στον μεγαλύτερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "2.678"
+    },
+    {
+     "id": "b",
+     "content": "2.687"
+    },
+    {
+     "id": "c",
+     "content": "2.786"
+    },
+    {
+     "id": "d",
+     "content": "2.867"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "order",
+    "unit": 3,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "g3-math-order-003",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μικρότερο στον μεγαλύτερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "1.489"
+    },
+    {
+     "id": "b",
+     "content": "1.498"
+    },
+    {
+     "id": "c",
+     "content": "1.894"
+    },
+    {
+     "id": "d",
+     "content": "1.948"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "order",
+    "unit": 3,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "g3-math-order-004",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μικρότερο στον μεγαλύτερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "2.245"
+    },
+    {
+     "id": "b",
+     "content": "2.254"
+    },
+    {
+     "id": "c",
+     "content": "2.452"
+    },
+    {
+     "id": "d",
+     "content": "2.524"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "order",
+    "unit": 3,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "g3-math-expanded-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ανάλυση αριθμού",
+   "question": "Πόσο κάνει (2 × 1.000) + (2 × 100) + 6;",
+   "correctValue": 2206,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "expanded",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-expanded-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ανάλυση αριθμού",
+   "question": "Πόσο κάνει (1 × 1.000) + (1 × 100) + 7;",
+   "correctValue": 1107,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "expanded",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-expanded-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ανάλυση αριθμού",
+   "question": "Πόσο κάνει (2 × 1.000) + (4 × 10) + 8;",
+   "correctValue": 2048,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "expanded",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-expanded-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ανάλυση αριθμού",
+   "question": "Πόσο κάνει (1 × 1.000) + (1 × 100) + 8;",
+   "correctValue": 1108,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "expanded",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-count-by-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Μετράω ανά…",
+   "question": "Συνέχισε το μοτίβο: 1.600, 1.350, 1.100, 850, … Γράψε τον επόμενο αριθμό.",
+   "correctValue": 600,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 3,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "g3-math-count-by-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Μετράω ανά…",
+   "question": "Συνέχισε το μοτίβο: 1.150, 1.350, 1.550, 1.750, … Γράψε τον επόμενο αριθμό.",
+   "correctValue": 1950,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 3,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "g3-math-count-by-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Μετράω ανά…",
+   "question": "Συνέχισε το μοτίβο: 1.410, 1.360, 1.310, 1.260, … Γράψε τον επόμενο αριθμό.",
+   "correctValue": 1210,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 3,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "g3-math-count-by-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Μετράω ανά…",
+   "question": "Συνέχισε το μοτίβο: 280, 290, 300, 310, … Γράψε τον επόμενο αριθμό.",
+   "correctValue": 320,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 3,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "g3-math-add-sub-choice-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 283 + 646;",
+   "options": [
+    "939",
+    "829",
+    "929",
+    "919"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-sub-choice",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-sub-choice-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 425 + 286;",
+   "options": [
+    "711",
+    "701",
+    "601",
+    "721"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-sub-choice",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-sub-choice-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 699 + 864;",
+   "options": [
+    "1.553",
+    "453",
+    "1.563",
+    "1.573"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-sub-choice",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-sub-choice-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 2.040 − 805;",
+   "options": [
+    "2.845",
+    "1.225",
+    "1.245",
+    "1.235"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add-sub-choice",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 1.326 + 878;",
+   "correctValue": 2204,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 888 + 870;",
+   "correctValue": 1758,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 1.296 + 335;",
+   "correctValue": 1631,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-add-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 798 + 905;",
+   "correctValue": 1703,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "generatorParams": {
+    "family": "add",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-choice-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 54 × 4;",
+   "options": [
+    "206",
+    "226",
+    "220",
+    "216"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί",
+   "generatorParams": {
+    "family": "times-choice",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-choice-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 94 × 3;",
+   "options": [
+    "272",
+    "285",
+    "282",
+    "292"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί",
+   "generatorParams": {
+    "family": "times-choice",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-choice-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 52 × 8;",
+   "options": [
+    "426",
+    "424",
+    "416",
+    "406"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί",
+   "generatorParams": {
+    "family": "times-choice",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-times-choice-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 67 × 7;",
+   "options": [
+    "479",
+    "459",
+    "429",
+    "469"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί",
+   "generatorParams": {
+    "family": "times-choice",
+    "unit": 3,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "g3-math-divide-remainder-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση με υπόλοιπο",
+   "question": "Πόσο κάνει 67 : 8;",
+   "options": [
+    "8 και περισσεύουν 3",
+    "7 και περισσεύουν 11",
+    "9 και περισσεύουν 5",
+    "8 και περισσεύουν 2"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις",
+   "generatorParams": {
+    "family": "divide-remainder",
+    "unit": 3,
+    "skill": "div-rem"
+   }
+  },
+  {
+   "id": "g3-math-divide-remainder-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση με υπόλοιπο",
+   "question": "Πόσο κάνει 46 : 5;",
+   "options": [
+    "9 και περισσεύει 1",
+    "9 και περισσεύουν 2",
+    "10 και περισσεύουν 4",
+    "8 και περισσεύουν 6"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις",
+   "generatorParams": {
+    "family": "divide-remainder",
+    "unit": 3,
+    "skill": "div-rem"
+   }
+  },
+  {
+   "id": "g3-math-divide-remainder-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση με υπόλοιπο",
+   "question": "Πόσο κάνει 19 : 5;",
+   "options": [
+    "3 και περισσεύουν 3",
+    "4 και περισσεύει 1",
+    "3 και περισσεύουν 4",
+    "2 και περισσεύουν 9"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις",
+   "generatorParams": {
+    "family": "divide-remainder",
+    "unit": 3,
+    "skill": "div-rem"
+   }
+  },
+  {
+   "id": "g3-math-divide-remainder-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Διαίρεση με υπόλοιπο",
+   "question": "Πόσο κάνει 65 : 9;",
+   "options": [
+    "8 και περισσεύουν 7",
+    "7 και περισσεύει 1",
+    "7 και περισσεύουν 3",
+    "7 και περισσεύουν 2"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις",
+   "generatorParams": {
+    "family": "divide-remainder",
+    "unit": 3,
+    "skill": "div-rem"
+   }
+  }
+ ]
+}

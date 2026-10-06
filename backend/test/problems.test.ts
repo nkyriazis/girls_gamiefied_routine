@@ -127,6 +127,29 @@ test('every shipped pool is valid, and every problem can be solved step by step'
   }
 });
 
+test('every shipped plain exercise: the server takes its own key and refuses a wrong answer', () => {
+  const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
+  let n = 0;
+  for (const ex of shipped.flatMap(p => p.exercises)) {
+    const [right, wrong] = ((): [unknown, unknown] => {
+      switch (ex.type) {
+        case 'multiple-choice': return [ex.correctIndex, (ex.correctIndex + 1) % ex.options.length];
+        case 'true-false': return [ex.correctValue, !ex.correctValue];
+        case 'number-input': return [ex.correctValue, ex.correctValue + 1];
+        case 'match-pairs': return [ex.pairs, ex.pairs.map((p, i) => ({ left: p.left, right: ex.pairs[(i + 1) % ex.pairs.length].right }))];
+        case 'ordering': return [ex.items.map(i => i.id), [...ex.items].reverse().map(i => i.id)];
+        case 'fill-blank': return [ex.correctAnswers, ex.correctAnswers.map(a => ex.options.find(o => o !== a))];
+        case 'problem': return [undefined, undefined];
+      }
+    })();
+    if (ex.type === 'problem') continue;
+    assert.equal(db.checkExerciseAnswer(ex, right), true, `${ex.id}: its own key`);
+    assert.equal(db.checkExerciseAnswer(ex, wrong), false, `${ex.id}: a wrong answer`);
+    n++;
+  }
+  assert.ok(n > 0, 'no plain exercises shipped');
+});
+
 test('«Δείξε μου»: every step of every shipped problem, shown worked, passes its check on every rung', () => {
   const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
   let steps = 0;
@@ -153,6 +176,23 @@ test('a broken pool file is refused', () => {
   writeFileSync(path.join(bad, 'x.json'), JSON.stringify({ grades: [3], exercises: [balloons] }));
   writeFileSync(path.join(bad, 'y.json'), JSON.stringify({ grades: [5], exercises: [balloons] }));
   assert.throws(() => pool.loadPools(bad), /duplicate exercise id p-balloons/);
+});
+
+test('a plain pool exercise names its textbook chapter, as a problem does', () => {
+  const plain = path.join(dir, 'plain');
+  mkdirSync(plain);
+  const source = 'Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)';
+  const base = { category: 'Μαθηματικά', title: 'x', stars: 1, source };
+  writeFileSync(path.join(plain, 'x.json'), JSON.stringify({ grades: [3], exercises: [
+    { ...base, id: 'n', type: 'number-input', question: 'Πόσο κάνει 6 × 7;', correctValue: 42 },
+    { ...base, id: 'c', type: 'multiple-choice', question: 'Πόσο κάνει 6 × 7;', options: ['42', '48'], correctIndex: 0 },
+    { ...base, id: 't', type: 'true-false', question: 'Το 6 × 7 είναι 42.', correctValue: true },
+    { ...base, id: 'm', type: 'match-pairs', pairs: [{ left: '6 × 7', right: '42' }, { left: '6 × 8', right: '48' }] },
+    { ...base, id: 'o', type: 'ordering', items: [{ id: 'a', content: '42' }, { id: 'b', content: '48' }] },
+    { ...base, id: 'f', type: 'fill-blank', textWithGaps: '6 × {0} = 42', options: ['7', '8'], correctAnswers: ['7'] },
+  ] }));
+  const [loaded] = pool.loadPools(plain);
+  assert.deepEqual(loaded.exercises.map(e => e.source), Array(6).fill(source));
 });
 
 test('each kid draws exercisesPerDay from the pools of their grade; no grade, no exercises', async () => {

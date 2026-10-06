@@ -175,6 +175,7 @@ export interface BaseExercise {
   userIds?: string[]; // If set, only these users can play this exercise
   template?: boolean;
   generatorParams?: any;
+  source?: string; // where in the textbooks it comes from: «Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)»
 }
 
 export interface MultipleChoiceExercise extends BaseExercise {
@@ -281,7 +282,6 @@ export interface ProblemExercise extends BaseExercise {
   type: 'problem';
   story: string;
   steps: ProblemStep[];
-  source?: string; // where in the textbooks it comes from
 }
 
 // The answer to one step of a problem assignment.
