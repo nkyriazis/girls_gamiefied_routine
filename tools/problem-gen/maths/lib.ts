@@ -8,7 +8,7 @@
 import type { Exercise, ProblemExercise } from '../../../shared/types.ts';
 import { fmt, type Rng } from '../lib.ts';
 import type { Grade } from './curriculum.ts';
-import { REVEAL_MAX } from './check.ts';
+import { REVEAL_MATCH_MAX } from './check.ts';
 
 export { fmt };
 
@@ -50,15 +50,15 @@ export function mc(r: Rng, title: string, question: string, right: string, wrong
 }
 
 /**
- * Match pairs, as many of `pairs` (at least 3) as «Δείξε μου» can reveal on about three lines
- * (check.ts REVEAL_MAX): it shows them in one run, «a – b, c – d, …».
+ * Match pairs, as many of `pairs` (at least 3) as «Δείξε μου» can reveal on one line
+ * (check.ts REVEAL_MATCH_MAX): it shows them in one run, «a – b, c – d, …».
  */
 export function match(title: string, body: string, pairs: [string, string][]): Draft | null {
   if (new Set(pairs.map(p => p[0])).size !== pairs.length || new Set(pairs.map(p => p[1])).size !== pairs.length) return null;
   const line = (ps: [string, string][]) => ps.map(([l, r]) => `${l} – ${r}`).join(', ');
   let fit = pairs;
-  while (fit.length > 3 && line(fit).length > REVEAL_MAX) fit = fit.slice(0, -1);
-  if (line(fit).length > REVEAL_MAX) return null;
+  while (fit.length > 3 && line(fit).length > REVEAL_MATCH_MAX) fit = fit.slice(0, -1);
+  if (line(fit).length > REVEAL_MATCH_MAX) return null;
   return { type: 'match-pairs', title, body, pairs: fit.map(([left, right]) => ({ left, right })) };
 }
 

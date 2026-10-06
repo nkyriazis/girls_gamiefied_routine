@@ -320,10 +320,18 @@ export function revealed(ex: Plain): string {
 }
 /**
  * Characters the revealed answer may have: «Η σωστή απάντηση: …» shows it at 2.5rem in a box up to 900 px
- * wide, for 4.5 seconds, on «Δείξε μου» (forgiving) and after the last try (unforgiving). 100 is about three
- * lines at 1280×800; a 140-character match wrapped to five, its pairs split across lines.
+ * wide, for 4.5 seconds, on «Δείξε μου» (forgiving) and after the last try (unforgiving). A line holds about
+ * 40 characters at 1280×800 (35 in words), so 60 is two lines. An ordering's items have no spaces, so its
+ * line breaks only between them.
  */
-export const REVEAL_MAX = 100;
+export const REVEAL_MAX = 60;
+/**
+ * A match's pairs («9 × 4 – 36, …») break at any space, so a match stays on one line: a times table of
+ * four pairs (47 characters) left «4 × 3 –» on one line and «12» on the next; three pairs are 34–36.
+ * Three pairs of numbers in words came to 75–99 characters, so those families are multiple choice.
+ */
+export const REVEAL_MATCH_MAX = 40;
+export const revealMax = (ex: { type: string }) => (ex.type === 'match-pairs' ? REVEAL_MATCH_MAX : REVEAL_MAX);
 
 function textErrors(where: string, text: string, grade: Grade): string[] {
   const c = CURRICULUM[grade];
@@ -437,7 +445,7 @@ export function auditMaths(pools: Pool[]): MathsAudit {
       }
       if (ex.type === 'ordering' && (new Set(ex.items.map(i => i.content)).size !== ex.items.length || ex.items.length < 3)) err('repeated or too few items');
       const shown = revealed(ex);
-      if (shown.length > REVEAL_MAX) err(`«Δείξε μου» would show ${shown.length} characters («${shown}»): keep it under ${REVEAL_MAX}`);
+      if (shown.length > revealMax(ex)) err(`«Δείξε μου» would show ${shown.length} characters («${shown}»): keep it to ${revealMax(ex)} at most`);
 
       // Solved again from its text
       const solve = SOLVERS[ex.generatorParams.skill];

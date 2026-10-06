@@ -131,169 +131,126 @@
    }
   },
   {
-   "id": "e5-math-words-match-001",
-   "type": "match-pairs",
+   "id": "e5-math-words-places-001",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Οι φυσικοί αριθμοί",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "οχτακόσιες χιλιάδες",
-     "right": "800.000"
-    },
-    {
-     "left": "ογδόντα χιλιάδες οχτώ",
-     "right": "80.008"
-    },
-    {
-     "left": "οχτώ χιλιάδες ογδόντα",
-     "right": "8.080"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «πέντε εκατομμύρια πέντε χιλιάδες»;",
+   "options": [
+    "5.000.000",
+    "500.500",
+    "50.000.000",
+    "5.005.000"
    ],
+   "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "e5-math-words-match-002",
-   "type": "match-pairs",
+   "id": "e5-math-words-places-002",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Οι φυσικοί αριθμοί",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "δύο εκατομμύρια",
-     "right": "2.000.000"
-    },
-    {
-     "left": "είκοσι χιλιάδες",
-     "right": "20.000"
-    },
-    {
-     "left": "είκοσι εκατομμύρια",
-     "right": "20.000.000"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «τρία εκατομμύρια»;",
+   "options": [
+    "3.003.000",
+    "30.000.000",
+    "300.300",
+    "3.000.000"
    ],
+   "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "e5-math-words-match-003",
-   "type": "match-pairs",
+   "id": "e5-math-words-places-003",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Οι φυσικοί αριθμοί",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "εφτά χιλιάδες",
-     "right": "7.000"
-    },
-    {
-     "left": "εβδομήντα χιλιάδες",
-     "right": "70.000"
-    },
-    {
-     "left": "εβδομήντα εκατομμύρια",
-     "right": "70.000.000"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «εξήντα χιλιάδες έξι»;",
+   "options": [
+    "6.060",
+    "60.006",
+    "600.000",
+    "60.000"
    ],
+   "correctIndex": 1,
    "stars": 1,
    "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "e5-math-words-match-004",
-   "type": "match-pairs",
+   "id": "e5-math-words-places-004",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Οι φυσικοί αριθμοί",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "πενήντα χιλιάδες",
-     "right": "50.000"
-    },
-    {
-     "left": "πέντε εκατομμύρια",
-     "right": "5.000.000"
-    },
-    {
-     "left": "πενήντα χιλιάδες πέντε",
-     "right": "50.005"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «πεντακόσιες χιλιάδες»;",
+   "options": [
+    "50.000",
+    "50.005",
+    "500.000",
+    "5.000.000"
    ],
+   "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "e5-math-words-match-005",
-   "type": "match-pairs",
+   "id": "e5-math-words-places-005",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Οι φυσικοί αριθμοί",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "τρεις χιλιάδες",
-     "right": "3.000"
-    },
-    {
-     "left": "τρία εκατομμύρια",
-     "right": "3.000.000"
-    },
-    {
-     "left": "τριακόσιες χιλιάδες τριακόσια",
-     "right": "300.300"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «δύο εκατομμύρια δύο χιλιάδες»;",
+   "options": [
+    "2.002.000",
+    "20.000.000",
+    "200.200",
+    "2.000.000"
    ],
+   "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "e5-math-words-match-006",
-   "type": "match-pairs",
+   "id": "e5-math-words-places-006",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Οι φυσικοί αριθμοί",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "τριακόσιες χιλιάδες",
-     "right": "300.000"
-    },
-    {
-     "left": "τριάντα εκατομμύρια",
-     "right": "30.000.000"
-    },
-    {
-     "left": "τρεις χιλιάδες τριάντα",
-     "right": "3.030"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «έξι χιλιάδες»;",
+   "options": [
+    "6.060",
+    "60.000",
+    "6.000"
    ],
+   "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }

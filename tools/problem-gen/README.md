@@ -130,7 +130,7 @@ big as the divisor. Ids are `g3-math-<family>-NNN` / `e5-math-<family>-NNN` (nev
 |---|---|
 | `calc` | «Πόσο κάνει 348 + 275;» (any of + − × : and parentheses); match pairs «7 × 5» – «35» |
 | `equation` | fill-blank «6 × {0} = 42», «2.279 = 25 × {0} + 4»; body «Συμπλήρωσε τον αριθμό που λείπει.» |
-| `words` | «Πώς γράφεται με ψηφία ο αριθμός «δύο χιλιάδες σαράντα»;»; match words – digits |
+| `words` | «Πώς γράφεται με ψηφία ο αριθμός «δύο χιλιάδες σαράντα»;» (multiple choice, not a match: see «Δείξε μου») |
 | `neighbour` | «Γράψε/Κύκλωσε τον αμέσως επόμενο/προηγούμενο αριθμό του 1.299.» |
 | `group-count` | «Πόσες δεκάδες/εκατοντάδες έχει συνολικά το 368;» |
 | `digit-value` | «Ποια είναι η αξία του ψηφίου 3 στον αριθμό 2.375;» (the digit once in the number) |
@@ -164,9 +164,15 @@ the generator drops such items). Numeric wrong options are whole and at most 100
 
 **«Δείξε μου».** On a wrong try (forgiving) and after the last try (unforgiving), the screen shows
 `answerText` in one run, «a – b, c – d, …» for a match and «a → b → …» for an ordering, at 2.5rem
-for 4.5 seconds. Keep it at most 100 characters (about three lines at 1280×800): `match()` keeps
-3 or 4 pairs, as many as fit, and the audit fails a longer one. A 4-pair match of millions in
-words was 140 characters and wrapped to five lines, its pairs split across lines.
+for 4.5 seconds, then closes by itself. A line holds about 40 characters at 1280×800 (35 in
+words). Keep it at most 60 characters, two lines; an ordering's items have no spaces, so it breaks
+only between them. A match breaks at any space, inside a pair too, so a match keeps to one line,
+40 characters: `match()` keeps 3 or 4 pairs, as many as fit, and the audit fails a longer one. A
+times table of four pairs (47) left «4 × 3 –» on one line and «12» on the next; three are 34–36.
+Three pairs of numbers in words came to 75–99 characters, three lines with pairs split across
+them, too much for a Γ΄ child in 4.5 s; so the `words` families are multiple choice, the same
+digits in other places as the options. The 4.5 s is the screen's limit, not the pool's: holding
+the answer until a tap is a follow-up.
 
 **Greek and realism.** Speak to the child in the imperative or second person («Υπολόγισε»,
 «Κύκλωσε», «Βάλε», «Έχεις»), the same to every child: the audit fails check-gender's words (the

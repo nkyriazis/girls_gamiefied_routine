@@ -32,18 +32,20 @@ function withZero(r: Rng): number {
 export const G3_MATHS: MathsFamily[] = [
   // ---- Unit 1 -----------------------------------------------------------------
   g3({
-    id: 'words-match', chapter: '1', skill: 'words',
+    id: 'words-places', chapter: '1', skill: 'words',
     make(r) {
-      // Four numbers from the same digits, as the workbook's «Γράφω τους αριθμούς με ψηφία»
+      // The workbook's «Γράφω τους αριθμούς με ψηφία» matches numbers made of the same digits:
+      // the other orders of those digits are the options. (A match of three numbers in words is
+      // too long for «Δείξε μου» to show on one line: check.ts REVEAL_MATCH_MAX.)
       const [a, b] = r.sample([1, 2, 3, 4, 5, 6, 7, 8, 9], 2);
       const c = r.chance(0.5) ? 0 : r.int(1, 9);
       if (c === a || c === b) return null;
-      const all = [[a, b, c], [a, c, b], [b, a, c], [b, c, a], [c, a, b], [c, b, a]]
-        .filter(ds => ds[0] !== 0).map(ds => Number(ds.join('')));
-      const picked = r.sample([...new Set(all)], 4);
-      if (picked.length < 4) return null;
-      return match('Αριθμοί μέχρι το 1.000', 'Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.',
-        picked.map(n => [words(n), fmt(n)]));
+      const all = [...new Set([[a, b, c], [a, c, b], [b, a, c], [b, c, a], [c, a, b], [c, b, a]]
+        .filter(ds => ds[0] !== 0).map(ds => Number(ds.join(''))))];
+      const n = r.pick(all);
+      const wrong = r.sample(all.filter(m => m !== n), 3);
+      if (wrong.length < 3) return null;
+      return mc(r, 'Αριθμοί μέχρι το 1.000', `Πώς γράφεται με ψηφία ο αριθμός «${words(n)}»;`, fmt(n), wrong.map(fmt));
     },
   }),
   g3({

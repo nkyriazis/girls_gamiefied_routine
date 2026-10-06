@@ -5,145 +5,106 @@
  ],
  "exercises": [
   {
-   "id": "g3-math-words-match-001",
-   "type": "match-pairs",
+   "id": "g3-math-words-places-001",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Αριθμοί μέχρι το 1.000",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "τριακόσια ενενήντα πέντε",
-     "right": "395"
-    },
-    {
-     "left": "εννιακόσια πενήντα τρία",
-     "right": "953"
-    },
-    {
-     "left": "τριακόσια πενήντα εννιά",
-     "right": "359"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «εννιακόσια τριάντα οχτώ»;",
+   "options": [
+    "389",
+    "398",
+    "893",
+    "938"
    ],
+   "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "g3-math-words-match-002",
-   "type": "match-pairs",
+   "id": "g3-math-words-places-002",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Αριθμοί μέχρι το 1.000",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "πεντακόσια δεκαοχτώ",
-     "right": "518"
-    },
-    {
-     "left": "οχτακόσια πενήντα ένα",
-     "right": "851"
-    },
-    {
-     "left": "εκατόν πενήντα οχτώ",
-     "right": "158"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «οχτακόσια πενήντα»;",
+   "options": [
+    "580",
+    "850",
+    "508",
+    "805"
    ],
+   "correctIndex": 1,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "g3-math-words-match-003",
-   "type": "match-pairs",
+   "id": "g3-math-words-places-003",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Αριθμοί μέχρι το 1.000",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "τετρακόσια ενενήντα",
-     "right": "490"
-    },
-    {
-     "left": "εννιακόσια σαράντα",
-     "right": "940"
-    },
-    {
-     "left": "τετρακόσια εννιά",
-     "right": "409"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «πεντακόσια τριάντα»;",
+   "options": [
+    "305",
+    "530",
+    "503",
+    "350"
    ],
+   "correctIndex": 1,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "g3-math-words-match-004",
-   "type": "match-pairs",
+   "id": "g3-math-words-places-004",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Αριθμοί μέχρι το 1.000",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "διακόσια σαράντα οχτώ",
-     "right": "248"
-    },
-    {
-     "left": "τετρακόσια είκοσι οχτώ",
-     "right": "428"
-    },
-    {
-     "left": "οχτακόσια είκοσι τέσσερα",
-     "right": "824"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «τετρακόσια εβδομήντα ένα»;",
+   "options": [
+    "741",
+    "147",
+    "174",
+    "471"
    ],
+   "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }
   },
   {
-   "id": "g3-math-words-match-005",
-   "type": "match-pairs",
+   "id": "g3-math-words-places-005",
+   "type": "multiple-choice",
    "category": "Μαθηματικά",
    "title": "Αριθμοί μέχρι το 1.000",
-   "body": "Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.",
-   "pairs": [
-    {
-     "left": "εφτακόσια τέσσερα",
-     "right": "704"
-    },
-    {
-     "left": "τετρακόσια εφτά",
-     "right": "407"
-    },
-    {
-     "left": "τετρακόσια εβδομήντα",
-     "right": "470"
-    },
-    {
-     "left": "εφτακόσια σαράντα",
-     "right": "740"
-    }
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «εκατόν είκοσι τέσσερα»;",
+   "options": [
+    "124",
+    "412",
+    "241",
+    "142"
    ],
+   "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
    "generatorParams": {
-    "family": "words-match",
+    "family": "words-places",
     "unit": 1,
     "skill": "words"
    }

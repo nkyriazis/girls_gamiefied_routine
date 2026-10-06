@@ -5,7 +5,7 @@
 
 import type { Rng } from '../lib.ts';
 import {
-  digits, fill, fmt, forgotCarry, match, mc, num, order, smallerFromLarger, swaps, tf, words, wrongs,
+  digits, fill, fmt, forgotCarry, mc, num, order, smallerFromLarger, swaps, tf, words, wrongs,
   type MathsFamily,
 } from './lib.ts';
 
@@ -65,13 +65,16 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'words-match', chapter: '1.4', skill: 'words',
+    id: 'words-places', chapter: '1.4', skill: 'words',
     make(r) {
-      // The same digit in different places: «διακόσιες χιλιάδες», «δύο εκατομμύρια δύο χιλιάδες»
+      // The same digit in different places: «διακόσιες χιλιάδες», «δύο εκατομμύρια δύο χιλιάδες»;
+      // the options are the same digit in the other places. (The workbook matches them; a match of
+      // three is too long for «Δείξε μου» to show on one line: check.ts REVEAL_MATCH_MAX.)
       const a = r.int(2, 9);
       const all = [a * 1e3, a * 1e4, a * 1e5, a * 1e6, a * 1e7, a * 1e6 + a * 1e3, a * 1e4 + a, a * 1e3 + a * 10, a * 1e5 + a * 100];
-      return match('Οι φυσικοί αριθμοί', 'Σύνδεσε κάθε αριθμό με λέξεις με τον ίδιο αριθμό με ψηφία.',
-        r.sample(all, 4).sort((x, y) => words(x).length - words(y).length).map(n => [words(n), fmt(n)]));
+      const n = r.pick(all);
+      const wrong = wrongs(n, r.shuffle(all), 3, MAX);
+      return mc(r, 'Οι φυσικοί αριθμοί', `Πώς γράφεται με ψηφία ο αριθμός «${words(n)}»;`, fmt(n), wrong.map(fmt));
     },
   }),
 
