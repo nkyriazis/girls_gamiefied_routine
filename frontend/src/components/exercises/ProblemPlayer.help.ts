@@ -1,8 +1,9 @@
-import type { ProblemStep } from '@shared/types';
+import type { Forgiveness, ProblemStep } from '@shared/types';
 import type { HelpStep, Tour } from '../../help/tour';
 
 // The owl in a word problem: what the step on screen asks of her, on her rung, and the
-// first time (per kid) the frame around it: the phases, the story, hints and «Έλεγχος».
+// first time (per kid) the frame around it: the phases, the story, hints, the stars and
+// «Έλεγχος», said for her rung on the forgiveness ladder (shared/forgiveness.ts).
 
 export type ProblemHelpKind = 'tag' | 'paint' | 'paint-all' | Exclude<ProblemStep['kind'], 'tag' | 'paint'>;
 
@@ -51,12 +52,26 @@ const SHOW: HelpStep = { el: 'problem.show', title: 'Δείξε μου', text: '
 // played the old one (played tours are remembered by id). #52: tap a box, then fill it.
 const EDITION: Partial<Record<ProblemHelpKind, number>> = { calc: 2, numbers: 2 };
 
-export const problemTour = (userId: string, kind: ProblemHelpKind): Tour => ({
+// What mistakes cost, on each rung
+const RUNG: Record<Forgiveness, { stars: string; check: string }> = {
+  forgiving: {
+    stars: 'Τόσα αστέρια κερδίζεις αν συνεχίσεις σωστά. Ένα βήμα με λάθη κοστίζει το πολύ ένα αστέρι, και ένα αστέρι το κερδίζεις πάντα.',
+    check: 'Όταν τελειώσεις, πάτα Έλεγχος. Λάθος; Ξαναδοκιμάζεις όσες φορές θες, κι αν κολλήσεις, σου δείχνω πώς λύνεται.',
+  },
+  unforgiving: {
+    stars: 'Τόσα αστέρια κερδίζεις αν συνεχίσεις σωστά. Ένα βήμα με λάθη κοστίζει το πολύ ένα αστέρι.',
+    check: 'Όταν τελειώσεις, πάτα Έλεγχος. Σκέψου καλά: σε κάθε βήμα έχεις δύο προσπάθειες, και μετά σου δείχνω πώς λύνεται.',
+  },
+};
+
+// The intro says what mistakes cost on her rung: its id names the rung, so the owl offers it
+// again when a parent moves her (and once to everyone, for #48: the old intro was «problem»).
+export const problemTour = (userId: string, kind: ProblemHelpKind, rung: Forgiveness = 'forgiving'): Tour => ({
   id: `problem-${kind}${EDITION[kind] ? `-${EDITION[kind]}` : ''}`,
   user: userId,
   steps: [...KIND[kind], SHOW],
   intro: {
-    id: 'problem',
+    id: `problem-${rung}`,
     steps: [
       { id: 'hello', title: 'Ένα πρόβλημα! 🦉', text: 'Θα το λύσουμε βήμα βήμα, όπως στο βιβλίο. Έλα να σου δείξω.' },
       { el: 'problem.phases', title: 'Τέσσερα βήματα', text: 'Διαβάζω, Σχεδιάζω, Λύνω, Ελέγχω. Εδώ βλέπεις σε ποιο είσαι.', side: 'bottom' },
@@ -65,7 +80,8 @@ export const problemTour = (userId: string, kind: ProblemHelpKind): Tour => ({
     ],
     after: [
       { el: 'problem.hint', title: 'Συμβουλές', text: 'Αν κάτι δεν πάει καλά, εδώ σου λέω τι να κοιτάξεις.', side: 'top' },
-      { el: 'problem.check', title: 'Έλεγχος', text: 'Όταν τελειώσεις, πάτα Έλεγχος. Τα λάθη δεν πειράζουν: ξαναδοκιμάζεις!', side: 'top', demo: 'tap' },
+      { el: 'exercise.stars', title: 'Τα αστέρια', text: RUNG[rung].stars, side: 'bottom' },
+      { el: 'problem.check', title: 'Έλεγχος', text: RUNG[rung].check, side: 'top', demo: 'tap' },
     ],
   },
 });

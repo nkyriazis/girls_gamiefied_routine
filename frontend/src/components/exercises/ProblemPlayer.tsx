@@ -239,7 +239,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
   };
 
   return (
-    <HelpScreen tour={problemTour(assignment.userId, helpKind)} inline>
+    <HelpScreen tour={problemTour(assignment.userId, helpKind, forgiveness)} inline>
     <div className="problem">
       <ol className="problem-phases" aria-label="Βήματα" {...help('problem.phases')}>
         {PHASES.map(p => (
