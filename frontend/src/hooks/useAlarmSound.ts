@@ -1,26 +1,18 @@
 import { useEffect } from 'react';
-import { type AlarmProps } from '@shared/types';
 import { useAppSounds } from './useAppSounds';
+import { startAlarmSound } from './alarmSound';
 
-// The sound an alarm plays, as a string: every STATE brings new props objects, so an
-// effect that depended on the `sound` object restarted the rooster at every task tap.
-export const alarmSoundKey = (props?: AlarmProps): string =>
-  typeof props?.sound === 'object' && props.sound.type === 'upload' ? `upload:${props.sound.value}` : 'melody';
+export { alarmSoundKey } from './alarmSound';
 
 /**
  * Plays the alarm sound `key` (alarmSoundKey) in a loop until it is null or another one.
  * The Dashboard plays one for all the alarm cards on screen: one copy, not one per card.
- * 'beep' plays the melody too.
+ * 'beep' plays the melody too, and so does an upload that can't play (startAlarmSound).
  */
 export function useAlarmSound(key: string | null): void {
   const { playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound } = useAppSounds();
   useEffect(() => {
     if (!key) return;
-    if (key.startsWith('upload:')) {
-      playCustomSound(key.slice('upload:'.length), true);
-      return () => stopCustomSound();
-    }
-    playWakeUpLoop();
-    return () => stopWakeUpLoop();
+    return startAlarmSound(key, { playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound });
   }, [key, playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound]);
 }
