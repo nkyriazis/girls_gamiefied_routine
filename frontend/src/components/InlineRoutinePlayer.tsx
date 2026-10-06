@@ -324,6 +324,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           color: #000;
           font-size: clamp(1rem, 4.1cqmin, 1.5rem);
           padding: clamp(0.5rem, 2.2cqmin, 0.8rem) clamp(1rem, 8.2cqmin, 3rem);
+          min-height: 44px; /* big enough for a finger in the smallest card */
           border-radius: 1.5rem;
           font-weight: 800;
           box-shadow: 0 0 20px var(--theme-color);
