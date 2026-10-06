@@ -184,9 +184,15 @@ export const Dashboard: React.FC = () => {
   const firstAlarm = sortedActiveItems.find((item): item is AlarmItem => item.type === 'alarm');
   useAlarmSound(firstAlarm ? alarmSoundKey(firstAlarm.props) : null);
 
-  // Determine View Mode based on actual displayed items
+  // The stage's grid: in landscape up to 3 items in one row, 4 as 2x2; in portrait one
+  // column (the CSS picks by orientation). Every track shrinks, so every item fits.
   const totalActiveCount = sortedActiveItems.length;
-  const viewMode = totalActiveCount === 0 ? 'IDLE' : totalActiveCount === 1 ? 'SINGLE' : totalActiveCount === 2 ? 'DUAL' : 'GRID';
+  const stageCols = totalActiveCount <= 3 ? totalActiveCount : Math.ceil(totalActiveCount / 2);
+  const stageGrid = {
+    '--items': totalActiveCount,
+    '--cols': stageCols,
+    '--rows': Math.ceil(totalActiveCount / Math.max(1, stageCols)),
+  } as React.CSSProperties;
 
   // The owl explains the home screen, or the routines on it (once the screen is started)
   const tour = !hasInteracted ? null : totalActiveCount === 0 ? homeTour() : routineTour();
@@ -396,7 +402,10 @@ export const Dashboard: React.FC = () => {
 
       {/* Main Stage: the clock, or the routines and alarms in a layer over everything */}
       <div className={`routines-layer ${totalActiveCount > 0 ? 'covering' : ''}`}>
-      <div className={`stage ${viewMode.toLowerCase()}`}>
+      <div
+        className={`stage${totalActiveCount > 0 ? ' items' : ''}${totalActiveCount === 1 ? ' one' : ''}`}
+        style={totalActiveCount > 0 ? stageGrid : undefined}
+      >
         <AnimatePresence>
           {totalActiveCount === 0 && (
             <motion.div
@@ -573,7 +582,7 @@ export const Dashboard: React.FC = () => {
         }
 
         /* Routines and alarms own the screen: a layer over everything a kid can open.
-           The stage inside lays them out as it did in the page. */
+           The stage inside lays them out the same way. */
         .routines-layer.covering {
           position: fixed;
           inset: 0;
@@ -582,13 +591,46 @@ export const Dashboard: React.FC = () => {
           background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
         }
 
-        .stage.single .routine-slot { width: 100%; height: 100%; max-width: 600px; }
-        .stage.dual .routine-slot { width: 50%; height: 100%; }
-        .stage.grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        /* Every item gets a share of the screen: minmax(0, 1fr) tracks (a plain 1fr won't
+           shrink below a card's content) in a stage that may shrink too. Landscape: one row
+           of up to 3, then 2 rows; portrait: one column. Each slot is a size container, so
+           its card sizes to the cell (cqmin), up to its full size. */
+        .stage.items {
+          display: grid;
+          grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+          grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+          min-height: 0;
+          min-width: 0;
+          align-items: stretch;
+          justify-items: stretch;
+        }
+        @media (orientation: portrait) {
+          .stage.items {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: repeat(var(--items), minmax(0, 1fr));
+          }
+        }
 
         .routine-slot {
           height: 100%;
           width: 100%;
+          min-width: 0;
+          min-height: 0;
+          container-type: size; /* its card sizes to it (cqmin) */
+        }
+        .stage.one .routine-slot { max-width: 600px; justify-self: center; }
+        /* The clock still fading out as the first item comes in stays out of the grid's
+           cells: in the flow it would take the only one, and the item would wait in a
+           0 px row until the clock was gone. It fades behind the item. */
+        .stage.items > .clock-container {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
         }
 
         .clock-container {
@@ -635,9 +677,6 @@ export const Dashboard: React.FC = () => {
           .time-display { font-size: 6rem; }
           .date-display { font-size: 1.5rem; }
           .stage { padding: 1rem; gap: 1rem; }
-          .stage.grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-          .stage.dual { flex-direction: column; }
-          .stage.dual .routine-slot { width: 100%; height: 50%; }
         }
 
         .dock {

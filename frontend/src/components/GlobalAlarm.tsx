@@ -48,7 +48,7 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
             {users.map(user => (
               <div key={user.id} className="alarm-user-info">
                 <div className="alarm-user-badge" style={{ background: user.color }}>
-                  <SmartIcon value={user.avatar} size={96} style={{ width: '100%', height: '100%' }} />
+                  <SmartIcon value={user.avatar} size={96} style={{ width: '100%', height: '100%', fontSize: 'inherit' }} />
                 </div>
                 <p className="user-name" style={{ color: user.color }}>{user.name}</p>
               </div>
@@ -100,8 +100,13 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
           line-height: 1;
         }
 
+        /* A short card (a phone with three items): the icon gives way to the words and the OK */
+        @container (max-height: 300px) {
+          .alarm-icon { font-size: 14cqmin; }
+        }
+
         .global-alarm-container h1 {
-          font-size: 8cqmin;
+          font-size: max(1.5rem, 8cqmin);
           margin: 0;
           text-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
           font-weight: 900;
@@ -131,6 +136,7 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
           overflow: hidden;
           border: 4px solid white;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          font-size: 12cqmin; /* an emoji avatar, sized with its badge */
         }
 
         .alarm-users.several .alarm-user-badge {
@@ -139,14 +145,14 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
         }
 
         .user-name {
-          font-size: 6cqmin;
+          font-size: max(1rem, 6cqmin);
           font-weight: 900;
           margin: 0;
           text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
         .global-alarm-container p {
-          font-size: 5cqmin;
+          font-size: max(1rem, 5cqmin);
           opacity: 0.9;
           margin: 0;
         }
@@ -154,8 +160,10 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
         .btn-dismiss-global {
           background: rgba(255, 255, 255, 0.95);
           color: #ff0055;
-          font-size: 5cqmin;
-          padding: 2cqmin 6cqmin;
+          /* Sized with its card, but never too small for a finger (48 px tall at least) */
+          font-size: max(1.25rem, 5cqmin);
+          padding: max(0.75rem, 2cqmin) max(2rem, 6cqmin);
+          min-height: 48px;
           border-radius: 100px;
           font-weight: 900;
           border: none;
