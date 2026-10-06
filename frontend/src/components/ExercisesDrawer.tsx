@@ -20,9 +20,11 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
     const extraLimit = config.settings.extraProblemsPerDay ?? 10;
     // A kid with a set today, or one who may ask for an extra problem; the empty state only when none
     const shown = kidsShown(users, exerciseAssignments, extraLimit);
+    // A revision card on screen: the tour's edition that explains its pill
+    const revision = exerciseAssignments.some(a => a.revision && !a.extra && shown.some(u => u.id === a.userId));
 
     return (
-        <HelpScreen tour={isOpen ? exercisesTour() : null}>
+        <HelpScreen tour={isOpen ? exercisesTour(revision) : null}>
         <AnimatePresence>
             {isOpen && (
                 <>

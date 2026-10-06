@@ -5,7 +5,7 @@ import {
   ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ProblemExercise, ProblemReading, ProblemStepAnswer, Spending,
   StarTransfer, StateSnapshot, ActionLog, User
 } from '../../shared/types';
-import { exercisePoolProvider, exercisesPerDay, storyMarks } from './exercisePool';
+import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
 import { checkCalc, checkPaint, storyWords, targetsFromMarks } from '../../shared/problems';
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars } from '../../shared/forgiveness';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
@@ -1101,39 +1101,13 @@ function lastSeen(userId: string): Map<string, string> {
   return seen;
 }
 
-// Never-seen exercises first, in random order; then the ones seen longest ago.
-// Returned so that pop() takes the freshest.
-function freshLast(list: Exercise[], seen: Map<string, string>): Exercise[] {
-  const unseen = list.filter(e => !seen.has(e.id)).sort(() => Math.random() - 0.5);
-  const old = list.filter(e => seen.has(e.id)).sort((a, b) => seen.get(a.id)!.localeCompare(seen.get(b.id)!));
-  return [...unseen, ...old].reverse();
-}
-
-// Draw `count` exercises from a pool, balancing across categories
-// (round-robin over per-category buckets), freshest first within each.
-function drawBalanced(pool: Exercise[], count: number, seen: Map<string, string>): Exercise[] {
-  const byCategory = new Map<string, Exercise[]>();
-  for (const ex of pool) {
-    if (!byCategory.has(ex.category)) byCategory.set(ex.category, []);
-    byCategory.get(ex.category)!.push(ex);
-  }
-  const buckets = [...byCategory.values()].map(b => freshLast(b, seen));
-  // Shuffle bucket order too, so the first category varies day to day
-  buckets.sort(() => Math.random() - 0.5);
-
-  const drawn: Exercise[] = [];
-  let i = 0;
-  while (drawn.length < count && buckets.some(b => b.length > 0)) {
-    const bucket = buckets[i % buckets.length];
-    const ex = bucket.pop();
-    if (ex) drawn.push(ex);
-    i++;
-  }
-  return drawn;
-}
-
 // The daily set, as opposed to the extra problems a kid asks for.
 const DAILY = '(extra IS NULL OR extra = 0)';
+
+/** How many daily sets a kid has had: where her round of the mix starts when she has no problems (drawDailySet). */
+function dailySetsSoFar(userId: string): number {
+  return new Set(store.exerciseAssignments.all(`userId = ? AND ${DAILY}`, userId).map(a => a.date)).size;
+}
 
 // How many extra problems a kid may ask for in a day unless settings.extraProblemsPerDay says otherwise.
 export const DEFAULT_EXTRA_PROBLEMS_PER_DAY = 10;
@@ -1154,7 +1128,8 @@ export function extraProblemsToday(userId: string): { used: number; limit: numbe
 // new one, so tapping twice doesn't hand out two; the day's limit caps the rest.
 export async function startExtraProblem(userId: string): Promise<ExerciseAssignmentWithExercise> {
   if (!config().users.some(u => u.id === userId)) throw new Error('Unknown user');
-  const problems = (await exercisePoolProvider.getPoolForUser(userId)).filter(e => e.type === 'problem');
+  // Problems of her own grade (revision pools hold none)
+  const problems = (await exercisePoolProvider.getPoolsForUser(userId)).own.filter(e => e.type === 'problem');
   if (problems.length === 0) throw new Error('No problems for this kid (is their class set?)');
 
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
@@ -1177,7 +1152,9 @@ export async function startExtraProblem(userId: string): Promise<ExerciseAssignm
   return { ...assignment, exercise: await exercisePoolProvider.getExerciseById(assignment.exerciseId) };
 }
 
-// Make sure every user has today's assignments drawn from their pool.
+// Make sure every user has today's assignments drawn from their pool, in the
+// daily mix (drawDailySet, exercisePool.ts). They are stored in that order, and
+// read back in it (rowid), so the problem comes first on her screens.
 // Lazy generation: called whenever assignments are fetched.
 export async function ensureDailyAssignments(): Promise<boolean> {
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
@@ -1187,10 +1164,10 @@ export async function ensureDailyAssignments(): Promise<boolean> {
     const hasToday = store.exerciseAssignments.all(`userId = ? AND date = ? AND ${DAILY}`, user.id, today).length > 0;
     if (hasToday) continue;
 
-    const pool = await exercisePoolProvider.getPoolForUser(user.id);
-    if (pool.length === 0) continue;
+    const pools = await exercisePoolProvider.getPoolsForUser(user.id);
+    const { drawn, revision } = drawDailySet(pools, exercisesPerDay(), lastSeen(user.id), dailySetsSoFar(user.id));
+    if (drawn.length === 0) continue;
 
-    const drawn = drawBalanced(pool, exercisesPerDay(), lastSeen(user.id));
     // Re-check after the await: a concurrent request may have drawn already.
     store.transaction(() => {
       if (store.exerciseAssignments.all(`userId = ? AND date = ? AND ${DAILY}`, user.id, today).length > 0) return;
@@ -1206,7 +1183,9 @@ export async function ensureDailyAssignments(): Promise<boolean> {
         });
       }
       created = true;
-      logAction('EXERCISE_ASSIGNMENTS_CREATED', { userId: user.id, date: today, exerciseIds: drawn.map(e => e.id) });
+      logAction('EXERCISE_ASSIGNMENTS_CREATED', {
+        userId: user.id, date: today, exerciseIds: drawn.map(e => e.id), ...(revision.length ? { revision } : {})
+      });
     });
   }
 
@@ -1226,9 +1205,20 @@ async function todaysAssignments(userId?: string): Promise<ExerciseAssignmentWit
     ? store.exerciseAssignments.all('date = ? AND userId = ?', today, userId)
     : store.exerciseAssignments.all('date = ?', today);
 
+  // Revision items (from a lower grade's pool) are marked on her card
+  const revisionOf = new Map<string, Set<string>>();
+  const isRevision = async (a: ExerciseAssignment) => {
+    if (!revisionOf.has(a.userId)) {
+      const { own, revision } = await exercisePoolProvider.getPoolsForUser(a.userId);
+      const ownIds = new Set(own.map(e => e.id));
+      revisionOf.set(a.userId, new Set(revision.map(e => e.id).filter(id => !ownIds.has(id))));
+    }
+    return revisionOf.get(a.userId)!.has(a.exerciseId);
+  };
   const enriched: ExerciseAssignmentWithExercise[] = [];
   for (const a of assignments) {
-    enriched.push({ ...a, exercise: await exercisePoolProvider.getExerciseById(a.exerciseId) });
+    const exercise = await exercisePoolProvider.getExerciseById(a.exerciseId);
+    enriched.push({ ...a, exercise, ...(await isRevision(a) ? { revision: true } : {}) });
   }
   return enriched;
 }

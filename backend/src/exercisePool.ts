@@ -10,15 +10,22 @@ import { check, exercisePoolSchema } from './schemas';
 // Daily Exercise Pool
 //
 // The exercises kids are assigned each day. They ship with the app as JSON
-// files in backend/exercise-pools/ (validated by exercise-pool.schema.json);
-// each file lists the school grades it serves, and a kid draws from every file
-// that lists their grade (ConfigUser.grade in data.json). The files are part of
+// files in backend/exercise-pools/ (validated by exercise-pool.schema.json).
+// A file's `grades` are the school grades it is written for; its optional
+// `revision` grades get it only for a category their own grade has nothing in
+// (ConfigUser.grade in data.json picks the kid's grade). The files are part of
 // the image, not of the data volume: new content arrives with an update.
 // ============================================================================
 
+/** What a kid may be assigned: the exercises written for her grade, and those it gets as revision. */
+export interface UserPools {
+  own: Exercise[];
+  revision: Exercise[];
+}
+
 export interface ExercisePoolProvider {
-  /** Full pool of exercises a given user may be assigned. */
-  getPoolForUser(userId: string): Promise<Exercise[]>;
+  /** The exercises a given user may be assigned, her grade's own and its revision. */
+  getPoolsForUser(userId: string): Promise<UserPools>;
   /** Resolve a pool exercise by id (across all users). */
   getExerciseById(exerciseId: string): Promise<Exercise | undefined>;
 }
@@ -33,8 +40,92 @@ export function exercisesPerDay(): number {
 export interface ExercisePool {
   file: string;
   description?: string;
-  grades: SchoolGrade[];
+  grades: SchoolGrade[];     // written for
+  revision?: SchoolGrade[];  // served as revision, for a category these grades have nothing in
   exercises: Exercise[];
+}
+
+/** A grade's pools, from all of them: the ones written for it, and the ones it gets as revision. */
+export function poolsForGrade(pools: ExercisePool[], grade: SchoolGrade | undefined): UserPools {
+  if (!grade) return { own: [], revision: [] };
+  return {
+    own: pools.filter(p => p.grades.includes(grade)).flatMap(p => p.exercises),
+    revision: pools.filter(p => p.revision?.includes(grade)).flatMap(p => p.exercises),
+  };
+}
+
+// ----------------------------------------------------------------------------
+// The daily set (#49). Slot by slot it follows DAILY_MIX: a problem, then maths,
+// then language, and round again when exercisesPerDay is more than 3. Each slot
+// takes the freshest item of its category: from the kid's own grade, or, when her
+// grade has nothing in that category, from revision. A category she has nothing in
+// (or that runs out within the day) passes its slot to the next one in the mix.
+// Categories outside the mix come after it.
+//
+// A kid with problems starts every day with the problem. A kid without them goes
+// round the categories she has, starting one further each day (`turn`, how many
+// daily sets she has had), so a Δ΄ kid at 3 a day gets maths, language, maths one
+// day and language, maths, language the next, not two maths always.
+// ----------------------------------------------------------------------------
+
+export const DAILY_MIX = ['Προβλήματα', 'Μαθηματικά', 'Γλώσσα'] as const;
+
+/** The categories these exercises have, in mix order (DAILY_MIX first, then the rest by name). */
+export function mixOrder(exercises: Exercise[]): string[] {
+  const present = new Set(exercises.map(e => e.category));
+  const mix: readonly string[] = DAILY_MIX;
+  return [...mix.filter(c => present.has(c)), ...[...present].filter(c => !mix.includes(c)).sort()];
+}
+
+/** Where the day's round starts: at the problem if she has any, else one category further each daily set. */
+export function mixStart(order: string[], turn: number): number {
+  return order[0] === DAILY_MIX[0] || !order.length ? 0 : turn % order.length;
+}
+
+/** How many of a day's `count` slots each category gets on average, when none runs out (over the days `turn` goes round). */
+export function mixSlots(exercises: Exercise[], count: number): Map<string, number> {
+  const order = mixOrder(exercises);
+  const turns = mixStart(order, 1) ? order.length : 1;
+  const slots = new Map<string, number>();
+  for (let turn = 0; turn < turns; turn++) {
+    const start = mixStart(order, turn);
+    for (let i = 0; i < count && order.length; i++) {
+      const c = order[(start + i) % order.length];
+      slots.set(c, (slots.get(c) ?? 0) + 1 / turns);
+    }
+  }
+  return slots;
+}
+
+/** Never-seen exercises first, in random order; then the ones seen longest ago. Returned so that pop() takes the freshest. */
+export function freshLast(list: Exercise[], seen: Map<string, string>): Exercise[] {
+  const unseen = list.filter(e => !seen.has(e.id)).sort(() => Math.random() - 0.5);
+  const old = list.filter(e => seen.has(e.id)).sort((a, b) => seen.get(a.id)!.localeCompare(seen.get(b.id)!));
+  return [...unseen, ...old].reverse();
+}
+
+/**
+ * A day's set of `count`, in mix order; `seen` is when she last had each exercise, `turn` how many daily
+ * sets she has had (where the round starts for a kid with no problems). Says which came from revision.
+ */
+export function drawDailySet(pools: UserPools, count: number, seen: Map<string, string>, turn = 0): { drawn: Exercise[]; revision: string[] } {
+  const order = mixOrder([...pools.own, ...pools.revision]);
+  const buckets = order.map(category => {
+    const own = pools.own.filter(e => e.category === category);
+    const from = own.length ? own : pools.revision.filter(e => e.category === category);
+    return { items: freshLast(from, seen), revision: !own.length };
+  });
+  const drawn: Exercise[] = [];
+  const revision: string[] = [];
+  // k turns through the mix; a slot whose category is empty goes to the next one
+  for (let k = mixStart(order, turn); drawn.length < count && buckets.some(b => b.items.length); k++) {
+    const bucket = buckets[k % buckets.length];
+    const ex = bucket.items.pop();
+    if (!ex) continue;
+    drawn.push(ex);
+    if (bucket.revision) revision.push(ex.id);
+  }
+  return { drawn, revision };
 }
 
 /** Read and validate every pool file. Throws on an invalid file or a duplicate id. */
@@ -45,6 +136,8 @@ export function loadPools(dir = EXERCISE_POOLS_DIR): ExercisePool[] {
     const pool = JSON.parse(readFileSync(path.join(dir, file), 'utf-8'));
     const error = check(exercisePoolSchema, pool, `Invalid exercise pool ${file}`);
     if (error) throw new Error(`${error.message}: ${JSON.stringify(error.errors)}`);
+    const both = (pool.revision as SchoolGrade[] | undefined)?.find(g => pool.grades.includes(g));
+    if (both) throw new Error(`${file}: grade ${both} is listed both as written for and as revision`);
     for (const ex of pool.exercises as Exercise[]) {
       const problem = validateExercise(ex);
       if (problem) throw new Error(`${file}: ${ex.id}: ${problem}`);
@@ -96,10 +189,8 @@ class FilePoolProvider implements ExercisePoolProvider {
     return (this.pools ??= loadPools());
   }
 
-  async getPoolForUser(userId: string): Promise<Exercise[]> {
-    const grade = config().users.find(u => u.id === userId)?.grade;
-    if (!grade) return [];
-    return this.all().filter(p => p.grades.includes(grade)).flatMap(p => p.exercises);
+  async getPoolsForUser(userId: string): Promise<UserPools> {
+    return poolsForGrade(this.all(), config().users.find(u => u.id === userId)?.grade);
   }
 
   async getExerciseById(exerciseId: string): Promise<Exercise | undefined> {

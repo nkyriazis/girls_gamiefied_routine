@@ -330,6 +330,7 @@ export interface ExerciseAssignment {
 // Enriched assignment with the exercise definition for frontend display
 export interface ExerciseAssignmentWithExercise extends ExerciseAssignment {
   exercise?: Exercise;
+  revision?: boolean; // from a lower grade's pool, as revision (#49): her card says «Επανάληψη»
 }
 
 export interface ExerciseSession {

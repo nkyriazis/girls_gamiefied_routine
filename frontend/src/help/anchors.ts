@@ -14,7 +14,7 @@ export const ANCHORS = [
   'store.balance', 'store.earn', 'store.rewards', 'store.give', 'store.activity', 'store.close',
   'activity.list', 'transfer.to', 'transfer.amount', 'transfer.send',
   // Exercises of the day (her screen and the drawer)
-  'exercises.kid', 'exercises.card', 'exercises.more',
+  'exercises.kid', 'exercises.card', 'exercises.revision', 'exercises.more',
   // Chores and bonus activities
   'chores.card', 'chores.claim', 'chores.done', 'chores.waiting', 'chores.empty',
   // One exercise, and the ways to answer one

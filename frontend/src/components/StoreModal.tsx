@@ -27,6 +27,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   // Earning stars sits next to spending them: her exercises of the day and «Κι άλλο πρόβλημα»
   const { exerciseAssignments, config } = useGame();
   const canEarn = exerciseAssignments.some(a => a.userId === user.id) || (!!user.grade && (config.settings.extraProblemsPerDay ?? 10) > 0);
+  // A revision card among hers: the tour's edition that explains its pill
+  const revision = exerciseAssignments.some(a => a.userId === user.id && a.revision && !a.extra);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   // A purchase asks first, inside the reward's own card: a kid can't undo it (only a parent can)
   const [askingId, setAskingId] = useState<string | null>(null);
@@ -123,7 +125,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   };
 
   return (
-    <HelpScreen tour={storeTour(user.id)}>
+    <HelpScreen tour={storeTour(user.id, revision)}>
       <motion.div
         className="store-overlay"
         initial={{ opacity: 0 }}
