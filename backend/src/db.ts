@@ -431,8 +431,9 @@ function commitUserStars(userId: string, newTotal: number): number {
 }
 
 // Adjust a user's star balance by a delta. All star-mutating code paths go
-// through this or trySpendStars, except replaceState (the admin state editor),
-// which sets every balance at once.
+// through this or trySpendStars, except the whole-state writers: replaceState
+// (the admin state editor) and the one-time legacy import (migrate.ts), which
+// set balances directly.
 export function adjustUserStars(userId: string, delta: number): number {
   return store.transaction(() => commitUserStars(userId, store.getStars(userId) + delta));
 }
