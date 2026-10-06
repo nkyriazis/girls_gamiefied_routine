@@ -25,7 +25,7 @@ export const ANCHORS = [
   'game.players', 'game.subjects', 'game.length', 'game.start',
   'game.turn', 'game.progress', 'game.question', 'game.answer', 'game.exit', 'game.scores', 'game.finish',
   // A word problem, step by step
-  'problem.phases', 'problem.story', 'problem.prompt', 'problem.hint', 'problem.check',
+  'problem.phases', 'problem.story', 'problem.prompt', 'problem.hint', 'problem.check', 'problem.show',
   'problem.brushes', 'problem.phrase', 'problem.paint', 'problem.brush-extra',
   'problem.choices', 'problem.numbers', 'problem.keypad', 'problem.order',
   'calc.chips', 'calc.pad', 'calc.build', 'calc.lines',

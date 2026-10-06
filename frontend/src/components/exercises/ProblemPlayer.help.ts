@@ -44,6 +44,9 @@ const KIND: Record<ProblemHelpKind, HelpStep[]> = {
   ],
 };
 
+// «Δείξε μου», on a step with a few wrong tries: on screen only then, so the owl explains it only then
+const SHOW: HelpStep = { el: 'problem.show', title: 'Δείξε μου', text: 'Κόλλησες; Πάτα εδώ και σου δείχνω πώς λύνεται αυτό το βήμα.', side: 'top', demo: 'tap' };
+
 // A tour whose steps changed gets a new edition, so the owl offers it again to a kid who
 // played the old one (played tours are remembered by id). #52: tap a box, then fill it.
 const EDITION: Partial<Record<ProblemHelpKind, number>> = { calc: 2, numbers: 2 };
@@ -51,7 +54,7 @@ const EDITION: Partial<Record<ProblemHelpKind, number>> = { calc: 2, numbers: 2 
 export const problemTour = (userId: string, kind: ProblemHelpKind): Tour => ({
   id: `problem-${kind}${EDITION[kind] ? `-${EDITION[kind]}` : ''}`,
   user: userId,
-  steps: KIND[kind],
+  steps: [...KIND[kind], SHOW],
   intro: {
     id: 'problem',
     steps: [

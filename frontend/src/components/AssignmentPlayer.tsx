@@ -69,7 +69,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
   const renderExercise = () => {
     switch (exercise.type) {
       case 'problem':
-        return <ProblemPlayer assignment={assignment} exercise={exercise} onSolved={handleSolved} reading={user.problemReading} />;
+        return <ProblemPlayer assignment={assignment} exercise={exercise} onSolved={handleSolved} reading={user.problemReading} forgiveness={user.forgiveness} />;
       case 'multiple-choice':
         return <MultipleChoiceRenderer exercise={exercise} onAnswer={handleAnswer} disabled={submitting} seed={assignment.id} />;
       case 'true-false':
