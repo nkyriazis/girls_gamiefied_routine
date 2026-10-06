@@ -1,7 +1,7 @@
 export const meta = {
   name: 'issue',
   description: 'Work one issue in stages that stop for the owner: scope (before evidence, plan) or build (fix, after evidence, checks, PR draft)',
-  whenToUse: 'The owner names an issue to attack. args: {issue: <number>, stage: "scope" | "build", notes?: "<the owner\'s reactions, verbatim>"}. Run scope, show the brief and wait; run build with the owner\'s notes, show the draft and wait; build again for more notes. Shipping (push, evidence, PR) is done by the main session on the owner\'s word, never here.',
+  whenToUse: 'The owner names an issue to attack. args: {issue: <number>, stage: "scope" | "build", part?: "<name of a second PR for the same issue>", notes?: "<the owner\'s reactions, verbatim>"}. Run scope, show the brief and wait; run build with the owner\'s notes, show the draft and wait; build again for more notes. Shipping (push, evidence, PR) is done by the main session on the owner\'s word, never here.',
   phases: [
     { title: 'Scope', detail: 'read the issue, reproduce, record the before evidence, plan' },
     { title: 'Challenge', detail: 'an independent critic checks the brief against the code and the decisions' },
@@ -16,7 +16,9 @@ const notes = (args?.notes ?? '').trim()
 if (!n) throw new Error('args.issue (a number) is required')
 if (!['scope', 'build'].includes(stage)) throw new Error('args.stage is "scope" or "build"')
 
-const dir = `.evidence/${n}`
+// A second PR for the same issue (args.part, e.g. "layout") gets its own evidence folder and branch
+const part = args?.part ? String(args.part) : ''
+const dir = `.evidence/${n}${part ? '-' + part : ''}`
 
 // What every agent here must hold to, beyond CLAUDE.md
 const RULES = `
@@ -32,7 +34,7 @@ Rules for this run (issue #${n}; the owner reviews from the PR page alone):
 const BRIEF = {
   type: 'object',
   properties: {
-    branch: { type: 'string', description: 'issue-<n>-<slug>, created from master' },
+    branch: { type: 'string', description: 'issue-<n>-<slug> (issue-<n>-<part>-<slug> for a part), created from master' },
     title: { type: 'string' },
     problem: { type: 'string', description: 'What goes wrong, as the owner would see it, 2-3 sentences' },
     cause: { type: 'string', description: 'Why, with file:line' },
@@ -87,7 +89,7 @@ if (stage === 'scope') {
   const brief = await agent(`Scope GitHub issue #${n} for the owner, without fixing anything yet.
 ${RULES}
 1. Read the issue with its comments (gh issue view ${n} --comments) and the tracker #51 (its decisions and order). Read the code it names and whatever else the problem touches.
-2. Create the branch issue-${n}-<short-slug> from master (git switch -c). Leave uncommitted files as they are.
+2. Create the branch issue-${n}${part ? '-' + part : ''}-<short-slug> from master (git switch -c).${part ? ` This is a second PR for the issue, the part "${part}": an earlier part is merged already (see the issue's linked PRs); scope only this part.` : ''} Leave uncommitted files as they are.
 3. Reproduce the problem on the dev stack, and record the Before evidence in ${dir}/: write ${dir}/before.mjs (a tools/evidence scenario, so the same one can be played after the fix), set the scene with dev.sh, play it with record.sh. Screenshots for what is seen, an mp4 for anything that moves or sounds, a failing test or request for what is not on screen. If something can't be shown, say why.
 4. Plan the fix within the issue's scope. Name the blast radius honestly: other screens, the owl's tours (text changes mean re-recording with tools/help-voice/run.sh), sounds (check-sound), gender-neutral kids' text (check-gender), shared/types + schemas + store migrations, the stars economy, and any manual step piserve's live data would need.
 5. Write the brief to ${dir}/brief.json (the same object you return), so the build stage starts from it.
