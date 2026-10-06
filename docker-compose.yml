@@ -8,7 +8,6 @@ services:
       - ${BACKUP_DIR:-./backups/daily}:/backups
     environment:
       - TZ=Europe/Athens   # also the backup schedule's time zone
-      - MCP_API_KEY=my-secret-key-123
       - BACKUP_DIR=/backups
       - BACKUP_KEEP=${BACKUP_KEEP:-14}
       - BACKUP_CRON=${BACKUP_CRON:-17 3 * * *}
@@ -19,21 +18,6 @@ services:
       - backend
     networks:
       - routine-net
-
-  # Tunnel (ngrok) for public MCP endpoint access
-  # The public URL (HTTP & HTTPS) will be printed to logs
-  tunnel:
-    image: ngrok/ngrok:latest
-    command: http --url=${NGROK_DOMAIN} backend:3000
-    environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
-    depends_on:
-      - backend
-    networks:
-      - routine-net
-    restart: unless-stopped
-    profiles:
-      - mcp  # Only starts with: docker compose --profile mcp up
 
 networks:
   routine-net:
