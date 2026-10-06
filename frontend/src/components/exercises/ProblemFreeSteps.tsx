@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import type { ProblemCalcStep } from '@shared/types';
 import type { CalcOp } from '@shared/problems';
 import { help } from '../../help/anchors';
-import { fmt, lower, type Brush, type CalcValue, type PaintValue } from './problemFreeLogic';
+import { fmt, lower, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 import { sfx, sound } from '../../sound/sfx';
 import { calcFocusAfterCheck, calcInput, type CalcField, type CalcInput } from './answerFields';
 import { ANSWER_BOX_CSS, wiggle } from './answerBox';
@@ -83,15 +83,17 @@ const BOX_NAME: Record<CalcField, string> = { x: 'Πρώτος αριθμός', 
  */
 export const CalcBench: React.FC<{
   step: ProblemCalcStep; value: CalcValue; setValue: (v: CalcValue) => void; disabled: boolean;
-}> = ({ step, value, setValue, disabled }) => {
+  /** What the last «Έλεγχος» said: where the focus goes after it */
+  note?: CalcNote['kind'];
+}> = ({ step, value, setValue, disabled, note }) => {
   const byId = new Map(step.quantities.map(q => [q.id, q]));
   const story = step.given.map(id => byId.get(id)!);
   const [focus, setFocus] = useState<CalcField>('x');
-  // «Έλεγχος» happens outside the line: a found line starts the next at x, one sent back puts the focus on its result
+  // «Έλεγχος» happens outside the line: a found line starts the next at x, a wrong sum puts the focus on its result
   const [checked, setChecked] = useState({ lines: value.lines.length, slips: value.slips });
   if (checked.lines !== value.lines.length || checked.slips !== value.slips) {
     setChecked({ lines: value.lines.length, slips: value.slips });
-    setFocus(calcFocusAfterCheck(checked, value, focus));
+    setFocus(calcFocusAfterCheck(checked, value, focus, note));
   }
   const boxes = useRef<Partial<Record<CalcField, HTMLButtonElement | null>>>({});
   const input = (i: CalcInput) => {

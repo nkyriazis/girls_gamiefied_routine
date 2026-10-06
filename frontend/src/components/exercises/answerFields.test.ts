@@ -119,12 +119,21 @@ test('the result first: a tap on the result box and 1 writes 1 there', () => {
   assert.deepEqual(play([tap('result'), digit('1')]).shown, [null, null, null, '1']);
 });
 
-test('after Έλεγχος: an accepted line starts the next at x; a line sent back puts the focus on its result', () => {
+test('after Έλεγχος: an accepted line starts the next at x; a wrong sum puts the focus on its result', () => {
   const before = { lines: 0, slips: 0 };
   const found = { ...empty, lines: [{ x: 55, op: '−' as const, y: 37, result: 18, label: 'Ευρώ', onPath: true }] };
-  assert.equal(calcFocusAfterCheck(before, found, 'result'), 'x');
-  assert.equal(calcFocusAfterCheck(before, { ...line(55, '−', 37, '19'), slips: 1 }, 'y'), 'result');
-  assert.equal(calcFocusAfterCheck(before, line(55, '−', 37, '19'), 'y'), 'y', 'no check, no change');
+  assert.equal(calcFocusAfterCheck(before, found, 'result', 'found'), 'x');
+  assert.equal(calcFocusAfterCheck(before, { ...line(55, '−', 37, '19'), slips: 1 }, 'result', 'math'), 'result');
+  assert.equal(calcFocusAfterCheck(before, line(55, '−', 37, '19'), 'y', undefined), 'y', 'no check, no change');
+});
+
+test('after Έλεγχος of a right sum that means nothing in the story, the focus goes to x and the next chip is taken', () => {
+  const before = { lines: 0, slips: 0 };
+  const sent = { ...line(37, '+', 55, '92'), slips: 1 };
+  const focus = calcFocusAfterCheck(before, sent, 'result', 'nothing');
+  assert.equal(focus, 'x');
+  const e = calcInput(sent, focus, chip(18));
+  assert.deepEqual([e.value.x, e.sound, e.refused], [18, 'place', undefined]);
 });
 
 test('every input in every state makes a sound, and «nope» exactly when it is refused', () => {

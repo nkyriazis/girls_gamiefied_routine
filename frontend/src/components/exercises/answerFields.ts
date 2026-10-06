@@ -1,4 +1,4 @@
-import type { CalcValue } from './problemFreeLogic';
+import type { CalcNote, CalcValue } from './problemFreeLogic';
 import type { SoundName } from '../../sound/sfx';
 
 // Where each tap goes in a problem's answer boxes (#52): the calc line `x op y = result`
@@ -79,12 +79,16 @@ export function calcInput(v: CalcValue, focus: CalcField, input: CalcInput): Fie
 }
 
 /**
- * The selected box after «Έλεγχος» (which happens outside the line): an accepted line
- * starts the next one at x; a line sent back («Ξαναμέτρα…») puts the focus on its result.
+ * The selected box after «Έλεγχος» (which happens outside the line), from the note it gave:
+ * an accepted line starts the next one at x; a wrong sum («Ξαναμέτρα…») puts the focus on
+ * its result; a right sum that means nothing in the story («Ποιοι αριθμοί πάνε μαζί;») on x,
+ * since she changes a number next and a chip is refused while the result is selected.
  */
-export function calcFocusAfterCheck(before: { lines: number; slips: number }, v: CalcValue, focus: CalcField): CalcField {
+export function calcFocusAfterCheck(
+  before: { lines: number; slips: number }, v: CalcValue, focus: CalcField, note: CalcNote['kind'] | undefined,
+): CalcField {
   if (v.lines.length !== before.lines) return 'x';
-  if (v.slips !== before.slips) return 'result';
+  if (v.slips !== before.slips) return note === 'math' ? 'result' : 'x';
   return focus;
 }
 

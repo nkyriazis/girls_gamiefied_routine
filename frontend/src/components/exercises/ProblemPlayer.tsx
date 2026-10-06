@@ -243,7 +243,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
           <NumbersStep key={stepIndex} rows={step.rows} value={value as string[]} setValue={setValue} wrong={wrong?.parts} disabled={busy} />
         )}
         {step.kind === 'calc' && (
-          <CalcBench step={step} value={value as CalcValue} setValue={setValue} disabled={busy} />
+          <CalcBench step={step} value={value as CalcValue} setValue={setValue} disabled={busy} note={calcNote?.kind} />
         )}
         {step.kind === 'order' && (
           <OrderStep key={stepIndex} items={step.items} value={value as string[]} setValue={setValue} wrong={wrong?.parts} disabled={busy} />
