@@ -112,12 +112,13 @@ function assignmentTasks(assignmentId: string): (ConfigTask & { durationSeconds:
     });
 }
 
-/** Config users with their balance and assigned routines, as clients render them. */
+/** Config users with their balance, what of it is available, and their assigned routines, as clients render them. */
 export function usersView(): User[] {
   const { routineAssignments, routines } = config();
 
   return usersWithStars().map(user => ({
     ...user,
+    available: getAvailableBalance(user.id),
     routines: routineAssignments
       .filter(a => a.userId === user.id)
       .flatMap(assignment => {

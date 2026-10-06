@@ -31,6 +31,7 @@ export interface User {
   grade?: SchoolGrade;
   problemReading?: ProblemReading;
   stars: number;
+  available: number; // stars minus those promised in pending outgoing gifts: what she can spend, give or lose now
   routines: Routine[];
 }
 

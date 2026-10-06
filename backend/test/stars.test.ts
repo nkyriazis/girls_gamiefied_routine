@@ -72,7 +72,7 @@ test('approving a gift the sender no longer has stars for is refused, and the gi
 test('within the available stars everything still works', () => {
   scene(100);
   const gift = db.createGift('u1', 'u2', 40);
-  assert.equal(db.getAvailableBalance('u1'), 60);
+  assert.equal(db.usersView().find(u => u.id === 'u1')?.available, 60);
   assert.equal(db.takeStars('u1', 10).newTotal, 90);
   const tv = db.buyReward('u1', 'tv');
   assert.equal(stars('u1'), 40);
