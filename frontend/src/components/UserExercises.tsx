@@ -101,7 +101,11 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
             >
               <div className="assignment-icon">{CATEGORY_ICONS[ex.category] || '📚'}</div>
               <div className="assignment-info">
-                <h4>{ex.title}</h4>
+                <h4>
+                  {ex.title}
+                  {/* From a lower grade's pool, when hers has nothing in this category (#49) */}
+                  {assignment.revision && <span className="revision-pill" {...help('exercises.revision')}>Επανάληψη</span>}
+                </h4>
                 <span className="assignment-meta">
                   {ex.category} · {TYPE_LABELS[ex.type] || ex.type}
                   {ex.type === 'problem' && !isDone && (assignment.stepIndex ?? 0) > 0 &&
@@ -181,6 +185,8 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
         .assignment-info { flex: 1; min-width: 0; }
         .assignment-info h4 { margin: 0 0 0.2rem 0; font-size: 1.05rem; }
         .assignment-meta { font-size: 0.8rem; opacity: 0.6; }
+        .revision-pill { display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.55rem; border-radius: 999px; vertical-align: 0.1em;
+          font-size: 0.72rem; font-weight: 600; color: #d9c2ff; background: rgba(155, 93, 229, 0.22); border: 1px solid rgba(155, 93, 229, 0.5); }
         .assignment-status { flex-shrink: 0; font-weight: bold; }
         .star-badge { color: #ffd60a; font-size: 1rem; }
         .done-badge { color: #06d6a0; font-size: 0.95rem; }

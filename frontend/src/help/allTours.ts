@@ -24,8 +24,8 @@ const RUNGS: Forgiveness[] = ['forgiving', 'unforgiving'];
 
 export const allTours = (): Tour[] => [
   homeTour(), routineTour(),
-  storeTour('u'), activityTour('u'), transferTour('u'),
-  choresTour(false), choresTour(true), exercisesTour(),
+  storeTour('u'), storeTour('u', true), activityTour('u'), transferTour('u'),
+  choresTour(false), choresTour(true), exercisesTour(), exercisesTour(true),
   ...types.flatMap(t => RUNGS.map(r => exerciseTour('u', t, r))), ...types.map(t => exerciseTour('u', t, 'forgiving', true)),
   gameSetupTour(), gameTour(undefined), ...types.map(t => gameTour(t)), gameResultsTour(),
   ...(Object.keys(PROBLEM_KINDS) as ProblemHelpKind[]).flatMap(k => RUNGS.flatMap(r => [problemTour('u', k, r), problemTour('u', k, r, true)])),
