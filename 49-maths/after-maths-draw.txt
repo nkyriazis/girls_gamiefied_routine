@@ -1,0 +1,149 @@
+
+== g3 (grade 3), exercisesPerDay 3, 60 days ==
+maths items written for grade 3: 120
+maths slots: 60; distinct maths items seen: 60
+  g3-math-tens-in-004    g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000  «Πόσες δεκάδες έχει συνολικά το 993;»
+  g3-math-table-11-002   g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό  «Πόσο κάνει 7 × 11;»
+  g3-math-neighbours-003 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Γράψε τον αμέσως προηγούμενο αριθμό του 2.000.»
+  g3-math-neighbours-004 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Γράψε τον αμέσως επόμενο αριθμό του 999.»
+  g3-math-subtract-005   g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών  «Πόσο κάνει 752 − 384;»
+  g3-math-table-gap-002  g-dimotikou-maths.json (grades 3) ⭐1 fill-blank      source: Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση  «72 : {0} = 9»
+  g3-math-tens-in-003    g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000  «Πόσες δεκάδες έχει συνολικά το 126;»
+  g3-math-tables-match-b-002 g-dimotikou-maths.json (grades 3) ⭐1 match-pairs     source: Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)  «Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.»
+  g3-math-times-2x1-005  g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό  «Πόσο κάνει 33 × 4;»
+  g3-math-compare-001    g-dimotikou-maths.json (grades 3) ⭐1 true-false      source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Το 1.326 είναι μικρότερο από το 2.316.»
+  g3-math-neighbours-002 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Γράψε τον αμέσως επόμενο αριθμό του 1.789.»
+  g3-math-table-11-001   g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό  «Πόσο κάνει 3 × 11;»
+  g3-math-tables-match-b-001 g-dimotikou-maths.json (grades 3) ⭐1 match-pairs     source: Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)  «Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.»
+  g3-math-times-choice-004 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί  «Πόσο κάνει 67 × 7;»
+  g3-math-order-003      g-dimotikou-maths.json (grades 3) ⭐1 ordering        source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Βάλε τους αριθμούς στη σειρά, από τον μικρότερο στον μεγαλύτερο.»
+  g3-math-divide-002     g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση  «Πόσο κάνει 14 : 7;»
+  g3-math-tables-match-a-005 g-dimotikou-maths.json (grades 3) ⭐1 match-pairs     source: Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)  «Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.»
+  g3-math-tens-in-002    g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000  «Πόσες δεκάδες έχει συνολικά το 134;»
+  g3-math-fact-family-005 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση  «Κύκλωσε την πράξη που ανήκει στην ίδια οικογένεια με την 5 × 6 = 30.»
+  g3-math-money-003      g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών  «Έχεις 1 κέρμα των 50 λεπτών, 2 κέρματα των 5 λεπτών και 1 κέρμα των 2 λεπτών. Πόσα λεπτά έχεις;»
+  g3-math-words-digits-005 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Πώς γράφεται με ψηφία ο αριθμός «χίλια εξακόσια ένα»;»
+  g3-math-times-2x1-003  g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό  «Πόσο κάνει 15 × 9;»
+  g3-math-compare-003    g-dimotikou-maths.json (grades 3) ⭐1 true-false      source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Το 1.047 είναι μικρότερο από το 1.407.»
+  g3-math-compare-004    g-dimotikou-maths.json (grades 3) ⭐1 true-false      source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Το 2.144 είναι μεγαλύτερο από το 2.414.»
+  g3-math-table-11-004   g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό  «Πόσο κάνει 11 × 10;»
+  g3-math-times-2x1-001  g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό  «Πόσο κάνει 32 × 8;»
+  g3-math-tables-match-a-004 g-dimotikou-maths.json (grades 3) ⭐1 match-pairs     source: Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)  «Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.»
+  g3-math-add-mental-005 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών  «Πόσο κάνει 40 + 28 + 2;»
+  g3-math-money-001      g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών  «Έχεις 2 χαρτονομίσματα των 10 ευρώ, 4 χαρτονομίσματα των 5 ευρώ και 5 κέρματα των 2 ευρώ. Πόσα ευρώ έχεις;»
+  g3-math-words-digits-004 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Πώς γράφεται με ψηφία ο αριθμός «χίλια εννιακόσια δύο»;»
+  g3-math-add-001        g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών  «Πόσο κάνει 1.326 + 878;»
+  g3-math-money-004      g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών  «Έχεις 2 κέρματα των 20 λεπτών, 4 κέρματα των 5 λεπτών και 4 κέρματα των 2 λεπτών. Πόσα λεπτά έχεις;»
+  g3-math-digit-value-001 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Ποια είναι η αξία του ψηφίου 2 στον αριθμό 2.903;»
+  g3-math-subtract-003   g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών  «Πόσο κάνει 308 − 272;»
+  g3-math-add-sub-choice-004 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών  «Πόσο κάνει 2.040 − 805;»
+  g3-math-expanded-001   g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Πόσο κάνει (2 × 1.000) + (2 × 100) + 6;»
+  g3-math-hundreds-in-001 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Πόσες εκατοντάδες έχει συνολικά το 1.463;»
+  g3-math-tens-in-001    g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000  «Πόσες δεκάδες έχει συνολικά το 551;»
+  g3-math-tables-match-b-005 g-dimotikou-maths.json (grades 3) ⭐1 match-pairs     source: Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)  «Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.»
+  g3-math-count-by-002   g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Συνέχισε το μοτίβο: 1.150, 1.350, 1.550, 1.750, … Γράψε τον επόμενο αριθμό.»
+  g3-math-digits-extreme-001 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Γράψε τον μικρότερο τριψήφιο αριθμό με τα ψηφία 9, 2 και 1, από μία φορά το καθένα.»
+  g3-math-add-mental-002 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών  «Πόσο κάνει 32 + 8 + 20;»
+  g3-math-tables-match-a-003 g-dimotikou-maths.json (grades 3) ⭐1 match-pairs     source: Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)  «Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.»
+  g3-math-compare-002    g-dimotikou-maths.json (grades 3) ⭐1 true-false      source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Το 2.585 είναι μικρότερο από το 2.558.»
+  g3-math-words-places-004 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000  «Πώς γράφεται με ψηφία ο αριθμός «τετρακόσια εβδομήντα ένα»;»
+  g3-math-words-places-002 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000  «Πώς γράφεται με ψηφία ο αριθμός «οχτακόσια πενήντα»;»
+  g3-math-subtract-004   g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών  «Πόσο κάνει 500 − 351;»
+  g3-math-digits-extreme-002 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Γράψε τον μικρότερο τριψήφιο αριθμό με τα ψηφία 6, 0 και 7, από μία φορά το καθένα.»
+  g3-math-divide-remainder-004 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις  «Πόσο κάνει 65 : 9;»
+  g3-math-words-places-001 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000  «Πώς γράφεται με ψηφία ο αριθμός «εννιακόσια τριάντα οχτώ»;»
+  g3-math-money-005      g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών  «Έχεις 5 χαρτονομίσματα των 50 ευρώ, 4 χαρτονομίσματα των 20 ευρώ και 6 χαρτονομίσματα των 5 ευρώ. Πόσα ευρώ έχεις;»
+  g3-math-table-gap-005  g-dimotikou-maths.json (grades 3) ⭐1 fill-blank      source: Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση  «{0} × 5 = 45»
+  g3-math-money-002      g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών  «Έχεις 2 χαρτονομίσματα των 10 ευρώ, 2 χαρτονομίσματα των 5 ευρώ και 5 κέρματα των 2 ευρώ. Πόσα ευρώ έχεις;»
+  g3-math-neighbours-005 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Γράψε τον αμέσως επόμενο αριθμό του 2.589.»
+  g3-math-digits-extreme-003 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Γράψε τον μεγαλύτερο τριψήφιο αριθμό με τα ψηφία 4, 9 και 2, από μία φορά το καθένα.»
+  g3-math-digit-value-002 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Ποια είναι η αξία του ψηφίου 8 στον αριθμό 2.683;»
+  g3-math-add-mental-001 g-dimotikou-maths.json (grades 3) ⭐1 number-input    source: Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών  «Πόσο κάνει 10 + 55 + 5;»
+  g3-math-order-001      g-dimotikou-maths.json (grades 3) ⭐1 ordering        source: Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000  «Βάλε τους αριθμούς στη σειρά, από τον μεγαλύτερο στον μικρότερο.»
+  g3-math-tables-match-b-003 g-dimotikou-maths.json (grades 3) ⭐1 match-pairs     source: Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)  «Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.»
+  g3-math-add-sub-choice-001 g-dimotikou-maths.json (grades 3) ⭐1 multiple-choice source: Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών  «Πόσο κάνει 283 + 646;»
+repeats within 60 days: 0; days between repeats: -
+
+== e5 (grade 5), exercisesPerDay 3, 60 days ==
+maths items written for grade 5: 120
+maths slots: 60; distinct maths items seen: 60
+  e5-math-words-places-003 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «εξήντα χιλιάδες έξι»;»
+  e5-math-lcm-005        e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες  «Βρες το Ε.Κ.Π. των 12 και 15.»
+  e5-math-divisible-002  e-dimotikou-maths.json (grades 5) ⭐1 true-false      source: Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας  «Το 42.470 διαιρείται με το 5.»
+  e5-math-bad-remainder-005 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Μια διαίρεση έχει διαιρέτη 7. Κύκλωσε τον αριθμό που δεν μπορεί να είναι το υπόλοιπό της.»
+  e5-math-add-sub-big-001 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς  «Πόσο κάνει 503.569 + 811.560;»
+  e5-math-round-small-001 e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς  «Στρογγυλοποίησε το 8.134 στην πλησιέστερη δεκάδα.»
+  e5-math-words-digits-001 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «τρία εκατομμύρια εφτακόσιες χιλιάδες ογδόντα»;»
+  e5-math-dividend-003   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Σε μια διαίρεση ο διαιρέτης είναι 38, το πηλίκο 13 και το υπόλοιπο 17. Βρες τον διαιρετέο.»
+  e5-math-words-places-004 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «πεντακόσιες χιλιάδες»;»
+  e5-math-division-003   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Βρες το πηλίκο της διαίρεσης 1.192 : 5.»
+  e5-math-lcm-001        e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες  «Βρες το Ε.Κ.Π. των 9 και 10.»
+  e5-math-add-sub-big-002 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς  «Πόσο κάνει 570.122 − 225.464;»
+  e5-math-divisible-choice-003 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας  «Κύκλωσε τον αριθμό που διαιρείται με το 9.»
+  e5-math-times-3x2-001  e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς  «Πόσο κάνει 808 × 31;»
+  e5-math-multiples-003  e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες  «Κύκλωσε τον αριθμό που είναι πολλαπλάσιο του 5.»
+  e5-math-words-digits-006 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «τρία εκατομμύρια πεντακόσιες χιλιάδες ογδόντα»;»
+  e5-math-words-digits-002 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «εφτά εκατομμύρια εξακόσια»;»
+  e5-math-words-places-006 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «έξι χιλιάδες»;»
+  e5-math-division-005   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Βρες το πηλίκο της διαίρεσης 4.424 : 8.»
+  e5-math-euclid-gap-005 e-dimotikou-maths.json (grades 5) ⭐1 fill-blank      source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «{0} = 17 × 72 + 10»
+  e5-math-count-by-003   e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Κύκλωσε τον επόμενο αριθμό του μοτίβου: 5.725, 5.625, 5.525, …»
+  e5-math-dividend-002   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Σε μια διαίρεση ο διαιρέτης είναι 20, το πηλίκο 24 και το υπόλοιπο 11. Βρες τον διαιρετέο.»
+  e5-math-multiples-005  e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες  «Κύκλωσε τον αριθμό που είναι πολλαπλάσιο του 6.»
+  e5-math-times-10-005   e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς  «Πόσο κάνει 40 × 500;»
+  e5-math-add-sub-003    e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς  «Πόσο κάνει 5.000 − 1.346;»
+  e5-math-digit-value-004 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς  «Ποια είναι η αξία του ψηφίου 3 στον αριθμό 7.483.659;»
+  e5-math-digit-value-005 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς  «Ποια είναι η αξία του ψηφίου 9 στον αριθμό 4.092.683;»
+  e5-math-words-places-001 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «πέντε εκατομμύρια πέντε χιλιάδες»;»
+  e5-math-times-10-001   e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς  «Πόσο κάνει 50 × 600;»
+  e5-math-words-digits-005 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «τρία εκατομμύρια διακόσιες χιλιάδες τριακόσια»;»
+  e5-math-times-2d-004   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς  «Πόσο κάνει 94 × 15;»
+  e5-math-divisible-choice-002 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας  «Κύκλωσε τον αριθμό που διαιρείται με το 3.»
+  e5-math-neighbours-001 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Κύκλωσε τον αμέσως προηγούμενο αριθμό του 800.000.»
+  e5-math-euclid-gap-002 e-dimotikou-maths.json (grades 5) ⭐1 fill-blank      source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «774 = 23 × 33 + {0}»
+  e5-math-digit-value-001 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς  «Ποια είναι η αξία του ψηφίου 2 στον αριθμό 7.245.916;»
+  e5-math-round-small-004 e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς  «Στρογγυλοποίησε το 7.574 στην πλησιέστερη δεκάδα.»
+  e5-math-largest-006    e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Κύκλωσε τον μικρότερο αριθμό.»
+  e5-math-neighbours-006 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Κύκλωσε τον αμέσως προηγούμενο αριθμό του 3.000.000.»
+  e5-math-times-10-003   e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς  «Πόσο κάνει 7.925 × 10;»
+  e5-math-bad-remainder-001 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Μια διαίρεση έχει διαιρέτη 11. Κύκλωσε τον αριθμό που δεν μπορεί να είναι το υπόλοιπό της.»
+  e5-math-divisible-001  e-dimotikou-maths.json (grades 5) ⭐1 true-false      source: Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας  «Το 75.875 διαιρείται με το 10.»
+  e5-math-multiples-001  e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες  «Κύκλωσε τον αριθμό που είναι διαιρέτης του 24.»
+  e5-math-lcm-004        e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες  «Βρες το Ε.Κ.Π. των 3 και 5.»
+  e5-math-add-sub-big-003 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς  «Πόσο κάνει 412.207 + 450.165;»
+  e5-math-words-digits-003 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί  «Πώς γράφεται με ψηφία ο αριθμός «έξι εκατομμύρια εβδομήντα χιλιάδες εφτακόσια»;»
+  e5-math-digit-value-002 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς  «Ποια είναι η αξία του ψηφίου 9 στον αριθμό 6.507.943;»
+  e5-math-compare-002    e-dimotikou-maths.json (grades 5) ⭐1 true-false      source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Το 4.270.569 είναι μεγαλύτερο από το 6.270.549.»
+  e5-math-digit-value-006 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς  «Ποια είναι η αξία του ψηφίου 9 στον αριθμό 3.019.746;»
+  e5-math-division-001   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Βρες το πηλίκο της διαίρεσης 1.584 : 9.»
+  e5-math-dividend-005   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Σε μια διαίρεση ο διαιρέτης είναι 34, το πηλίκο 32 και το υπόλοιπο 1. Βρες τον διαιρετέο.»
+  e5-math-dividend-004   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Σε μια διαίρεση ο διαιρέτης είναι 48, το πηλίκο 5 και το υπόλοιπο 6. Βρες τον διαιρετέο.»
+  e5-math-digit-value-003 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς  «Ποια είναι η αξία του ψηφίου 2 στον αριθμό 8.235.091;»
+  e5-math-times-2d-003   e-dimotikou-maths.json (grades 5) ⭐1 number-input    source: Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς  «Πόσο κάνει 51 × 28;»
+  e5-math-order-006      e-dimotikou-maths.json (grades 5) ⭐1 ordering        source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Βάλε τους αριθμούς στη σειρά, από τον μεγαλύτερο στον μικρότερο.»
+  e5-math-division-check-003 e-dimotikou-maths.json (grades 5) ⭐1 true-false      source: Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς  «Στη διαίρεση 266 : 12 το πηλίκο είναι 22 και το υπόλοιπο 2.»
+  e5-math-largest-001    e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Κύκλωσε τον μεγαλύτερο αριθμό.»
+  e5-math-order-001      e-dimotikou-maths.json (grades 5) ⭐1 ordering        source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Βάλε τους αριθμούς στη σειρά, από τον μικρότερο στον μεγαλύτερο.»
+  e5-math-times-3x2-004  e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς  «Πόσο κάνει 929 × 35;»
+  e5-math-neighbours-005 e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς  «Κύκλωσε τον αμέσως επόμενο αριθμό του 509.999.»
+  e5-math-round-002      e-dimotikou-maths.json (grades 5) ⭐1 multiple-choice source: Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς  «Στρογγυλοποίησε το 1.243.765 στην πλησιέστερη δεκάδα.»
+repeats within 60 days: 0; days between repeats: -
+✔ 60 days of daily sets: the maths slot (289.302795ms)
+✔ grade 3: at least 60 maths items written for grade 3 (0.302919ms)
+✔ grade 3: every maths slot is written for grade 3 (0.170781ms)
+✔ grade 3: no maths item comes back within 60 days (0.158779ms)
+✔ grade 3: every maths item drawn names its textbook chapter (source) (0.1117ms)
+✔ grade 3: a maths item pays ⭐1 (0.09534ms)
+✔ grade 5: at least 60 maths items written for grade 5 (0.092353ms)
+✔ grade 5: every maths slot is written for grade 5 (0.058199ms)
+✔ grade 5: no maths item comes back within 60 days (0.051336ms)
+✔ grade 5: every maths item drawn names its textbook chapter (source) (0.096111ms)
+✔ grade 5: a maths item pays ⭐1 (0.051146ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 698.173565

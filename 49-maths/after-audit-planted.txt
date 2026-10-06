@@ -1,0 +1,103 @@
+
+Grade 3: 0 problems in 0 families
+
+Grade 5: 0 problems in 0 families
+
+Steps by kind: 
+
+Grade 3 maths: 120 items in 26 families; multiple-choice 27, number-input 70, match-pairs 10, fill-blank 5, true-false 4, ordering 4; true-false «Σωστό» 2/4
+  words-places             5 items  κεφ. 1     multiple-choice
+  tens-in                  5 items  κεφ. 1     number-input
+  add-mental               5 items  κεφ. 2     number-input
+  money                    5 items  κεφ. 2     number-input
+  tables-match-a           5 items  κεφ. 4     match-pairs
+  tables-match-b           5 items  κεφ. 5     match-pairs
+  table-gap                5 items  κεφ. 6     fill-blank
+  divide                   5 items  κεφ. 6     number-input
+  fact-family              5 items  κεφ. 6     multiple-choice
+  length                   5 items  κεφ. 8     number-input
+  subtract                 5 items  κεφ. 10    number-input
+  times-2x1                5 items  κεφ. 11    number-input
+  table-11                 5 items  κεφ. 11    number-input
+  words-digits             5 items  κεφ. 14    multiple-choice
+  neighbours               5 items  κεφ. ?     number-input
+  hundreds-in              5 items  κεφ. 22    number-input
+  digit-value              4 items  κεφ. 14    number-input
+  digits-extreme           4 items  κεφ. 14    number-input
+  compare                  4 items  κεφ. 14    true-false
+  order                    4 items  κεφ. 14    ordering
+  expanded                 4 items  κεφ. 14    number-input
+  count-by                 4 items  κεφ. 14    number-input
+  add-sub-choice           4 items  κεφ. 15    multiple-choice
+  add                      4 items  κεφ. 15    number-input
+  times-choice             4 items  κεφ. 17    multiple-choice
+  divide-remainder         4 items  κεφ. 18    multiple-choice
+
+Grade 5 maths: 120 items in 24 families; multiple-choice 70, true-false 9, ordering 6, number-input 30, fill-blank 5; true-false «Σωστό» 8/9
+  words-digits             6 items  κεφ. 1.4   multiple-choice
+  words-places             6 items  κεφ. 1.4   multiple-choice
+  digit-value              6 items  κεφ. 1.5   multiple-choice
+  neighbours               6 items  κεφ. 1.6   multiple-choice
+  compare                  3 items  κεφ. 1.6   true-false
+  largest                  6 items  κεφ. 1.6   multiple-choice
+  order                    6 items  κεφ. 1.6   ordering
+  count-by                 5 items  κεφ. 1.6   multiple-choice
+  round                    5 items  κεφ. 1.7   multiple-choice
+  round-small              5 items  κεφ. 1.7   number-input
+  add-sub                  5 items  κεφ. 2.8   number-input
+  add-sub-big              5 items  κεφ. 2.8   multiple-choice
+  times-10                 5 items  κεφ. 2.9   multiple-choice
+  times-2d                 5 items  κεφ. 2.9   number-input
+  times-3x2                5 items  κεφ. 2.9   multiple-choice
+  multiples                5 items  κεφ. 2.10  multiple-choice
+  lcm                      5 items  κεφ. 2.10  number-input
+  divisible                3 items  κεφ. 2.11  true-false
+  divisible-choice         5 items  κεφ. 2.11  multiple-choice
+  division                 5 items  κεφ. 2.12  number-input
+  dividend                 5 items  κεφ. 2.12  number-input
+  euclid-gap               5 items  κεφ. 2.12  fill-blank
+  bad-remainder            5 items  κεφ. 2.12  multiple-choice
+  division-check           3 items  κεφ. 2.12  true-false
+
+41 errors, 0 warnings
+  ✘ g3-math-tens-in-001: question: «Είσαι έτοιμη; Πόσες δεκάδες έχει συνολικά το 551;» says «ετοιμη»: say it the same way to every child
+  ✘ g3-math-tens-in-001: can't read «Είσαι έτοιμη; Πόσες δεκάδες έχει συνολικά το 551;»
+  ✘ g3-math-money-001: «5 κέρματα των 3 ευρώ»: there is no such coin
+  ✘ g3-math-money-001: key 50, solved 55
+  ✘ g3-math-tables-match-a-001: «5 × 6» is not 15
+  ✘ g3-math-tables-match-a-001: «5 × 3» is not 30
+  ✘ g3-math-tables-match-b-001: «Δείξε μου» would show 46 characters («6 × 7 – 42, 8 × 6 – 48, 4 × 6 – 24, 6 × 9 – 54»): keep it to 40 at most
+  ✘ g3-math-table-gap-001: option 0: stray spaces in «8 »
+  ✘ g3-math-table-gap-001: repeated options ["8 ","7","8","9"]
+  ✘ g3-math-table-gap-001: 2 right options («8 », «8»)
+  ✘ g3-math-divide-001: question: «Πόσο κάνει 80 ÷ 8;» writes ÷, x, * , / or - where the books write :, × and −
+  ✘ g3-math-divide-001: not arithmetic: «80 ÷ 8»
+  ✘ g3-math-length-001: answer 4000 is past the Γ΄ range (3.000)
+  ✘ g3-math-subtract-001: question: «Πόσο κάνει 937 - 476;» writes ÷, x, * , / or - where the books write :, × and −
+  ✘ g3-math-table-11-001: question: 12 × 13 is past the Γ΄ tables
+  ✘ g3-math-words-digits-001: the right option «2.040» is the only longest one: it gives itself away
+  ✘ g3-math-words-digits-001: option «2.0» is not a number like the right one
+  ✘ g3-math-words-digits-001: option «2.4» is not a number like the right one
+  ✘ g3-math-neighbours-001: source «Μαθηματικά Γ΄, κεφ. 99: Τίποτα» is not a chapter of the Γ΄ book (curriculum.ts)
+  ✘ g3-math-hundreds-in-001: source «Μαθηματικά Γ΄, κεφ. 22: Εισαγωγή στα κλάσματα» is in unit 4, past units 1, 2, 3
+  ✘ g3-math-hundreds-in-001: generatorParams.unit 3, the chapter is in unit 4
+  ✘ g3-math-digit-value-001: ⭐2: a maths item pays ⭐1
+  ✘ g3-math-order-001: not μεγαλύτερο στον μικρότερο: 2.250, 2.520, 2.205, 2.052
+  ✘ g3-math-expanded-001: question: «Πόσο κάνει (2 × 1000) + (2 × 100) + 6;» writes a number without its dots (1.229)
+  ✘ g3-math-add-001: key 2205, solved 2204
+  ✘ g3-math-times-choice-001: the key is «206», the right option is «216»
+  ✘ e5-math-words-places-001: «τρία» doesn't agree with χιλιάδες
+  ✘ e5-math-compare-002: key true, solved false
+  ✘ e5-math-round-001: question: «Στρογγυλοποίησε το 2,5 και το 314.047 στην πλησιέστερη δεκάδα.» has a decimal
+  ✘ e5-math-round-001: can't read «Στρογγυλοποίησε το 2,5 και το 314.047 στην πλησιέστερη δεκάδα.»
+  ✘ e5-math-add-sub-001: answer 11000: a number-input answer is a whole number below 10.000 (no digit grouping on the numpad); make it a multiple choice
+  ✘ e5-math-times-10-001: the right option «30.000» is the only longest one: it gives itself away
+  ✘ e5-math-times-10-001: option «3» is over 100 times off «30.000»: not a plausible mistake
+  ✘ e5-gen-lcm-001: id is not e5-math-lcm-NNN
+  ✘ e5-gen-lcm-001: «-gen-» in the id (the evidence helpers read it as a problem)
+  ✘ e5-math-divisible-001: key true, solved false
+  ✘ e5-math-dividend-001: can't read «Σε μια διαίρεση ο διαιρέτης είναι 33, το πηλίκο 36 και το υπόλοιπο 11. Υπολόγισε τον διαιρετέο.»
+  ✘ e5-math-euclid-gap-001: a maths fill-blank has exactly one gap, {0} (the screen submits on the last gap, #50)
+  ✘ e5-math-euclid-gap-001: not arithmetic: «25 × 19 + {1} + 4»
+  ✘ e5-math-division-check-002: key true, solved false
+  ✘ grade 5: 8 of 9 true-false items are «Σωστό», outside 40–60 %

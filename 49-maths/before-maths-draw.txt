@@ -1,0 +1,211 @@
+
+== g3 (grade 3), exercisesPerDay 3, 60 days ==
+maths items written for grade 3: 0
+maths slots: 60; distinct maths items seen: 9
+  g2-math-pattern-1      b-dimotikou.json (grades 2) ⭐1 multiple-choice source: -  «Ποιος αριθμός λείπει; 5, 10, 15, __, 25»
+  g2-math-mult-1         b-dimotikou.json (grades 2) ⭐1 multiple-choice source: -  «Πόσο κάνει 5 × 6;»
+  g2-math-order-1        b-dimotikou.json (grades 2) ⭐1 ordering        source: -  «Από τον μικρότερο στον μεγαλύτερο.»
+  g2-math-time-1         b-dimotikou.json (grades 2) ⭐1 multiple-choice source: -  «Πόσα λεπτά έχει μία ώρα;»
+  g2-math-mult-pairs-1   b-dimotikou.json (grades 2) ⭐1 match-pairs     source: -  «Σύνδεσε κάθε πολλαπλασιασμό με το σωστό αποτέλεσμα.»
+  g2-math-add-1          b-dimotikou.json (grades 2) ⭐1 number-input    source: -  «Πόσο κάνει 34 + 25;»
+  g2-math-sub-1          b-dimotikou.json (grades 2) ⭐1 number-input    source: -  «Πόσο κάνει 52 − 17;»
+  g2-math-tf-1           b-dimotikou.json (grades 2) ⭐1 true-false      source: -  «Το 48 είναι μεγαλύτερο από το 52.»
+  g2-math-money-1        b-dimotikou.json (grades 2) ⭐1 number-input    source: -  «Έχεις 2 κέρματα των 20 λεπτών και 1 κέρμα των 10 λεπτών. Πόσα λεπτά έχεις;»
+repeats within 60 days: 51; days between repeats: 9d ×51
+
+== e5 (grade 5), exercisesPerDay 3, 60 days ==
+maths items written for grade 5: 0
+maths slots: 60; distinct maths items seen: 9
+  g4-math-div-1          d-dimotikou.json (grades 4) ⭐1 multiple-choice source: -  «Πόσο κάνει 56 ÷ 8;»
+  g4-math-frac-1         d-dimotikou.json (grades 4) ⭐1 multiple-choice source: -  «Ποιο κλάσμα είναι το μεγαλύτερο;»
+  g4-math-add-1          d-dimotikou.json (grades 4) ⭐1 number-input    source: -  «Πόσο κάνει 348 + 275;»
+  g4-math-sub-1          d-dimotikou.json (grades 4) ⭐1 number-input    source: -  «Πόσο κάνει 604 − 258;»
+  g4-math-perim-1        d-dimotikou.json (grades 4) ⭐1 number-input    source: -  «Ένα ορθογώνιο έχει μήκος 9 εκ. και πλάτος 6 εκ. Πόσα εκατοστά είναι η περίμετρός του;»
+  g4-math-frac-dec-1     d-dimotikou.json (grades 4) ⭐1 match-pairs     source: -  «Σύνδεσε κάθε κλάσμα με τον δεκαδικό του.»
+  g4-math-time-1         d-dimotikou.json (grades 4) ⭐1 number-input    source: -  «Πόσα λεπτά είναι 2 ώρες και 15 λεπτά;»
+  g4-math-dec-order-1    d-dimotikou.json (grades 4) ⭐1 ordering        source: -  «Από τον μικρότερο στον μεγαλύτερο.»
+  g4-math-geo-tf-1       d-dimotikou.json (grades 4) ⭐1 true-false      source: -  «Ένα τετράγωνο έχει 4 ίσες πλευρές.»
+repeats within 60 days: 51; days between repeats: 9d ×51
+✔ 60 days of daily sets: the maths slot (310.92549ms)
+✖ grade 3: at least 60 maths items written for grade 3 (2.579023ms)
+✖ grade 3: every maths slot is written for grade 3 (1.938587ms)
+✖ grade 3: no maths item comes back within 60 days (0.35075ms)
+✖ grade 3: every maths item drawn names its textbook chapter (source) (0.213873ms)
+✔ grade 3: a maths item pays ⭐1 (0.140605ms)
+✖ grade 5: at least 60 maths items written for grade 5 (0.21781ms)
+✖ grade 5: every maths slot is written for grade 5 (0.113143ms)
+✖ grade 5: no maths item comes back within 60 days (0.134604ms)
+✖ grade 5: every maths item drawn names its textbook chapter (source) (0.213983ms)
+✔ grade 5: a maths item pays ⭐1 (0.072085ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 3
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 777.925548
+
+✖ failing tests:
+
+test at ../tmp/maths-draw.test.ts:85:26
+✖ grade 3: at least 60 maths items written for grade 3 (2.579023ms)
+  AssertionError [ERR_ASSERTION]: 0 maths items written for grade 3
+      at TestContext.<anonymous> (/tmp/maths-draw.test.ts:83:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../tmp/maths-draw.test.ts:89:26
+✖ grade 3: every maths slot is written for grade 3 (1.938587ms)
+  AssertionError [ERR_ASSERTION]: 60 of 60 maths slots came from another grade's pool, e.g. g2-math-pattern-1, g2-math-mult-1, g2-math-order-1, g2-math-time-1
+  
+  60 !== 0
+  
+      at TestContext.<anonymous> (/tmp/maths-draw.test.ts:87:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 60,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/maths-draw.test.ts:93:26
+✖ grade 3: no maths item comes back within 60 days (0.35075ms)
+  AssertionError [ERR_ASSERTION]: 51 early repeats, e.g. g2-math-pattern-1 after 9d, g2-math-mult-1 after 9d, g2-math-order-1 after 9d, g2-math-time-1 after 9d
+  
+  51 !== 0
+  
+      at TestContext.<anonymous> (/tmp/maths-draw.test.ts:92:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 51,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/maths-draw.test.ts:100:26
+✖ grade 3: every maths item drawn names its textbook chapter (source) (0.213873ms)
+  AssertionError [ERR_ASSERTION]: 9 drawn maths items have no source: g2-math-pattern-1, g2-math-mult-1, g2-math-order-1, g2-math-time-1, g2-math-mult-pairs-1, g2-math-add-1, g2-math-sub-1, g2-math-tf-1, g2-math-money-1
+  
+  9 !== 0
+  
+      at TestContext.<anonymous> (/tmp/maths-draw.test.ts:96:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 9,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/maths-draw.test.ts:85:26
+✖ grade 5: at least 60 maths items written for grade 5 (0.21781ms)
+  AssertionError [ERR_ASSERTION]: 0 maths items written for grade 5
+      at TestContext.<anonymous> (/tmp/maths-draw.test.ts:83:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../tmp/maths-draw.test.ts:89:26
+✖ grade 5: every maths slot is written for grade 5 (0.113143ms)
+  AssertionError [ERR_ASSERTION]: 60 of 60 maths slots came from another grade's pool, e.g. g4-math-div-1, g4-math-frac-1, g4-math-add-1, g4-math-sub-1
+  
+  60 !== 0
+  
+      at TestContext.<anonymous> (/tmp/maths-draw.test.ts:87:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 60,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/maths-draw.test.ts:93:26
+✖ grade 5: no maths item comes back within 60 days (0.134604ms)
+  AssertionError [ERR_ASSERTION]: 51 early repeats, e.g. g4-math-div-1 after 9d, g4-math-frac-1 after 9d, g4-math-add-1 after 9d, g4-math-sub-1 after 9d
+  
+  51 !== 0
+  
+      at TestContext.<anonymous> (/tmp/maths-draw.test.ts:92:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 51,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/maths-draw.test.ts:100:26
+✖ grade 5: every maths item drawn names its textbook chapter (source) (0.213983ms)
+  AssertionError [ERR_ASSERTION]: 9 drawn maths items have no source: g4-math-div-1, g4-math-frac-1, g4-math-add-1, g4-math-sub-1, g4-math-perim-1, g4-math-frac-dec-1, g4-math-time-1, g4-math-dec-order-1, g4-math-geo-tf-1
+  
+  9 !== 0
+  
+      at TestContext.<anonymous> (/tmp/maths-draw.test.ts:96:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 9,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

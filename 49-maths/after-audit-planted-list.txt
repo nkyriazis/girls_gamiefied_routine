@@ -1,0 +1,26 @@
+g3-math-add-001: wrong key
+g3-math-times-choice-001: key points at a wrong option
+g3-math-tables-match-a-001: a pair swapped
+g3-math-tables-match-b-001: «Δείξε μου» on two lines: a fourth pair (47 characters, a match keeps to 40)
+g3-math-order-001: out of order
+g3-math-table-gap-001: two right options
+g3-math-divide-001: ÷ for :
+g3-math-subtract-001: - for −
+g3-math-expanded-001: number without dots
+g3-math-tens-in-001: gendered word
+g3-math-money-001: a coin that does not exist
+g3-math-length-001: past range: 4.000
+g3-math-words-digits-001: right option is the only longest
+g3-math-neighbours-001: source not in the TOC
+g3-math-hundreds-in-001: source past the units (ch. 22)
+g3-math-digit-value-001: ⭐2
+g3-math-table-11-001: past the tables: 12 × 13
+e5-math-words-places-001: words that do not agree (τρία χιλιάδες)
+e5-math-add-sub-001: number-input answer ≥ 10.000
+e5-math-euclid-gap-001: two gaps
+e5-math-times-10-001: implausible option, 1000 times off
+e5-math-round-001: a decimal
+e5-math-dividend-001: unreadable wording
+e5-math-divisible-001: TF key flipped
+e5-math-lcm-001: id with -gen-
+e5-math-division-check-001: TF all true (40-60 % rule)
