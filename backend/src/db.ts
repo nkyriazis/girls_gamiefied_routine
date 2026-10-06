@@ -7,6 +7,7 @@ import {
 } from '../../shared/types';
 import { exercisePoolProvider, exercisesPerDay, storyMarks } from './exercisePool';
 import { checkCalc, checkPaint, storyWords, targetsFromMarks } from '../../shared/problems';
+import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars } from '../../shared/forgiveness';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
@@ -1232,7 +1233,12 @@ async function todaysAssignments(userId?: string): Promise<ExerciseAssignmentWit
   return enriched;
 }
 
-// Answer a daily assignment. Correct -> completed + stars. Wrong -> retry allowed.
+// The kid's rung on the forgiveness ladder (shared/forgiveness.ts)
+const forgivenessOf = (userId: string) => config().users.find(u => u.id === userId)?.forgiveness ?? DEFAULT_FORGIVENESS;
+
+// Answer a daily assignment. Correct -> completed, paying its stars less one per wrong
+// try before it (shared/forgiveness.ts). Wrong -> another try, unless the kid is on the
+// unforgiving rung and has used her tries: then it is closed, paying nothing.
 // A problem is answered one step at a time ({ step, value }): a correct step moves
 // on to the next, the last one completes it; a wrong one counts in `mistakes`.
 export async function answerExerciseAssignment(
@@ -1256,8 +1262,8 @@ export async function answerExerciseAssignment(
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
     const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1 };
     let stars = 0;
-    if (isCorrect) {
-      stars = exercise.stars;
+    if (isCorrect || updated.attempts >= plainTries(forgivenessOf(current.userId), exercise.type)) {
+      stars = isCorrect ? plainStars(exercise.stars, current.attempts) : 0;
       updated.status = 'completed';
       updated.completedAt = new Date().toISOString();
       updated.starsAwarded = stars;
@@ -1268,11 +1274,31 @@ export async function answerExerciseAssignment(
   });
 
   logAction('EXERCISE_ASSIGNMENT_ANSWER', {
-    assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId,
-    correct: isCorrect, attempts: assignment.attempts, starsAwarded
+    assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId, forgiveness: forgivenessOf(assignment.userId),
+    correct: isCorrect, attempts: assignment.attempts, starsAwarded, completed: assignment.status === 'completed'
   });
 
   return { correct: isCorrect, starsAwarded, assignment };
+}
+
+// «Δείξε μου» on a plain exercise, on the forgiving rung: after a wrong try (so it pays
+// nothing already), she may see the right answer. That closes it, paying nothing.
+export async function revealExerciseAssignment(assignmentId: string): Promise<ExerciseAssignment> {
+  const found = store.exerciseAssignments.get(assignmentId);
+  if (!found) throw new Error('Assignment not found');
+  const exercise = await exercisePoolProvider.getExerciseById(found.exerciseId);
+  if (!exercise) throw new Error('Exercise not found in pool');
+  if (exercise.type === 'problem') throw new Error('A problem is shown step by step');
+  const assignment = store.transaction(() => {
+    const current = store.exerciseAssignments.get(assignmentId);
+    if (!current || current.status === 'completed') throw new Error('Assignment already completed');
+    if (current.attempts < 1) throw new Error('The answer is shown after a wrong try first');
+    const updated: ExerciseAssignment = { ...current, status: 'completed', completedAt: new Date().toISOString(), starsAwarded: 0 };
+    store.exerciseAssignments.put(updated);
+    return updated;
+  });
+  logAction('EXERCISE_ASSIGNMENT_REVEAL', { assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId, attempts: assignment.attempts });
+  return assignment;
 }
 
 function answerProblemStep(
@@ -1284,8 +1310,9 @@ function answerProblemStep(
     const current = store.exerciseAssignments.get(assignmentId);
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
     const stepIndex = current.stepIndex ?? 0;
+    const rung = forgivenessOf(current.userId);
     // An answer to a step already solved (a second device, a double tap) changes nothing.
-    if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true };
+    if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true, rung };
 
     const reading = config().users.find(u => u.id === current.userId)?.problemReading;
     const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
@@ -1302,7 +1329,8 @@ function answerProblemStep(
     } else if (stepIndex + 1 < exercise.steps.length) {
       updated.stepIndex = stepIndex + 1;
     } else {
-      stars = exercise.stars;
+      // A star less for each step gone wrong (the worked steps too: they had their wrong tries)
+      stars = problemStars(exercise, mistakes, reading, rung);
       updated.stepIndex = exercise.steps.length;
       updated.status = 'completed';
       updated.completedAt = new Date().toISOString();
@@ -1310,13 +1338,13 @@ function answerProblemStep(
     }
     store.exerciseAssignments.put(updated);
     if (stars > 0) awardStars(updated.userId, stars);
-    return { correct, wrong, starsAwarded: stars, assignment: updated, stale: false };
+    return { correct, wrong, starsAwarded: stars, assignment: updated, stale: false, rung };
   });
 
-  const { stale, ...reply } = result;
+  const { stale, rung, ...reply } = result;
   if (!stale) {
     logAction('EXERCISE_PROBLEM_STEP', {
-      assignmentId, userId: reply.assignment.userId, exerciseId: exercise.id, step: answer.step,
+      assignmentId, userId: reply.assignment.userId, exerciseId: exercise.id, step: answer.step, forgiveness: rung,
       kind: exercise.steps[answer.step]?.kind, correct: reply.correct, wrong: reply.wrong,
       completed: reply.assignment.status === 'completed', starsAwarded: reply.starsAwarded
     });

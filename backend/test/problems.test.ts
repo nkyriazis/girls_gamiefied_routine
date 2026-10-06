@@ -14,7 +14,9 @@ const cfg: DataConfig = {
   users: [
     { id: 'u1', name: 'A', avatar: icon, color: 'red', grade: 5 },
     { id: 'u2', name: 'B', avatar: icon, color: 'blue', grade: 3 },
-    { id: 'u3', name: 'C', avatar: icon, color: 'green' }
+    { id: 'u3', name: 'C', avatar: icon, color: 'green' },
+    { id: 'u4', name: 'D', avatar: icon, color: 'gold', grade: 3, forgiveness: 'unforgiving' },
+    { id: 'u5', name: 'E', avatar: icon, color: 'pink', grade: 5, forgiveness: 'unforgiving', problemReading: 'paint' }
   ],
   tasks: [], routines: [], routineTasks: [], routineAssignments: [], flows: [], schedules: [], rewards: [],
   settings: { timezone: 'Europe/Athens', exercisesPerDay: 2, extraProblemsPerDay: 2 }
@@ -37,7 +39,11 @@ const gradeThree = ['p-balloons', 'p-two', 'p-three'].map(id => ({ ...balloons, 
 writeFileSync(path.join(pools, 'g.json'), JSON.stringify({ grades: [3], exercises: gradeThree }));
 writeFileSync(path.join(pools, 'e.json'), JSON.stringify({
   grades: [5],
-  exercises: [1, 2, 3].map(n => ({ id: `e-${n}`, type: 'number-input', category: 'Μαθηματικά', title: 'x', question: `${n} + ${n}`, correctValue: 2 * n, stars: 1 }))
+  exercises: [
+    ...[1, 2, 3].map(n => ({ id: `e-${n}`, type: 'number-input', category: 'Μαθηματικά', title: 'x', question: `${n} + ${n}`, correctValue: 2 * n, stars: 1 })),
+    { id: 'e-tf', type: 'true-false', category: 'Μαθηματικά', title: 'x', question: '2 + 2 = 4', correctValue: true, stars: 1 },
+    { ...balloons, id: 'e-balloons' },
+  ]
 }));
 writeFileSync(path.join(dir, 'data.json'), JSON.stringify(cfg));
 process.env.DATA_FILE = path.join(dir, 'data.json');
@@ -144,7 +150,15 @@ test('each kid draws exercisesPerDay from the pools of their grade; no grade, no
   assert.equal(of('u3').length, 0);
 });
 
-test('a problem is answered step by step: wrong tries count, the last step pays', async () => {
+// An assignment of its own, on another day, so today's sets stay as drawn
+const assign = (userId: string, exerciseId: string) => {
+  const a = { id: `${userId}-${exerciseId}-${Math.random()}`, userId, exerciseId, date: '2000-01-01', status: 'pending' as const, attempts: 0, assignedAt: new Date().toISOString() };
+  store.exerciseAssignments.put(a);
+  return a;
+};
+const starsOf = (userId: string) => db.usersWithStars().find(u => u.id === userId)!.stars;
+
+test('a problem is answered step by step: wrong tries count, the last step pays a star less per step gone wrong', async () => {
   const [assignment] = store.exerciseAssignments.all('userId = ?', 'u2');
   const answer = (step: number, value: unknown) => db.answerExerciseAssignment(assignment.id, { step, value });
   const starsBefore = db.usersWithStars().find(u => u.id === 'u2')!.stars;
@@ -167,9 +181,10 @@ test('a problem is answered step by step: wrong tries count, the last step pays'
   r = await answer(2, [8, 1]);
   assert.equal(r.assignment.status, 'pending');
   r = await answer(3, ['πρώτο', 'δεύτερο', 'τρίτο']);
-  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status, r.assignment.stepIndex], [true, 3, 'completed', 4]);
+  // ⭐3, less one for each of the three steps gone wrong: forgiving pays at least 1
+  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status, r.assignment.stepIndex], [true, 1, 'completed', 4]);
   assert.deepEqual(r.assignment.mistakes, [1, 1, 1, 0]);
-  assert.equal(db.usersWithStars().find(u => u.id === 'u2')!.stars, starsBefore + 3);
+  assert.equal(db.usersWithStars().find(u => u.id === 'u2')!.stars, starsBefore + 1);
 
   // Stored as answered, and read back the same after a restart
   assert.deepEqual(store.exerciseAssignments.get(assignment.id), r.assignment);
@@ -202,6 +217,82 @@ test('extra problems: fresh ones first, one open at a time, up to the day\'s lim
   // Extras don't count as the daily set: nothing is drawn again
   assert.equal(await db.ensureDailyAssignments(), false);
   await assert.rejects(db.startExtraProblem('u3'), /class/);
+});
+
+test('unforgiving: a problem can pay nothing, and a painted reading step costs nothing', async () => {
+  const before = starsOf('u4');
+  const a = assign('u4', 'p-balloons');
+  const answer = (step: number, value: unknown) => db.answerExerciseAssignment(a.id, { step, value });
+  // Two wrong tries on each of three steps, then each shown worked (the right answer)
+  await answer(0, ['known', 'known', 'known', 'sought']);
+  await answer(0, ['known', 'known', 'known', 'sought']);
+  await answer(0, ['known', 'known', 'extra', 'sought']);
+  await answer(1, 0); await answer(1, 0); await answer(1, 1);
+  await answer(2, [1, 1]); await answer(2, [1, 1]); await answer(2, [8, 1]);
+  let r = await answer(3, ['πρώτο', 'δεύτερο', 'τρίτο']);
+  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status], [true, 0, 'completed']);
+  assert.deepEqual(r.assignment.mistakes, [2, 2, 2, 0]);
+  assert.equal(starsOf('u4'), before);
+
+  // u5 paints: wrong paintings are free (until #50), a wrong choice is not
+  const b = assign('u5', 'e-balloons');
+  const before5 = starsOf('u5');
+  const painted = { known: [1, 2, 5, 6], sought: [8, 9] };
+  assert.equal((await db.answerExerciseAssignment(b.id, { step: 0, value: { known: [], sought: [] } })).correct, false);
+  assert.equal((await db.answerExerciseAssignment(b.id, { step: 0, value: painted })).correct, true);
+  await db.answerExerciseAssignment(b.id, { step: 1, value: 0 });
+  await db.answerExerciseAssignment(b.id, { step: 1, value: 1 });
+  await db.answerExerciseAssignment(b.id, { step: 2, value: [8, 1] });
+  r = await db.answerExerciseAssignment(b.id, { step: 3, value: ['πρώτο', 'δεύτερο', 'τρίτο'] });
+  assert.deepEqual([r.starsAwarded, r.assignment.mistakes], [2, [1, 1, 0, 0]]);
+  assert.equal(starsOf('u5'), before5 + 2);
+});
+
+test('a plain exercise: a wrong first try loses the star; unforgiving closes it after its tries', async () => {
+  // Forgiving: she may try again (it pays nothing now), as often as she likes
+  const before1 = starsOf('u1');
+  const a = assign('u1', 'e-2');
+  let r = await db.answerExerciseAssignment(a.id, 5);
+  assert.deepEqual([r.correct, r.assignment.status], [false, 'pending']);
+  r = await db.answerExerciseAssignment(a.id, 3);
+  assert.deepEqual([r.correct, r.assignment.status], [false, 'pending']);
+  r = await db.answerExerciseAssignment(a.id, 4);
+  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status, r.assignment.starsAwarded], [true, 0, 'completed', 0]);
+  const b = assign('u1', 'e-3');
+  r = await db.answerExerciseAssignment(b.id, 6);
+  assert.deepEqual([r.correct, r.starsAwarded], [true, 1]);
+  assert.equal(starsOf('u1'), before1 + 1);
+
+  // Unforgiving: true/false gets one try, the rest two; then it is closed, paying nothing
+  const before5 = starsOf('u5');
+  const tf = assign('u5', 'e-tf');
+  r = await db.answerExerciseAssignment(tf.id, false);
+  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status, r.assignment.starsAwarded], [false, 0, 'completed', 0]);
+  await assert.rejects(db.answerExerciseAssignment(tf.id, true), /already completed/);
+  const n = assign('u5', 'e-1');
+  r = await db.answerExerciseAssignment(n.id, 3);
+  assert.deepEqual([r.correct, r.assignment.status], [false, 'pending']);
+  r = await db.answerExerciseAssignment(n.id, 2);
+  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status], [true, 0, 'completed']);
+  const m = assign('u5', 'e-2');
+  await db.answerExerciseAssignment(m.id, 1);
+  r = await db.answerExerciseAssignment(m.id, 1);
+  assert.deepEqual([r.correct, r.assignment.status, r.assignment.attempts], [false, 'completed', 2]);
+  assert.equal(starsOf('u5'), before5);
+});
+
+test('«Δείξε μου» on a plain exercise: only after a wrong try, and it closes it paying nothing', async () => {
+  const a = assign('u1', 'e-1');
+  await assert.rejects(db.revealExerciseAssignment(a.id), /wrong try first/);
+  await db.answerExerciseAssignment(a.id, 7);
+  const before = starsOf('u1');
+  const shown = await db.revealExerciseAssignment(a.id);
+  assert.deepEqual([shown.status, shown.starsAwarded], ['completed', 0]);
+  assert.equal(starsOf('u1'), before);
+  await assert.rejects(db.revealExerciseAssignment(a.id), /already completed/);
+  const p = assign('u2', 'p-balloons');
+  await db.answerExerciseAssignment(p.id, { step: 0, value: [] });
+  await assert.rejects(db.revealExerciseAssignment(p.id), /step by step/);
 });
 
 test('painting freehand forgives a sloppy stroke, not a wrong fact', () => {
