@@ -1,0 +1,21 @@
+{
+ "orphanRun": {
+  "routineCards": 0,
+  "clock": true,
+  "dockItems": 2,
+  "dockStars": [
+   "⭐ 100",
+   "⭐ 20"
+  ]
+ },
+ "drawer": {
+  "dockZ": "100",
+  "backdropZ": "200",
+  "drawerZ": "201",
+  "tapAtFirstAvatarHits": "div.exercises-backdrop"
+ },
+ "store": {
+  "balance": "⭐ 100",
+  "hint": "(Διαθέσιμα: ⭐ 70)"
+ }
+}

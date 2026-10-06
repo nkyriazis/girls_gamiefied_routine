@@ -1,0 +1,313 @@
+{
+ "tag": "before",
+ "late": {
+  "timer": "0:00",
+  "timerClass": "timer warning",
+  "task": "🪥 | Πλύσιμο Δοντιών | 0:00"
+ },
+ "lateOffer": {
+  "offer": [
+   102,
+   722,
+   273,
+   763
+  ],
+  "done": [
+   {
+    "text": "Έτοιμο!",
+    "box": [
+     548,
+     586,
+     732,
+     642
+    ],
+    "onTop": true,
+    "hit": "button.btn-done",
+    "offerCoversPx": 0
+   }
+  ]
+ },
+ "lateDone": "Ιφιγένεια | ✕ | 🪥 | Πλύσιμο Δοντιών | 0:00 | Έτοιμο!",
+ "reward": {
+  "overlaySays": "+50",
+  "serverGave": 30,
+  "tasks": [
+   {
+    "onTime": false,
+    "stars": 0
+   },
+   {
+    "onTime": true,
+    "stars": 10
+   },
+   {
+    "onTime": true,
+    "stars": 10
+   },
+   {
+    "onTime": true,
+    "stars": 10
+   }
+  ]
+ },
+ "plainPush": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "alarm"
+  }
+ },
+ "plainAlarm": {
+  "text": "🔔 | Ειδοποίηση | OK",
+  "tones": 8
+ },
+ "morningPush": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "schedule_simulation",
+   "simulatedTime": "2026-10-07T04:00:00.000Z",
+   "targetId": "morning-flow"
+  }
+ },
+ "morningAlarm": {
+  "text": [
+   "⏰ | Ώρα για ξύπνημα! | Ηλέκτρα | Καλημέρα! ☀️ | Ξυπνήσαμε!",
+   "⏰ | Ώρα για ξύπνημα! | Ιφιγένεια | Καλημέρα! ☀️ | Ξυπνήσαμε!"
+  ],
+  "names": [
+   {
+    "name": "Ηλέκτρα",
+    "color": "rgb(255, 215, 0)"
+   },
+   {
+    "name": "Ιφιγένεια",
+    "color": "rgb(255, 0, 80)"
+   }
+  ],
+  "tonesDuringAlarm": 0,
+  "uploads": [
+   {
+    "url": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+    "status": 404
+   }
+  ],
+  "errors": [
+   "Failed to play custom sound: NotSupportedError: Failed to load because no supported source was found."
+  ]
+ },
+ "offerOverAlarm": {
+  "offer": [
+   102,
+   722,
+   273,
+   763
+  ],
+  "dismiss": [
+   {
+    "text": "Ξυπνήσαμε!",
+    "box": [
+     206,
+     590,
+     450,
+     652
+    ],
+    "onTop": true,
+    "hit": "button.btn-dismiss-global",
+    "offerCoversPx": 0
+   },
+   {
+    "text": "Ξυπνήσαμε!",
+    "box": [
+     830,
+     590,
+     1074,
+     652
+    ],
+    "onTop": true,
+    "hit": "button.btn-dismiss-global",
+    "offerCoversPx": 0
+   }
+  ],
+  "card": [
+   {
+    "text": "⏰ | Ώρα για ξύπνημα! | Ηλέκτρα | Καλημέρα! ☀️ | Ξυπνήσαμε!",
+    "box": [
+     32,
+     32,
+     624,
+     768
+    ],
+    "onTop": true,
+    "hit": "img.",
+    "offerCoversPx": 6948
+   },
+   {
+    "text": "⏰ | Ώρα για ξύπνημα! | Ιφιγένεια | Καλημέρα! ☀️ | Ξυπνήσαμε!",
+    "box": [
+     656,
+     32,
+     1248,
+     768
+    ],
+    "onTop": true,
+    "hit": "img.",
+    "offerCoversPx": 0
+   }
+  ]
+ },
+ "routinesBeforeExit": [
+  "Ηλέκτρα",
+  "Ιφιγένεια"
+ ],
+ "exitButton": {
+  "opacity": "0.5",
+  "fontSize": "19.2px",
+  "size": [
+   60,
+   47
+  ]
+ },
+ "routinesAfterExit": [
+  "Ιφιγένεια"
+ ],
+ "exitQuestion": "Ιφιγένεια | ✕ | 🪥 | Πλύσιμο Δοντιών | 1:54 | Έτοιμο!",
+ "closeLog": {
+  "id": "bb62f05b-dd33-46e1-a388-a40bb36f05c9",
+  "timestamp": "2026-10-06T19:12:43.923Z",
+  "type": "ROUTINE_CLOSED",
+  "details": {
+   "runId": "2969c227-318a-4af1-ac73-5d894701f9d2",
+   "userId": "u1",
+   "finished": false
+  }
+ },
+ "consoleErrors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to play custom sound: NotSupportedError: Failed to load because no supported source was found.",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to play custom sound: NotSupportedError: Failed to load because no supported source was found.",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "notInVideo": [
+  "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+  "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+  "/uploads/1764012149103-rooster-crow-1-281011.mp3"
+ ],
+ "tonesInVideo": 12,
+ "sizes": {
+  "1280x800": {
+   "offer": [
+    102,
+    722,
+    273,
+    763
+   ],
+   "done": [
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      236,
+      586,
+      420,
+      642
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    },
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      860,
+      586,
+      1044,
+      642
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    }
+   ]
+  },
+  "800x480": {
+   "offer": [
+    102,
+    402,
+    273,
+    443
+   ],
+   "done": [
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      150,
+      352,
+      266,
+      396
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    },
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      534,
+      352,
+      650,
+      396
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    }
+   ]
+  },
+  "390x844": {
+   "offer": [
+    102,
+    766,
+    273,
+    807
+   ],
+   "done": [
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      136,
+      329,
+      254,
+      373
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    },
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      136,
+      743,
+      254,
+      787
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 2470
+    }
+   ]
+  }
+ }
+}

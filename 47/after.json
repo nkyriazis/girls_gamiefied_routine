@@ -1,0 +1,592 @@
+{
+ "tag": "after",
+ "late": {
+  "timer": null,
+  "timerClass": null,
+  "lateNote": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+  "task": "🪥 | Πλύσιμο Δοντιών | Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»"
+ },
+ "lateOffer": {
+  "offer": null,
+  "done": [
+   {
+    "text": "Έτοιμο!",
+    "box": [
+     548,
+     575,
+     732,
+     630
+    ],
+    "onTop": true,
+    "hit": "button.btn-done",
+    "offerCoversPx": 0
+   }
+  ]
+ },
+ "lateDone": "Ιφιγένεια | ✕ | 🪥 | Πλύσιμο Δοντιών | Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!» | Έτοιμο!",
+ "reward": {
+  "overlaySays": "+30",
+  "serverGave": 30,
+  "tasks": [
+   {
+    "onTime": false,
+    "stars": 0
+   },
+   {
+    "onTime": true,
+    "stars": 10
+   },
+   {
+    "onTime": true,
+    "stars": 10
+   },
+   {
+    "onTime": true,
+    "stars": 10
+   }
+  ]
+ },
+ "plainPush": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "alarm"
+  }
+ },
+ "plainAlarm": {
+  "text": "🔔 | Ειδοποίηση | Εντάξει!",
+  "tones": 8
+ },
+ "morningPush": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "schedule_simulation",
+   "simulatedTime": "2026-10-07T04:00:00.000Z",
+   "targetId": "morning-flow"
+  }
+ },
+ "morningAlarm": {
+  "text": [
+   "⏰ | Ώρα για ξύπνημα! | Ηλέκτρα | Καλημέρα! ☀️ | Ξυπνήσαμε!",
+   "⏰ | Ώρα για ξύπνημα! | Ιφιγένεια | Καλημέρα! ☀️ | Ξυπνήσαμε!"
+  ],
+  "names": [
+   {
+    "name": "Ηλέκτρα",
+    "color": "rgb(255, 255, 255)",
+    "plate": "rgba(20, 10, 40, 0.75)",
+    "pad": 17.76,
+    "ring": "rgb(255, 215, 0)",
+    "contrastOfWhite": 13.4,
+    "lightestPlatePixel": "rgb(79, 33, 30)"
+   },
+   {
+    "name": "Ιφιγένεια",
+    "color": "rgb(255, 255, 255)",
+    "plate": "rgba(20, 10, 40, 0.75)",
+    "pad": 17.76,
+    "ring": "rgb(255, 0, 80)",
+    "contrastOfWhite": 13.4,
+    "lightestPlatePixel": "rgb(79, 33, 30)"
+   }
+  ],
+  "tonesDuringAlarm": 12,
+  "uploads": [
+   {
+    "url": "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+    "status": 404
+   }
+  ],
+  "errors": [
+   "Failed to play custom sound: MediaError"
+  ]
+ },
+ "offerOverAlarm": {
+  "offer": null,
+  "owlWiggles": true,
+  "dismiss": [
+   {
+    "text": "Ξυπνήσαμε!",
+    "box": [
+     206,
+     593,
+     450,
+     655
+    ],
+    "onTop": true,
+    "hit": "button.btn-dismiss-global",
+    "offerCoversPx": 0
+   },
+   {
+    "text": "Ξυπνήσαμε!",
+    "box": [
+     830,
+     593,
+     1074,
+     655
+    ],
+    "onTop": true,
+    "hit": "button.btn-dismiss-global",
+    "offerCoversPx": 0
+   }
+  ],
+  "card": [
+   {
+    "text": "⏰ | Ώρα για ξύπνημα! | Ηλέκτρα | Καλημέρα! ☀️ | Ξυπνήσαμε!",
+    "box": [
+     32,
+     32,
+     624,
+     768
+    ],
+    "onTop": true,
+    "hit": "img.",
+    "offerCoversPx": 0
+   },
+   {
+    "text": "⏰ | Ώρα για ξύπνημα! | Ιφιγένεια | Καλημέρα! ☀️ | Ξυπνήσαμε!",
+    "box": [
+     656,
+     32,
+     1248,
+     768
+    ],
+    "onTop": true,
+    "hit": "img.",
+    "offerCoversPx": 0
+   }
+  ]
+ },
+ "routinesBeforeExit": [
+  "Ηλέκτρα",
+  "Ιφιγένεια"
+ ],
+ "exitButton": {
+  "opacity": "0.5",
+  "fontSize": "19.2px",
+  "size": [
+   60,
+   47
+  ]
+ },
+ "routinesAfterExit": [
+  "Ηλέκτρα",
+  "Ιφιγένεια"
+ ],
+ "exitQuestion": "Ηλέκτρα | ✕ | Να κλείσει η ρουτίνα; | Ναι | Όχι | 🪥 | Πλύσιμο Δοντιών | 1:53 | Έτοιμο!",
+ "closeLogBeforeYes": null,
+ "routinesAfterYes": [
+  "Ιφιγένεια"
+ ],
+ "closeLog": {
+  "id": "3cb15c9b-8764-4723-98f4-6defac1bbb27",
+  "timestamp": "2026-10-06T18:53:46.344Z",
+  "type": "ROUTINE_CLOSED",
+  "details": {
+   "runId": "6979cb20-fbc6-45ac-8ce5-291698f8fce9",
+   "userId": "u1",
+   "finished": false
+  }
+ },
+ "consoleErrors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to play custom sound: MediaError",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to play custom sound: MediaError",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "notInVideo": [
+  "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+  "/uploads/1764012149103-rooster-crow-1-281011.mp3",
+  "/uploads/1764012149103-rooster-crow-1-281011.mp3"
+ ],
+ "tonesInVideo": 44,
+ "sizes": {
+  "1280x800": {
+   "offer": null,
+   "owlWiggles": true,
+   "done": [
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      236,
+      586,
+      420,
+      642
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    },
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      860,
+      586,
+      1044,
+      642
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    }
+   ]
+  },
+  "800x480": {
+   "offer": null,
+   "owlWiggles": true,
+   "done": [
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      150,
+      352,
+      266,
+      396
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    },
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      534,
+      352,
+      650,
+      396
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    }
+   ]
+  },
+  "390x844": {
+   "offer": null,
+   "owlWiggles": true,
+   "done": [
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      136,
+      329,
+      254,
+      373
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    },
+    {
+     "text": "Έτοιμο!",
+     "box": [
+      136,
+      743,
+      254,
+      787
+     ],
+     "onTop": true,
+     "hit": "button.btn-done",
+     "offerCoversPx": 0
+    }
+   ]
+  }
+ },
+ "plainPushForFit": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "alarm"
+  }
+ },
+ "fit": {
+  "1280x800": {
+   "late": [
+    {
+     "kid": "Ηλέκτρα",
+     "card": "384x736",
+     "bodyScrolls": false,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    },
+    {
+     "kid": "Ιφιγένεια",
+     "card": "384x736",
+     "bodyScrolls": false,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    }
+   ],
+   "asking": [
+    {
+     "kid": "Ηλέκτρα",
+     "card": "384x736",
+     "bodyScrolls": false,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": false
+     },
+     "ask": {
+      "text": "Να κλείσει η ρουτίνα;",
+      "inside": true,
+      "buttons": [
+       {
+        "text": "Ναι",
+        "size": "92x48",
+        "inside": true,
+        "onTop": true
+       },
+       {
+        "text": "Όχι",
+        "size": "92x48",
+        "inside": true,
+        "onTop": true
+       }
+      ]
+     }
+    },
+    {
+     "kid": "Ιφιγένεια",
+     "card": "384x736",
+     "bodyScrolls": false,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    }
+   ],
+   "afterNo": {
+    "questions": 0,
+    "routines": 2
+   }
+  },
+  "800x480": {
+   "late": [
+    {
+     "kid": "Ηλέκτρα",
+     "card": "224x416",
+     "bodyScrolls": false,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    },
+    {
+     "kid": "Ιφιγένεια",
+     "card": "224x416",
+     "bodyScrolls": false,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    }
+   ],
+   "asking": [
+    {
+     "kid": "Ηλέκτρα",
+     "card": "224x416",
+     "bodyScrolls": false,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": false
+     },
+     "ask": {
+      "text": "Να κλείσει η ρουτίνα;",
+      "inside": true,
+      "buttons": [
+       {
+        "text": "Ναι",
+        "size": "80x48",
+        "inside": true,
+        "onTop": true
+       },
+       {
+        "text": "Όχι",
+        "size": "80x48",
+        "inside": true,
+        "onTop": true
+       }
+      ]
+     }
+    },
+    {
+     "kid": "Ιφιγένεια",
+     "card": "224x416",
+     "bodyScrolls": false,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    }
+   ],
+   "afterNo": {
+    "questions": 0,
+    "routines": 2
+   }
+  },
+  "390x844": {
+   "late": [
+    {
+     "kid": "Ηλέκτρα",
+     "card": "358x260",
+     "bodyScrolls": true,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    },
+    {
+     "kid": "Ιφιγένεια",
+     "card": "358x260",
+     "bodyScrolls": true,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    }
+   ],
+   "asking": [
+    {
+     "kid": "Ηλέκτρα",
+     "card": "358x260",
+     "bodyScrolls": true,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": false
+     },
+     "ask": {
+      "text": "Να κλείσει η ρουτίνα;",
+      "inside": true,
+      "buttons": [
+       {
+        "text": "Ναι",
+        "size": "80x48",
+        "inside": true,
+        "onTop": true
+       },
+       {
+        "text": "Όχι",
+        "size": "80x48",
+        "inside": true,
+        "onTop": true
+       }
+      ]
+     }
+    },
+    {
+     "kid": "Ιφιγένεια",
+     "card": "358x260",
+     "bodyScrolls": true,
+     "lateNote": {
+      "text": "Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!»",
+      "inside": true,
+      "clearOfDone": true
+     },
+     "done": {
+      "height": 44,
+      "inside": true,
+      "onTop": true
+     }
+    }
+   ],
+   "afterNo": {
+    "questions": 0,
+    "routines": 2
+   }
+  }
+ },
+ "lateFail": {
+  "alarmsShown": 2,
+  "roosterAnswered": [
+   {
+    "status": 404,
+    "msAfterDismiss": 1446
+   }
+  ],
+  "melodyTonesAfterDismiss": 0
+ }
+}

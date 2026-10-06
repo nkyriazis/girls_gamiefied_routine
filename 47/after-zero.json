@@ -1,0 +1,31 @@
+{
+ "lastTask": "Ιφιγένεια | ✕ | 🥞 | Πρωινό | Πέρασε η ώρα! | Τελείωσέ το και πάτα «Έτοιμο!» | Έτοιμο!",
+ "tasks": [
+  {
+   "task": "t-brush",
+   "onTime": false,
+   "stars": 0
+  },
+  {
+   "task": "t-wash",
+   "onTime": false,
+   "stars": 0
+  },
+  {
+   "task": "t-dress",
+   "onTime": false,
+   "stars": 0
+  },
+  {
+   "task": "t-breakfast",
+   "onTime": false,
+   "stars": 0
+  }
+ ],
+ "serverGave": 0,
+ "reward": {
+  "title": "🎉 Μπράβο! 🎉",
+  "stars": "⭐",
+  "starsText": null
+ }
+}
