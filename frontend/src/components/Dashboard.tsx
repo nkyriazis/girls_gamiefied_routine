@@ -538,9 +538,12 @@ export const Dashboard: React.FC = () => {
           --dock-h: calc(var(--dock-avatar) + 3.5rem);
           /* The side buttons' column (60 px each, every --fab-step), its second at --fab-at:
              at 800 px tall and more the middle of the screen, as always; on shorter screens
-             it moves up and closes up, between the Install button (top 1rem, 44 px) and the dock */
+             it moves up and closes up, between the top right corner and the dock. That corner
+             holds the Install button (top 1rem, 44 px) and the chore toasts (3.5rem each, 0.5rem
+             apart): --fab-top leaves room for one toast and a gap. More toasts stack over the
+             column for their 5 s, as they always did on short screens. */
           --fab: 60px;
-          --fab-top: 4.5rem;
+          --fab-top: 5.25rem;
           --fab-step: min(80px, (100dvh - var(--dock-h) - 1rem - var(--fab-top) - var(--fab)) / 3);
           --fab-at: min(50%, 100dvh - var(--dock-h) - 1rem - var(--fab) - 2 * var(--fab-step));
           display: flex;
