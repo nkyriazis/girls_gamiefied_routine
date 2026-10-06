@@ -38,6 +38,22 @@ export async function start(out, { size = { width: 1280, height: 800 }, touch = 
     };
     // The screens' sounds (sound/sfx.ts tells what it plays)
     addEventListener('sfx', e => log('heard', { src: `${location.origin}/sfx/${e.detail.name}.wav`, at: Date.now() + e.detail.delay, ev: 'play', sfx: true }));
+    // Web Audio tones (the alarm's built-in melody, the time-up beeps) have no file: each one
+    // that sounds is logged with its wave, pitch and length (at its stop()), and mix.sh makes it again
+    const toneStart = OscillatorNode.prototype.start, toneStop = OscillatorNode.prototype.stop;
+    OscillatorNode.prototype.start = function (when = 0) {
+      const now = this.context.currentTime;
+      this.__tone = { from: Math.max(when, now), at: Date.now() + Math.max(0, when - now) * 1000, freq: this.frequency.value, type: this.type };
+      return toneStart.apply(this, arguments);
+    };
+    OscillatorNode.prototype.stop = function (when = 0) {
+      const t = this.__tone;
+      if (t && this.context.state === 'running') {
+        const secs = Math.max(0.05, Math.max(when, this.context.currentTime) - t.from);
+        log('heard', { src: `${location.origin}/tone/${t.type}/${Math.round(t.freq)}`, at: t.at, ev: 'play', sfx: true, tone: { secs } });
+      }
+      return toneStop.apply(this, arguments);
+    };
     // The video's own clock, for mix.sh: the square shows the page clock's second (white when odd),
     // so it keeps its phase across navigations. It goes in as soon as the document has a root, before
     // the first paint, and every colour it shows is logged.
