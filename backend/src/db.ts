@@ -51,7 +51,7 @@ export async function appState(): Promise<AppState> {
     choreInstances: getChoresWithInstances().instances,
     exerciseSessions: activeExerciseSessions(),
     exerciseAssignments: await todaysAssignments(),
-    flowRuns: store.flowRuns.all(),
+    flowRuns: flowRunsView(),
     routineRuns: routineRunsView(),
     helpSeen: store.helpSeen.all().map(h => h.id)
   };
@@ -344,6 +344,40 @@ export function closeStaleRoutines(userId?: string): number {
     stale.forEach(run => endRoutine(run, 'ROUTINE_CLOSED_STALE'));
     return stale.length;
   });
+}
+
+/** Flow runs as clients render them: a run waiting at an alarm says whom the alarm is for. */
+function flowRunsView(): FlowRun[] {
+  return store.flowRuns.all().map(run =>
+    run.steps[run.stepIndex]?.type === 'alarm' ? { ...run, userIds: alarmUserIds(run.steps, run.stepIndex + 1) } : run);
+}
+
+/**
+ * The kids an alarm is for: those of the routines the steps after it start, through
+ * sub-flows, up to the next alarm (it has its own), in config order. Empty: everyone.
+ */
+function alarmUserIds(steps: readonly FlowStep[], from: number): string[] {
+  const { users, routineAssignments, flows } = config();
+  const kids = new Set<string>();
+  const seen = new Set<string>(); // sub-flows walked, so a flow that starts itself ends
+  const walk = (steps: readonly FlowStep[], from: number): void => {
+    for (const step of steps.slice(from)) {
+      if (step.type === 'alarm') return;
+      const actions = step.type === 'routine' ? [{ type: 'routine' as const, routineId: step.routineId }] : step.actions;
+      for (const action of actions) {
+        if (action.type === 'routine') {
+          const userId = routineAssignments.find(a => a.id === action.routineId)?.userId;
+          if (userId) kids.add(userId);
+        } else if (!seen.has(action.flowId)) {
+          seen.add(action.flowId);
+          const flow = flows.find(f => f.id === action.flowId);
+          if (flow) walk(flow.steps, 0);
+        }
+      }
+    }
+  };
+  walk(steps, from);
+  return users.map(u => u.id).filter(id => kids.has(id));
 }
 
 /** Routine runs as clients render them, with the stars earned so far. */

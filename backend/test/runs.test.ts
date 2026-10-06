@@ -22,7 +22,22 @@ const cfg: DataConfig = {
   flows: [
     { id: 'f1', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'routine', userId: 'u1', routineId: 'a1' }] }] },
     { id: 'f2', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'routine', userId: 'u2', routineId: 'a2' }] }] },
-    { id: 'both', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'f1' }, { type: 'flow', flowId: 'f2' }] }] }
+    { id: 'both', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'f1' }, { type: 'flow', flowId: 'f2' }] }] },
+    // One alarm for both kids
+    { id: 'together', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [
+      { type: 'routine', userId: 'u1', routineId: 'a1' }, { type: 'routine', userId: 'u2', routineId: 'a2' }] }] },
+    // An alarm before sub-flows: their routines are its kids'
+    { id: 'wake', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'flow', flowId: 'routines' }] }] },
+    { id: 'routines', steps: [
+      { type: 'parallel', actions: [{ type: 'routine', userId: 'u1', routineId: 'a1' }] },
+      { type: 'parallel', actions: [{ type: 'routine', userId: 'u2', routineId: 'a2' }] }] },
+    // Two alarms: each is for the kids up to the next one
+    { id: 'twice', steps: [
+      { type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'routine', userId: 'u1', routineId: 'a1' }] },
+      { type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'routine', userId: 'u2', routineId: 'a2' }] }] },
+    // A sub-flow that starts itself (a config mistake) mustn't hang the server
+    { id: 'cycle', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'flow', flowId: 'cycle-b' }] }] },
+    { id: 'cycle-b', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'cycle-b' }, { type: 'routine', userId: 'u2', routineId: 'a2' }] }] }
   ],
   schedules: [], rewards: [], settings: { timezone: 'Europe/Athens' }
 };
@@ -178,4 +193,46 @@ test('an alarm nobody dismissed stops after settings.alarmMinutes, with the rest
   store.flowRuns.put({ ...old, startedAt: new Date(Date.now() - 2 * hour).toISOString() });
   assert.equal(db.expireAlarms(), 1);
   assert.equal(store.recentLogs(50).filter(l => l.type === 'ALARM_EXPIRED').length, 2);
+});
+
+// Whom each alarm on screen is for, as clients get it
+const alarmsFor = async () => Object.fromEntries((await db.appState()).flowRuns
+  .filter(r => r.steps[r.stepIndex]?.type === 'alarm').map(r => [r.flowId, r.userIds]));
+
+test('the server says whom an alarm is for: the kids of the routines after it', async () => {
+  reset();
+  db.triggerAction('together');
+  db.triggerAction('both');
+  db.triggerAction('wake');
+  db.triggerAction('cycle');
+  db.triggerAction('alarm');
+  assert.deepEqual(await alarmsFor(), {
+    together: ['u1', 'u2'], // a flow for both kids: one alarm, both named
+    f1: ['u1'], f2: ['u2'], // the sub-flows' own alarms
+    wake: ['u1', 'u2'], // through its sub-flow, every step of it
+    cycle: ['u2'], // the sub-flow that starts itself is counted once
+    alarm: [] // push 'alarm': for everyone
+  });
+
+  reset();
+  db.triggerAction('twice');
+  assert.deepEqual(await alarmsFor(), { twice: ['u1'] }, 'up to the next alarm');
+  db.dismissAlarm(flowRun('twice').id, 0);
+  db.closeRoutine(routineRun('u1').id);
+  assert.deepEqual(await alarmsFor(), { twice: ['u2'] }, 'the second alarm is for the kid after it');
+});
+
+test('she is in her routine and dismisses her alarm: her routine goes on, nothing new starts', () => {
+  reset();
+  db.triggerAction('a1');
+  const mine = routineRun('u1').id;
+  db.completeTask(mine, 't1');
+  const executions = store.routineExecutions.count();
+  db.triggerAction('f1');
+  assert.equal(db.dismissAlarm(flowRun('f1').id, 0), true);
+  assert.equal(store.routineRuns.count(), 1);
+  assert.equal(routineRun('u1').id, mine, 'the same run, not a second one');
+  assert.equal(routineRun('u1').taskIndex, 1, 'where she was');
+  assert.equal(store.routineExecutions.count(), executions, 'no second execution');
+  assert.equal(flowRun('f1'), undefined, 'the flow moved on and ended');
 });

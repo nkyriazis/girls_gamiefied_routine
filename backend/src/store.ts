@@ -199,7 +199,7 @@ export class Store {
   readonly exerciseSessions: Table<ExerciseSession>;
   readonly exerciseAssignments: Table<ExerciseAssignment>;
   readonly logs: Table<ActionLog>;
-  readonly flowRuns: Table<FlowRun>;
+  readonly flowRuns: Table<Omit<FlowRun, 'userIds'>>;
   readonly routineRuns: Table<Omit<RoutineRun, 'totalStars'>>;
   readonly helpSeen: Table<HelpSeen>;
 
@@ -234,7 +234,7 @@ export class Store {
       id: 'text', userId: 'text', exerciseId: 'text', date: 'text', status: 'text', attempts: 'int',
       assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json', extra: 'bool'
     });
-    this.flowRuns = new Table<FlowRun>(db, 'flow_runs', onChange, {
+    this.flowRuns = new Table<Omit<FlowRun, 'userIds'>>(db, 'flow_runs', onChange, {
       id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text', stepStartedAt: 'text'
     });
     this.routineRuns = new Table<Omit<RoutineRun, 'totalStars'>>(db, 'routine_runs', onChange, {
