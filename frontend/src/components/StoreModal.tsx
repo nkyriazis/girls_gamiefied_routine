@@ -49,6 +49,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
   // Incoming pending transfers
   const myPendingIncomingTransfers = starTransfers.filter(t => t.toUserId === user.id && t.status === 'pending');
+  // What the activity popup lists (a revoked purchase isn't shown, so it doesn't count)
+  const hasActivity = pendingSpendings.length + historySpendings.length
+    + myPendingOutgoingTransfers.length + myPendingIncomingTransfers.length > 0;
 
   // Other users for transfer
   const otherUsers = allUsers.filter(u => u.id !== user.id);
@@ -214,7 +217,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                       🎁 Δώσε Αστέρια
                     </button>
                   )}
-                  {(mySpendings.length > 0 || myPendingOutgoingTransfers.length > 0 || myPendingIncomingTransfers.length > 0) && (
+                  {hasActivity && (
                     <button
                       className="activity-toggle-btn"
                       {...help('store.activity')}
@@ -319,7 +322,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                   )}
                 </AnimatePresence>
 
-                {mySpendings.length === 0 && myPendingOutgoingTransfers.length === 0 && myPendingIncomingTransfers.length === 0 && (
+                {!hasActivity && (
                   <div className="empty-state">Καμία δραστηριότητα</div>
                 )}
 
