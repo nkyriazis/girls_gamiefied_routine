@@ -28,7 +28,16 @@ export interface ScheduleDebug {
   schedules: { id: string; cron: string; targetId?: string; nextRunLocal?: string; error?: string }[];
 }
 
-// Rejects with the server's error message when there is one.
+/** A request the server answered with an error: its message, and the HTTP status (a 400 is a refusal with a reason). */
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+// Rejects with an ApiError carrying the server's error message when there is one.
 async function request<T>(method: string, path: string, body?: unknown, fallbackError = 'Request failed'): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     method,
@@ -37,7 +46,7 @@ async function request<T>(method: string, path: string, body?: unknown, fallback
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const json = await response.json().catch(() => undefined);
-  if (!response.ok) throw new Error(json?.error || fallbackError);
+  if (!response.ok) throw new ApiError(json?.error || fallbackError, response.status);
   return json as T;
 }
 

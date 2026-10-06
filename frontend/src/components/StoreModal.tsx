@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
-import { api } from '../api';
+import { api, ApiError } from '../api';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import type { User, Reward, Spending, StarTransfer } from '@shared/types';
@@ -35,15 +35,15 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   const [selectedRecipient, setSelectedRecipient] = useState<string>('');
   const [isTransferring, setIsTransferring] = useState(false);
   const [transferSuccess, setTransferSuccess] = useState(false);
+  const [refusal, setRefusal] = useState<string | null>(null);
 
   const mySpendings = spendings.filter((s) => s.userId === user.id);
   const pendingSpendings = mySpendings.filter(s => s.status === 'pending');
   const historySpendings = mySpendings.filter(s => s.status === 'done');
 
-  // Calculate pending outgoing transfers
+  // Stars promised in her pending gifts stay hers but can't be spent: the server says what is available
   const myPendingOutgoingTransfers = starTransfers.filter(t => t.fromUserId === user.id && t.status === 'pending');
-  const pendingOutgoingAmount = myPendingOutgoingTransfers.reduce((sum, t) => sum + t.amount, 0);
-  const availableBalance = user.stars - pendingOutgoingAmount;
+  const availableBalance = user.available;
 
   // Incoming pending transfers
   const myPendingIncomingTransfers = starTransfers.filter(t => t.toUserId === user.id && t.status === 'pending');
@@ -51,11 +51,16 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   // Other users for transfer
   const otherUsers = allUsers.filter(u => u.id !== user.id);
 
+  // A purchase or gift the server refused (a gift made on another screen took the stars first, say).
+  // It shows where she is looking: under the balance, or in the gift form while that is open.
+  const refuse = (text: string) => {
+    sfx('nope');
+    setRefusal(text);
+    setTimeout(() => setRefusal(current => current === text ? null : current), 3500);
+  };
+
   const handleBuy = async (reward: Reward) => {
-    if (availableBalance < reward.cost) {
-      alert(`Δεν έχεις αρκετά αστέρια! Χρειάζεσαι ⭐${reward.cost}, έχεις διαθέσιμα ⭐${availableBalance}`);
-      return;
-    }
+    if (availableBalance < reward.cost) return refuse('Δεν έχεις αρκετά διαθέσιμα αστέρια');
 
     setPurchasingId(reward.id);
 
@@ -71,7 +76,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
       }, 2000);
     } catch (err) {
       console.error(err);
-      alert('Error spending stars');
+      refuse(err instanceof ApiError && err.status === 400 ? 'Δεν έχεις αρκετά διαθέσιμα αστέρια' : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.');
     } finally {
       setPurchasingId(null);
     }
@@ -95,7 +100,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
       }, 2000);
     } catch (err) {
       console.error(err);
-      alert((err as Error).message || 'Error creating transfer');
+      refuse(err instanceof ApiError && err.status === 400 ? 'Δεν έχεις αρκετά διαθέσιμα αστέρια' : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.');
     } finally {
       setIsTransferring(false);
     }
@@ -168,11 +173,19 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
               >
                 ⭐ {user.stars}
               </motion.div>
-              {pendingOutgoingAmount > 0 && (
+              {availableBalance < user.stars && (
                 <div className="pending-balance-hint">
                   (Διαθέσιμα: ⭐ {availableBalance})
                 </div>
               )}
+              <AnimatePresence>
+                {refusal && !showTransfer && (
+                  <motion.div className="store-refusal" role="alert"
+                    initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
+                    {refusal}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -453,6 +466,15 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         </div>
                         <span className="available-hint">Διαθέσιμα: ⭐ {availableBalance}</span>
                       </div>
+
+                      <AnimatePresence>
+                        {refusal && (
+                          <motion.div className="store-refusal" role="alert"
+                            initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
+                            {refusal}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
                       <button 
                         className="send-transfer-btn"
@@ -835,6 +857,14 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           color: #ff9f43;
           opacity: 0.9;
         }
+        .store-refusal {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: #ff6b6b;
+          background: rgba(255,107,107,0.12);
+          padding: 0.3rem 0.75rem;
+          border-radius: 0.75rem;
+        }
 
         /* Header buttons */
         .header-buttons {
@@ -892,6 +922,10 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           display: flex;
           flex-direction: column;
           gap: 1rem;
+        }
+
+        .transfer-form .store-refusal {
+          text-align: center;
         }
 
         .form-field {

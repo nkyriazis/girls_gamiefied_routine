@@ -1,25 +1,24 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
 import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { randomUUID } from 'crypto';
 import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
-import { Spending, StarTransfer, StateSnapshot } from '../../shared/types';
+import { Spending, StateSnapshot } from '../../shared/types';
 
 // Import shared database layer
 import {
   store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, expireAlarms, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
-  readLastLogs, MAX_LOGS, adjustUserStars, awardStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
+  readLastLogs, MAX_LOGS, awardStars, takeStars, buyReward, resolveSpending, createGift, resolveGift, StarsError, UPLOADS_DIR, getChoresWithInstances, claimChore,
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
   cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
-  logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, startExtraProblem, usersView,
+  logAction, getExerciseAssignments, answerExerciseAssignment, startExtraProblem, usersView,
   stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
 } from './db';
 import { config, configError, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
@@ -149,6 +148,16 @@ server.get('/health', async () => {
 // User routes: users with their star balance and their assigned routines
 server.get('/api/users', async () => usersView());
 
+// Star operations refused with a reason (StarsError) answer with its status and text; the parent's toasts show it.
+async function refusable<T>(reply: FastifyReply, operation: () => T) {
+  try {
+    return operation();
+  } catch (err) {
+    if (err instanceof StarsError) return reply.code(err.status).send({ error: err.message });
+    throw err;
+  }
+}
+
 // Parent: add (or, with a negative amount, take away) stars
 server.post('/api/users/:id/stars', async (request, reply) => {
   const { id } = request.params as { id: string };
@@ -156,8 +165,7 @@ server.post('/api/users/:id/stars', async (request, reply) => {
   if (typeof amount !== 'number' || !Number.isInteger(amount) || amount === 0) {
     return reply.code(400).send({ error: 'amount must be a non-zero integer' });
   }
-  if (!config().users.some(u => u.id === id)) return reply.code(404).send({ error: 'User not found' });
-  return awardStars(id, amount);
+  return refusable(reply, () => amount > 0 ? awardStars(id, amount) : takeStars(id, -amount));
 });
 
 // Flow routes
@@ -286,65 +294,13 @@ server.get('/api/spendings', async (request, reply) => {
 
 server.post('/api/spendings', async (request, reply) => {
   const { userId, rewardId } = request.body as { userId: string, rewardId: string };
-  
-  const user = config().users.find(u => u.id === userId);
-  const reward = config().rewards.find(r => r.id === rewardId);
-
-  if (!user || !reward) {
-    return reply.code(404).send({ error: 'User or Reward not found' });
-  }
-
-  const spending: Spending = {
-    id: randomUUID(),
-    userId,
-    rewardId,
-    cost: reward.cost,
-    createdAt: new Date().toISOString(),
-    status: 'pending'
-  };
-
-  // Deduction and record are one transaction: stars can't vanish without a spending.
-  const newBalance = store.transaction(() => {
-    const balance = trySpendStars(userId, reward.cost);
-    if (balance !== null) store.spendings.put(spending);
-    return balance;
-  });
-  if (newBalance === null) {
-    return reply.code(400).send({ error: 'Not enough stars' });
-  }
-  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance });
-
-  return spending;
+  return refusable(reply, () => buyReward(userId, rewardId));
 });
 
 server.put('/api/spendings/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
   const { status } = request.body as { status: Spending['status'] };
-
-  const spending = store.spendings.get(id);
-
-  if (!spending) {
-    return reply.code(404).send({ error: 'Spending not found' });
-  }
-
-  if (status !== 'done' && status !== 'revoked') {
-    return reply.code(400).send({ error: 'Invalid status' });
-  }
-  if (spending.status === 'revoked') {
-    return reply.code(400).send({ error: 'Spending is already revoked' });
-  }
-
-  const updated = { ...spending, status };
-  store.transaction(() => {
-    // Revoking refunds the stars
-    if (status === 'revoked' && spending.status !== 'revoked' && config().users.some(u => u.id === spending.userId)) {
-      adjustUserStars(spending.userId, spending.cost);
-    }
-    store.spendings.put(updated);
-  });
-  logAction(`SPENDING_${status.toUpperCase()}`, { spendingId: id, userId: spending.userId, rewardId: spending.rewardId, cost: spending.cost });
-
-  return updated;
+  return refusable(reply, () => resolveSpending(id, status));
 });
 
 // Star Transfers routes
@@ -359,82 +315,13 @@ server.get('/api/transfers', async (request, reply) => {
 
 server.post('/api/transfers', async (request, reply) => {
   const { fromUserId, toUserId, amount } = request.body as { fromUserId: string, toUserId: string, amount: number };
-  
-  const fromUser = config().users.find(u => u.id === fromUserId);
-  const toUser = config().users.find(u => u.id === toUserId);
-
-  if (!fromUser || !toUser) {
-    return reply.code(404).send({ error: 'User not found' });
-  }
-
-  if (fromUserId === toUserId) {
-    return reply.code(400).send({ error: 'Cannot transfer stars to yourself' });
-  }
-
-  if (amount <= 0) {
-    return reply.code(400).send({ error: 'Amount must be positive' });
-  }
-
-  // Check available balance (total - pending outgoing transfers)
-  const availableBalance = getAvailableBalance(fromUserId);
-  if (availableBalance < amount) {
-    return reply.code(400).send({ error: 'Not enough available stars', availableBalance });
-  }
-
-  const transfer: StarTransfer = {
-    id: randomUUID(),
-    fromUserId,
-    toUserId,
-    amount,
-    createdAt: new Date().toISOString(),
-    status: 'pending'
-  };
-
-  store.starTransfers.put(transfer);
-
-  logAction('TRANSFER_REQUEST', { fromUserId, toUserId, amount, transferId: transfer.id });
-
-  return transfer;
+  return refusable(reply, () => createGift(fromUserId, toUserId, amount));
 });
 
 server.put('/api/transfers/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
   const { action } = request.body as { action: 'approve' | 'reject' | 'cancel' };
-
-  const transfer = store.starTransfers.get(id);
-
-  if (!transfer) {
-    return reply.code(404).send({ error: 'Transfer not found' });
-  }
-
-  if (transfer.status !== 'pending') {
-    return reply.code(400).send({ error: 'Transfer is already resolved' });
-  }
-
-  const users = config().users;
-  if (!users.some(u => u.id === transfer.fromUserId) || !users.some(u => u.id === transfer.toUserId)) {
-    return reply.code(404).send({ error: 'User not found' });
-  }
-
-  // Reject/cancel: stars stay with the sender (they were locked, now unlocked)
-  const outcomes = { approve: 'approved', reject: 'rejected', cancel: 'cancelled' } as const;
-  const status = outcomes[action];
-  if (!status) {
-    return reply.code(400).send({ error: 'Invalid action' });
-  }
-
-  const resolved: StarTransfer = { ...transfer, status, resolvedAt: new Date().toISOString() };
-  store.transaction(() => {
-    if (status === 'approved') {
-      // Deduct from sender and add to receiver
-      adjustUserStars(transfer.fromUserId, -transfer.amount);
-      adjustUserStars(transfer.toUserId, transfer.amount);
-    }
-    store.starTransfers.put(resolved);
-  });
-  logAction(`TRANSFER_${status.toUpperCase()}`, { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
-
-  return resolved;
+  return refusable(reply, () => resolveGift(id, action));
 });
 
 // Admin: Upload file
