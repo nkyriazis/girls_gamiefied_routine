@@ -145,7 +145,8 @@ export class ConfigFile<T> {
    * Validate and atomically write a new version, then make it live. Refused
    * (nothing written) while the file on disk is invalid, unless `replace`
    * asks to replace it; and never with the empty fallback over a file that
-   * was never loaded. A replaced invalid file is kept as <file>.invalid-<stamp>.
+   * was never loaded, nor over a live config that has content. A replaced
+   * invalid file is kept as <file>.invalid-<stamp>.
    */
   save(value: unknown, { replace = false }: { replace?: boolean } = {}): ValidationError | null {
     const name = path.basename(this.file);
@@ -155,6 +156,11 @@ export class ConfigFile<T> {
       return refusal(`${name} was never loaded (it could not be read at startup), so saving would replace it ` +
         `with ${replace ? 'the empty config' : 'what is live, the empty config'}. Fix the file itself ` +
         `(Γονείς → Προχωρημένα shows its text) or restore it from a backup.`);
+    }
+    if (isDeepStrictEqual(value, this.fallback) && !isDeepStrictEqual(this.value, this.fallback)) {
+      // What a screen holds before its first state arrives: never the family's config wiped by one tap
+      return refusal(`Refused: this would replace ${name} with the empty config, which has nothing in it. ` +
+        `A screen that saved before it had loaded the config sends exactly that; reload the page and try again.`);
     }
     if (this.error && !replace) {
       return refusal(`${name} on disk is not valid, so saving is off: it would replace the file being fixed. ` +
