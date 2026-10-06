@@ -9,6 +9,7 @@ import { CalcBench, PaintWords } from './ProblemFreeSteps';
 import { help } from '../../help/anchors';
 import { HelpScreen } from '../../help/HelpProvider';
 import { problemTour, type ProblemHelpKind } from './ProblemPlayer.help';
+import { useShuffled, shuffle as draw } from './shuffle';
 import { calcNudge, emptyCalc, paintFeedback, readLine, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 import { sfx, sound } from '../../sound/sfx';
 
@@ -469,7 +470,8 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
 
 // Tap the items in order; tap a numbered one to take it (and the ones after it) back.
 const OrderStep: React.FC<StepProps<string[]> & { items: string[] }> = ({ items, value, setValue, wrong, disabled }) => {
-  const shuffled = useMemo(() => shuffle(items), [items]);
+  // Drawn once for these items: a STATE brings the same step again as a new array
+  const shuffled = useShuffled(items, items.join('\n'), shuffle);
   const tap = (item: string) => {
     const at = value.indexOf(item);
     setValue(at >= 0 ? value.slice(0, at) : [...value, item]);
@@ -497,12 +499,8 @@ const OrderStep: React.FC<StepProps<string[]> & { items: string[] }> = ({ items,
   );
 };
 
-function shuffle<T>(xs: T[]): T[] {
-  const out = [...xs];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
+function shuffle<T>(xs: readonly T[]): T[] {
+  const out = draw(xs);
   // Never start in the right order: that would give the answer away
   return out.every((x, i) => x === xs[i]) && out.length > 1 ? [...out.slice(1), out[0]] : out;
 }

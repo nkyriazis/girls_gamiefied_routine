@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import type { MatchPairsExercise } from '@shared/types';
 import { help } from '../../help/anchors';
 import { sound } from '../../sound/sfx';
+import { useShuffled } from './shuffle';
 
 interface Props {
   exercise: MatchPairsExercise;
@@ -20,20 +21,15 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
   // Track matched pairs by their indices: { leftIdx, rightIdx }
   const [matchedPairs, setMatchedPairs] = useState<{ leftIdx: number; rightIdx: number }[]>([]);
 
-  // Build indexed items, shuffled once
+  // Build indexed items; the right column shuffled once per exercise
   const leftItems: IndexedItem[] = useMemo(() =>
     exercise.pairs.map((p, i) => ({ idx: i, text: p.left })),
   [exercise.pairs]);
 
-  const rightItems: IndexedItem[] = useMemo(() => {
-    const items = exercise.pairs.map((p, i) => ({ idx: i, text: p.right }));
-    // Fisher-Yates shuffle
-    for (let i = items.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [items[i], items[j]] = [items[j], items[i]];
-    }
-    return items;
-  }, [exercise.pairs]);
+  const rightItems: IndexedItem[] = useShuffled(
+    exercise.pairs.map((p, i) => ({ idx: i, text: p.right })),
+    exercise.id,
+  );
 
   const handleLeftClick = (leftIdx: number) => {
     if (disabled || matchedPairs.some(m => m.leftIdx === leftIdx)) return;
