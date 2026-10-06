@@ -18,8 +18,10 @@ export const homeTour = (): Tour => ({
   ],
 });
 
+// Quiet: no «Να σου δείξω;» over the routine and alarm cards (the owl still wiggles)
 export const routineTour = (): Tour => ({
   id: 'routine',
+  quiet: true,
   steps: [
     { el: 'routine.timeline', title: 'Η ρουτίνα σου', text: 'Κάθε τελεία είναι μια δουλειά της ρουτίνας. Η φωτεινή είναι αυτή που κάνεις τώρα.' },
     { el: 'routine.task', title: 'Τι κάνεις τώρα', text: 'Αυτή είναι η δουλειά σου. Το ρολόι μετράει πόσος χρόνος μένει.' },

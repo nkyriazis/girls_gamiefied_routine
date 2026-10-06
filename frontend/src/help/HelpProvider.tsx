@@ -104,16 +104,18 @@ export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) =
   const helpApi = useHelpApi();
   const tourId = helpApi?.current ? seenId(helpApi.current.id, helpApi.current.user) : undefined;
   const fresh = !!helpApi?.fresh && !helpApi.playing;
-  // "Να σου δείξω;" for a while when a screen is new; the wiggle stays
+  // "Να σου δείξω;" for a while when a screen is new; the wiggle stays. A quiet tour
+  // (routines and alarms) never offers: the bubble would sit over a card's buttons.
+  const quiet = !!helpApi?.current?.quiet;
   const [offerFor, setOfferFor] = useState<string | null>(null);
   useEffect(() => {
-    if (!fresh || !tourId) return;
+    if (!fresh || !tourId || quiet) return;
     const show = setTimeout(() => setOfferFor(tourId), 900);
     const hide = setTimeout(() => setOfferFor(null), 12000);
     return () => { clearTimeout(show); clearTimeout(hide); };
-  }, [fresh, tourId]);
+  }, [fresh, tourId, quiet]);
   if (!helpApi?.current || inline !== helpApi.inline) return null;
-  const offer = fresh && offerFor === tourId;
+  const offer = fresh && !quiet && offerFor === tourId;
 
   return (
     <div className={`help-anchor ${inline ? 'inline' : 'floating'}`}>
