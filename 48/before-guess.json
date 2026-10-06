@@ -1,0 +1,26 @@
+{
+ "problem": {
+  "exerciseId": "e5-problem-stamps",
+  "stars": 4,
+  "mistakes": [
+   2,
+   2,
+   1,
+   2
+  ],
+  "attempts": 11,
+  "starsAwarded": 4
+ },
+ "true-false": {
+  "exerciseId": "g4-lang-tense-tf-1",
+  "attempts": 2,
+  "starsAwarded": 1,
+  "stars": 1
+ },
+ "multiple-choice": {
+  "exerciseId": "g4-math-div-1",
+  "attempts": 2,
+  "starsAwarded": 1,
+  "stars": 1
+ }
+}

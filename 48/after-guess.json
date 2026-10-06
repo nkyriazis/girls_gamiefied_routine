@@ -1,0 +1,41 @@
+{
+ "rung": "forgiving",
+ "problem": {
+  "exerciseId": "e5-problem-stamps",
+  "stars": 4,
+  "mistakes": [
+   3,
+   0,
+   1,
+   2
+  ],
+  "attempts": 10,
+  "starsAwarded": 1
+ },
+ "true-false": {
+  "exerciseId": "g4-lang-tense-tf-1",
+  "attempts": 2,
+  "status": "completed",
+  "starsAwarded": 0,
+  "stars": 1
+ },
+ "multiple-choice": {
+  "exerciseId": "g4-math-div-1",
+  "attempts": 1,
+  "status": "completed",
+  "starsAwarded": 0,
+  "stars": 1
+ },
+ "extra": {
+  "exerciseId": "g3-gen-start-unknown-001",
+  "stars": 3,
+  "mistakes": [
+   0,
+   0,
+   3,
+   0
+  ],
+  "starsAwarded": 2,
+  "status": "completed"
+ }
+}
