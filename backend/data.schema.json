@@ -245,6 +245,10 @@
           "problemReading": {
             "enum": ["marked", "paint", "paint-all"],
             "description": "How the kid reads word problems: tap pre-marked phrases (default), paint the story freehand (unneeded facts greyed out for her), or paint the unneeded facts too"
+          },
+          "forgiveness": {
+            "enum": ["forgiving", "unforgiving"],
+            "description": "How much mistakes cost (shared/forgiveness.ts): forgiving (default) lets the kid retry at will, a problem losing a star per step gone wrong down to 1; unforgiving gives two tries a step, down to 0"
           }
         }
       }
