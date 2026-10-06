@@ -21,28 +21,44 @@ export async function start(out, { size = { width: 1280, height: 800 }, touch = 
     viewport: size, deviceScaleFactor: 1, hasTouch: touch, timezoneId: 'Europe/Athens', locale: 'el-GR',
     ...(video ? { recordVideo: { dir: `video-${out}`, size } } : {}),
   });
+  // What the page plays and the corner square's colour, kept here (Node side): a page's own
+  // variables start over at each navigation, the recording doesn't
+  const heard = [], square = [];
+  await context.exposeBinding('__evidence', (_source, kind, e) => (kind === 'square' ? square : heard).push(e));
   await context.addInitScript(() => {
-    window.__heard = [];
+    const log = (kind, e) => window.__evidence?.(kind, e);
     const play = HTMLMediaElement.prototype.play, stop = HTMLMediaElement.prototype.pause;
     HTMLMediaElement.prototype.play = function () {
-      window.__heard.push({ src: this.src, at: Date.now(), ev: 'play' }); window.__playing = this;
+      log('heard', { src: this.src, at: Date.now(), ev: 'play' }); window.__playing = this;
       return play.call(this);
     };
     HTMLMediaElement.prototype.pause = function () {
-      if (!this.paused) window.__heard.push({ src: this.src, at: Date.now(), ev: 'stop' });
+      if (!this.paused) log('heard', { src: this.src, at: Date.now(), ev: 'stop' });
       return stop.call(this);
     };
     // The screens' sounds (sound/sfx.ts tells what it plays)
-    addEventListener('sfx', e => window.__heard.push({ src: `${location.origin}/sfx/${e.detail.name}.wav`, at: Date.now() + e.detail.delay, ev: 'play', sfx: true }));
-    // The video's own clock, for mix.sh
-    window.__sync = [];
-    addEventListener('DOMContentLoaded', () => {
-      const sq = document.createElement('div');
-      sq.style.cssText = 'position:fixed;right:0;bottom:0;width:8px;height:8px;z-index:2147483647;pointer-events:none;background:#000';
+    addEventListener('sfx', e => log('heard', { src: `${location.origin}/sfx/${e.detail.name}.wav`, at: Date.now() + e.detail.delay, ev: 'play', sfx: true }));
+    // The video's own clock, for mix.sh: the square shows the page clock's second (white when odd),
+    // so it keeps its phase across navigations. It goes in as soon as the document has a root, before
+    // the first paint, and every colour it shows is logged.
+    const sq = document.createElement('div');
+    sq.style.cssText = 'position:fixed;right:0;bottom:0;width:8px;height:8px;z-index:2147483647;pointer-events:none';
+    const paint = () => {
+      const on = Math.floor(Date.now() / 1000) % 2 === 1;
+      sq.style.background = on ? '#fff' : '#000';
+      log('square', { at: Date.now(), on });
+    };
+    const place = () => {
+      if (!document.documentElement || sq.isConnected) return !!document.documentElement;
       document.documentElement.appendChild(sq);
-      let on = false;
-      setInterval(() => { on = !on; sq.style.background = on ? '#fff' : '#000'; window.__sync.push(Date.now()); }, 1000);
-    });
+      paint();
+      setTimeout(() => { paint(); setInterval(paint, 1000); }, 1000 - (Date.now() % 1000) + 5);
+      return true;
+    };
+    if (!place()) {
+      const watch = new MutationObserver(() => { if (place()) watch.disconnect(); });
+      watch.observe(document, { childList: true });
+    }
   });
   const t0 = Date.now();
   const page = await context.newPage();
@@ -83,8 +99,9 @@ export async function start(out, { size = { width: 1280, height: 800 }, touch = 
   const shot = async name => { await page.screenshot({ path: `${name}.png` }); log('screenshot', `${name}.png`); };
   const finish = async () => {
     await pause(1200);
-    const heard = await page.evaluate(() => window.__heard);
-    const sync = await page.evaluate(() => window.__sync);
+    // The square's flips in page time, from the first one to white (as mix.sh counts them in the video)
+    const sync = [];
+    square.forEach((e, i) => { if (i && e.on !== square[i - 1].on && (sync.length || e.on)) sync.push(e.at); });
     fs.writeFileSync(`${out}.sound.json`, JSON.stringify({
       said: heard.map(e => ({ ...e, src: new URL(e.src).pathname, at: e.at - t0 })),
       sync: sync.map(t => t - t0),
