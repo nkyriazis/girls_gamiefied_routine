@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type {
   ExerciseAssignmentWithExercise, ProblemExercise, ProblemPhase, ProblemReading, ProblemRole, ProblemStep
@@ -12,6 +12,8 @@ import { problemTour, type ProblemHelpKind } from './ProblemPlayer.help';
 import { useShuffled, shuffle as draw } from './shuffle';
 import { calcNudge, emptyCalc, paintFeedback, readLine, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 import { sfx, sound } from '../../sound/sfx';
+import { numbersInput, type NumbersInput } from './answerFields';
+import { ANSWER_BOX_CSS, wiggle } from './answerBox';
 
 // A word problem, one step at a time, the way the Ε' book teaches it (ch. 1.3):
 // read (what we know, what we seek), plan, solve, check. The server checks each
@@ -414,15 +416,21 @@ const ChoiceStep: React.FC<StepProps<number | null> & { options: string[] }> = (
   </div>
 );
 
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '↵'];
+// C (empty this box) comes last: under ⌫, so the digits and ↵ stay where they were
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '↵', 'C'];
 
-// One box per row and one keypad; the keypad types into the selected box, ↵ moves to the next.
+// One box per row and one keypad; the keypad types into the selected box, ↵ moves to the next
+// (answerFields.ts says where each input goes).
 const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?: string }[] }> = ({ rows, value, setValue, wrong, disabled }) => {
   const [active, setActive] = useState(0);
-  const key = (k: string) => {
+  const boxes = useRef<(HTMLButtonElement | null)[]>([]);
+  const input = (i: NumbersInput) => {
     if (disabled) return;
-    if (k === '↵') { setActive(a => (a + 1) % rows.length); return; }
-    setValue(value.map((v, i) => (i !== active ? v : k === '⌫' ? v.slice(0, -1) : v.length < 6 ? v + k : v)));
+    const e = numbersInput(value, active, i);
+    sfx(e.sound);
+    if (e.refused !== undefined) { wiggle(boxes.current[e.refused]); return; }
+    setActive(e.focus);
+    if (e.value !== value) setValue(e.value);
   };
   // Long labels ("Όλες οι ημέρες: 24 + 48 + 33 + 105 =") need the width: keypad under the rows
   const stacked = rows.some(row => row.label.length > 22);
@@ -432,8 +440,9 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
         {rows.map((row, i) => (
           <div key={i} className="numbers-row">
             <span className="numbers-label">{row.label}</span>
-            <button type="button" className={`numbers-box ${active === i ? 'active' : ''} ${wrong?.includes(i) ? 'is-wrong' : ''}`}
-              onClick={() => setActive(i)} aria-label={`${row.label} ${value[i]}`}>
+            <button type="button" ref={el => { boxes.current[i] = el; }} disabled={disabled}
+              className={`numbers-box answer-box ${active === i ? 'focused' : ''} ${wrong?.includes(i) ? 'is-wrong' : ''}`}
+              aria-pressed={active === i} {...sound('none')} onClick={() => input({ kind: 'tap', box: i })} aria-label={`${row.label} ${value[i]}`}>
               {value[i] ? Number(value[i]).toLocaleString('el-GR') : ' '}
             </button>
             <span className="numbers-unit">{row.unit}</span>
@@ -442,8 +451,8 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
       </div>
       <div className="numbers-pad" {...help('problem.keypad')}>
         {KEYS.map(k => (
-          <motion.button key={k} type="button" className="numbers-key" disabled={disabled} whileTap={!disabled ? { scale: 0.92 } : {}}
-            {...sound(k === '⌫' ? 'erase' : k === '↵' ? 'tap' : 'key')} onClick={() => key(k)}>{k}</motion.button>
+          <motion.button key={k} type="button" className={`numbers-key ${k === 'C' ? 'clear' : ''}`} disabled={disabled} whileTap={!disabled ? { scale: 0.92 } : {}}
+            {...sound('none')} onClick={() => input({ kind: 'key', key: k })}>{k}</motion.button>
         ))}
       </div>
       <style>{`
@@ -451,6 +460,7 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
         @container (min-width: 560px) {
           .numbers-step:not(.stacked) { grid-template-columns: 1fr 15rem; }
           .numbers-step:not(.stacked) .numbers-pad { grid-template-columns: repeat(3, 1fr); }
+          .numbers-step:not(.stacked) .numbers-key.clear { grid-column: 1; }
         }
         .numbers-step.stacked .numbers-key { padding: 0.45rem 0; }
         .numbers-rows { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -458,11 +468,12 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
         .numbers-label { flex: 1; text-align: right; }
         .numbers-box { min-width: 6.5rem; min-height: 2.9rem; font-size: 1.45rem; font-weight: bold; color: white; border-radius: 0.8rem;
           background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.25); cursor: pointer; }
-        .numbers-box.active { border-color: gold; box-shadow: 0 0 0 3px rgba(255,215,0,0.25); }
         .numbers-unit { min-width: 5rem; opacity: 0.8; }
         .numbers-pad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.45rem; }
         .numbers-key { font-size: 1.45rem; padding: 0.55rem 0; border-radius: 0.8rem; border: none; color: white; background: rgba(255,255,255,0.12); cursor: pointer; }
-        @container (max-width: 420px) { .numbers-pad { grid-template-columns: repeat(3, 1fr); } .numbers-row { flex-wrap: wrap; } }
+        .numbers-key.clear { grid-column: 4; } /* under ⌫ */
+        @container (max-width: 420px) { .numbers-pad { grid-template-columns: repeat(3, 1fr); } .numbers-key.clear { grid-column: 1; } .numbers-row { flex-wrap: wrap; } }
+        ${ANSWER_BOX_CSS}
       `}</style>
     </div>
   );
