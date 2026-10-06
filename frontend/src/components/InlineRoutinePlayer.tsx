@@ -176,9 +176,14 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
                 {currentTask && <SmartIcon value={currentTask.icon} style={ICON_BOX} />}
               </div>
               <h2 className="task-name">{currentTask?.title}</h2>
-              <div className={`timer ${timeLeft < 10 ? 'warning' : ''}`}>
-                {formatTime(timeLeft)}
-              </div>
+              {/* Time up: said in words, calmly (a late task still counts: it gets its lateStars) */}
+              {timeUp ? (
+                <p className="late-note"><span>Πέρασε η ώρα!</span> Τελείωσέ το και πάτα «Έτοιμο!»</p>
+              ) : (
+                <div className={`timer ${timeLeft < 10 ? 'warning' : ''}`}>
+                  {formatTime(timeLeft)}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -393,6 +398,20 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         .timer.warning {
           color: var(--color-danger);
           animation: pulse 1s infinite;
+        }
+
+        .late-note {
+          margin: 0 0 clamp(0.5rem, 5.5cqmin, 2rem);
+          font-size: clamp(1rem, 5cqmin, 1.75rem);
+          font-weight: 800;
+          line-height: 1.3;
+          color: #ffc94d;
+          text-wrap: balance;
+          overflow-wrap: break-word;
+        }
+
+        .late-note span {
+          display: block;
         }
 
         .btn-done {
