@@ -28,7 +28,8 @@ import {
 import { config, configError, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
 import { HEARTBEAT_MS } from './sync';
-import { LOGS_FILE, STATE_FILE } from './paths';
+import { BACKUP_CRON, BACKUP_DIR, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
+import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 
 // Import MCP server
@@ -538,6 +539,13 @@ server.post('/api/flow-runs/:runId/steps/:stepIndex/dismiss', async (request) =>
 });
 
 // Debug endpoint to simulate time
+// Debug: take a backup now, the way the daily one runs (a child process; see the action log)
+let backups: BackupJob | null = null;
+server.post('/api/debug/backup', async (request, reply) => {
+  if (!backups) return reply.code(503).send({ error: 'The backup schedule is not running yet' });
+  return { started: backups.run('debug') };
+});
+
 server.post('/api/debug/time', async (request, reply) => {
   const { time } = request.body as { time: string };
   if (!time) return reply.code(400).send({ error: 'Missing time (ISO string or HH:mm)' });
@@ -937,6 +945,8 @@ const start = async () => {
       checkSchedules(new Date());
     });
     console.log('Scheduler started');
+    // The daily backup, in a child process (backupSchedule.ts)
+    backups = scheduleBackups({ cron: BACKUP_CRON, dir: BACKUP_DIR, dbFile: DB_FILE, log: logAction });
     console.log('MCP endpoint available at POST /mcp');
 
     await server.listen({ port: 3000, host: '0.0.0.0' });

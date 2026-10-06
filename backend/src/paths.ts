@@ -14,3 +14,10 @@ export const LOGS_FILE = process.env.LOGS_FILE || path.join(process.cwd(), 'logs
 // Exercise pools shipped with the app (part of the image, not of the data volume).
 export const EXERCISE_POOLS_DIR = process.env.EXERCISE_POOLS_DIR || path.join(process.cwd(), 'exercise-pools');
 export const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+
+// The daily backup (backup.ts). In Docker, BACKUP_DIR is /backups, a bind mount of the host folder
+// named by BACKUP_DIR in .env (default ./backups/daily, on the SD card). The schedule runs in the
+// process's time zone (TZ).
+export const BACKUP_DIR = process.env.BACKUP_DIR || path.join(path.dirname(DATA_FILE), 'backups');
+export const BACKUP_KEEP = Math.max(1, Number.parseInt(process.env.BACKUP_KEEP ?? '', 10) || 14);
+export const BACKUP_CRON = process.env.BACKUP_CRON || '17 3 * * *';
