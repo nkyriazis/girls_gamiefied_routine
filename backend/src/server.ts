@@ -11,9 +11,6 @@ import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
 import { Spending, StarTransfer, StateSnapshot } from '../../shared/types';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { StreamableHTTPServerTransport } = require('./sdk-proxy');
 
 // Import shared database layer
 import {
@@ -32,9 +29,6 @@ import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_F
 import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 
-// Import MCP server
-import { mcpServer } from './mcp';
-
 const pump = util.promisify(pipeline);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -43,17 +37,6 @@ const cronParser = require('cron-parser');
 const { DateTime } = require('luxon');
 
 const server = Fastify({ logger: true });
-
-// Initialize MCP Transport (Singleton)
-const mcpTransport = new StreamableHTTPServerTransport({
-  sessionIdGenerator: undefined, // Stateless mode for now, or use randomUUID for stateful
-  enableJsonResponse: true
-});
-
-// Connect MCP server to transport once
-mcpServer.connect(mcpTransport).catch((err: any) => {
-  console.error('Failed to connect MCP server to transport:', err);
-});
 
 // Scheduler Logic
 async function checkSchedules(date: Date) {
@@ -843,53 +826,6 @@ server.post('/api/admin/state', async (request, reply) => {
   }
 });
 
-// ============================================================================
-// MCP Endpoint - Streamable HTTP Transport
-// ============================================================================
-const handleMcpRequest = async (request: any, reply: any) => {
-  // Authentication disabled as requested
-  /*
-  const apiKey = process.env.MCP_API_KEY;
-  if (apiKey) {
-    // ... auth logic removed ...
-  }
-  */
-
-  try {
-    // Adapt Fastify request/reply to the transport's expected interface
-    // We need to strip the /mcp prefix so the transport sees /sse or /messages
-    // if the transport relies on path checking.
-    // However, StreamableHTTPServerTransport usually just handles the request based on method/headers.
-    
-    // Note: If using /mcp/sse, we might need to ensure the transport knows how to handle it.
-    // But typically, for a single endpoint setup, we just point to it.
-    
-    await mcpTransport.handleRequest(
-      request.raw as any,
-      reply.raw as any,
-      request.body as any
-    );
-
-    // Don't send a response - the transport handles it
-    return reply;
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({
-      jsonrpc: '2.0',
-      error: {
-        code: -32603,
-        message: 'Internal server error'
-      },
-      id: null
-    });
-  }
-};
-
-// Fastify treats wildcard routes differently depending on placement, so register
-// both the root and nested paths to ensure /mcp and /mcp/* (e.g. /mcp/sse) work.
-server.all('/mcp', handleMcpRequest);
-server.all('/mcp/*', handleMcpRequest);
-
 // WebSocket for real-time events
 server.register(async (fastify) => {
   fastify.get('/ws', { websocket: true }, async (connection) => {
@@ -947,7 +883,6 @@ const start = async () => {
     console.log('Scheduler started');
     // The daily backup, in a child process (backupSchedule.ts)
     backups = scheduleBackups({ cron: BACKUP_CRON, dir: BACKUP_DIR, dbFile: DB_FILE, timeoutMs: BACKUP_TIMEOUT_MS, log: logAction });
-    console.log('MCP endpoint available at POST /mcp');
 
     await server.listen({ port: 3000, host: '0.0.0.0' });
   } catch (err) {

@@ -183,7 +183,7 @@ export type TriggerResult =
 const ALARM_ONLY: FlowStep[] = [{ type: 'alarm', props: { sound: 'melody' } }];
 
 /**
- * Start a routine assignment or a flow (schedule, push hook, MCP); 'alarm' shows
+ * Start a routine assignment or a flow (schedule, push hook); 'alarm' shows
  * a plain alarm. A user already in a routine keeps it; a running flow restarts.
  */
 export function triggerAction(id: string, source: string = 'unknown'): TriggerResult | null {
@@ -431,7 +431,8 @@ function commitUserStars(userId: string, newTotal: number): number {
 }
 
 // Adjust a user's star balance by a delta. All star-mutating code paths go
-// through this, trySpendStars or setUserStars.
+// through this or trySpendStars, except replaceState (the admin state editor),
+// which sets every balance at once.
 export function adjustUserStars(userId: string, delta: number): number {
   return store.transaction(() => commitUserStars(userId, store.getStars(userId) + delta));
 }
@@ -454,17 +455,6 @@ export function awardStars(userId: string, amount: number): { success: boolean; 
   logAction('AWARD_STARS', { userId, amount, newBalance: newTotal });
 
   return { success: true, newTotal };
-}
-
-// Set stars for a user (absolute value)
-export function setUserStars(userId: string, amount: number): { success: boolean; newTotal: number } {
-  if (!findUser(userId)) throw new Error(`User not found: ${userId}`);
-
-  const oldStars = store.getStars(userId);
-  commitUserStars(userId, amount);
-  logAction('SET_STARS', { userId, oldBalance: oldStars, newBalance: amount });
-
-  return { success: true, newTotal: amount };
 }
 
 // ============================================
