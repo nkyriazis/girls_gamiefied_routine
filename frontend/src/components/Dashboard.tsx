@@ -16,6 +16,7 @@ import { useTouchDevice } from '../hooks/useTouchDevice';
 import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
 import { ExercisesDrawer } from './ExercisesDrawer';
+import { waitingCount } from './exerciseCounts';
 import { help } from '../help/anchors';
 import { sound } from '../sound/sfx';
 import { HelpCover, HelpScreen } from '../help/HelpProvider';
@@ -80,10 +81,8 @@ export const Dashboard: React.FC = () => {
     }).length;
   }, [choreInstances, chores]);
 
-  // Count pending daily exercise assignments
-  const pendingExercisesCount = useMemo(() => {
-    return exerciseAssignments.filter(a => a.status === 'pending').length;
-  }, [exerciseAssignments]);
+  // The daily sets still to do (the drawer counts the same; extra problems are apart)
+  const pendingExercisesCount = useMemo(() => waitingCount(exerciseAssignments), [exerciseAssignments]);
 
   // Count active bonus activities
   const activeBonusCount = useMemo(() => {
