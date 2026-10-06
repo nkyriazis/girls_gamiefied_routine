@@ -1,0 +1,68 @@
+{
+ "occlusion": [
+  {
+   "at": "a2 routine over the store",
+   "buttons": [
+    {
+     "button": "Έτοιμο!",
+     "onTop": true,
+     "hit": "button.btn-done"
+    }
+   ]
+  },
+  {
+   "at": "b2 alarm over the exercise",
+   "buttons": [
+    {
+     "button": "Ξυπνήσαμε!",
+     "onTop": true,
+     "hit": "button.btn-dismiss-global"
+    }
+   ]
+  },
+  {
+   "at": "b3 morning routine over the exercise",
+   "buttons": [
+    {
+     "button": "Έτοιμο!",
+     "onTop": true,
+     "hit": "button.btn-done"
+    }
+   ]
+  },
+  {
+   "at": "c1 routine over the drawer",
+   "buttons": [
+    {
+     "button": "Έτοιμο!",
+     "onTop": true,
+     "hit": "button.btn-done"
+    }
+   ]
+  },
+  {
+   "at": "d2b alarm over the game",
+   "buttons": [
+    {
+     "button": "Ξυπνήσαμε!",
+     "onTop": true,
+     "hit": "button.btn-dismiss-global"
+    }
+   ]
+  }
+ ],
+ "rightColumn": {
+  "b1 half done": [
+   "ωραίος✓",
+   "ισχυρός",
+   "εύθυμος",
+   "ταχύς"
+  ],
+  "b4 exercise again": [
+   "ωραίος✓",
+   "ισχυρός",
+   "εύθυμος",
+   "ταχύς"
+  ]
+ }
+}

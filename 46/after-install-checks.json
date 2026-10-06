@@ -1,0 +1,32 @@
+[
+ {
+  "at": "i2 exercise, install offered",
+  "button": ".assignment-player .exit-game-btn",
+  "onTop": true,
+  "hit": "button.exit-game-btn"
+ },
+ {
+  "at": "i3 exercise, chore toast",
+  "button": ".assignment-player .exit-game-btn",
+  "onTop": false,
+  "hit": "span.toast-text"
+ },
+ {
+  "at": "i4 exercise, toast tapped away",
+  "button": ".assignment-player .exit-game-btn",
+  "onTop": true,
+  "hit": "button.exit-game-btn"
+ },
+ {
+  "at": "i5 game, install offered, time warning",
+  "button": ".game-container .exit-game-btn",
+  "onTop": true,
+  "hit": "button.exit-game-btn"
+ },
+ {
+  "at": "i5 game, the round",
+  "button": ".game-container .round-indicator",
+  "onTop": false,
+  "hit": "div.time-warning"
+ }
+]

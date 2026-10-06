@@ -1,0 +1,452 @@
+[
+ {
+  "items": 1,
+  "size": "1280x800",
+  "cut": [
+   {
+    "slot": [
+     32,
+     768
+    ],
+    "button": [
+     586,
+     642
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 1,
+  "size": "1024x600",
+  "cut": [
+   {
+    "slot": [
+     32,
+     568
+    ],
+    "button": [
+     486,
+     542
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 1,
+  "size": "800x480",
+  "cut": [
+   {
+    "slot": [
+     32,
+     448
+    ],
+    "button": [
+     373,
+     416
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 1,
+  "size": "1920x1080",
+  "cut": [
+   {
+    "slot": [
+     32,
+     1048
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 1,
+  "size": "390x844",
+  "cut": [
+   {
+    "slot": [
+     16,
+     828
+    ],
+    "button": [
+     555,
+     598
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "1280x800",
+  "cut": [
+   {
+    "slot": [
+     32,
+     768
+    ],
+    "button": [
+     586,
+     642
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     32,
+     768
+    ],
+    "button": [
+     586,
+     642
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "1024x600",
+  "cut": [
+   {
+    "slot": [
+     32,
+     568
+    ],
+    "button": [
+     486,
+     542
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     32,
+     568
+    ],
+    "button": [
+     486,
+     542
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "800x480",
+  "cut": [
+   {
+    "slot": [
+     32,
+     448
+    ],
+    "button": [
+     373,
+     416
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     32,
+     448
+    ],
+    "button": [
+     373,
+     416
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "1920x1080",
+  "cut": [
+   {
+    "slot": [
+     32,
+     1048
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     32,
+     1048
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "390x844",
+  "cut": [
+   {
+    "slot": [
+     16,
+     414
+    ],
+    "button": [
+     348,
+     391
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     430,
+     828
+    ],
+    "button": [
+     762,
+     805
+    ],
+    "buttonVisible": true,
+    "onTop": "button.help-offer"
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "1280x800",
+  "cut": [
+   {
+    "slot": [
+     32,
+     550
+    ],
+    "button": [
+     353,
+     407
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     32,
+     550
+    ],
+    "button": [
+     477,
+     533
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     582,
+     1099
+    ],
+    "button": [
+     1027,
+     1082
+    ],
+    "buttonVisible": false,
+    "onTop": "off screen"
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "1024x600",
+  "cut": [
+   {
+    "slot": [
+     32,
+     550
+    ],
+    "button": [
+     347,
+     395
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     32,
+     550
+    ],
+    "button": [
+     477,
+     533
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     582,
+     1099
+    ],
+    "button": [
+     1027,
+     1082
+    ],
+    "buttonVisible": false,
+    "onTop": "off screen"
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "800x480",
+  "cut": [
+   {
+    "slot": [
+     32,
+     418
+    ],
+    "button": [
+     267,
+     304
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     32,
+     418
+    ],
+    "button": [
+     358,
+     401
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     450,
+     836
+    ],
+    "button": [
+     775,
+     819
+    ],
+    "buttonVisible": false,
+    "onTop": "off screen"
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "1920x1080",
+  "cut": [
+   {
+    "slot": [
+     32,
+     550
+    ],
+    "button": [
+     353,
+     407
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     32,
+     550
+    ],
+    "button": [
+     477,
+     533
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     582,
+     1099
+    ],
+    "button": [
+     1027,
+     1082
+    ],
+    "buttonVisible": false,
+    "onTop": true
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "390x844",
+  "cut": [
+   {
+    "slot": [
+     16,
+     402
+    ],
+    "button": [
+     252,
+     289
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     418,
+     804
+    ],
+    "button": [
+     743,
+     787
+    ],
+    "buttonVisible": true,
+    "onTop": true
+   },
+   {
+    "slot": [
+     820,
+     1205
+    ],
+    "button": [
+     1145,
+     1188
+    ],
+    "buttonVisible": false,
+    "onTop": "off screen"
+   }
+  ]
+ }
+]
