@@ -1,0 +1,97 @@
+
+== b2 (grade 2), exercisesPerDay 3, 20 days ==
+day  1  M L M   g2-math-add-1  g2-lang-tf-1  g2-math-tf-1
+day  2  M L M   g2-math-order-1  g2-lang-article-1  g2-math-pattern-1
+day  3  M L M   g2-math-mult-1  g2-lang-tf-2  g2-math-money-1
+day  4  M L M   g2-math-mult-pairs-1  g2-lang-spell-1  g2-math-sub-1
+day  5  M L M   g2-math-time-1  g2-lang-punct-1  g2-math-add-1
+day  6  M L M   g2-math-tf-1  g2-lang-fb-1  g2-math-order-1
+day  7  M L M   g2-math-pattern-1  g2-lang-opposites-1  g2-math-mult-1
+day  8  M L M   g2-math-money-1  g2-lang-sentence-1  g2-math-sub-1
+day  9  M L M   g2-math-mult-pairs-1  g2-lang-alpha-1  g2-math-add-1
+day 10  M L M   g2-math-time-1  g2-lang-tf-1  g2-math-order-1
+day 11  M L M   g2-math-tf-1  g2-lang-article-1  g2-math-mult-1
+day 12  M L M   g2-math-pattern-1  g2-lang-tf-2  g2-math-sub-1
+day 13  M L M   g2-math-money-1  g2-lang-spell-1  g2-math-add-1
+day 14  M L M   g2-math-mult-pairs-1  g2-lang-punct-1  g2-math-order-1
+day 15  M L M   g2-math-time-1  g2-lang-fb-1  g2-math-mult-1
+day 16  M L M   g2-math-tf-1  g2-lang-opposites-1  g2-math-sub-1
+day 17  M L M   g2-math-pattern-1  g2-lang-sentence-1  g2-math-add-1
+day 18  M L M   g2-math-money-1  g2-lang-alpha-1  g2-math-mult-pairs-1
+day 19  M L M   g2-math-order-1  g2-lang-tf-1  g2-math-mult-1
+day 20  M L M   g2-math-time-1  g2-lang-article-1  g2-math-sub-1
+Μαθηματικά: 40 slots in 20 days (per day: 2); an item comes back after 4 or 5 days
+Γλώσσα: 20 slots in 20 days (per day: 1); an item comes back after 9 days
+
+== d4 (grade 4), exercisesPerDay 3, 20 days ==
+day  1  M L M   g4-math-perim-1  g4-lang-tense-1  g4-math-add-1
+day  2  M L M   g4-math-geo-tf-1  g4-lang-syn-1  g4-math-div-1
+day  3  M L M   g4-math-sub-1  g4-lang-spell-1  g4-math-frac-1
+day  4  M L M   g4-math-frac-dec-1  g4-lang-tai-te-1  g4-math-dec-order-1
+day  5  M L M   g4-math-time-1  g4-lang-story-order-1  g4-math-add-1
+day  6  M L M   g4-math-perim-1  g4-lang-tense-tf-1  g4-math-div-1
+day  7  M L M   g4-math-geo-tf-1  g4-lang-adj-tf-1  g4-math-sub-1
+day  8  M L M   g4-math-frac-1  g4-lang-fb-1  g4-math-frac-dec-1
+day  9  M L M   g4-math-dec-order-1  g4-lang-alpha-1  g4-math-add-1
+day 10  M L M   g4-math-time-1  g4-lang-tense-1  g4-math-div-1
+day 11  M L M   g4-math-perim-1  g4-lang-syn-1  g4-math-sub-1
+day 12  M L M   g4-math-geo-tf-1  g4-lang-spell-1  g4-math-frac-1
+day 13  M L M   g4-math-frac-dec-1  g4-lang-tai-te-1  g4-math-add-1
+day 14  M L M   g4-math-dec-order-1  g4-lang-story-order-1  g4-math-div-1
+day 15  M L M   g4-math-time-1  g4-lang-tense-tf-1  g4-math-sub-1
+day 16  M L M   g4-math-perim-1  g4-lang-adj-tf-1  g4-math-frac-1
+day 17  M L M   g4-math-geo-tf-1  g4-lang-fb-1  g4-math-add-1
+day 18  M L M   g4-math-frac-dec-1  g4-lang-alpha-1  g4-math-div-1
+day 19  M L M   g4-math-dec-order-1  g4-lang-tense-1  g4-math-sub-1
+day 20  M L M   g4-math-time-1  g4-lang-syn-1  g4-math-frac-1
+Μαθηματικά: 40 slots in 20 days (per day: 2); an item comes back after 4 or 5 days
+Γλώσσα: 20 slots in 20 days (per day: 1); an item comes back after 9 days
+✔ 20 days of daily sets for grades with no problems (110.513123ms)
+✖ grade 2: the double slot moves between maths and language from day to day (2.882323ms)
+✖ grade 4: the double slot moves between maths and language from day to day (0.264908ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 600.907115
+
+✖ failing tests:
+
+test at ../tmp/rotation.test.ts:65:26
+✖ grade 2: the double slot moves between maths and language from day to day (2.882323ms)
+  AssertionError [ERR_ASSERTION]: maths every day: 2 slots
+      at TestContext.<anonymous> (/tmp/rotation.test.ts:63:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../tmp/rotation.test.ts:65:26
+✖ grade 4: the double slot moves between maths and language from day to day (0.264908ms)
+  AssertionError [ERR_ASSERTION]: maths every day: 2 slots
+      at TestContext.<anonymous> (/tmp/rotation.test.ts:63:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

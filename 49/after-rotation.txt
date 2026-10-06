@@ -1,0 +1,59 @@
+
+== b2 (grade 2), exercisesPerDay 3, 20 days ==
+day  1  M L M   g2-math-mult-1  g2-lang-fb-1  g2-math-order-1
+day  2  L M L   g2-lang-opposites-1  g2-math-mult-pairs-1  g2-lang-tf-1
+day  3  M L M   g2-math-add-1  g2-lang-alpha-1  g2-math-sub-1
+day  4  L M L   g2-lang-sentence-1  g2-math-tf-1  g2-lang-spell-1
+day  5  M L M   g2-math-money-1  g2-lang-tf-2  g2-math-pattern-1
+day  6  L M L   g2-lang-punct-1  g2-math-time-1  g2-lang-article-1
+day  7  M L M   g2-math-mult-1  g2-lang-fb-1  g2-math-order-1
+day  8  L M L   g2-lang-tf-1  g2-math-mult-pairs-1  g2-lang-opposites-1
+day  9  M L M   g2-math-add-1  g2-lang-alpha-1  g2-math-sub-1
+day 10  L M L   g2-lang-spell-1  g2-math-tf-1  g2-lang-sentence-1
+day 11  M L M   g2-math-money-1  g2-lang-tf-2  g2-math-pattern-1
+day 12  L M L   g2-lang-article-1  g2-math-time-1  g2-lang-punct-1
+day 13  M L M   g2-math-mult-1  g2-lang-fb-1  g2-math-order-1
+day 14  L M L   g2-lang-tf-1  g2-math-mult-pairs-1  g2-lang-opposites-1
+day 15  M L M   g2-math-add-1  g2-lang-alpha-1  g2-math-sub-1
+day 16  L M L   g2-lang-spell-1  g2-math-tf-1  g2-lang-sentence-1
+day 17  M L M   g2-math-money-1  g2-lang-tf-2  g2-math-pattern-1
+day 18  L M L   g2-lang-article-1  g2-math-time-1  g2-lang-punct-1
+day 19  M L M   g2-math-mult-1  g2-lang-fb-1  g2-math-order-1
+day 20  L M L   g2-lang-tf-1  g2-math-mult-pairs-1  g2-lang-opposites-1
+Μαθηματικά: 30 slots in 20 days (per day: 1 or 2); an item comes back after 6 days
+Γλώσσα: 30 slots in 20 days (per day: 1 or 2); an item comes back after 6 days
+
+== d4 (grade 4), exercisesPerDay 3, 20 days ==
+day  1  M L M   g4-math-frac-1  g4-lang-story-order-1  g4-math-perim-1
+day  2  L M L   g4-lang-adj-tf-1  g4-math-frac-dec-1  g4-lang-tai-te-1
+day  3  M L M   g4-math-add-1  g4-lang-fb-1  g4-math-geo-tf-1
+day  4  L M L   g4-lang-tense-tf-1  g4-math-time-1  g4-lang-spell-1
+day  5  M L M   g4-math-div-1  g4-lang-tense-1  g4-math-sub-1
+day  6  L M L   g4-lang-syn-1  g4-math-dec-order-1  g4-lang-alpha-1
+day  7  M L M   g4-math-frac-1  g4-lang-story-order-1  g4-math-perim-1
+day  8  L M L   g4-lang-tai-te-1  g4-math-frac-dec-1  g4-lang-adj-tf-1
+day  9  M L M   g4-math-add-1  g4-lang-fb-1  g4-math-geo-tf-1
+day 10  L M L   g4-lang-spell-1  g4-math-time-1  g4-lang-tense-tf-1
+day 11  M L M   g4-math-sub-1  g4-lang-tense-1  g4-math-div-1
+day 12  L M L   g4-lang-syn-1  g4-math-dec-order-1  g4-lang-alpha-1
+day 13  M L M   g4-math-frac-1  g4-lang-story-order-1  g4-math-perim-1
+day 14  L M L   g4-lang-tai-te-1  g4-math-frac-dec-1  g4-lang-adj-tf-1
+day 15  M L M   g4-math-add-1  g4-lang-fb-1  g4-math-geo-tf-1
+day 16  L M L   g4-lang-spell-1  g4-math-time-1  g4-lang-tense-tf-1
+day 17  M L M   g4-math-sub-1  g4-lang-tense-1  g4-math-div-1
+day 18  L M L   g4-lang-syn-1  g4-math-dec-order-1  g4-lang-alpha-1
+day 19  M L M   g4-math-frac-1  g4-lang-story-order-1  g4-math-perim-1
+day 20  L M L   g4-lang-tai-te-1  g4-math-frac-dec-1  g4-lang-adj-tf-1
+Μαθηματικά: 30 slots in 20 days (per day: 1 or 2); an item comes back after 6 days
+Γλώσσα: 30 slots in 20 days (per day: 1 or 2); an item comes back after 6 days
+✔ 20 days of daily sets for grades with no problems (111.562848ms)
+✔ grade 2: the double slot moves between maths and language from day to day (0.230303ms)
+✔ grade 4: the double slot moves between maths and language from day to day (0.077736ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 567.234597

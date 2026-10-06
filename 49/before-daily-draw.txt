@@ -1,0 +1,199 @@
+
+== g3 (grade 3), exercisesPerDay 3, 60 days ==
+2026-10-08  g2-lang-punct-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-math-tf-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-collection-goal-013 [g-dimotikou-generated.json · 3΄ · ⭐3]
+2026-10-09  g3-world-151 [g-dimotikou-world.json · 3΄ · ⭐3]  g2-lang-opposites-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-math-add-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-10  g2-math-mult-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-lang-article-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-world-124 [g-dimotikou-world.json · 3΄ · ⭐3]
+2026-10-11  g2-math-mult-pairs-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-double-half-017 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-lang-tf-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-12  g2-lang-tf-2 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-pages-per-day-014 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-math-time-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-13  g2-math-order-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-lang-fb-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-ages-018 [g-dimotikou-generated.json · 3΄ · ⭐3]
+2026-10-14  g3-gen-pages-per-day-006 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-lang-alpha-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-math-pattern-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-15  g2-math-money-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-lang-sentence-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-buy-and-change-016 [g-dimotikou-generated.json · 3΄ · ⭐3]
+2026-10-16  g3-world-007 [g-dimotikou-world.json · 3΄ · ⭐3]  g2-lang-spell-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-math-sub-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-17  g3-gen-order-the-plan-005 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-lang-punct-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-math-tf-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-18  g2-math-add-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-lang-opposites-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-two-digit-times-010 [g-dimotikou-generated.json · 3΄ · ⭐3]
+2026-10-19  g2-lang-article-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-math-mult-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-length-cm-012 [g-dimotikou-generated.json · 3΄ · ⭐3]
+2026-10-20  g2-math-mult-pairs-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-lang-tf-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-world-165 [g-dimotikou-world.json · 3΄ · ⭐3]
+2026-10-21  g2-math-time-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-numberless-006 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-lang-tf-2 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-22  g3-gen-total-cost-008 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-math-order-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-lang-fb-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-23  g3-world-084 [g-dimotikou-world.json · 3΄ · ⭐3]  g2-lang-alpha-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-math-pattern-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-24  g3-gen-equal-groups-019 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-math-money-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-lang-sentence-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-25  g3-gen-change-left-015 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-math-sub-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-lang-spell-1 [b-dimotikou.json · 2΄ · ⭐1]
+2026-10-26  g2-lang-punct-1 [b-dimotikou.json · 2΄ · ⭐1]  g2-math-tf-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-buy-and-change-014 [g-dimotikou-generated.json · 3΄ · ⭐3]
+2026-10-27  g2-lang-opposites-1 [b-dimotikou.json · 2΄ · ⭐1]  g3-gen-exchange-rate-019 [g-dimotikou-generated.json · 3΄ · ⭐3]  g2-math-add-1 [b-dimotikou.json · 2΄ · ⭐1]
+… (40 more days)
+slots from a pool written for a lower grade: 120 of 180 (67%)
+distinct below-grade exercises seen: 18
+stars per day at full marks: 5
+repeats within 60 days: 102; days between repeats: 9d ×102
+first repeat: day 10 (2026-10-17)
+
+== e5 (grade 5), exercisesPerDay 3, 60 days ==
+2026-10-08  e5-gen-parts-ratio-013 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-lang-syn-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-add-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-09  g4-math-frac-dec-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-lang-tense-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-buses-needed-011 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-10  g4-lang-tai-te-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-sum-difference-009 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-math-perim-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-11  g4-lang-adj-tf-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-dec-order-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-parts-ratio-001 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-12  g4-math-time-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-lang-fb-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-backwards-money-001 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-13  e5-gen-round-estimate-016 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-lang-spell-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-geo-tf-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-14  g4-math-div-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-lang-tense-tf-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-missing-info-004 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-15  g4-math-sub-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-lang-story-order-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-budget-003 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-16  e5-gen-compare-offers-012 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-lang-alpha-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-frac-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-17  g4-math-add-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-lang-syn-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-together-again-017 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-18  e5-gen-compare-offers-019 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-lang-tense-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-frac-dec-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-19  g4-math-perim-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-lang-tai-te-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-trip-costs-015 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-20  e5-gen-together-again-014 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-lang-adj-tf-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-dec-order-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-21  g4-lang-fb-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-together-again-011 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-math-time-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-22  g4-lang-spell-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-geo-tf-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-big-table-008 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-23  g4-lang-tense-tf-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-div-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-coins-notes-016 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-24  e5-gen-round-table-016 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-math-sub-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-lang-story-order-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-25  g4-math-frac-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-lang-alpha-1 [d-dimotikou.json · 4΄ · ⭐1]  e5-gen-backwards-money-006 [e-dimotikou-generated.json · 5΄ · ⭐4]
+2026-10-26  e5-gen-divisibility-020 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-lang-syn-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-add-1 [d-dimotikou.json · 4΄ · ⭐1]
+2026-10-27  e5-gen-budget-018 [e-dimotikou-generated.json · 5΄ · ⭐4]  g4-lang-tense-1 [d-dimotikou.json · 4΄ · ⭐1]  g4-math-frac-dec-1 [d-dimotikou.json · 4΄ · ⭐1]
+… (40 more days)
+slots from a pool written for a lower grade: 120 of 180 (67%)
+distinct below-grade exercises seen: 18
+stars per day at full marks: 6
+repeats within 60 days: 102; days between repeats: 9d ×102
+first repeat: day 10 (2026-10-17)
+✔ 60 days of daily sets (476.174117ms)
+✖ grade 3: every daily exercise is written for grade 3 (13.141784ms)
+✖ grade 3: no exercise comes back within 30 days (2.015762ms)
+✖ grade 3: the problem comes first (1.50424ms)
+✖ grade 5: every daily exercise is written for grade 5 (0.875096ms)
+✖ grade 5: no exercise comes back within 30 days (0.560314ms)
+✖ grade 5: the problem comes first (0.443655ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 1
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1281.136718
+
+✖ failing tests:
+
+test at ../tmp/daily-draw.test.ts:83:26
+✖ grade 3: every daily exercise is written for grade 3 (13.141784ms)
+  AssertionError [ERR_ASSERTION]: 120 slots came from a lower grade's pool, e.g. g2-lang-punct-1, g2-math-tf-1, g2-lang-opposites-1, g2-math-add-1
+  
+  120 !== 0
+  
+      at TestContext.<anonymous> (/tmp/daily-draw.test.ts:81:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 120,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/daily-draw.test.ts:88:26
+✖ grade 3: no exercise comes back within 30 days (2.015762ms)
+  AssertionError [ERR_ASSERTION]: 102 early repeats, e.g. g2-lang-punct-1 after 9d, g2-math-tf-1 after 9d, g2-math-add-1 after 9d, g2-lang-opposites-1 after 9d
+  
+  102 !== 0
+  
+      at TestContext.<anonymous> (/tmp/daily-draw.test.ts:86:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 102,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/daily-draw.test.ts:95:26
+✖ grade 3: the problem comes first (1.50424ms)
+  AssertionError [ERR_ASSERTION]: 34 of 60 days start with something other than a problem
+  
+  34 !== 0
+  
+      at TestContext.<anonymous> (/tmp/daily-draw.test.ts:90:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 34,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/daily-draw.test.ts:83:26
+✖ grade 5: every daily exercise is written for grade 5 (0.875096ms)
+  AssertionError [ERR_ASSERTION]: 120 slots came from a lower grade's pool, e.g. g4-lang-syn-1, g4-math-add-1, g4-math-frac-dec-1, g4-lang-tense-1
+  
+  120 !== 0
+  
+      at TestContext.<anonymous> (/tmp/daily-draw.test.ts:81:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 120,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/daily-draw.test.ts:88:26
+✖ grade 5: no exercise comes back within 30 days (0.560314ms)
+  AssertionError [ERR_ASSERTION]: 102 early repeats, e.g. g4-math-add-1 after 9d, g4-lang-syn-1 after 9d, g4-lang-tense-1 after 9d, g4-math-frac-dec-1 after 9d
+  
+  102 !== 0
+  
+      at TestContext.<anonymous> (/tmp/daily-draw.test.ts:86:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 102,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/daily-draw.test.ts:95:26
+✖ grade 5: the problem comes first (0.443655ms)
+  AssertionError [ERR_ASSERTION]: 37 of 60 days start with something other than a problem
+  
+  37 !== 0
+  
+      at TestContext.<anonymous> (/tmp/daily-draw.test.ts:90:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 37,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
