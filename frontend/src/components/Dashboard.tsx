@@ -886,7 +886,7 @@ export const Dashboard: React.FC = () => {
           font-weight: 600;
           cursor: pointer;
           box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-          z-index: var(--z-toasts);
+          z-index: var(--z-dock); /* a home affordance: under every overlay, never over an ✕ */
           display: flex;
           align-items: center;
           gap: 0.5rem;
