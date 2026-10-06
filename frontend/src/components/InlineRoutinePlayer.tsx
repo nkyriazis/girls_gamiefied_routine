@@ -288,6 +288,8 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           display: flex;
           flex-direction: column;
           align-items: center;
+          max-width: 100%;
+          padding: 0 1rem; /* a long title wraps clear of the timeline's dots */
         }
 
         .task-icon {
@@ -300,7 +302,9 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         .task-name {
           font-size: clamp(1rem, 5.5cqmin, 2rem);
           margin-bottom: clamp(0.25rem, 2.8cqmin, 1rem);
-          white-space: nowrap;
+          /* A long title wraps in a narrow card, never past its edges */
+          text-wrap: balance;
+          overflow-wrap: break-word;
         }
 
         .timer {
