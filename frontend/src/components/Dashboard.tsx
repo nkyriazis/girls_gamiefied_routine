@@ -589,6 +589,7 @@ export const Dashboard: React.FC = () => {
         .routine-slot {
           height: 100%;
           width: 100%;
+          container-type: size; /* its card sizes to it (cqmin) */
         }
 
         .clock-container {

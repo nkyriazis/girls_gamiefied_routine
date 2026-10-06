@@ -78,11 +78,13 @@ export const RewardOverlay: React.FC<RewardOverlayProps> = ({ starsEarned, onClo
           border-radius: 2rem;
         }
 
+        /* Inside a routine card, so sized to its cell like the card (cqmin; full size from
+           a cell of about 590 px up) */
         .reward-card {
           background: var(--glass-bg);
           backdrop-filter: blur(20px);
           border: 2px solid var(--color-accent);
-          padding: 4rem;
+          padding: clamp(1rem, 10.9cqmin, 4rem);
           border-radius: 3rem;
           text-align: center;
           position: relative;
@@ -91,28 +93,28 @@ export const RewardOverlay: React.FC<RewardOverlayProps> = ({ starsEarned, onClo
         }
 
         .reward-card h1 {
-          font-size: 3rem;
-          margin-bottom: 2rem;
+          font-size: clamp(1.25rem, 8.2cqmin, 3rem);
+          margin-bottom: clamp(0.5rem, 5.5cqmin, 2rem);
           color: white;
         }
 
         .stars-container {
           position: relative;
-          height: 200px;
+          height: clamp(72px, 33.8cqmin, 200px);
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 2rem;
+          margin-bottom: clamp(0.5rem, 5.5cqmin, 2rem);
         }
 
         .big-star {
-          font-size: 10rem;
+          font-size: clamp(3.5rem, 27.1cqmin, 10rem);
           position: absolute;
           filter: drop-shadow(0 0 20px gold);
         }
 
         .stars-text {
-          font-size: 4rem;
+          font-size: clamp(1.5rem, 10.9cqmin, 4rem);
           font-weight: 900;
           color: white;
           text-shadow: 2px 2px 0 #000;
@@ -130,11 +132,11 @@ export const RewardOverlay: React.FC<RewardOverlayProps> = ({ starsEarned, onClo
         .btn-close {
           background: var(--color-accent);
           color: #000;
-          font-size: 1.5rem;
-          padding: 1rem 3rem;
+          font-size: clamp(1rem, 4.1cqmin, 1.5rem);
+          padding: clamp(0.5rem, 2.8cqmin, 1rem) clamp(1rem, 8.2cqmin, 3rem);
           border-radius: 2rem;
           font-weight: bold;
-          margin-top: 2rem;
+          margin-top: clamp(0.5rem, 5.5cqmin, 2rem);
           transition: transform 0.1s;
         }
 

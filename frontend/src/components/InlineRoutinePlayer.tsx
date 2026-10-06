@@ -16,6 +16,8 @@ interface InlineRoutinePlayerProps {
 }
 
 const REWARD_MS = 5000;
+// An icon the CSS sizes: its box is --icon (an emoji is 3/4 of it)
+const ICON_BOX: React.CSSProperties = { width: 'var(--icon)', height: 'var(--icon)', fontSize: 'calc(var(--icon) * 0.75)' };
 
 export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   user,
@@ -109,7 +111,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
 
       <div className="player-header">
         <div className="user-badge" style={{ background: user.color }}>
-          <SmartIcon value={user.avatar} />
+          <SmartIcon value={user.avatar} style={ICON_BOX} />
         </div>
         <div className="user-name-header">
           {user.name}
@@ -149,7 +151,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
               transition={{ type: "spring", bounce: 0.3 }}
             >
               <div className="task-icon">
-                {currentTask && <SmartIcon value={currentTask.icon} />}
+                {currentTask && <SmartIcon value={currentTask.icon} style={ICON_BOX} />}
               </div>
               <h2 className="task-name">{currentTask?.title}</h2>
               <div className={`timer ${timeLeft < 10 ? 'warning' : ''}`}>
@@ -167,6 +169,10 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
       </div>
 
       <style>{`
+        /* Sized to its cell (the .routine-slot is a size container): clamp(least, cqmin,
+           full size). From a cell of about 590 px up (one or two items at 1280x800 and
+           bigger) every size is at its full value; below, it shrinks with the cell, down to
+           an 800x480 screen with three items (224x416) or a phone row (358x260). */
         .inline-player {
           height: 100%;
           display: flex;
@@ -181,29 +187,35 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         .player-header {
           display: flex;
           align-items: center;
-          padding: 1.5rem;
-          gap: 1.5rem;
+          padding: clamp(0.5rem, 4.1cqmin, 1.5rem);
+          gap: clamp(0.5rem, 4.1cqmin, 1.5rem);
           background: rgba(0,0,0,0.3);
         }
 
         .user-badge {
-          width: 60px;
-          height: 60px;
+          width: clamp(32px, 10.2cqmin, 60px);
+          height: clamp(32px, 10.2cqmin, 60px);
+          flex-shrink: 0;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 2.5rem;
+          --icon: clamp(26px, 8.2cqmin, 48px);
           box-shadow: 0 0 15px rgba(0,0,0,0.3);
         }
 
         .user-name-header {
-          font-size: 2rem;
+          font-size: clamp(1rem, 5.5cqmin, 2rem);
           font-weight: 900;
           color: white;
-          margin-right: 1rem;
+          margin-right: clamp(0rem, 2.8cqmin, 1rem);
           letter-spacing: 1px;
           text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          min-width: 0;
         }
 
         .progress-container {
@@ -223,6 +235,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         }
 
         .btn-exit {
+          flex-shrink: 0;
           background: transparent;
           color: white;
           font-size: 1.2rem;
@@ -278,22 +291,23 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         }
 
         .task-icon {
-          font-size: 5rem; /* Scaled down slightly for split view */
-          margin-bottom: 0.5rem;
+          font-size: clamp(2rem, 13.6cqmin, 5rem);
+          --icon: clamp(28px, 8.2cqmin, 48px);
+          margin-bottom: clamp(0.25rem, 1.4cqmin, 0.5rem);
           animation: bounce 2s infinite;
         }
 
         .task-name {
-          font-size: 2rem;
-          margin-bottom: 1rem;
+          font-size: clamp(1rem, 5.5cqmin, 2rem);
+          margin-bottom: clamp(0.25rem, 2.8cqmin, 1rem);
           white-space: nowrap;
         }
 
         .timer {
-          font-size: 4rem;
+          font-size: clamp(1.75rem, 10.9cqmin, 4rem);
           font-weight: 800;
           font-variant-numeric: tabular-nums;
-          margin-bottom: 2rem;
+          margin-bottom: clamp(0.5rem, 5.5cqmin, 2rem);
         }
 
         .timer.warning {
@@ -304,22 +318,11 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         .btn-done {
           background: var(--theme-color);
           color: #000;
-          font-size: 1.5rem;
-          padding: 0.8rem 3rem;
+          font-size: clamp(1rem, 4.1cqmin, 1.5rem);
+          padding: clamp(0.5rem, 2.2cqmin, 0.8rem) clamp(1rem, 8.2cqmin, 3rem);
           border-radius: 1.5rem;
           font-weight: 800;
           box-shadow: 0 0 20px var(--theme-color);
-        }
-
-        /* Responsive adjustments for grid */
-        @media (max-width: 800px) {
-          .task-icon { font-size: 3rem; }
-          .timer { font-size: 3rem; }
-          .user-name-header { font-size: 1.2rem; }
-          .user-badge { width: 40px; height: 40px; font-size: 1.5rem; }
-          .player-header { padding: 0.8rem; gap: 0.8rem; }
-          .task-name { font-size: 1.5rem; }
-          .btn-done { font-size: 1.2rem; padding: 0.6rem 2rem; }
         }
 
         .floating-stars {
@@ -327,7 +330,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          font-size: 5rem;
+          font-size: clamp(2.5rem, 13.6cqmin, 5rem);
           font-weight: 900;
           color: #FFD700;
           text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);

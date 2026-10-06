@@ -48,7 +48,7 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
             {users.map(user => (
               <div key={user.id} className="alarm-user-info">
                 <div className="alarm-user-badge" style={{ background: user.color }}>
-                  <SmartIcon value={user.avatar} size={96} style={{ width: '100%', height: '100%' }} />
+                  <SmartIcon value={user.avatar} size={96} style={{ width: '100%', height: '100%', fontSize: 'inherit' }} />
                 </div>
                 <p className="user-name" style={{ color: user.color }}>{user.name}</p>
               </div>
@@ -131,6 +131,7 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmPr
           overflow: hidden;
           border: 4px solid white;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          font-size: 12cqmin; /* an emoji avatar, sized with its badge */
         }
 
         .alarm-users.several .alarm-user-badge {
