@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ProblemExercise } from '../../shared/types';
-import { plainStars, plainTries, problemStars, stepCounts, stepHelp } from '../../shared/forgiveness';
+import { paysNow, plainStars, plainTries, problemStars, stepCounts, stepHelp } from '../../shared/forgiveness';
 
 // The forgiveness ladder (#48): what an exercise pays after mistakes, and how many tries a step gets.
 
@@ -65,4 +65,15 @@ test('what a step shows after wrong tries, on each rung', () => {
   ]);
   // A step whose tries don't count plays the forgiving way on both rungs
   assert.deepEqual(at('unforgiving', false), at('forgiving', true));
+});
+
+test('what an exercise pays now: what it paid once done, else what it pays if the rest goes right', () => {
+  const plain = { id: 'n', type: 'number-input' as const, category: 'x', title: 'x', question: '1 + 1', correctValue: 2, stars: 1 };
+  assert.equal(paysNow({ status: 'pending', attempts: 0 }, plain), 1);
+  assert.equal(paysNow({ status: 'pending', attempts: 1 }, plain), 0);
+  assert.equal(paysNow({ status: 'completed', attempts: 1, starsAwarded: 1 }, plain), 1);
+  assert.equal(paysNow({ status: 'completed', attempts: 3, starsAwarded: 0 }, plain), 0);
+  assert.equal(paysNow({ status: 'pending', attempts: 2, mistakes: [1, 1, 0, 0, 0] }, problem), 2);
+  assert.equal(paysNow({ status: 'pending', attempts: 2, mistakes: [1, 1, 0, 0, 0] }, problem, { problemReading: 'paint' }), 3);
+  assert.equal(paysNow({ status: 'pending', attempts: 9, mistakes: [1, 1, 1, 0, 1] }, problem, { forgiveness: 'unforgiving' }), 0);
 });

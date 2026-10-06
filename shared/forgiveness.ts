@@ -13,7 +13,7 @@
 //
 // Type imports only, so the backend (CommonJS) and the frontend (Vite) can both load it.
 
-import type { Exercise, Forgiveness, ProblemExercise, ProblemReading, ProblemStep } from './types';
+import type { Exercise, ExerciseAssignment, Forgiveness, ProblemExercise, ProblemReading, ProblemStep, User } from './types';
 
 export const DEFAULT_FORGIVENESS: Forgiveness = 'forgiving';
 
@@ -45,6 +45,20 @@ export const plainStars = (stars: number, wrongTries: number) => Math.max(0, sta
 export function plainTries(rung: Forgiveness | undefined, type: Exercise['type']): number {
   if ((rung ?? DEFAULT_FORGIVENESS) === 'forgiving') return Infinity;
   return type === 'true-false' ? 1 : 2;
+}
+
+/**
+ * What an assignment pays now, for the header and the cards: what it paid once done, else
+ * what it pays if the rest goes right.
+ */
+export function paysNow(
+  a: Pick<ExerciseAssignment, 'status' | 'attempts' | 'starsAwarded' | 'mistakes'>, exercise: Exercise,
+  user?: Pick<User, 'problemReading' | 'forgiveness'>
+): number {
+  if (a.status === 'completed') return a.starsAwarded ?? exercise.stars;
+  return exercise.type === 'problem'
+    ? problemStars(exercise, a.mistakes, user?.problemReading, user?.forgiveness)
+    : plainStars(exercise.stars, a.attempts);
 }
 
 export interface StepHelp {

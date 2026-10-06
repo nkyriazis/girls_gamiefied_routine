@@ -16,6 +16,8 @@ import { help } from '../help/anchors';
 import { HelpButton, HelpScreen } from '../help/HelpProvider';
 import { exerciseTour } from './AssignmentPlayer.help';
 import { sfx, sound } from '../sound/sfx';
+import { paysNow } from '@shared/forgiveness';
+import { answerText } from './exercises/answerText';
 
 interface AssignmentPlayerProps {
   assignment: ExerciseAssignmentWithExercise;
@@ -23,14 +25,26 @@ interface AssignmentPlayerProps {
   onClose: () => void;
 }
 
+// What the overlay says: what was paid, «try again», or the right answer (the exercise is over)
+type Feedback = { kind: 'correct'; stars: number } | { kind: 'incorrect' } | { kind: 'answer'; text: string };
+
 export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, user, onClose }) => {
   const { playSuccess, playError } = useAppSounds();
   const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [attemptKey, setAttemptKey] = useState(0); // remounts the renderer for a clean retry
+
+  // The header's ⭐ is what the exercise pays now (shared/forgiveness.ts): after a mistake it
+  // drops with a small pulse, silently (no «−1», no red, no sound)
+  const pays = assignment.exercise ? paysNow(assignment, assignment.exercise, user) : 0;
+  const [shownPays, setShownPays] = useState({ value: pays, pulse: 0 });
+  if (shownPays.value !== pays) setShownPays({ value: pays, pulse: shownPays.pulse + (pays < shownPays.value ? 1 : 0) });
 
   const exercise = assignment.exercise;
   if (!exercise) return null;
+  // On the forgiving rung, after a wrong try, she may see the right answer (it pays nothing now anyway)
+  const canShow = exercise.type !== 'problem' && (user.forgiveness ?? 'forgiving') === 'forgiving'
+    && assignment.status === 'pending' && assignment.attempts > 0;
   // A problem gets the whole stage as a fixed frame (title in the header), so nothing moves between its steps
   const isProblem = exercise.type === 'problem';
 
@@ -39,13 +53,19 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     setSubmitting(true);
     try {
       const result = await api.answerExerciseAssignment(assignment.id, answer);
-      setFeedback(result.correct ? 'correct' : 'incorrect');
       if (result.correct) {
+        setFeedback({ kind: 'correct', stars: result.starsAwarded });
         playSuccess();
-        sfx('stars', { delay: 350 });
-        // Star earned — celebrate briefly, then return to the list
+        if (result.starsAwarded > 0) sfx('stars', { delay: 350 });
+        // Celebrate briefly, then return to the list
         setTimeout(() => onClose(), 1800);
+      } else if (result.assignment.status === 'completed') {
+        // Unforgiving, and her tries are used: the right answer, then back to the list
+        playError();
+        setFeedback({ kind: 'answer', text: answerText(exercise) });
+        setTimeout(() => onClose(), 4500);
       } else {
+        setFeedback({ kind: 'incorrect' });
         playError();
         // Wrong — reset for another try
         setTimeout(() => {
@@ -60,9 +80,23 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     }
   };
 
-  // A problem checks its own steps; this only celebrates the last one.
-  const handleSolved = () => {
-    setFeedback('correct');
+  // «Δείξε μου»: the right answer, and the exercise is over
+  const reveal = async () => {
+    if (submitting || feedback) return;
+    setSubmitting(true);
+    try {
+      await api.revealExerciseAssignment(assignment.id);
+      setFeedback({ kind: 'answer', text: answerText(exercise) });
+      setTimeout(() => onClose(), 4500);
+    } catch (err) {
+      console.error('Could not show the answer:', err);
+      setSubmitting(false);
+    }
+  };
+
+  // A problem checks its own steps; this only celebrates the last one, with what it paid.
+  const handleSolved = (stars: number) => {
+    setFeedback({ kind: 'correct', stars });
     setTimeout(() => onClose(), 1800);
   };
 
@@ -102,7 +136,8 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           <span>{user.name}</span>
         </div>
         <h1 className="assignment-header-title">{exercise.title}</h1>
-        <div className="assignment-reward" {...help('exercise.stars')}>⭐ {exercise.stars}</div>
+        <motion.div key={shownPays.pulse} className="assignment-reward" {...help('exercise.stars')}
+          initial={shownPays.pulse ? { scale: 1.45 } : false} animate={{ scale: 1 }} transition={{ duration: 0.45 }}>⭐ {pays}</motion.div>
         <HelpButton inline />
         <button className="exit-game-btn" onClick={onClose} {...help('exercise.exit')} {...sound('close')}>✕</button>
       </div>
@@ -124,7 +159,14 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
                 <div className="assignment-question">{exercise.question}</div>
               )}
             </div>
-            <div className="assignment-renderer" {...help('exercise.answer')}>{renderExercise()}</div>
+            <div className="assignment-renderer" {...help('exercise.answer')}>
+              {renderExercise()}
+              {canShow && (
+                <button type="button" className="exercise-show" {...help('exercise.show')} {...sound('open')} disabled={submitting} onClick={reveal}>
+                  💡 Δείξε μου τη σωστή απάντηση
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -132,14 +174,16 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
       <AnimatePresence>
         {feedback && (
           <motion.div
-            className={`feedback-overlay ${feedback}`}
+            className={`feedback-overlay ${feedback.kind}`}
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 1.5, opacity: 0 }}
           >
-            <div className="feedback-icon">{feedback === 'correct' ? '✨' : '❌'}</div>
+            <div className="feedback-icon">{feedback.kind === 'correct' ? '✨' : feedback.kind === 'answer' ? '💡' : '❌'}</div>
             <div className="feedback-text">
-              {feedback === 'correct' ? `+⭐${exercise.stars}` : 'Δοκίμασε ξανά!'}
+              {feedback.kind === 'correct' ? (feedback.stars > 0 ? `+⭐${feedback.stars}` : '✔ Σωστά!')
+                : feedback.kind === 'answer' ? <>Η σωστή απάντηση:<br /><span className="feedback-answer">{feedback.text}</span></>
+                : 'Δοκίμασε ξανά!'}
             </div>
           </motion.div>
         )}
@@ -322,6 +366,29 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         .feedback-overlay.incorrect {
           background: rgba(255, 71, 87, 0.95);
           box-shadow: 0 0 50px rgba(255, 71, 87, 0.5);
+        }
+
+        .feedback-overlay.answer {
+          background: rgba(60, 70, 160, 0.97);
+          box-shadow: 0 0 50px rgba(120, 130, 255, 0.4);
+          max-width: min(80vw, 900px);
+          text-align: center;
+        }
+
+        .feedback-answer {
+          color: gold;
+        }
+
+        .exercise-show {
+          align-self: center;
+          font-size: 1.15rem;
+          font-weight: bold;
+          padding: 0.8rem 1.4rem;
+          border-radius: 1.2rem;
+          cursor: pointer;
+          color: white;
+          background: rgba(255, 200, 0, 0.18);
+          border: 2px solid rgba(255, 200, 0, 0.6);
         }
 
         .feedback-icon {

@@ -11,6 +11,8 @@ export const exerciseTour = (userId: string, type: Exercise['type']): Tour => ({
   steps: [
     { el: 'exercise.ask', title: 'Η ερώτηση', text: 'Διάβασε προσεκτικά τι σε ρωτάει.', side: 'right' },
     ...answerSteps(type),
+    // On screen after a wrong try, on the forgiving rung
+    { el: 'exercise.show', title: 'Δείξε μου', text: 'Θες να δεις τη σωστή απάντηση; Πάτα εδώ.', side: 'top', demo: 'tap' },
   ],
   intro: {
     id: 'exercise',
