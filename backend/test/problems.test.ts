@@ -155,6 +155,23 @@ test('a broken pool file is refused', () => {
   assert.throws(() => pool.loadPools(bad), /duplicate exercise id p-balloons/);
 });
 
+test('a plain pool exercise names its textbook chapter, as a problem does', () => {
+  const plain = path.join(dir, 'plain');
+  mkdirSync(plain);
+  const source = 'Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)';
+  const base = { category: 'Μαθηματικά', title: 'x', stars: 1, source };
+  writeFileSync(path.join(plain, 'x.json'), JSON.stringify({ grades: [3], exercises: [
+    { ...base, id: 'n', type: 'number-input', question: 'Πόσο κάνει 6 × 7;', correctValue: 42 },
+    { ...base, id: 'c', type: 'multiple-choice', question: 'Πόσο κάνει 6 × 7;', options: ['42', '48'], correctIndex: 0 },
+    { ...base, id: 't', type: 'true-false', question: 'Το 6 × 7 είναι 42.', correctValue: true },
+    { ...base, id: 'm', type: 'match-pairs', pairs: [{ left: '6 × 7', right: '42' }, { left: '6 × 8', right: '48' }] },
+    { ...base, id: 'o', type: 'ordering', items: [{ id: 'a', content: '42' }, { id: 'b', content: '48' }] },
+    { ...base, id: 'f', type: 'fill-blank', textWithGaps: '6 × {0} = 42', options: ['7', '8'], correctAnswers: ['7'] },
+  ] }));
+  const [loaded] = pool.loadPools(plain);
+  assert.deepEqual(loaded.exercises.map(e => e.source), Array(6).fill(source));
+});
+
 test('each kid draws exercisesPerDay from the pools of their grade; no grade, no exercises', async () => {
   const all = await db.getExerciseAssignments();
   const of = (userId: string) => all.filter(a => a.userId === userId);
