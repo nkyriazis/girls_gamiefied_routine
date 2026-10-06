@@ -127,6 +127,33 @@ test('every shipped pool is valid, and every problem can be solved step by step'
   }
 });
 
+test('every shipped plain exercise: the server takes its own key and refuses a wrong answer', () => {
+  const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
+  let n = 0;
+  for (const ex of shipped.flatMap(p => p.exercises)) {
+    const [right, wrong] = ((): [unknown, unknown] => {
+      switch (ex.type) {
+        case 'multiple-choice': return [ex.correctIndex, (ex.correctIndex + 1) % ex.options.length];
+        case 'true-false': return [ex.correctValue, !ex.correctValue];
+        case 'number-input': return [ex.correctValue, ex.correctValue + 1];
+        case 'match-pairs': return [ex.pairs, ex.pairs.map((p, i) => ({ left: p.left, right: ex.pairs[(i + 1) % ex.pairs.length].right }))];
+        case 'ordering': return [ex.items.map(i => i.id), [...ex.items].reverse().map(i => i.id)];
+        case 'fill-blank': return [ex.correctAnswers, ex.correctAnswers.map(a => ex.options.find(o => o !== a))];
+        case 'problem': return [undefined, undefined];
+      }
+    })();
+    if (ex.type === 'problem') continue;
+    assert.equal(db.checkExerciseAnswer(ex, right), true, `${ex.id}: its own key`);
+    assert.equal(db.checkExerciseAnswer(ex, wrong), false, `${ex.id}: a wrong answer`);
+    n++;
+  }
+  // The generated maths (tools/problem-gen/maths) is part of it: Γ΄ and Ε΄ have maths of their own
+  for (const grade of [3, 5] as const) {
+    assert.ok(pool.poolsForGrade(shipped, grade).own.filter(e => e.category === 'Μαθηματικά').length >= 60, `maths written for grade ${grade}`);
+  }
+  assert.ok(n >= 240, `${n} plain exercises`);
+});
+
 test('«Δείξε μου»: every step of every shipped problem, shown worked, passes its check on every rung', () => {
   const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
   let steps = 0;
