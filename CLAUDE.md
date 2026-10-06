@@ -17,7 +17,12 @@ Stack: Fastify 5 + TypeScript + WebSockets + node-cron (backend), React 19 + Vit
 
 ## Pull requests
 
-One issue per PR, kept compact, written for the owner to review from the PR page alone. Follow `.github/pull_request_template.md`: **Before** (the problem shown: screenshot, video with sound, failing test, code at file:line), **Problem**, **Fix**, **After** (the same evidence, now right), **Blast radius** (what else it touched, any manual step for piserve's live data). Capture screens on the dev stack with Playwright at the kiosk size (1280×800) and any other size the change affects. Before closing the issue, record the decision where the next agent will look (this file or the tool's README).
+One issue per PR, kept compact, written for the owner to review from the PR page alone. Follow `.github/pull_request_template.md`: **Before** (the problem shown: screenshot, video with sound, failing test, code at file:line), **Problem**, **Fix**, **After** (the same evidence, now right), **Blast radius** (what else it touched, any manual step for piserve's live data). Capture screens on the dev stack with Playwright at the kiosk size (1280×800) and any other size the change affects; `tools/evidence/` records scenarios as screenshots and videos with sound (see its README). Before closing the issue, record the decision where the next agent will look (this file or the tool's README).
+
+The drill, when the owner names an issue: the `issue` workflow (`.claude/workflows/issue.js`) runs it in stages, and each stops for the owner's reactions.
+1. **Scope** (`{issue, stage: "scope"}`): read the issue and #51, branch `issue-<n>-<slug>`, record the Before evidence in `.evidence/<n>/`, plan, and have a critic challenge it. Show the owner the brief, the critique and the evidence; wait.
+2. **Build** (`{issue, stage: "build", notes}`, with the owner's reactions verbatim): fix, After evidence from the same scenario, checks, the mark, `.evidence/<n>/PR.md`; an adversarial review and one round of fixes. Show the owner the draft; wait. More notes, build again.
+3. **Ship**, only on the owner's word, from the main session: `tools/evidence/publish.sh <n>`, push the branch, `gh pr create --body-file .evidence/<n>/PR.published.md`, and comment the blast radius on the issue.
 
 ## Commands
 
