@@ -12,6 +12,7 @@ services:
       - BACKUP_DIR=/backups
       - BACKUP_KEEP=${BACKUP_KEEP:-14}
       - BACKUP_CRON=${BACKUP_CRON:-17 3 * * *}
+      - BACKUP_TIMEOUT=${BACKUP_TIMEOUT:-7200}
 
   frontend:
     depends_on:
