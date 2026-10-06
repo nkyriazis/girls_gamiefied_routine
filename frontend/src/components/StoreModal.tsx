@@ -795,7 +795,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
         }
 
         /* The question before a purchase, in the reward's card: two buttons a finger can hit
-           (48 px), side by side when the card is wide enough, one over the other when not */
+           (48 px), side by side (one over the other only in a card too narrow for both), so the
+           card stays about its own height and fits the grid's visible rows down to 800x480 */
         .reward-item.asking {
           background: rgba(255,215,0,0.12);
           border-color: rgba(255,215,0,0.6);
@@ -813,7 +814,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
         }
         .buy-ask-text {
           margin: 0;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           font-weight: 700;
           overflow-wrap: anywhere;
         }
@@ -825,6 +826,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
         .buy-ask-btn {
           flex: 1 1 3rem;
           min-height: 48px;
+          padding: 0.4rem 0.5rem;
           border: none;
           border-radius: 0.8rem;
           font-size: 1rem;
