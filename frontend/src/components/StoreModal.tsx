@@ -28,6 +28,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   const { exerciseAssignments, config } = useGame();
   const canEarn = exerciseAssignments.some(a => a.userId === user.id) || (!!user.grade && (config.settings.extraProblemsPerDay ?? 10) > 0);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  // A purchase asks first, inside the reward's own card: a kid can't undo it (only a parent can)
+  const [askingId, setAskingId] = useState<string | null>(null);
   const [justPurchased, setJustPurchased] = useState<{ reward: Reward; cost: number } | null>(null);
   const [showActivity, setShowActivity] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
@@ -228,34 +230,51 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                 {rewards.map(reward => {
                   const canAfford = availableBalance >= reward.cost;
                   const isPurchasing = purchasingId === reward.id;
+                  const isAsking = askingId === reward.id && canAfford && !isPurchasing;
+                  const tappable = canAfford && !isPurchasing && !isAsking;
                   return (
                     <motion.div
                       key={reward.id}
-                      className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''}`}
-                      {...sound(canAfford && !isPurchasing ? 'select' : 'nope')}
-                      onClick={() => canAfford && !isPurchasing && handleBuy(reward)}
-                      whileHover={!isTouchDevice && canAfford && !isPurchasing ? { scale: 1.05 } : {}}
-                      whileTap={canAfford && !isPurchasing ? { scale: 0.95 } : {}}
+                      className={`reward-item ${!canAfford ? 'disabled' : ''} ${isPurchasing ? 'purchasing' : ''} ${isAsking ? 'asking' : ''}`}
+                      {...sound(isAsking ? 'none' : tappable ? 'select' : 'nope')}
+                      onClick={() => tappable && setAskingId(reward.id)}
+                      whileHover={!isTouchDevice && tappable ? { scale: 1.05 } : {}}
+                      whileTap={tappable ? { scale: 0.95 } : {}}
                       animate={isPurchasing ? {
                         scale: [1, 1.1, 0.9, 1],
                         rotate: [0, -5, 5, 0]
                       } : {}}
                       transition={{ duration: 0.3 }}
                     >
-                      <motion.div
-                        className="reward-icon"
-                        animate={isPurchasing ? {
-                          scale: [1, 1.3, 1],
-                          rotate: [0, 360]
-                        } : {}}
-                        transition={{ duration: 0.5 }}
-                      >
-                        <SmartIcon value={reward.icon} />
-                      </motion.div>
-                      <div className="reward-info">
-                        <span className="reward-title">{reward.title}</span>
-                        <span className="reward-cost">⭐ {reward.cost}</span>
-                      </div>
+                      {isAsking ? (
+                        <div className="buy-ask" role="dialog" aria-label={`Να πάρεις «${reward.title}»;`}>
+                          <p className="buy-ask-text">Να πάρεις «{reward.title}» για ⭐ {reward.cost};</p>
+                          <div className="buy-ask-buttons">
+                            {/* handleBuy plays 'spend' (or 'nope' if the server refuses) */}
+                            <button className="buy-ask-btn buy-ask-yes" {...sound('none')}
+                              onClick={e => { e.stopPropagation(); setAskingId(null); void handleBuy(reward); }}>Ναι</button>
+                            <button className="buy-ask-btn buy-ask-no" {...sound('unselect')}
+                              onClick={e => { e.stopPropagation(); setAskingId(null); }}>Όχι</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <motion.div
+                            className="reward-icon"
+                            animate={isPurchasing ? {
+                              scale: [1, 1.3, 1],
+                              rotate: [0, 360]
+                            } : {}}
+                            transition={{ duration: 0.5 }}
+                          >
+                            <SmartIcon value={reward.icon} />
+                          </motion.div>
+                          <div className="reward-info">
+                            <span className="reward-title">{reward.title}</span>
+                            <span className="reward-cost">⭐ {reward.cost}</span>
+                          </div>
+                        </>
+                      )}
                     </motion.div>
                   );
                 })}
@@ -773,6 +792,56 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
         .reward-icon {
           font-size: 2.5rem;
+        }
+
+        /* The question before a purchase, in the reward's card: two buttons a finger can hit
+           (48 px), side by side when the card is wide enough, one over the other when not */
+        .reward-item.asking {
+          background: rgba(255,215,0,0.12);
+          border-color: rgba(255,215,0,0.6);
+          padding: 0.6rem;
+          cursor: default;
+          justify-content: center;
+        }
+        .buy-ask {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
+          width: 100%;
+          text-align: center;
+        }
+        .buy-ask-text {
+          margin: 0;
+          font-size: 0.9rem;
+          font-weight: 700;
+          overflow-wrap: anywhere;
+        }
+        .buy-ask-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.4rem;
+        }
+        .buy-ask-btn {
+          flex: 1 1 3rem;
+          min-height: 48px;
+          border: none;
+          border-radius: 0.8rem;
+          font-size: 1rem;
+          font-weight: 800;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+        }
+        .buy-ask-yes {
+          background: transparent;
+          color: white;
+          border: 2px solid rgba(255,255,255,0.7);
+        }
+        /* «Όχι» keeps her stars: the bright one, as in the routine's question */
+        .buy-ask-no {
+          background: gold;
+          color: #1a1a2e;
         }
 
         .reward-info {
