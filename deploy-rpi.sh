@@ -11,6 +11,8 @@
 #   2. git merge --ff-only: refused on local edits to tracked files or local commits
 #   3. pull the images while the site runs; the image the running container uses is kept as :previous
 #   4. only then stop the backend, back up the data to backups/<date>/, and start everything
+#      (this deploy's own backup, beside the backend's daily ones in BACKUP_DIR, ./backups/daily by
+#      default; see BACKUP.md. ./restore-backup.sh puts either kind back.)
 # If something fails between the stop and `up -d` (the backup), the trap starts the backend again:
 # the same container, the old image. A failure inside `up -d` may come after compose replaced the
 # old container, so starting "the backend" may start the new, broken one: the way back is the
@@ -24,7 +26,7 @@ COMPOSE="docker-compose -f docker-compose.yml -f docker-compose.release.yml"
 REGISTRY="ghcr.io/nkyriazis"
 LIVE_CONFIG="backend/data.json backend/exercises.json"
 ROLLBACK=""     # the docker tag lines that put the images that ran back on :latest (set in step 3)
-BACKUP_DIR=""   # this deploy's backup (set in step 4)
+DEPLOY_BACKUP="" # this deploy's backup (set in step 4; not BACKUP_DIR, which .env gives the daily backups)
 STARTING=""     # set once `up -d` runs: from then on the old backend container may be gone
 
 # The image a service's container runs (or ran, when stopped); empty when there is none
@@ -41,7 +43,7 @@ print_rollback() {
     echo "↩️  To roll back to the images that ran before this deploy:"
     echo -n "$ROLLBACK"
     echo "   $COMPOSE up -d"
-    echo "   (If this release changed the database, stop the backend and restore routine.db from $BACKUP_DIR first.)"
+    echo "   (If this release changed the database, stop the backend and restore routine.db from $DEPLOY_BACKUP first.)"
 }
 
 # Run by the EXIT trap once the backend is stopped. Before `up -d` the backend is still the old
@@ -112,15 +114,18 @@ main() {
 
     # 4. Stop the backend for a consistent backup (on a clean stop SQLite folds its WAL back
     # into routine.db), then start everything
-    BACKUP_DIR="backups/$(date +%Y%m%d-%H%M%S)"
-    echo "💾 Backing up data to $BACKUP_DIR..."
+    DEPLOY_BACKUP="backups/$(date +%Y%m%d-%H%M%S)"
+    echo "💾 Backing up data to $DEPLOY_BACKUP..."
     trap 'restart_backend $?' EXIT
     $COMPOSE stop backend
-    mkdir -p "$BACKUP_DIR"
+    mkdir -p "$DEPLOY_BACKUP"
     for f in data.json exercises.json routine.db routine.db-wal state.json logs.jsonl; do
-        if [ -f "backend/$f" ]; then cp --preserve=timestamps "backend/$f" "$BACKUP_DIR/"; fi
+        if [ -f "backend/$f" ]; then cp --preserve=timestamps "backend/$f" "$DEPLOY_BACKUP/"; fi
     done
-    (cd "$BACKUP_DIR" && sha256sum -- * > SHA256SUMS 2>/dev/null || true)
+    (cd "$DEPLOY_BACKUP" && sha256sum -- * > SHA256SUMS 2>/dev/null || true)
+
+    # The daily backups' default folder (BACKUP.md), made as the user before Docker would make it as root
+    if ! grep -qs '^BACKUP_DIR=' .env; then mkdir -p backups/daily; fi
 
     # Ensure uploads directory exists with correct permissions
     echo "📁 Ensuring uploads directory exists..."

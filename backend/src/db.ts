@@ -147,10 +147,13 @@ export function readRawConfig(): DataConfig {
   return dataConfig.raw();
 }
 
-/** Validate and save data.json. Throws when invalid. */
-export function writeRawConfig(data: unknown): void {
-  const error = dataConfig.save(data);
-  if (error) throw new Error(`Validation failed: ${JSON.stringify(error.errors)}`);
+/**
+ * Validate and save data.json. Throws when invalid, or when the file on disk
+ * is invalid (see ConfigFile.save): only the Advanced editor passes `replace`.
+ */
+export function writeRawConfig(data: unknown, options: { replace?: boolean } = {}): void {
+  const error = dataConfig.save(data, options);
+  if (error) throw new Error(error.errors.length ? `Validation failed: ${JSON.stringify(error.errors)}` : error.message);
   sync.changed();
 }
 
@@ -158,9 +161,9 @@ export function readRawExercises(): ExercisesConfig {
   return exercisesConfig.raw();
 }
 
-export function writeRawExercises(data: unknown): void {
-  const error = exercisesConfig.save(data);
-  if (error) throw new Error(`Exercises validation failed: ${JSON.stringify(error.errors)}`);
+export function writeRawExercises(data: unknown, options: { replace?: boolean } = {}): void {
+  const error = exercisesConfig.save(data, options);
+  if (error) throw new Error(error.errors.length ? `Exercises validation failed: ${JSON.stringify(error.errors)}` : error.message);
   sync.changed();
 }
 

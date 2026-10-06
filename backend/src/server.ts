@@ -25,10 +25,11 @@ import {
   logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, startExtraProblem, usersView,
   stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
 } from './db';
-import { config, configError, reloadConfig, seedConfig, watchConfig } from './config';
+import { config, configError, dataConfig, exercisesConfig, reloadConfig, seedConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
 import { HEARTBEAT_MS } from './sync';
-import { LOGS_FILE, STATE_FILE } from './paths';
+import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
+import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 
 // Import MCP server
@@ -538,6 +539,13 @@ server.post('/api/flow-runs/:runId/steps/:stepIndex/dismiss', async (request) =>
 });
 
 // Debug endpoint to simulate time
+// Debug: take a backup now, the way the daily one runs (a child process; see the action log)
+let backups: BackupJob | null = null;
+server.post('/api/debug/backup', async (request, reply) => {
+  if (!backups) return reply.code(503).send({ error: 'The backup schedule is not running yet' });
+  return { started: backups.run('debug') };
+});
+
 server.post('/api/debug/time', async (request, reply) => {
   const { time } = request.body as { time: string };
   if (!time) return reply.code(400).send({ error: 'Missing time (ISO string or HH:mm)' });
@@ -628,18 +636,29 @@ server.post('/api/admin/validate-state', async (request, reply) => {
   }
 });
 
+// `?replace=1`: replace the file even though it is invalid on disk (the Advanced
+// JSON editor only; the invalid file is kept beside). See ConfigFile.save.
+const replacing = (request: { query: unknown }) => (request.query as { replace?: string }).replace === '1';
+
+// Admin: data.json's text as it is on disk, to fix a file the server couldn't read
+server.get('/api/admin/data/text', async (request, reply) => {
+  const text = dataConfig.text();
+  return text === null ? reply.code(404).send({ error: 'data.json not found' }) : { text };
+});
+
 // Admin: Update data.json
 server.post('/api/admin/data', async (request, reply) => {
+  const error = check(dataSchema, request.body, 'Validation failed');
+  if (error) {
+    return reply.code(400).send({ error: error.message, errors: error.errors });
+  }
   try {
-    const error = check(dataSchema, request.body, 'Validation failed');
-    if (error) {
-      return reply.code(400).send({ error: error.message, errors: error.errors });
-    }
-    writeRawConfig(request.body);
+    writeRawConfig(request.body, { replace: replacing(request) });
     return { success: true };
   } catch (error) {
+    // Refused while data.json on disk is invalid (or the write failed)
     request.log.error(error);
-    return reply.code(500).send({ error: 'Failed to save data file' });
+    return reply.code(400).send({ error: (error as Error).message });
   }
 });
 
@@ -701,9 +720,14 @@ server.get('/api/admin/exercises', async (request, reply) => {
   return readRawExercises();
 });
 
+server.get('/api/admin/exercises/text', async (request, reply) => {
+  const text = exercisesConfig.text();
+  return text === null ? reply.code(404).send({ error: 'exercises.json not found' }) : { text };
+});
+
 server.post('/api/admin/exercises', async (request, reply) => {
   try {
-    writeRawExercises(request.body);
+    writeRawExercises(request.body, { replace: replacing(request) });
     return { success: true };
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -928,6 +952,8 @@ const start = async () => {
       checkSchedules(new Date());
     });
     console.log('Scheduler started');
+    // The daily backup, in a child process (backupSchedule.ts)
+    backups = scheduleBackups({ cron: BACKUP_CRON, dir: BACKUP_DIR, dbFile: DB_FILE, timeoutMs: BACKUP_TIMEOUT_MS, log: logAction });
     console.log('MCP endpoint available at POST /mcp');
 
     await server.listen({ port: 3000, host: '0.0.0.0' });
