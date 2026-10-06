@@ -20,3 +20,6 @@ backend/test-*.json
 # Mirrored school textbooks (tools/edu-materials)
 materials/
 __pycache__/
+
+# PR evidence, per issue (tools/evidence)
+.evidence/

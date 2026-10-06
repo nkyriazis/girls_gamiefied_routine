@@ -1,0 +1,37 @@
+# Evidence for a PR
+
+A PR shows its problem and its fix on the dev stack (see "Pull requests" in CLAUDE.md): screenshots at
+the kiosk size (1280×800), and videos with sound for anything that plays sound. This kit records them.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d     # the dev stack, first
+tools/evidence/dev.sh problem u1 g3-world-012                             # set the scene (dev.sh lists its helpers)
+tools/evidence/record.sh .evidence/52/before.mjs                          # play it: .png and .mp4 next to the scenario
+```
+
+`dev.sh` helpers (`dev/*.js`) change the dev database only: `problem <kid> <exerciseId>` sets a kid's problem
+for today, fresh; `plain` makes today's plain exercises fresh; `clear-runs` takes flows and routines off screen.
+
+A scenario is a short Playwright script (`scenarios/smoke.mjs` is the smallest, `scenarios/owl-tours.mjs`
+a long one). `kit.mjs` gives it `open()` (the kids' screen, past "Click to Start"), `tap`, `caption` (says on
+the video what is shown), `listen` (waits for a clip to end), `shot` and `finish`. Write the "before"
+scenario first, against master, and play the same one after the fix: the two videos then compare.
+
+## How the sound gets in
+
+Playwright's video has no sound. `kit.mjs` logs every clip and screen sound the page plays, with the time,
+and a corner square flips every second. `mix.sh` finds the flips in the video, so it knows the video's
+clock against the page's (frames come late under load), speeds the video back to the page's pace, and lays
+each sound from `frontend/public` where it played.
+
+Everything runs in one image (`Dockerfile`: Playwright's, plus ffmpeg), built by `record.sh`.
+
+## Where it goes
+
+Per issue, `.evidence/<issue>/` (git-ignored): the scenarios, screenshots and videos. When the PR opens,
+the files the PR shows are pushed to the `pr-evidence` branch under `<issue>/` and linked from the
+description (`https://raw.githubusercontent.com/nkyriazis/girls_gamiefied_routine/pr-evidence/<issue>/<file>`).
+The repo is public: the screens show the dev data only, never piserve's.
+
+`publish.sh <issue>` does that (it pushes, so only when the owner says to ship), and writes
+`.evidence/<issue>/PR.published.md`, the description to open the PR with.
