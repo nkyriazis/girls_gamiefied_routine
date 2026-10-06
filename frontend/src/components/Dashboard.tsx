@@ -619,6 +619,19 @@ export const Dashboard: React.FC = () => {
           container-type: size; /* its card sizes to it (cqmin) */
         }
         .stage.one .routine-slot { max-width: 600px; justify-self: center; }
+        /* The clock still fading out as the first item comes in stays out of the grid's
+           cells: in the flow it would take the only one, and the item would wait in a
+           0 px row until the clock was gone. It fades behind the item. */
+        .stage.items > .clock-container {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+        }
 
         .clock-container {
           text-align: center;
