@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import {
-  chownSync, copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync,
-  statSync, writeFileSync
+  chownSync, closeSync, copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, openSync, readdirSync, readSync,
+  renameSync, rmSync, statSync, writeFileSync
 } from 'fs';
 import path from 'path';
 import { DatabaseSync } from 'node:sqlite';
@@ -89,6 +89,20 @@ function filesUnder(root: string, rel = ''): string[] {
   }).sort();
 }
 
+/** sha256 and size of a file, read 1 MB at a time (an upload may be large; the Pi's memory is not). */
+function sha256File(file: string): { hex: string; size: number } {
+  const hash = createHash('sha256');
+  const buffer = Buffer.allocUnsafe(1 << 20);
+  const fd = openSync(file, 'r');
+  let size = 0;
+  try {
+    for (let n; (n = readSync(fd, buffer, 0, buffer.length, null)) > 0; size += n) hash.update(buffer.subarray(0, n));
+  } finally {
+    closeSync(fd);
+  }
+  return { hex: hash.digest('hex'), size };
+}
+
 /** Give what the backup wrote to the owner of BACKUP_DIR, so they can manage it without sudo. */
 function chownLike(dir: string, target: string): void {
   if (process.getuid?.() !== 0) return;
@@ -151,9 +165,9 @@ export function takeBackup(options: BackupOptions): BackupResult {
     const files = filesUnder(partial);
     let bytes = 0;
     const sums = files.map(rel => {
-      const content = readFileSync(path.join(partial, rel));
-      bytes += content.length;
-      return `${createHash('sha256').update(content).digest('hex')}  ${rel}\n`;
+      const { hex, size } = sha256File(path.join(partial, rel));
+      bytes += size;
+      return `${hex}  ${rel}\n`;
     });
     writeFileSync(path.join(partial, 'SHA256SUMS'), sums.join(''));
 
