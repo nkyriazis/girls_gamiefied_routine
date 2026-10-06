@@ -6,6 +6,7 @@ import { type AlarmProps, type FlowRun, type RoutineRun } from '@shared/types';
 import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
+import { alarmSoundKey, useAlarmSound } from '../hooks/useAlarmSound';
 import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
 import { ChoresDrawer } from './ChoresDrawer';
@@ -183,6 +184,10 @@ export const Dashboard: React.FC = () => {
       return userIndexA - userIndexB;
     });
   }, [flowRuns, routineRuns, users]);
+
+  // One alarm sound for every alarm card on screen (the first one's)
+  const firstAlarm = sortedActiveItems.find(item => item.type === 'alarm');
+  useAlarmSound(firstAlarm?.type === 'alarm' ? alarmSoundKey(firstAlarm.props) : null);
 
   // Determine View Mode based on actual displayed items
   const totalActiveCount = sortedActiveItems.length;

@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { useAppSounds } from '../hooks/useAppSounds';
 import { help } from '../help/anchors';
 import { type User, type AlarmProps } from '@shared/types';
 
@@ -12,32 +11,12 @@ interface GlobalAlarmProps {
 }
 
 export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmProps = {}, onDismiss }) => {
-  const { playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound } = useAppSounds();
-
   const {
-    sound = 'melody',
     title = 'Ειδοποίηση',
     message,
     icon = '🔔',
     dismissText = 'OK'
   } = alarmProps;
-
-  useEffect(() => {
-    // Determine which sound to play
-    if (typeof sound === 'object' && sound.type === 'upload') {
-      // Play custom uploaded MP3 in loop
-      playCustomSound(sound.value, true);
-      return () => stopCustomSound();
-    } else if (sound === 'melody' || !sound) {
-      // Play built-in melody
-      playWakeUpLoop();
-      return () => stopWakeUpLoop();
-    } else if (sound === 'beep') {
-      // Play simple beep alarm (you could add playAlarm in a loop if needed)
-      playWakeUpLoop(); // For now, fallback to melody
-      return () => stopWakeUpLoop();
-    }
-  }, [sound, playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound]);
 
   const handleDismiss = () => {
     onDismiss(flowId);
