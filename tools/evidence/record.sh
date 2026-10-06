@@ -13,6 +13,7 @@ timeout 900 "${run[@]}" node "/repo${scenario#$repo}"
 for j in "$out"/*.sound.json; do
   [ -e "$j" ] || continue
   name=$(basename "$j" .sound.json)
+  [ -e "$out/$name.webm" ] || continue   # recorded with { video: false }: screenshots only
   [ "$out/$name.mp4" -nt "$out/$name.webm" ] && continue
   "${run[@]}" env PUB=/repo/frontend/public bash /repo/tools/evidence/mix.sh "$name"
   ls -la "$out/$name.mp4"
