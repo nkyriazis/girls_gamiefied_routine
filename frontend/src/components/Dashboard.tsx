@@ -385,9 +385,6 @@ export const Dashboard: React.FC = () => {
         </AnimatePresence>
       </div>
 
-      {/* Background Animation */}
-      <div className="bg-gradient" />
-
       {/* Main Stage */}
       <div className={`stage ${viewMode.toLowerCase()}`}>
         <AnimatePresence>
@@ -521,17 +518,19 @@ export const Dashboard: React.FC = () => {
           display: flex;
           flex-direction: column;
           color: white;
-          isolation: isolate;
+          /* No stacking context here (no isolation, no z-index): the overlays inside, the
+             exercise player portalled to <body> and the owl share one scale (layers.css) */
+          background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
         }
 
         .interaction-overlay {
-          position: absolute;
+          position: fixed;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
           background: rgba(0,0,0,0.7);
-          z-index: 1000;
+          z-index: var(--z-start);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -548,16 +547,6 @@ export const Dashboard: React.FC = () => {
           border-radius: 2rem;
           letter-spacing: 4px;
           animation: pulse 2s infinite;
-        }
-
-        .bg-gradient {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-          z-index: -1;
         }
 
         .stage {
@@ -607,7 +596,7 @@ export const Dashboard: React.FC = () => {
           color: white;
           padding: 0.75rem 1.25rem;
           border-radius: 0.5rem;
-          z-index: 2000;
+          z-index: var(--z-toasts);
           font-weight: bold;
           backdrop-filter: blur(5px);
           box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -640,7 +629,7 @@ export const Dashboard: React.FC = () => {
           padding: 0 2rem;
           overflow: visible;
           width: 100%;
-          z-index: 100;
+          z-index: var(--z-dock);
           position: relative;
         }
 
@@ -655,7 +644,7 @@ export const Dashboard: React.FC = () => {
           gap: 0.5rem;
           cursor: pointer;
           padding: 10px 0;
-          z-index: 101;
+          z-index: 1;
           position: relative;
           -webkit-tap-highlight-color: transparent;
           touch-action: manipulation;
@@ -703,7 +692,7 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
+          z-index: var(--z-dock);
         }
 
         .chores-fab-badge {
@@ -740,7 +729,7 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
+          z-index: var(--z-dock);
         }
 
         .bonus-fab-badge {
@@ -777,7 +766,7 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
+          z-index: var(--z-dock);
         }
 
         /* Floating Daily Exercises Button */
@@ -800,7 +789,7 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
+          z-index: var(--z-dock);
         }
 
         .daily-exercises-fab-badge {
@@ -822,7 +811,7 @@ export const Dashboard: React.FC = () => {
           position: fixed;
           top: 1rem;
           right: 1rem;
-          z-index: 1000;
+          z-index: var(--z-toasts);
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
@@ -875,7 +864,7 @@ export const Dashboard: React.FC = () => {
           font-weight: 600;
           cursor: pointer;
           box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-          z-index: 1000;
+          z-index: var(--z-toasts);
           display: flex;
           align-items: center;
           gap: 0.5rem;

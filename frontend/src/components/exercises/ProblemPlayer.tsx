@@ -313,7 +313,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
           background: #2ed573; color: #073; cursor: pointer; white-space: nowrap; }
         .problem-check:disabled { opacity: 0.4; cursor: not-allowed; }
         .problem-praise { position: fixed; inset: 0; margin: auto; width: fit-content; height: fit-content; padding: 1.5rem 3rem; border-radius: 1.5rem;
-          background: rgba(46,213,115,0.95); font-size: 2.2rem; font-weight: bold; z-index: 6000; pointer-events: none; }
+          background: rgba(46,213,115,0.95); font-size: 2.2rem; font-weight: bold; z-index: calc(var(--z-player) + 10); pointer-events: none; }
         .is-wrong { outline: 3px solid #ff4757 !important; outline-offset: 2px; }
         .role-known { background: rgba(46,213,115,0.3); box-shadow: inset 0 -3px 0 #2ed573; }
         .role-sought { background: rgba(255,200,0,0.28); box-shadow: inset 0 -3px 0 #ffc800; }

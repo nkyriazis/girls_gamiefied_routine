@@ -331,7 +331,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           font-weight: 900;
           color: #FFD700;
           text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-          z-index: 100;
+          z-index: 20;
           pointer-events: none;
         }
       `}</style>

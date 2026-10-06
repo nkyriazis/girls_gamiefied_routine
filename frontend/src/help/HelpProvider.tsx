@@ -133,7 +133,7 @@ export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) =
       </AnimatePresence>
       <style>{`
         .help-anchor { position: relative; display: flex; align-items: center; }
-        .help-anchor.floating { position: fixed; left: 1.5rem; bottom: 1.6rem; z-index: 7000; }
+        .help-anchor.floating { position: fixed; left: 1.5rem; bottom: 1.6rem; z-index: var(--z-owl); }
         .help-anchor.inline { margin-right: 1rem; }
         .help-btn { position: relative; width: 64px; height: 64px; min-width: 64px; padding: 0; border-radius: 50%;
           border: 3px solid rgba(255,255,255,0.85); cursor: pointer; display: grid; place-items: center;

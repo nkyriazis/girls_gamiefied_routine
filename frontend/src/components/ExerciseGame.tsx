@@ -250,7 +250,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           width: 100vw;
           height: 100vh;
           background: radial-gradient(circle at center, #2a2a4a 0%, #000 100%);
-          z-index: 5000;
+          z-index: var(--z-player);
           color: white;
           display: flex;
           flex-direction: column;
@@ -487,7 +487,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          z-index: 6000;
+          z-index: calc(var(--z-player) + 10);
           padding: 3rem 5rem;
           border-radius: 2rem;
           display: flex;
@@ -529,7 +529,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           justify-content: center;
           font-size: 2rem;
           color: white;
-          z-index: 5000;
+          z-index: var(--z-player);
         }
       `}</style>
     </div>
