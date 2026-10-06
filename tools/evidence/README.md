@@ -22,7 +22,8 @@ scenario first, against master, and play the same one after the fix: the two vid
 Playwright's video has no sound. `kit.mjs` logs every clip and screen sound the page plays, with the time,
 and a corner square flips every second. `mix.sh` finds the flips in the video, so it knows the video's
 clock against the page's (frames come late under load), speeds the video back to the page's pace, and lays
-each sound from `frontend/public` where it played.
+each sound from `frontend/public` where it played. Both logs live on the Node side and the square shows the page
+clock's second, so a scenario may navigate (`open()` again, `page.goto`) without losing either.
 
 Everything runs in one image (`Dockerfile`: Playwright's, plus ffmpeg), built by `record.sh`.
 

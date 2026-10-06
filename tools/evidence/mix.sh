@@ -26,6 +26,11 @@ for l in open(f'{out}.corner.txt'):
         # The square starts black and flips to white first: anything before is the page loading
         if prev is not None and on != prev and (flips or on): flips.append(t * 1000)
         prev = on
+# A navigation can show something else in the corner for a frame or two: a flip undone at once is not one
+i = 0
+while i < len(flips) - 1:
+    if flips[i + 1] - flips[i] < 250: del flips[i:i + 2]
+    else: i += 1
 page = d['sync'][:len(flips)]
 r = (flips[-1] - flips[0]) / (page[-1] - page[0])
 print(f'{len(flips)} flips seen, {len(d["sync"])} made; video/page = {r:.3f}', file=sys.stderr)
