@@ -169,7 +169,8 @@ export const CalcBench: React.FC<{
         .calc-chip { font-size: 1.2rem; font-weight: bold; color: white; cursor: pointer; padding: 0.4rem 0.9rem; border-radius: 2rem;
           background: rgba(160,160,255,0.2); border: 2px solid rgba(160,160,255,0.55); }
         .calc-chip small { font-weight: normal; opacity: 0.8; font-size: 0.85rem; }
-        .calc-chip.found { background: rgba(46,213,115,0.2); border-color: rgba(46,213,115,0.6); }
+        .calc-chip:hover { border-color: rgba(160,160,255,0.55); } /* not the page's hover border: it stays on after a touch */
+        .calc-chip.found, .calc-chip.found:hover { background: rgba(46,213,115,0.2); border-color: rgba(46,213,115,0.6); }
         .calc-pad { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.4rem; }
         .calc-key { font-size: 1.35rem; padding: 0.45rem 0; border-radius: 0.8rem; border: none; color: white; background: rgba(255,255,255,0.12); cursor: pointer; }
         .calc-key.op { color: gold; font-weight: bold; }
