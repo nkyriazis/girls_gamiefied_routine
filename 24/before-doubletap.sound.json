@@ -1,0 +1,46 @@
+{
+ "said": [
+  {
+   "src": "/sfx/open.wav",
+   "at": 2959,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/open.wav",
+   "at": 3216,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/select.wav",
+   "at": 6241,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/close.wav",
+   "at": 6282,
+   "ev": "play",
+   "sfx": true
+  },
+  {
+   "src": "/sfx/spend.wav",
+   "at": 6349,
+   "ev": "play",
+   "sfx": true
+  }
+ ],
+ "sync": [
+  1506,
+  2528,
+  3506,
+  4506,
+  5506,
+  6506,
+  7506,
+  8506,
+  9506,
+  10506
+ ]
+}

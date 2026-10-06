@@ -1,0 +1,119 @@
+[
+ {
+  "note": "start",
+  "u1": 100,
+  "u2": 20
+ },
+ {
+  "request": "POST /api/transfers",
+  "body": {
+   "fromUserId": "u1",
+   "toUserId": "u2",
+   "amount": 100
+  },
+  "status": 200,
+  "response": "pending"
+ },
+ {
+  "note": "gift of 100 pending: available 0",
+  "u1": 100,
+  "u2": 20
+ },
+ {
+  "request": "POST /api/spendings",
+  "body": {
+   "userId": "u1",
+   "rewardId": "rew-park"
+  },
+  "status": 200,
+  "response": "pending"
+ },
+ {
+  "note": "bought a 100 ⭐ reward while all 100 are promised",
+  "u1": 0,
+  "u2": 20
+ },
+ {
+  "request": "PUT /api/transfers/296253d2-5699-41d7-bebf-c24414c07251",
+  "body": {
+   "action": "approve"
+  },
+  "status": 200,
+  "response": "approved"
+ },
+ {
+  "note": "parent approved the gift",
+  "u1": -100,
+  "u2": 120
+ },
+ {
+  "request": "PUT /api/spendings/0ae53d22-1185-49c9-b979-e2d247217dfb",
+  "body": {
+   "status": "revoked"
+  },
+  "status": 200,
+  "response": "revoked"
+ },
+ {
+  "request": "POST /api/users/u1/stars",
+  "body": {
+   "amount": 100
+  },
+  "status": 200,
+  "response": 100
+ },
+ {
+  "note": "part 2: back to 100",
+  "u1": 100,
+  "u2": 120
+ },
+ {
+  "request": "POST /api/spendings",
+  "body": {
+   "userId": "u1",
+   "rewardId": "rew-tv"
+  },
+  "status": 200,
+  "response": "pending"
+ },
+ {
+  "request": "POST /api/spendings",
+  "body": {
+   "userId": "u1",
+   "rewardId": "rew-tv"
+  },
+  "status": 200,
+  "response": "pending"
+ },
+ {
+  "note": "same POST /api/spendings twice: 2 spendings created",
+  "u1": 0,
+  "u2": 120
+ },
+ {
+  "request": "PUT /api/spendings/6a49ce80-0426-4794-b92f-770961d7e941",
+  "body": {
+   "status": "revoked"
+  },
+  "status": 200,
+  "response": "revoked"
+ },
+ {
+  "request": "PUT /api/spendings/6d834354-d266-4399-92d9-fe301d85762d",
+  "body": {
+   "status": "revoked"
+  },
+  "status": 200,
+  "response": "revoked"
+ },
+ {
+  "note": "refunded",
+  "u1": 100,
+  "u2": 120
+ },
+ {
+  "note": "double tap on «1 Ώρα Τηλεόραση» (50): 1 spending(s) created",
+  "u1": 50,
+  "u2": 120
+ }
+]

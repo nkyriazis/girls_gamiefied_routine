@@ -1,0 +1,5 @@
+at second tap: reward-icon
+store open after: 1
+[probe-slowtap] screenshot probe-slowtap.png
+users [["u1",40,40],["u2",20,20]]
+[probe-slowtap] done

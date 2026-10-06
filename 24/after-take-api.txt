@@ -1,0 +1,5 @@
+$ POST /api/transfers {"fromUserId":"u1","toUserId":"u2","amount":100}   -> pending
+$ POST /api/users/u1/stars {"amount":-50}
+{"error":"Ηλέκτρα: διαθέσιμα ⭐ 0 · ⭐ 100 περιμένουν σε δώρο. Απορρίψτε πρώτα το δώρο."}  [HTTP 400]
+$ GET /api/users (u1)
+  stars 100 available 0

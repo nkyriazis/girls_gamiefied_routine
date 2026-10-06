@@ -1,0 +1,113 @@
+[
+ {
+  "note": "start",
+  "u1": 100,
+  "u2": 20
+ },
+ {
+  "request": "POST /api/transfers",
+  "body": {
+   "fromUserId": "u1",
+   "toUserId": "u2",
+   "amount": 100
+  },
+  "status": 200,
+  "response": "pending"
+ },
+ {
+  "note": "gift of 100 pending: available 0",
+  "u1": 100,
+  "u2": 20
+ },
+ {
+  "request": "POST /api/spendings",
+  "body": {
+   "userId": "u1",
+   "rewardId": "rew-park"
+  },
+  "status": 400,
+  "response": {
+   "error": "Ηλέκτρα: διαθέσιμα ⭐ 0 · ⭐ 100 περιμένουν σε δώρο. Απορρίψτε πρώτα το δώρο."
+  }
+ },
+ {
+  "note": "bought a 100 ⭐ reward while all 100 are promised",
+  "u1": 100,
+  "u2": 20
+ },
+ {
+  "request": "PUT /api/transfers/9b7e2829-985b-4a31-8203-544fa25dceaf",
+  "body": {
+   "action": "approve"
+  },
+  "status": 200,
+  "response": "approved"
+ },
+ {
+  "note": "parent approved the gift",
+  "u1": 0,
+  "u2": 120
+ },
+ {
+  "request": "POST /api/users/u1/stars",
+  "body": {
+   "amount": 100
+  },
+  "status": 200,
+  "response": 100
+ },
+ {
+  "note": "part 2: back to 100",
+  "u1": 100,
+  "u2": 120
+ },
+ {
+  "request": "POST /api/spendings",
+  "body": {
+   "userId": "u1",
+   "rewardId": "rew-tv"
+  },
+  "status": 200,
+  "response": "pending"
+ },
+ {
+  "request": "POST /api/spendings",
+  "body": {
+   "userId": "u1",
+   "rewardId": "rew-tv"
+  },
+  "status": 200,
+  "response": "pending"
+ },
+ {
+  "note": "same POST /api/spendings twice: 2 spendings created",
+  "u1": 0,
+  "u2": 120
+ },
+ {
+  "request": "PUT /api/spendings/a4661539-425b-4512-84e4-f9c98a29f97c",
+  "body": {
+   "status": "revoked"
+  },
+  "status": 200,
+  "response": "revoked"
+ },
+ {
+  "request": "PUT /api/spendings/9bc7a706-ea27-4729-9115-39840c8273ad",
+  "body": {
+   "status": "revoked"
+  },
+  "status": 200,
+  "response": "revoked"
+ },
+ {
+  "note": "refunded",
+  "u1": 100,
+  "u2": 120
+ },
+ {
+  "note": "double tap on «1 Ώρα Τηλεόραση» (50): 1 spending(s) created",
+  "u1": 50,
+  "u2": 120
+ }
+]
