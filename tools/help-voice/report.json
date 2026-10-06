@@ -1891,9 +1891,9 @@
    "problem-tag/hello",
    "problem-paint/hello",
    "problem-paint-all/hello",
-   "problem-calc/hello",
+   "problem-calc-2/hello",
    "problem-choice/hello",
-   "problem-numbers/hello",
+   "problem-numbers-2/hello",
    "problem-order/hello"
   ],
   "id": "eccdaec9e1c4",
@@ -1929,9 +1929,9 @@
    "problem-tag/problem.phases",
    "problem-paint/problem.phases",
    "problem-paint-all/problem.phases",
-   "problem-calc/problem.phases",
+   "problem-calc-2/problem.phases",
    "problem-choice/problem.phases",
-   "problem-numbers/problem.phases",
+   "problem-numbers-2/problem.phases",
    "problem-order/problem.phases"
   ],
   "id": "78e9bc59411e",
@@ -1966,9 +1966,9 @@
    "problem-tag/problem.story",
    "problem-paint/problem.story",
    "problem-paint-all/problem.story",
-   "problem-calc/problem.story",
+   "problem-calc-2/problem.story",
    "problem-choice/problem.story",
-   "problem-numbers/problem.story",
+   "problem-numbers-2/problem.story",
    "problem-order/problem.story"
   ],
   "id": "3d47d0d40050",
@@ -2003,9 +2003,9 @@
    "problem-tag/problem.prompt",
    "problem-paint/problem.prompt",
    "problem-paint-all/problem.prompt",
-   "problem-calc/problem.prompt",
+   "problem-calc-2/problem.prompt",
    "problem-choice/problem.prompt",
-   "problem-numbers/problem.prompt",
+   "problem-numbers-2/problem.prompt",
    "problem-order/problem.prompt"
   ],
   "id": "c631647268e9",
@@ -2103,9 +2103,9 @@
    "problem-tag/problem.hint",
    "problem-paint/problem.hint",
    "problem-paint-all/problem.hint",
-   "problem-calc/problem.hint",
+   "problem-calc-2/problem.hint",
    "problem-choice/problem.hint",
-   "problem-numbers/problem.hint",
+   "problem-numbers-2/problem.hint",
    "problem-order/problem.hint"
   ],
   "id": "10c57da8623d",
@@ -2140,9 +2140,9 @@
    "problem-tag/problem.check",
    "problem-paint/problem.check",
    "problem-paint-all/problem.check",
-   "problem-calc/problem.check",
+   "problem-calc-2/problem.check",
    "problem-choice/problem.check",
-   "problem-numbers/problem.check",
+   "problem-numbers-2/problem.check",
    "problem-order/problem.check"
   ],
   "id": "85d8c9f42d1b",
@@ -2298,103 +2298,105 @@
   "lufs": -16.1
  },
  {
-  "say": "Οι αριθμοί σου. Οι αριθμοί της ιστορίας. Πάτα έναν για να ξεκινήσεις μια πράξη.",
+  "say": "Η πράξη σου. Πάτα ένα κουτάκι για να το γεμίσεις: λάμπει γαλάζιο. Με τον Έλεγχο σου λέω τι βρήκες, και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.",
   "where": [
-   "problem-calc/calc.chips"
+   "problem-calc-2/calc.build"
   ],
-  "id": "4ac031c9d456",
+  "id": "aad74fb98222",
   "ok": true,
-  "takes": 3,
-  "seed": 1,
-  "heard": "Οι αριθμοί σου. Οι αριθμοί της ιστορίας. Πάτα έναν για να ξεκινήσεις μια πράξη.",
-  "cer": 0.0,
+  "takes": 8,
+  "tried": 8,
+  "seed": 8,
+  "heard": "Η πράξη σου. Πάτα ένα κουτάκι για να το γεμίσεις. Λάμπι γαλάζιο. Με τον έλεγχο σου λέω τι βρήκες και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.",
+  "cer": 0.0078,
   "language": "el",
-  "greek": 0.9897,
-  "f0": 251,
-  "lively": 4.48,
-  "secs": 4.77,
-  "peak": 0.602,
-  "rate": 16.6,
-  "same_voice": 0.922,
-  "clip": "help-voice/4ac031c9d456.mp3",
-  "shipped_cer": 0.0,
-  "shipped_heard": "Οι αριθμοί σου. Οι αριθμοί της ιστορίας. Πάτα έναν για να ξεκινήσεις μια πράξη.",
-  "kb": 37.8,
-  "clean": {
-   "pesq": 3.99,
-   "stoi": 0.997,
-   "si_sdr": 28.6,
-   "outlier": false
-  },
-  "lufs": -16.2
- },
- {
-  "say": "Πράξη και αποτέλεσμα. Διάλεξε πράξη, πάτα τον δεύτερο αριθμό και γράψε το αποτέλεσμα με τα πλήκτρα.",
-  "where": [
-   "problem-calc/calc.pad"
-  ],
-  "id": "f6b6ae3968cc",
-  "ok": true,
-  "takes": 3,
-  "seed": 1,
-  "heard": "Πράξη και αποτέλεσμα. Διάλεξε πράξη, πάτα τον δεύτερο αριθμό και γράψε το αποτέλεσμα με τα πλήκτρα.",
-  "cer": 0.0,
-  "language": "el",
-  "greek": 0.9941,
-  "f0": 272,
-  "lively": 6.36,
-  "secs": 5.22,
-  "peak": 0.72,
-  "rate": 19.0,
-  "same_voice": 0.941,
-  "clip": "help-voice/f6b6ae3968cc.mp3",
-  "shipped_cer": 0.0,
-  "shipped_heard": "Πράξη και αποτέλεσμα. Διάλεξε πράξη, πάτα τον δεύτερο αριθμό και γράψε το αποτέλεσμα με τα πλήκτρα.",
-  "kb": 41.3,
-  "clean": {
-   "pesq": 3.64,
-   "stoi": 0.978,
-   "si_sdr": 23.7,
-   "outlier": false
-  },
-  "lufs": -16.2
- },
- {
-  "say": "Η πράξη σου. Εδώ φτιάχνεται. Με τον Έλεγχο σου λέω τι βρήκες, και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.",
-  "where": [
-   "problem-calc/calc.build"
-  ],
-  "id": "46c221cdb653",
-  "ok": true,
-  "takes": 4,
-  "tried": 6,
-  "seed": 4,
-  "heard": "Η πράξη σου. Εδώ φτιάχνεται. Με τον έλεγχο σου λέω τι βρήκες. Και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.",
-  "cer": 0.0,
-  "language": "el",
-  "greek": 0.9897,
-  "f0": 233,
-  "lively": 4.35,
-  "secs": 6.97,
-  "peak": 0.601,
-  "rate": 18.1,
-  "same_voice": 0.956,
-  "clip": "help-voice/46c221cdb653.mp3",
-  "shipped_cer": 0.0,
-  "shipped_heard": "Η πράξη σου. Εδώ φτιάχνεται. Με τον έλεγχο σου λέω τι βρήκες. Και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.",
-  "kb": 54.9,
+  "greek": 0.9932,
+  "f0": 230,
+  "lively": 5.43,
+  "secs": 9.76,
+  "peak": 0.6,
+  "rate": 16.7,
   "clean": {
    "pesq": 4.04,
-   "stoi": 0.997,
-   "si_sdr": 28.4,
+   "stoi": 0.99,
+   "si_sdr": 27.2,
    "outlier": false
   },
-  "lufs": -16.2
+  "same_voice": 0.958,
+  "clip": "help-voice/aad74fb98222.mp3",
+  "shipped_cer": 0.0078,
+  "shipped_heard": "Η πράξη σου. Πάτα ένα κουτάκι για να το γεμίσεις. Λάμπι γαλάζιο. Με τον έλεγχο σου λέω τι βρήκες και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.",
+  "kb": 76.8,
+  "lufs": -16.3
+ },
+ {
+  "say": "Οι αριθμοί σου. Οι αριθμοί της ιστορίας. Πάτα έναν για να τον βάλεις στην πράξη.",
+  "where": [
+   "problem-calc-2/calc.chips"
+  ],
+  "id": "6abd2e6085b8",
+  "ok": true,
+  "takes": 3,
+  "tried": 3,
+  "seed": 2,
+  "heard": "Οι αριθμοί σου. Οι αριθμοί της ιστορίας. Πάτα έναν για να τον βάλεις στην πράξη.",
+  "cer": 0.0,
+  "language": "el",
+  "greek": 0.9917,
+  "f0": 247,
+  "lively": 5.4,
+  "secs": 5.47,
+  "peak": 0.564,
+  "rate": 14.6,
+  "clean": {
+   "pesq": 3.59,
+   "stoi": 0.99,
+   "si_sdr": 19.3,
+   "outlier": true
+  },
+  "same_voice": 0.943,
+  "clip": "help-voice/6abd2e6085b8.mp3",
+  "shipped_cer": 0.0,
+  "shipped_heard": "Οι αριθμοί σου. Οι αριθμοί της ιστορίας. Πάτα έναν για να τον βάλεις στην πράξη.",
+  "kb": 43.3,
+  "lufs": -16.0
+ },
+ {
+  "say": "Πράξη και αποτέλεσμα. Διάλεξε πράξη και γράψε το αποτέλεσμα. Το βελάκι πίσω σβήνει, και το σι αδειάζει το γαλάζιο κουτάκι.",
+  "where": [
+   "problem-calc-2/calc.pad"
+  ],
+  "id": "a9881f4d5b1e",
+  "ok": true,
+  "takes": 8,
+  "tried": 8,
+  "seed": 7,
+  "heard": "Πράξη και αποτέλεσμα. Διάλεξε πράξη και γράψε το αποτέλεσμα. Το βελάκι πίσω σβήνει και το σιαδιάζει το γαλάζιο κουτάκι.",
+  "cer": 0.0101,
+  "language": "el",
+  "greek": 0.9937,
+  "f0": 254,
+  "lively": 5.03,
+  "secs": 9.04,
+  "peak": 0.734,
+  "rate": 13.5,
+  "clean": {
+   "pesq": 3.91,
+   "stoi": 0.994,
+   "si_sdr": 25.2,
+   "outlier": false
+  },
+  "same_voice": 0.944,
+  "clip": "help-voice/a9881f4d5b1e.mp3",
+  "shipped_cer": 0.0101,
+  "shipped_heard": "Πράξη και αποτέλεσμα Διάλεξε πράξη και γράψε το αποτέλεσμα. Το βελάκι πίσω σβήνει και το σιαδιάζει το γαλάζιο κουτάκι.",
+  "kb": 71.3,
+  "lufs": -16.3
  },
  {
   "say": "Όσα βρήκες. Οι πράξεις σου μένουν εδώ, με το τι βρήκες σε κάθε πράξη. Οι πράσινες σε φέρνουν πιο κοντά στην απάντηση.",
   "where": [
-   "problem-calc/calc.lines"
+   "problem-calc-2/calc.lines"
   ],
   "id": "0c1a8e6937cb",
   "ok": true,
@@ -2457,7 +2459,7 @@
  {
   "say": "Συμπλήρωσε. Πάτα ένα κουτάκι και γράψε τον αριθμό.",
   "where": [
-   "problem-numbers/problem.numbers"
+   "problem-numbers-2/problem.numbers"
   ],
   "id": "ad47940951c4",
   "ok": true,
@@ -2486,35 +2488,35 @@
   "lufs": -16.2
  },
  {
-  "say": "Τα πλήκτρα. Με το βελάκι πίσω σβήνεις, και με το γυριστό βελάκι πας στο επόμενο κουτάκι.",
+  "say": "Τα πλήκτρα. Με το βελάκι πίσω σβήνεις, με το σι αδειάζεις το κουτάκι, και με το γυριστό βελάκι πας στο επόμενο κουτάκι.",
   "where": [
-   "problem-numbers/problem.keypad"
+   "problem-numbers-2/problem.keypad"
   ],
-  "id": "c73ed5c971df",
+  "id": "45582412e3f2",
   "ok": true,
-  "takes": 3,
+  "takes": 6,
   "tried": 6,
   "seed": 6,
-  "heard": "Τα πλήκτρα. Με το βελάκι πίσω σβήνεις και με το γυριστό βελάκι πας στο επόμενο κουτάκι.",
+  "heard": "Τα πλήκτρα. Με το βελάκι πίσω σβήνεις, με το σι αδειάζεις το κουτάκι και με το γυριστό βελάκι πας στο επόμενο κουτάκι.",
   "cer": 0.0,
   "language": "el",
-  "greek": 0.9893,
-  "f0": 243,
-  "lively": 4.95,
-  "secs": 5.54,
-  "peak": 0.663,
-  "rate": 15.9,
+  "greek": 0.9834,
+  "f0": 286,
+  "lively": 5.4,
+  "secs": 6.78,
+  "peak": 0.637,
+  "rate": 17.5,
   "clean": {
-   "pesq": 3.59,
-   "stoi": 0.996,
-   "si_sdr": 26.7,
+   "pesq": 3.86,
+   "stoi": 0.995,
+   "si_sdr": 28.9,
    "outlier": false
   },
-  "same_voice": 0.943,
-  "clip": "help-voice/c73ed5c971df.mp3",
+  "same_voice": 0.947,
+  "clip": "help-voice/45582412e3f2.mp3",
   "shipped_cer": 0.0,
-  "shipped_heard": "Τα πλήκτρα. Με το βελάκι πίσω σβήνεις και με το γυριστό βελάκι πας στο επόμενο κουτάκι.",
-  "kb": 43.9,
+  "shipped_heard": "Τα πλήκτρα. Με το βελάκι πίσω σβήνεις, με το σι αδειάζεις το κουτάκι και με το γυριστό βελάκι πας στο επόμενο κουτάκι.",
+  "kb": 53.5,
   "lufs": -16.2
  },
  {

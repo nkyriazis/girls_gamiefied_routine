@@ -25,9 +25,10 @@ const KIND: Record<ProblemHelpKind, HelpStep[]> = {
     { el: 'problem.brush-extra', title: 'Το λευκό πινέλο', text: 'Μερικοί αριθμοί είναι παγίδες! Βρες τους και βάψ’ τους λευκούς.', side: 'top', demo: 'tap' },
   ],
   calc: [
-    { el: 'calc.chips', title: 'Οι αριθμοί σου', text: 'Οι αριθμοί της ιστορίας. Πάτα έναν για να ξεκινήσεις μια πράξη.', side: 'top', demo: 'tap' },
-    { el: 'calc.pad', title: 'Πράξη και αποτέλεσμα', text: 'Διάλεξε πράξη, πάτα τον δεύτερο αριθμό και γράψε το αποτέλεσμα με τα πλήκτρα.', side: 'top' },
-    { el: 'calc.build', title: 'Η πράξη σου', text: 'Εδώ φτιάχνεται. Με τον Έλεγχο σου λέω τι βρήκες, και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.', side: 'bottom' },
+    { el: 'calc.build', title: 'Η πράξη σου', text: 'Πάτα ένα κουτάκι για να το γεμίσεις: λάμπει γαλάζιο. Με τον Έλεγχο σου λέω τι βρήκες, και το αποτέλεσμα γίνεται κι αυτό αριθμός για την επόμενη πράξη.', side: 'bottom', demo: 'tap' },
+    { el: 'calc.chips', title: 'Οι αριθμοί σου', text: 'Οι αριθμοί της ιστορίας. Πάτα έναν για να τον βάλεις στην πράξη.', side: 'top', demo: 'tap' },
+    { el: 'calc.pad', title: 'Πράξη και αποτέλεσμα', text: 'Διάλεξε πράξη και γράψε το αποτέλεσμα. Το ⌫ σβήνει, το C αδειάζει το γαλάζιο κουτάκι.', side: 'top',
+      say: 'Πράξη και αποτέλεσμα. Διάλεξε πράξη και γράψε το αποτέλεσμα. Το βελάκι πίσω σβήνει, και το σι αδειάζει το γαλάζιο κουτάκι.' },
     { el: 'calc.lines', title: 'Όσα βρήκες', text: 'Οι πράξεις σου μένουν εδώ, με το τι βρήκες σε κάθε πράξη. Οι πράσινες σε φέρνουν πιο κοντά στην απάντηση.', side: 'bottom' },
   ],
   choice: [
@@ -35,15 +36,20 @@ const KIND: Record<ProblemHelpKind, HelpStep[]> = {
   ],
   numbers: [
     { el: 'problem.numbers', title: 'Συμπλήρωσε', text: 'Πάτα ένα κουτάκι και γράψε τον αριθμό.', side: 'left', demo: 'tap' },
-    { el: 'problem.keypad', title: 'Τα πλήκτρα', text: 'Με το ⌫ σβήνεις, με το ↵ πας στο επόμενο κουτάκι.', side: 'top', say: 'Τα πλήκτρα. Με το βελάκι πίσω σβήνεις, και με το γυριστό βελάκι πας στο επόμενο κουτάκι.' },
+    { el: 'problem.keypad', title: 'Τα πλήκτρα', text: 'Με το ⌫ σβήνεις, με το C αδειάζεις το κουτάκι, με το ↵ πας στο επόμενο.', side: 'top',
+      say: 'Τα πλήκτρα. Με το βελάκι πίσω σβήνεις, με το σι αδειάζεις το κουτάκι, και με το γυριστό βελάκι πας στο επόμενο κουτάκι.' },
   ],
   order: [
     { el: 'problem.order', title: 'Βάλε σειρά', text: 'Πάτα τα βήματα με τη σειρά που γίνονται. Πάτα ένα με αριθμό για να το πάρεις πίσω.', side: 'left', demo: 'tap' },
   ],
 };
 
+// A tour whose steps changed gets a new edition, so the owl offers it again to a kid who
+// played the old one (played tours are remembered by id). #52: tap a box, then fill it.
+const EDITION: Partial<Record<ProblemHelpKind, number>> = { calc: 2, numbers: 2 };
+
 export const problemTour = (userId: string, kind: ProblemHelpKind): Tour => ({
-  id: `problem-${kind}`,
+  id: `problem-${kind}${EDITION[kind] ? `-${EDITION[kind]}` : ''}`,
   user: userId,
   steps: KIND[kind],
   intro: {
