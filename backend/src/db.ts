@@ -1104,6 +1104,11 @@ function lastSeen(userId: string): Map<string, string> {
 // The daily set, as opposed to the extra problems a kid asks for.
 const DAILY = '(extra IS NULL OR extra = 0)';
 
+/** How many daily sets a kid has had: where her round of the mix starts when she has no problems (drawDailySet). */
+function dailySetsSoFar(userId: string): number {
+  return new Set(store.exerciseAssignments.all(`userId = ? AND ${DAILY}`, userId).map(a => a.date)).size;
+}
+
 // How many extra problems a kid may ask for in a day unless settings.extraProblemsPerDay says otherwise.
 export const DEFAULT_EXTRA_PROBLEMS_PER_DAY = 10;
 
@@ -1160,7 +1165,7 @@ export async function ensureDailyAssignments(): Promise<boolean> {
     if (hasToday) continue;
 
     const pools = await exercisePoolProvider.getPoolsForUser(user.id);
-    const { drawn, revision } = drawDailySet(pools, exercisesPerDay(), lastSeen(user.id));
+    const { drawn, revision } = drawDailySet(pools, exercisesPerDay(), lastSeen(user.id), dailySetsSoFar(user.id));
     if (drawn.length === 0) continue;
 
     // Re-check after the await: a concurrent request may have drawn already.

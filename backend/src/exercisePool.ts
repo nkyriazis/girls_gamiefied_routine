@@ -59,9 +59,13 @@ export function poolsForGrade(pools: ExercisePool[], grade: SchoolGrade | undefi
 // then language, and round again when exercisesPerDay is more than 3. Each slot
 // takes the freshest item of its category: from the kid's own grade, or, when her
 // grade has nothing in that category, from revision. A category she has nothing in
-// (or that runs out within the day) passes its slot to the next one in the mix, so
-// a kid with no problems gets maths, language, maths. Categories outside the mix
-// come after it.
+// (or that runs out within the day) passes its slot to the next one in the mix.
+// Categories outside the mix come after it.
+//
+// A kid with problems starts every day with the problem. A kid without them goes
+// round the categories she has, starting one further each day (`turn`, how many
+// daily sets she has had), so a Δ΄ kid at 3 a day gets maths, language, maths one
+// day and language, maths, language the next, not two maths always.
 // ----------------------------------------------------------------------------
 
 export const DAILY_MIX = ['Προβλήματα', 'Μαθηματικά', 'Γλώσσα'] as const;
@@ -73,11 +77,23 @@ export function mixOrder(exercises: Exercise[]): string[] {
   return [...mix.filter(c => present.has(c)), ...[...present].filter(c => !mix.includes(c)).sort()];
 }
 
-/** How many of a day's `count` slots each category gets, when none runs out. */
+/** Where the day's round starts: at the problem if she has any, else one category further each daily set. */
+export function mixStart(order: string[], turn: number): number {
+  return order[0] === DAILY_MIX[0] || !order.length ? 0 : turn % order.length;
+}
+
+/** How many of a day's `count` slots each category gets on average, when none runs out (over the days `turn` goes round). */
 export function mixSlots(exercises: Exercise[], count: number): Map<string, number> {
   const order = mixOrder(exercises);
+  const turns = mixStart(order, 1) ? order.length : 1;
   const slots = new Map<string, number>();
-  for (let i = 0; i < count && order.length; i++) slots.set(order[i % order.length], (slots.get(order[i % order.length]) ?? 0) + 1);
+  for (let turn = 0; turn < turns; turn++) {
+    const start = mixStart(order, turn);
+    for (let i = 0; i < count && order.length; i++) {
+      const c = order[(start + i) % order.length];
+      slots.set(c, (slots.get(c) ?? 0) + 1 / turns);
+    }
+  }
   return slots;
 }
 
@@ -88,9 +104,13 @@ export function freshLast(list: Exercise[], seen: Map<string, string>): Exercise
   return [...unseen, ...old].reverse();
 }
 
-/** A day's set of `count`, in mix order; `seen` is when she last had each exercise. Says which came from revision. */
-export function drawDailySet(pools: UserPools, count: number, seen: Map<string, string>): { drawn: Exercise[]; revision: string[] } {
-  const buckets = mixOrder([...pools.own, ...pools.revision]).map(category => {
+/**
+ * A day's set of `count`, in mix order; `seen` is when she last had each exercise, `turn` how many daily
+ * sets she has had (where the round starts for a kid with no problems). Says which came from revision.
+ */
+export function drawDailySet(pools: UserPools, count: number, seen: Map<string, string>, turn = 0): { drawn: Exercise[]; revision: string[] } {
+  const order = mixOrder([...pools.own, ...pools.revision]);
+  const buckets = order.map(category => {
     const own = pools.own.filter(e => e.category === category);
     const from = own.length ? own : pools.revision.filter(e => e.category === category);
     return { items: freshLast(from, seen), revision: !own.length };
@@ -98,7 +118,7 @@ export function drawDailySet(pools: UserPools, count: number, seen: Map<string, 
   const drawn: Exercise[] = [];
   const revision: string[] = [];
   // k turns through the mix; a slot whose category is empty goes to the next one
-  for (let k = 0; drawn.length < count && buckets.some(b => b.items.length); k++) {
+  for (let k = mixStart(order, turn); drawn.length < count && buckets.some(b => b.items.length); k++) {
     const bucket = buckets[k % buckets.length];
     const ex = bucket.items.pop();
     if (!ex) continue;

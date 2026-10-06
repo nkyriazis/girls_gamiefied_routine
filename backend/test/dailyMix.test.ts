@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { mock, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
@@ -59,8 +59,8 @@ const { store } = db;
 
 const loaded = pool.loadPools(pools);
 const of = (grade: SchoolGrade) => pool.poolsForGrade(loaded, grade);
-const draw = (grade: SchoolGrade, count: number, seen = new Map<string, string>()) => pool.drawDailySet(of(grade), count, seen);
-const ids = (grade: SchoolGrade, count: number) => draw(grade, count).drawn.map(e => e.id);
+const draw = (grade: SchoolGrade, count: number, seen = new Map<string, string>(), turn = 0) => pool.drawDailySet(of(grade), count, seen, turn);
+const ids = (grade: SchoolGrade, count: number, turn = 0) => draw(grade, count, undefined, turn).drawn.map(e => e.id);
 const kind = (id: string) => id.replace(/\d+$/, '');
 
 test('a pool is written for its grades and serves its revision grades apart', () => {
@@ -107,6 +107,18 @@ test('a category a grade lacks passes its slot on, rotating through the mix', ()
   assert.equal(ids(3, 20).length, 12, 'never the same item twice in a day');
 });
 
+test('with no problems the round starts one further each day; with problems the problem stays first', () => {
+  // Δ΄ at the default 3: the double slot moves between maths and language
+  assert.deepEqual(ids(4, 3, 0).map(kind), ['dM', 'dL', 'dM']);
+  assert.deepEqual(ids(4, 3, 1).map(kind), ['dL', 'dM', 'dL']);
+  assert.deepEqual(ids(4, 3, 2).map(kind), ['dM', 'dL', 'dM']);
+  assert.deepEqual(ids(4, 6, 1).map(kind), ['dL', 'dM', 'dL', 'dM', 'dL', 'dM']);
+  for (let turn = 0; turn < 6; turn++) assert.deepEqual(ids(3, 3, turn).map(kind), ['P', 'M', 'rL']);
+  // On average the table's slots per day: 1.5 each for Δ΄, 1 each for Γ΄
+  assert.deepEqual([...pool.mixSlots([...of(4).own], 3)], [['Μαθηματικά', 1.5], ['Γλώσσα', 1.5]]);
+  assert.deepEqual([...pool.mixSlots([...of(3).own, ...of(3).revision], 3)], [['Προβλήματα', 1], ['Μαθηματικά', 1], ['Γλώσσα', 1]]);
+});
+
 test('a grade with no pools gets nothing', () => {
   assert.deepEqual(draw(1, 3), { drawn: [], revision: [] });
 });
@@ -138,6 +150,17 @@ test('the daily set is stored in mix order, revision items marked, and the draw 
   assert.deepEqual(state.exerciseAssignments.filter(a => a.userId === 'g3').map(a => !!a.revision), [false, false, true]);
 });
 
+test('the next day the Δ΄ kid starts one further round the mix, the Γ΄ kid with the problem again', async () => {
+  mock.timers.enable({ apis: ['Date'], now: Date.now() + 86400_000 });
+  try {
+    const next = await db.getExerciseAssignments();
+    assert.deepEqual(next.filter(a => a.userId === 'g4').map(a => kind(a.exerciseId)), ['dL', 'dM', 'dL']);
+    assert.deepEqual(next.filter(a => a.userId === 'g3').map(a => kind(a.exerciseId)), ['P', 'M', 'rL']);
+  } finally {
+    mock.timers.reset();
+  }
+});
+
 // ---------------------------------------------------------------------------
 // The shipped pools: per grade and mix category, how many items each has and how
 // many days pass before one comes back. Warns (part 1 of #49) under NO_REPEAT_DAYS.
@@ -146,7 +169,7 @@ const NO_REPEAT_DAYS = 30;
 
 test('shipped pools: days before a daily item comes back, per grade and category', t => {
   const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
-  const perDay = pool.DEFAULT_EXERCISES_PER_DAY;
+  const perDay = pool.DEFAULT_EXERCISES_PER_DAY;   // slots/day: on average, over the days a kid with no problems goes round
   const extras = db.DEFAULT_EXTRA_PROBLEMS_PER_DAY;
   const rows: string[] = [`daily set: ${perDay} a day, plus up to ${extras} extra problems; warn under ${NO_REPEAT_DAYS} days`,
     'grade  category     own  rev  slots/day  days to repeat'];
@@ -166,7 +189,7 @@ test('shipped pools: days before a daily item comes back, per grade and category
       // Extra problems draw from the same problems, freshest first, so at full use they count as slots
       const perDayHere = (slots.get(category) ?? 0) + (category === 'Προβλήματα' && ownN ? extras : 0);
       const days = perDayHere ? Math.floor((ownN || revN) / perDayHere) : undefined;
-      rows.push(`${grade}      ${category.padEnd(11)}  ${String(ownN).padStart(3)}  ${String(revN).padStart(3)}  ${String(perDayHere).padStart(9)}  ${days ?? '-'}`);
+      rows.push(`${grade}      ${category.padEnd(11)}  ${String(ownN).padStart(3)}  ${String(revN).padStart(3)}  ${String(+perDayHere.toFixed(2)).padStart(9)}  ${days ?? '-'}`);
       const why = [
         ...(days === undefined ? ['none, its slot passes on'] : []),
         ...(days !== undefined && !ownN ? [`none of its own, ${revN} revision items`] : []),
