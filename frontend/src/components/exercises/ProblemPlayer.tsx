@@ -9,7 +9,7 @@ import { CalcBench, PaintWords } from './ProblemFreeSteps';
 import { help } from '../../help/anchors';
 import { HelpScreen } from '../../help/HelpProvider';
 import { problemTour, type ProblemHelpKind } from './ProblemPlayer.help';
-import { useShuffled, shuffle as draw } from './shuffle';
+import { optionLetter, useSeededOrder, useShuffled, shuffle as draw } from './shuffle';
 import { calcNudge, emptyCalc, paintFeedback, readLine, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 import { sfx, sound } from '../../sound/sfx';
 import { numbersInput, type NumbersInput } from './answerFields';
@@ -237,7 +237,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
           </div>
         )}
         {step.kind === 'choice' && (
-          <ChoiceStep options={step.options} value={value as number | null} setValue={setValue} disabled={busy} />
+          <ChoiceStep options={step.options} value={value as number | null} setValue={setValue} disabled={busy} seed={`${assignment.id}:${stepIndex}`} />
         )}
         {step.kind === 'numbers' && (
           <NumbersStep key={stepIndex} rows={step.rows} value={value as string[]} setValue={setValue} wrong={wrong?.parts} disabled={busy} />
@@ -395,13 +395,17 @@ interface StepProps<T> {
   wrong?: number[];
 }
 
-// Tap to pick, "Έλεγχος" to answer.
-const ChoiceStep: React.FC<StepProps<number | null> & { options: string[] }> = ({ options, value, setValue, disabled }) => (
+// Tap to pick, "Έλεγχος" to answer. The options in an order fixed by the assignment and
+// step, so they stay put after a wrong try, a reload or on a second device; the answer is
+// still the option's own index.
+const ChoiceStep: React.FC<StepProps<number | null> & { options: string[]; seed: string }> = ({ options, value, setValue, disabled, wrong, seed }) => {
+  const order = useSeededOrder(options.length, seed);
+  return (
   <div className="choice-list" {...help('problem.choices')}>
-    {options.map((option, i) => (
-      <motion.button key={i} type="button" className={`choice-btn ${value === i ? 'picked' : ''}`} disabled={disabled}
+    {order.map((i, place) => (
+      <motion.button key={i} type="button" className={`choice-btn ${value === i ? 'picked' : ''} ${wrong?.includes(i) ? 'is-wrong' : ''}`} disabled={disabled}
         aria-pressed={value === i} whileTap={!disabled ? { scale: 0.98 } : {}} {...sound('select')} onClick={() => setValue(i)}>
-        <span className="choice-letter">{String.fromCharCode(0x391 + i)}</span>{option}
+        <span className="choice-letter">{optionLetter(place)}</span>{options[i]}
       </motion.button>
     ))}
     <style>{`
@@ -414,7 +418,8 @@ const ChoiceStep: React.FC<StepProps<number | null> & { options: string[] }> = (
         background: rgba(255,255,255,0.12); color: gold; font-weight: bold; }
     `}</style>
   </div>
-);
+  );
+};
 
 // C (empty this box) comes last: under ⌫, so the digits and ↵ stay where they were
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '↵', 'C'];
