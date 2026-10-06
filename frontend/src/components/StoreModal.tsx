@@ -52,7 +52,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   const otherUsers = allUsers.filter(u => u.id !== user.id);
 
   // A purchase or gift the server refused (a gift made on another screen took the stars first, say).
-  // It shows where she is looking: under the balance, or in the gift form while that is open.
+  // It shows where she is looking: under the balance, or in the gift form or the activity popup
+  // while one is open. Never a browser alert().
   const refuse = (text: string) => {
     sfx('nope');
     setRefusal(text);
@@ -111,7 +112,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
       await api.cancelTransfer(transferId);
     } catch (err) {
       console.error(err);
-      alert('Error cancelling transfer');
+      // 400: a parent decided on it meanwhile
+      refuse(err instanceof ApiError && err.status === 400 ? 'Αυτό το δώρο δεν ακυρώνεται πια.' : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.');
     }
   };
 
@@ -179,7 +181,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                 </div>
               )}
               <AnimatePresence>
-                {refusal && !showTransfer && (
+                {refusal && !showTransfer && !showActivity && (
                   <motion.div className="store-refusal" role="alert"
                     initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
                     {refusal}
@@ -289,6 +291,15 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                   <button className="popup-close-btn" {...sound('close')} onClick={() => setShowActivity(false)}>✕</button>
                 </div>
 
+                <AnimatePresence>
+                  {refusal && (
+                    <motion.div className="store-refusal activity-refusal" role="alert"
+                      initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
+                      {refusal}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {mySpendings.length === 0 && myPendingOutgoingTransfers.length === 0 && myPendingIncomingTransfers.length === 0 && (
                   <div className="empty-state">Καμία δραστηριότητα</div>
                 )}
@@ -302,7 +313,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         <div key={transfer.id} className="pending-item transfer-incoming">
                           <div className="pending-icon">🎁</div>
                           <div className="pending-info">
-                            <span className="pending-title">⭐ {transfer.amount} από {transfer.fromUser?.name || 'Unknown'}</span>
+                            <span className="pending-title">⭐ {transfer.amount} από {transfer.fromUser?.name || 'άλλο παιδί'}</span>
                             <span className="pending-date">
                               {format(new Date(transfer.createdAt), 'd MMM HH:mm', { locale: el })}
                             </span>
@@ -323,7 +334,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         <div key={transfer.id} className="pending-item transfer-outgoing">
                           <div className="pending-icon">📤</div>
                           <div className="pending-info">
-                            <span className="pending-title">⭐ {transfer.amount} προς {transfer.toUser?.name || 'Unknown'}</span>
+                            <span className="pending-title">⭐ {transfer.amount} προς {transfer.toUser?.name || 'άλλο παιδί'}</span>
                             <span className="pending-date">
                               {format(new Date(transfer.createdAt), 'd MMM HH:mm', { locale: el })}
                             </span>
@@ -924,8 +935,12 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           gap: 1rem;
         }
 
-        .transfer-form .store-refusal {
+        .transfer-form .store-refusal,
+        .activity-refusal {
           text-align: center;
+        }
+        .activity-refusal {
+          margin-bottom: 0.75rem;
         }
 
         .form-field {
