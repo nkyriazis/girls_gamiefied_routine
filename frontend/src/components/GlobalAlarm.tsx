@@ -1,16 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { help } from '../help/anchors';
+import { SmartIcon } from './SmartIcon';
 import { type User, type AlarmProps } from '@shared/types';
 
 interface GlobalAlarmProps {
   flowId: string;
-  user: User | null;
+  users: User[]; // the kids it is for (none: everyone)
   alarmProps?: AlarmProps;
   onDismiss: (flowId: string) => void;
 }
 
-export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmProps = {}, onDismiss }) => {
+export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmProps = {}, onDismiss }) => {
   const {
     title = 'Ειδοποίηση',
     message,
@@ -42,16 +43,16 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
         </motion.div>
 
         <h1>{title}</h1>
-        {user && (
-          <div className="alarm-user-info">
-            {typeof user.avatar === 'string' ? (
-              <div className="user-avatar-emoji">{user.avatar}</div>
-            ) : user.avatar.type === 'emoji' ? (
-              <div className="user-avatar-emoji">{user.avatar.value}</div>
-            ) : user.avatar.type === 'image' ? (
-              <img src={`/uploads/${user.avatar.value}`} alt={user.name} className="user-avatar-img" />
-            ) : null}
-            <p className="user-name" style={{ color: user.color }}>{user.name}</p>
+        {users.length > 0 && (
+          <div className={`alarm-users${users.length > 1 ? ' several' : ''}`}>
+            {users.map(user => (
+              <div key={user.id} className="alarm-user-info">
+                <div className="alarm-user-badge" style={{ background: user.color }}>
+                  <SmartIcon value={user.avatar} size={96} style={{ width: '100%', height: '100%' }} />
+                </div>
+                <p className="user-name" style={{ color: user.color }}>{user.name}</p>
+              </div>
+            ))}
           </div>
         )}
         {message && <p>{message}</p>}
@@ -107,6 +108,12 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
           line-height: 1.2;
         }
 
+        .alarm-users {
+          display: flex;
+          justify-content: center;
+          gap: 5cqmin;
+        }
+
         .alarm-user-info {
           display: flex;
           flex-direction: column;
@@ -114,19 +121,21 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
           gap: 1cqmin;
         }
 
-        .user-avatar-emoji {
-          font-size: 18cqmin;
-          filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
-          line-height: 1;
-        }
-
-        .user-avatar-img {
+        .alarm-user-badge {
           width: 20cqmin;
           height: 20cqmin;
           border-radius: 50%;
-          object-fit: cover;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
           border: 4px solid white;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .alarm-users.several .alarm-user-badge {
+          width: 15cqmin;
+          height: 15cqmin;
         }
 
         .user-name {

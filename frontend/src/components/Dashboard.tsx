@@ -32,14 +32,11 @@ interface ChoreNotification {
 
 const TOAST_MS = 5000;
 
+// `order`: where it goes on screen, by kid (the config's order; an alarm for everyone first)
 type ActiveItem =
-  | { type: 'alarm'; key: string; userId: string | null; run: FlowRun; props: AlarmProps }
-  | { type: 'routine'; key: string; userId: string; run: RoutineRun };
-
-// The user a flow is for: its first routine action's user (null: everyone).
-const flowUserId = (run: FlowRun): string | null =>
-  run.steps.flatMap(step => (step.type === 'parallel' ? step.actions : []))
-    .flatMap(action => (action.type === 'routine' ? [action.userId] : []))[0] ?? null;
+  | { type: 'alarm'; key: string; order: number; userIds: string[]; run: FlowRun; props: AlarmProps }
+  | { type: 'routine'; key: string; order: number; run: RoutineRun };
+type AlarmItem = Extract<ActiveItem, { type: 'alarm' }>;
 const CHORE_TOAST_TYPE = { CHORE_CONFIRMED: 'confirmed', CHORE_REJECTED: 'rejected', CHORE_EXPIRED: 'expired' } as const;
 
 export const Dashboard: React.FC = () => {
@@ -156,38 +153,32 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   // Running flows and routines come from the server; this only lays them out
-  // in "lanes" and reports what the kids do.
+  // and reports what the kids do.
   const sortedActiveItems = React.useMemo(() => {
-    const items: ActiveItem[] = [];
+    const order = (userId: string) => users.findIndex(u => u.id === userId);
+    const busy = new Set(routineRuns.map(r => r.userId));
 
-    // Alarms (skipped if the user already has a routine on screen)
-    flowRuns.forEach(run => {
+    // An alarm is never hidden. The server says whom it is for (none: everyone). While
+    // a kid's alarm is up it takes her routine's place, so it can't be missed: her
+    // routine stays on the server and comes back as it was once she dismisses it.
+    const alarms: AlarmItem[] = flowRuns.flatMap(run => {
       const step = run.steps[run.stepIndex];
-      if (step?.type !== 'alarm') return;
-      const userId = flowUserId(run);
-      if (userId && routineRuns.some(r => r.userId === userId)) return;
-      items.push({ type: 'alarm', key: `alarm-${run.id}`, userId, run, props: step.props });
+      if (step?.type !== 'alarm') return [];
+      const userIds = run.userIds ?? [];
+      const at = userIds.find(id => busy.has(id)) ?? userIds[0];
+      return [{ type: 'alarm' as const, key: `alarm-${run.id}`, order: at ? order(at) : -1, userIds, run, props: step.props }];
     });
+    const covered = new Set(alarms.flatMap(alarm => alarm.userIds));
+    const routines: ActiveItem[] = routineRuns
+      .filter(run => !covered.has(run.userId))
+      .map(run => ({ type: 'routine' as const, key: `routine-${run.id}`, order: order(run.userId), run }));
 
-    routineRuns.forEach(run => {
-      items.push({ type: 'routine', key: `routine-${run.id}`, userId: run.userId, run });
-    });
-
-    // Sort by User Index (Global items first)
-    return items.sort((a, b) => {
-      if (!a.userId && b.userId) return -1;
-      if (a.userId && !b.userId) return 1;
-      if (!a.userId && !b.userId) return 0;
-
-      const userIndexA = users.findIndex(u => u.id === a.userId);
-      const userIndexB = users.findIndex(u => u.id === b.userId);
-      return userIndexA - userIndexB;
-    });
+    return [...alarms, ...routines].sort((a, b) => a.order - b.order);
   }, [flowRuns, routineRuns, users]);
 
   // One alarm sound for every alarm card on screen (the first one's)
-  const firstAlarm = sortedActiveItems.find(item => item.type === 'alarm');
-  useAlarmSound(firstAlarm?.type === 'alarm' ? alarmSoundKey(firstAlarm.props) : null);
+  const firstAlarm = sortedActiveItems.find((item): item is AlarmItem => item.type === 'alarm');
+  useAlarmSound(firstAlarm ? alarmSoundKey(firstAlarm.props) : null);
 
   // Determine View Mode based on actual displayed items
   const totalActiveCount = sortedActiveItems.length;
@@ -422,7 +413,7 @@ export const Dashboard: React.FC = () => {
         {sortedActiveItems.map((item) => {
           if (item.type === 'alarm') {
             const { run } = item;
-            const user = users.find(u => u.id === item.userId) || null;
+            const alarmUsers = users.filter(u => item.userIds.includes(u.id));
             return (
               <motion.div
                 key={item.key}
@@ -434,7 +425,7 @@ export const Dashboard: React.FC = () => {
               >
                 <GlobalAlarm
                   flowId={run.id}
-                  user={user}
+                  users={alarmUsers}
                   alarmProps={item.props}
                   onDismiss={() => api.dismissAlarm(run.id, run.stepIndex).catch(console.error)}
                 />
