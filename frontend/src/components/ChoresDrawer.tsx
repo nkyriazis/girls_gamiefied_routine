@@ -63,9 +63,9 @@ interface ChoreWithInstance {
 function getDrawerConfig(category: ChoreCategory) {
     if (category === 'bonus') {
         return {
-            title: '🌟 Bonus Δραστηριότητες',
+            title: '🌟 Έξτρα δραστηριότητες',
             emptyIcon: '🌟',
-            emptyText: 'Δεν υπάρχουν διαθέσιμες bonus δραστηριότητες.',
+            emptyText: 'Δεν υπάρχουν έξτρα δραστηριότητες τώρα.',
             emptyHint: 'Νέες δραστηριότητες εμφανίζονται καθημερινά!',
             claimQuestion: 'Ποιο παιδί το πέτυχε;',
             doneButtonText: (name: string) => `${name}: Το πέτυχα! 🎉`,
