@@ -1,0 +1,342 @@
+[
+ {
+  "size": "1280x800",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     592,
+     352
+    ],
+    "button": [
+     250,
+     287
+    ],
+    "buttonSize": [
+     69,
+     37
+    ],
+    "buttonFont": 17.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     656,
+     32,
+     592,
+     352
+    ],
+    "button": [
+     321,
+     358
+    ],
+    "buttonSize": [
+     145,
+     37
+    ],
+    "buttonFont": 17.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     416,
+     592,
+     352
+    ],
+    "button": [
+     705,
+     742
+    ],
+    "buttonSize": [
+     145,
+     37
+    ],
+    "buttonFont": 17.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "size": "1024x600",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     464,
+     252
+    ],
+    "button": [
+     189,
+     215
+    ],
+    "buttonSize": [
+     49,
+     26
+    ],
+    "buttonFont": 12.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     528,
+     32,
+     464,
+     252
+    ],
+    "button": [
+     239,
+     265
+    ],
+    "buttonSize": [
+     104,
+     26
+    ],
+    "buttonFont": 12.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     316,
+     464,
+     252
+    ],
+    "button": [
+     523,
+     549
+    ],
+    "buttonSize": [
+     104,
+     26
+    ],
+    "buttonFont": 12.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "size": "800x480",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     352,
+     192
+    ],
+    "button": [
+     151,
+     171
+    ],
+    "buttonSize": [
+     38,
+     20
+    ],
+    "buttonFont": 9.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     416,
+     32,
+     352,
+     192
+    ],
+    "button": [
+     190,
+     209
+    ],
+    "buttonSize": [
+     79,
+     20
+    ],
+    "buttonFont": 9.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     256,
+     352,
+     192
+    ],
+    "button": [
+     414,
+     433
+    ],
+    "buttonSize": [
+     79,
+     20
+    ],
+    "buttonFont": 9.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "size": "1920x1080",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     912,
+     492
+    ],
+    "button": [
+     338,
+     388
+    ],
+    "buttonSize": [
+     97,
+     51
+    ],
+    "buttonFont": 24.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     976,
+     32,
+     912,
+     492
+    ],
+    "button": [
+     436,
+     487
+    ],
+    "buttonSize": [
+     202,
+     51
+    ],
+    "buttonFont": 24.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     556,
+     912,
+     492
+    ],
+    "button": [
+     960,
+     1011
+    ],
+    "buttonSize": [
+     202,
+     51
+    ],
+    "buttonFont": 24.6,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "size": "390x844",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     16,
+     16,
+     358,
+     390
+    ],
+    "button": [
+     254,
+     292
+    ],
+    "buttonSize": [
+     71,
+     37
+    ],
+    "buttonFont": 17.9,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     16,
+     422,
+     358,
+     390
+    ],
+    "button": [
+     732,
+     769
+    ],
+    "buttonSize": [
+     147,
+     37
+    ],
+    "buttonFont": 17.9,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "alarm",
+    "slot": [
+     16,
+     828,
+     358,
+     0
+    ],
+    "button": [
+     832,
+     832
+    ],
+    "buttonSize": [
+     0,
+     0
+    ],
+    "buttonFont": 0,
+    "buttonVisible": true,
+    "onTop": "div.stage.grid",
+    "contentInside": false
+   }
+  ]
+ }
+]

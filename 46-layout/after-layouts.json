@@ -1,0 +1,1277 @@
+[
+ {
+  "items": 1,
+  "size": "1280x800",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     340,
+     32,
+     600,
+     736
+    ],
+    "button": [
+     586,
+     642
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 1,
+  "size": "1024x600",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     212,
+     32,
+     600,
+     536
+    ],
+    "button": [
+     470,
+     522
+    ],
+    "buttonSize": [
+     169,
+     52
+    ],
+    "buttonFont": 21.976,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 1,
+  "size": "800x480",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     100,
+     32,
+     600,
+     416
+    ],
+    "button": [
+     372,
+     416
+    ],
+    "buttonSize": [
+     131,
+     44
+    ],
+    "buttonFont": 17.056,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 1,
+  "size": "1920x1080",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     660,
+     32,
+     600,
+     1016
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 1,
+  "size": "390x844",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     16,
+     16,
+     358,
+     812
+    ],
+    "button": [
+     536,
+     580
+    ],
+    "buttonSize": [
+     118,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "1280x800",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     32,
+     32,
+     592,
+     736
+    ],
+    "button": [
+     586,
+     642
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     656,
+     32,
+     592,
+     736
+    ],
+    "button": [
+     586,
+     642
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "1024x600",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     32,
+     32,
+     464,
+     536
+    ],
+    "button": [
+     447,
+     492
+    ],
+    "buttonSize": [
+     146,
+     44
+    ],
+    "buttonFont": 19.024,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     528,
+     32,
+     464,
+     536
+    ],
+    "button": [
+     447,
+     492
+    ],
+    "buttonSize": [
+     146,
+     44
+    ],
+    "buttonFont": 19.024,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "800x480",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     32,
+     32,
+     352,
+     416
+    ],
+    "button": [
+     352,
+     396
+    ],
+    "buttonSize": [
+     117,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     416,
+     32,
+     352,
+     416
+    ],
+    "button": [
+     352,
+     396
+    ],
+    "buttonSize": [
+     117,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "1920x1080",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     32,
+     32,
+     912,
+     1016
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     976,
+     32,
+     912,
+     1016
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 2,
+  "size": "390x844",
+  "cut": [
+   {
+    "kind": "routine",
+    "slot": [
+     16,
+     16,
+     358,
+     398
+    ],
+    "button": [
+     329,
+     373
+    ],
+    "buttonSize": [
+     118,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     16,
+     430,
+     358,
+     398
+    ],
+    "button": [
+     743,
+     787
+    ],
+    "buttonSize": [
+     118,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "1280x800",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     384,
+     736
+    ],
+    "button": [
+     442,
+     491
+    ],
+    "buttonSize": [
+     94,
+     49
+    ],
+    "buttonFont": 20,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     448,
+     32,
+     384,
+     736
+    ],
+    "button": [
+     522,
+     566
+    ],
+    "buttonSize": [
+     122,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     864,
+     32,
+     384,
+     736
+    ],
+    "button": [
+     522,
+     566
+    ],
+    "buttonSize": [
+     122,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "1024x600",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     299,
+     536
+    ],
+    "button": [
+     327,
+     376
+    ],
+    "buttonSize": [
+     94,
+     49
+    ],
+    "buttonFont": 20,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     363,
+     32,
+     299,
+     536
+    ],
+    "button": [
+     395,
+     439
+    ],
+    "buttonSize": [
+     108,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     693,
+     32,
+     299,
+     536
+    ],
+    "button": [
+     395,
+     439
+    ],
+    "buttonSize": [
+     108,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "800x480",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     224,
+     416
+    ],
+    "button": [
+     258,
+     307
+    ],
+    "buttonSize": [
+     94,
+     49
+    ],
+    "buttonFont": 20,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     288,
+     32,
+     224,
+     416
+    ],
+    "button": [
+     319,
+     363
+    ],
+    "buttonSize": [
+     96,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     544,
+     32,
+     224,
+     416
+    ],
+    "button": [
+     319,
+     363
+    ],
+    "buttonSize": [
+     96,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "1920x1080",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     597,
+     1016
+    ],
+    "button": [
+     612,
+     674
+    ],
+    "buttonSize": [
+     118,
+     62
+    ],
+    "buttonFont": 29.8664,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     661,
+     32,
+     597,
+     1016
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     1291,
+     32,
+     597,
+     1016
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": 3,
+  "size": "390x844",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     16,
+     16,
+     358,
+     260
+    ],
+    "button": [
+     161,
+     210
+    ],
+    "buttonSize": [
+     94,
+     49
+    ],
+    "buttonFont": 20,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     16,
+     292,
+     358,
+     260
+    ],
+    "button": [
+     507,
+     551
+    ],
+    "buttonSize": [
+     102,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πιτζάμες",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     16,
+     568,
+     358,
+     260
+    ],
+    "button": [
+     783,
+     827
+    ],
+    "buttonSize": [
+     102,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": "3long",
+  "size": "1280x800",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     384,
+     736
+    ],
+    "button": [
+     442,
+     491
+    ],
+    "buttonSize": [
+     94,
+     49
+    ],
+    "buttonFont": 20,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     448,
+     32,
+     384,
+     736
+    ],
+    "button": [
+     538,
+     582
+    ],
+    "buttonSize": [
+     122,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Τέλειωσα τα Μαθήματα στο Σχολείο",
+     "lines": 2,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     864,
+     32,
+     384,
+     736
+    ],
+    "button": [
+     522,
+     566
+    ],
+    "buttonSize": [
+     122,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": "3long",
+  "size": "1024x600",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     299,
+     536
+    ],
+    "button": [
+     327,
+     376
+    ],
+    "buttonSize": [
+     94,
+     49
+    ],
+    "buttonFont": 20,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     363,
+     32,
+     299,
+     536
+    ],
+    "button": [
+     408,
+     452
+    ],
+    "buttonSize": [
+     108,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Τέλειωσα τα Μαθήματα στο Σχολείο",
+     "lines": 2,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     693,
+     32,
+     299,
+     536
+    ],
+    "button": [
+     395,
+     439
+    ],
+    "buttonSize": [
+     108,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": "3long",
+  "size": "800x480",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     224,
+     416
+    ],
+    "button": [
+     258,
+     307
+    ],
+    "buttonSize": [
+     94,
+     49
+    ],
+    "buttonFont": 20,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     288,
+     32,
+     224,
+     416
+    ],
+    "button": [
+     343,
+     387
+    ],
+    "buttonSize": [
+     96,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Τέλειωσα τα Μαθήματα στο Σχολείο",
+     "lines": 3,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     544,
+     32,
+     224,
+     416
+    ],
+    "button": [
+     319,
+     363
+    ],
+    "buttonSize": [
+     96,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": "3long",
+  "size": "1920x1080",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     32,
+     32,
+     597,
+     1016
+    ],
+    "button": [
+     612,
+     674
+    ],
+    "buttonSize": [
+     118,
+     62
+    ],
+    "buttonFont": 29.8664,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     661,
+     32,
+     597,
+     1016
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Τέλειωσα τα Μαθήματα στο Σχολείο",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     1291,
+     32,
+     597,
+     1016
+    ],
+    "button": [
+     726,
+     782
+    ],
+    "buttonSize": [
+     184,
+     56
+    ],
+    "buttonFont": 24,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ },
+ {
+  "items": "3long",
+  "size": "390x844",
+  "cut": [
+   {
+    "kind": "alarm",
+    "slot": [
+     16,
+     16,
+     358,
+     260
+    ],
+    "button": [
+     161,
+     210
+    ],
+    "buttonSize": [
+     94,
+     49
+    ],
+    "buttonFont": 20,
+    "buttonVisible": true,
+    "onTop": true,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     16,
+     292,
+     358,
+     260
+    ],
+    "button": [
+     507,
+     551
+    ],
+    "buttonSize": [
+     102,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Τέλειωσα τα Μαθήματα στο Σχολείο",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   },
+   {
+    "kind": "routine",
+    "slot": [
+     16,
+     568,
+     358,
+     260
+    ],
+    "button": [
+     783,
+     827
+    ],
+    "buttonSize": [
+     102,
+     44
+    ],
+    "buttonFont": 16,
+    "buttonVisible": true,
+    "onTop": true,
+    "title": {
+     "text": "Πλύσιμο Δοντιών",
+     "lines": 1,
+     "inside": true
+    },
+    "sideScroll": 0,
+    "contentInside": true
+   }
+  ]
+ }
+]
