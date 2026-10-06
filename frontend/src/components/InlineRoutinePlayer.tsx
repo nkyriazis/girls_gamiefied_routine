@@ -12,7 +12,7 @@ interface InlineRoutinePlayerProps {
   user: User;
   routine: Routine;
   run: RoutineRun; // server state: current task, when it started, whether all are done
-  onClose: () => void; // reward shown, or the kid pressed ✕
+  onClose: () => void; // reward shown, or the kid pressed ✕ and said «Ναι»
 }
 
 const REWARD_MS = 5000;
@@ -28,6 +28,9 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   const { playComplete, playAlarm } = useAppSounds();
   const [justEarnedStars, setJustEarnedStars] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  // ✕ asks first: closing ends the routine for good (the flow waiting on it moves on).
+  // The question stays until it is answered; it is this screen's own, not the server's.
+  const [asking, setAsking] = useState(false);
 
   const currentTaskIndex = run.taskIndex;
   const currentTask = routine?.tasks[currentTaskIndex];
@@ -125,8 +128,27 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
             />
           </div>
         </div>
-        <button className="btn-exit" {...help('routine.exit')} {...sound('close')} onClick={onClose}>✕</button>
+        <button className="btn-exit" aria-label="Κλείσιμο" {...help('routine.exit')} {...sound('open')} onClick={() => setAsking(true)}>✕</button>
       </div>
+
+      <AnimatePresence>
+        {asking && !isCompleted && (
+          <motion.div
+            className="exit-ask"
+            role="dialog"
+            aria-label="Να κλείσει η ρουτίνα;"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <p className="exit-ask-text">Να κλείσει η ρουτίνα;</p>
+            <div className="exit-ask-buttons">
+              <button className="btn-ask btn-ask-yes" {...sound('close')} onClick={onClose}>Ναι</button>
+              <button className="btn-ask btn-ask-no" {...sound('unselect')} onClick={() => setAsking(false)}>Όχι</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="player-body">
         {/* Timeline (Compact) */}
@@ -240,6 +262,60 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           color: white;
           font-size: 1.2rem;
           opacity: 0.5;
+        }
+
+        /* The ✕'s question covers the card (under the reward, which never shows with it) */
+        .exit-ask {
+          position: absolute;
+          inset: 0;
+          z-index: 15;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: clamp(0.75rem, 5.5cqmin, 2rem);
+          padding: 1rem;
+          background: rgba(10, 8, 30, 0.94);
+          backdrop-filter: blur(6px);
+          border-radius: 2rem;
+          text-align: center;
+        }
+
+        .exit-ask-text {
+          margin: 0;
+          font-size: clamp(1.25rem, 6.8cqmin, 2.5rem);
+          font-weight: 900;
+          color: white;
+          text-wrap: balance;
+        }
+
+        .exit-ask-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: clamp(0.75rem, 4.1cqmin, 1.5rem);
+        }
+
+        .btn-ask {
+          font-size: clamp(1.1rem, 5.5cqmin, 2rem);
+          font-weight: 900;
+          min-height: 48px;
+          min-width: clamp(80px, 24cqmin, 160px);
+          padding: clamp(0.5rem, 2.2cqmin, 0.8rem) clamp(1rem, 5.5cqmin, 2rem);
+          border-radius: 1.5rem;
+        }
+
+        /* «Όχι» keeps the routine going: the bright one */
+        .btn-ask-no {
+          background: var(--theme-color);
+          color: #000;
+          box-shadow: 0 0 20px var(--theme-color);
+        }
+
+        .btn-ask-yes {
+          background: transparent;
+          color: white;
+          border: 2px solid rgba(255, 255, 255, 0.7);
         }
 
         .player-body {
