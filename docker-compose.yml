@@ -2,9 +2,16 @@ services:
   backend:
     networks:
       - routine-net
+    volumes:
+      # The daily backup (BACKUP.md). The host folder is interpolated from BACKUP_DIR in .env:
+      # point it at a USB disk or NAS mounted at boot. Unset, it is ./backups/daily, on the SD card.
+      - ${BACKUP_DIR:-./backups/daily}:/backups
     environment:
-      - TZ=Europe/Athens
+      - TZ=Europe/Athens   # also the backup schedule's time zone
       - MCP_API_KEY=my-secret-key-123
+      - BACKUP_DIR=/backups
+      - BACKUP_KEEP=${BACKUP_KEEP:-14}
+      - BACKUP_CRON=${BACKUP_CRON:-17 3 * * *}
 
   frontend:
     depends_on:
