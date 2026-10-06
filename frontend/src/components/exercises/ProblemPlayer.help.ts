@@ -45,7 +45,11 @@ const KIND: Record<ProblemHelpKind, HelpStep[]> = {
   ],
 };
 
-// «Δείξε μου», on a step with a few wrong tries: on screen only then, so the owl explains it only then
+// «Δείξε μου», on a step with a few wrong tries: on screen only then, so the owl explains it only then.
+// While it is on screen the tour is its own edition, `problem-show` (one for every kind of step):
+// the owl wiggles once, the first time she is stuck, and says the new bubble where it can point
+// at the button. Bumping every step tour instead would re-offer all of them to a kid who has
+// played them, at a moment with no «Δείξε μου» to point at, so the new bubble would be skipped.
 const SHOW: HelpStep = { el: 'problem.show', title: 'Δείξε μου', text: 'Κόλλησες; Πάτα εδώ και σου δείχνω πώς λύνεται αυτό το βήμα.', side: 'top', demo: 'tap' };
 
 // A tour whose steps changed gets a new edition, so the owl offers it again to a kid who
@@ -66,10 +70,10 @@ const RUNG: Record<Forgiveness, { stars: string; check: string }> = {
 
 // The intro says what mistakes cost on her rung: its id names the rung, so the owl offers it
 // again when a parent moves her (and once to everyone, for #48: the old intro was «problem»).
-export const problemTour = (userId: string, kind: ProblemHelpKind, rung: Forgiveness = 'forgiving'): Tour => ({
-  id: `problem-${kind}${EDITION[kind] ? `-${EDITION[kind]}` : ''}`,
+export const problemTour = (userId: string, kind: ProblemHelpKind, rung: Forgiveness = 'forgiving', stuck = false): Tour => ({
+  id: stuck ? 'problem-show' : `problem-${kind}${EDITION[kind] ? `-${EDITION[kind]}` : ''}`,
   user: userId,
-  steps: [...KIND[kind], SHOW],
+  steps: stuck ? [...KIND[kind], SHOW] : KIND[kind],
   intro: {
     id: `problem-${rung}`,
     steps: [

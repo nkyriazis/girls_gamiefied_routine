@@ -125,7 +125,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
 
   // The owl sits in the header; a problem says what each of its steps needs itself
   return (
-    <HelpScreen tour={isProblem ? null : exerciseTour(user.id, exercise.type, user.forgiveness)} inline>
+    <HelpScreen tour={isProblem ? null : exerciseTour(user.id, exercise.type, user.forgiveness, canShow)} inline>
     <motion.div
       className="assignment-player"
       initial={{ opacity: 0 }}

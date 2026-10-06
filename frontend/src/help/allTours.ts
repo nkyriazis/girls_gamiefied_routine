@@ -26,7 +26,7 @@ export const allTours = (): Tour[] => [
   homeTour(), routineTour(),
   storeTour('u'), activityTour('u'), transferTour('u'),
   choresTour(false), choresTour(true), exercisesTour(),
-  ...types.flatMap(t => RUNGS.map(r => exerciseTour('u', t, r))),
+  ...types.flatMap(t => RUNGS.map(r => exerciseTour('u', t, r))), ...types.map(t => exerciseTour('u', t, 'forgiving', true)),
   gameSetupTour(), gameTour(undefined), ...types.map(t => gameTour(t)), gameResultsTour(),
-  ...(Object.keys(PROBLEM_KINDS) as ProblemHelpKind[]).flatMap(k => RUNGS.map(r => problemTour('u', k, r))),
+  ...(Object.keys(PROBLEM_KINDS) as ProblemHelpKind[]).flatMap(k => RUNGS.flatMap(r => [problemTour('u', k, r), problemTour('u', k, r, true)])),
 ];
