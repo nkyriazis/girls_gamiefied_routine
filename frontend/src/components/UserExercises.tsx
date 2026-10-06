@@ -7,6 +7,7 @@ import { AssignmentPlayer } from './AssignmentPlayer';
 import { help } from '../help/anchors';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
 import { sfx, sound } from '../sound/sfx';
+import { paysNow } from '@shared/forgiveness';
 
 // One kid's exercises: today's set and «Κι άλλο πρόβλημα» for more stars. On her own
 // screen (the store, from her avatar) and in the exercises drawer. The player opens
@@ -83,6 +84,8 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
           const ex = assignment.exercise;
           if (!ex) return null;
           const isDone = assignment.status === 'completed';
+          // What it pays now (less after mistakes), or what it paid
+          const pays = paysNow(assignment, ex, user);
           return (
             <motion.button
               key={assignment.id}
@@ -106,9 +109,10 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
                 </span>
               </div>
               <div className="assignment-status">
+                {/* Done and paid ✓; done and paid nothing (the answer shown): no ✓ */}
                 {isDone
-                  ? <span className="done-badge">✓ ⭐{assignment.starsAwarded ?? ex.stars}</span>
-                  : <span className="star-badge">⭐ {ex.stars}</span>}
+                  ? pays > 0 ? <span className="done-badge">✓ ⭐{pays}</span> : <span className="missed-badge">○ ⭐0</span>
+                  : <span className="star-badge">⭐ {pays}</span>}
               </div>
             </motion.button>
           );
@@ -180,6 +184,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
         .assignment-status { flex-shrink: 0; font-weight: bold; }
         .star-badge { color: #ffd60a; font-size: 1rem; }
         .done-badge { color: #06d6a0; font-size: 0.95rem; }
+        .missed-badge { color: rgba(255, 255, 255, 0.55); font-size: 0.95rem; }
       `}</style>
     </section>
   );

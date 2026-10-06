@@ -30,6 +30,7 @@ export interface User {
   color: string;
   grade?: SchoolGrade;
   problemReading?: ProblemReading;
+  forgiveness?: Forgiveness;
   stars: number;
   available: number; // stars minus those promised in pending outgoing gifts: what she can spend, give or lose now
   routines: Routine[];
@@ -404,6 +405,10 @@ export type SchoolGrade = 1 | 2 | 3 | 4 | 5 | 6;
 // unneeded facts greyed out for her once she's right; "paint-all" paints those too.
 export type ProblemReading = 'marked' | 'paint' | 'paint-all';
 
+// How much mistakes cost, a ladder too (shared/forgiveness.ts): "forgiving" lets her try
+// again as often as she likes, "unforgiving" gives two tries a step.
+export type Forgiveness = 'forgiving' | 'unforgiving';
+
 export interface ConfigUser {
   id: string;
   name: string;
@@ -411,6 +416,7 @@ export interface ConfigUser {
   color: string;
   grade?: SchoolGrade;
   problemReading?: ProblemReading; // default "marked"
+  forgiveness?: Forgiveness; // default "forgiving"
 }
 
 export interface ConfigTask {

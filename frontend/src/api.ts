@@ -122,6 +122,8 @@ export const api = {
   // Help tours played (the owl stops offering them), and letting it offer again
   markHelpSeen: (tourIds: string[]) => post('/help/seen', { tourIds }, 'Failed to remember help'),
   resetHelp: (userId?: string) => post<{ reset: number }>('/help/reset', { userId }, 'Failed to reset help'),
+  revealExerciseAssignment: (assignmentId: string) =>
+    post<ExerciseAssignmentWithExercise>(`/exercise-assignments/${assignmentId}/reveal`, {}, 'Failed to show the answer'),
   answerExerciseAssignment: (assignmentId: string, answer: unknown) =>
     post<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise, wrong?: number[] }>(`/exercise-assignments/${assignmentId}/answer`, { answer }, 'Failed to submit answer'),
 };

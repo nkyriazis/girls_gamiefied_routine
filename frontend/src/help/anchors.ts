@@ -18,14 +18,14 @@ export const ANCHORS = [
   // Chores and bonus activities
   'chores.card', 'chores.claim', 'chores.done', 'chores.waiting', 'chores.empty',
   // One exercise, and the ways to answer one
-  'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit',
+  'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit', 'exercise.show',
   'answer.options', 'answer.truefalse', 'answer.match-left', 'answer.match-right', 'answer.order', 'answer.order-submit',
   'answer.blank', 'answer.words', 'answer.number', 'answer.numpad',
   // The group game
   'game.players', 'game.subjects', 'game.length', 'game.start',
   'game.turn', 'game.progress', 'game.question', 'game.answer', 'game.exit', 'game.scores', 'game.finish',
   // A word problem, step by step
-  'problem.phases', 'problem.story', 'problem.prompt', 'problem.hint', 'problem.check',
+  'problem.phases', 'problem.story', 'problem.prompt', 'problem.hint', 'problem.check', 'problem.show',
   'problem.brushes', 'problem.phrase', 'problem.paint', 'problem.brush-extra',
   'problem.choices', 'problem.numbers', 'problem.keypad', 'problem.order',
   'calc.chips', 'calc.pad', 'calc.build', 'calc.lines',

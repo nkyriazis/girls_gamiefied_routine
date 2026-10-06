@@ -1,4 +1,5 @@
-import type { ConfigUser, ProblemReading, SchoolGrade } from '@shared/types';
+import { Fragment } from 'react';
+import type { ConfigUser, Forgiveness, ProblemReading, SchoolGrade } from '@shared/types';
 import { useGame } from '../../../context/GameContext';
 import { useConfigSave } from '../useConfigSave';
 import { Section } from '../ui';
@@ -11,6 +12,12 @@ const READING: { value: ProblemReading; label: string }[] = [
     { value: 'marked', label: 'Πατά τις σημειωμένες φράσεις' },
     { value: 'paint', label: 'Βάφει μόνη της (τα περιττά γκριζάρουν)' },
     { value: 'paint-all', label: 'Βάφει μόνη της και τα περιττά' },
+];
+
+// How much mistakes cost (shared/forgiveness.ts): short labels that fit a phone, and a line under the select
+const FORGIVENESS: { value: Forgiveness; label: string; says: string }[] = [
+    { value: 'forgiving', label: 'Συγχωρετικό', says: 'Ξαναδοκιμάζει όσο θέλει, −1 ⭐ ανά βήμα με λάθος (μένει τουλάχιστον 1). Μετά από 3 λάθη, «Δείξε μου».' },
+    { value: 'unforgiving', label: 'Αυστηρό', says: 'Δύο προσπάθειες ανά βήμα, μετά βλέπει τη λύση. −1 ⭐ ανά βήμα με λάθος (ως 0).' },
 ];
 
 // Each kid's class, which picks their school exercises, how many a day, and how many
@@ -32,6 +39,12 @@ export function SchoolEditor() {
         if (reading === 'marked') delete next.problemReading;
         return next;
     }));
+    const setForgiveness = (id: string, rung: string) => save('users', config.users.map(u => {
+        if (u.id !== id) return u;
+        const next: ConfigUser = { ...u, forgiveness: rung as Forgiveness };
+        if (rung === 'forgiving') delete next.forgiveness;
+        return next;
+    }));
     return (
         <Section title="Σχολείο">
             <div className="p-form">
@@ -44,6 +57,16 @@ export function SchoolEditor() {
                     <SelectField key={`r-${u.id}`} label={`Προβλήματα: ${u.name}`} value={u.problemReading ?? 'marked'}
                         options={READING} onChange={reading => setReading(u.id, reading)} />
                 ))}
+                {config.users.filter(u => u.grade).map(u => {
+                    const rung = FORGIVENESS.find(f => f.value === (u.forgiveness ?? 'forgiving'))!;
+                    return (
+                        <Fragment key={`f-${u.id}`}>
+                            <SelectField label={`Λάθη: ${u.name}`} value={rung.value}
+                                options={FORGIVENESS} onChange={f => setForgiveness(u.id, f)} />
+                            <p className="p-hint">{rung.says}</p>
+                        </Fragment>
+                    );
+                })}
                 <SelectField label="Ασκήσεις την ημέρα" value={String(perDay)}
                     options={Array.from({ length: 11 }, (_, n) => ({ value: String(n), label: String(n) }))}
                     onChange={n => save('settings', { ...config.settings, exercisesPerDay: Number(n) })} />
@@ -51,7 +74,7 @@ export function SchoolEditor() {
                     options={[0, 1, 2, 3, 5, 10, 15, 20, 30, 50].map(n => ({ value: String(n), label: n === 0 ? 'Κανένα' : String(n) }))}
                     onChange={n => save('settings', { ...config.settings, extraProblemsPerDay: Number(n) })} />
                 <p className="p-hint">Στα προβλήματα, το παιδί πρώτα βρίσκει στην ιστορία τι ξέρουμε και τι ψάχνουμε: με τις φράσεις σημειωμένες, βάφοντας μόνο του τις λέξεις, ή βάφοντας και όσα δεν χρειάζονται. Ισχύει αμέσως, για κάθε πρόβλημα.</p>
-                <p className="p-hint">Οι ασκήσεις της ημέρας αλλάζουν από την επόμενη ημέρα. Τα έξτρα προβλήματα δίνουν τα αστέρια τους όπως και τα άλλα.</p>
+                <p className="p-hint">Οι ασκήσεις της ημέρας αλλάζουν από την επόμενη ημέρα. Τα λάθη κοστίζουν αστέρια: σε ένα πρόβλημα, ένα ανά βήμα με λάθος· μια απλή άσκηση με λάθος δεν δίνει αστέρι. Τα έξτρα προβλήματα πληρώνουν το ίδιο. Λάθη στο βάψιμο και στις πράξεις δεν κοστίζουν ακόμα.</p>
             </div>
         </Section>
     );

@@ -18,7 +18,7 @@ import {
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
   cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
-  logAction, getExerciseAssignments, answerExerciseAssignment, startExtraProblem, usersView,
+  logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
   stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
 } from './db';
 import { config, configError, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
@@ -673,6 +673,16 @@ server.post('/api/exercise-assignments/:id/answer', async (request, reply) => {
     const { answer } = request.body as any;
     const result = await answerExerciseAssignment(id, answer);
     return result;
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
+  }
+});
+
+// «Δείξε μου» on a plain exercise after a wrong try: closes it, paying nothing (see revealExerciseAssignment)
+server.post('/api/exercise-assignments/:id/reveal', async (request, reply) => {
+  try {
+    const { id } = request.params as { id: string };
+    return await revealExerciseAssignment(id);
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
   }

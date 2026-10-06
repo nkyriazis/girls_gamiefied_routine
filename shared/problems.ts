@@ -1,7 +1,9 @@
 // Checking the two free steps of a problem: painting the story freehand and working
 // it out her own way. The server checks with these; the screen uses the same code to
-// say what she found as she goes. No imports, so the backend (CommonJS), the frontend
-// (Vite) and tools/problem-gen (Node) can all load it.
+// say what she found as she goes. No runtime imports, so the backend (CommonJS), the
+// frontend (Vite) and tools/problem-gen (Node) can all load it.
+
+import type { ProblemExercise, ProblemReading } from './types';
 
 // ---------------------------------------------------------------------------
 // The story as words
@@ -243,4 +245,44 @@ export function nextCalculation(w: CalcWorld, have: Set<number>): { x: number; o
     }
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// A step shown worked («Δείξε μου», #48)
+
+/** The calculations that find the answer from what the story gives, the book's way first. */
+export function workedCalc(w: CalcWorld): CalcLine[] {
+  const have = new Set(w.given.map(id => w.quantities.find(q => q.id === id)!.value));
+  const lines: CalcLine[] = [];
+  for (let n = 0; n < 20; n++) {
+    const next = nextCalculation(w, have);
+    if (!next) break;
+    const line = { ...next, result: applyOp(next.op, next.x, next.y) };
+    lines.push(line);
+    have.add(line.result);
+    if (readCalculation(w, line.x, line.op, line.y)?.id === w.sought) break;
+  }
+  return lines;
+}
+
+/**
+ * The right answer to a step, as her screen sends it, on her rung: what «Δείξε μου» fills
+ * in. The reading step as the marks' roles («marked») or as a painting of the facts' core
+ * words (the unneeded ones too on «paint-all»); a calculation as the lines that find the answer.
+ */
+export function workedAnswer(exercise: ProblemExercise, stepIndex: number, reading: ProblemReading = 'marked'): unknown {
+  const step = exercise.steps[stepIndex];
+  switch (step.kind) {
+    case 'tag':
+    case 'paint': {
+      if (reading === 'marked') return [...exercise.story.matchAll(MARK)].map(m => m[2]);
+      const targets = step.kind === 'paint' ? step.targets : targetsFromMarks(exercise.story);
+      const words = (role: string) => targets.filter(t => t.role === role).flatMap(t => t.words);
+      return { known: words('known'), sought: words('sought'), extra: reading === 'paint-all' ? words('extra') : [] };
+    }
+    case 'choice': return step.correctIndex;
+    case 'numbers': return step.rows.map(r => r.answer);
+    case 'order': return step.items;
+    case 'calc': return { lines: workedCalc(step), slips: 0 };
+  }
 }
