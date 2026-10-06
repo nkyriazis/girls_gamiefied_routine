@@ -25,7 +25,7 @@ import {
   logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, startExtraProblem, usersView,
   stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
 } from './db';
-import { config, configError, reloadConfig, watchConfig } from './config';
+import { config, configError, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
 import { HEARTBEAT_MS } from './sync';
 import { LOGS_FILE, STATE_FILE } from './paths';
@@ -628,18 +628,29 @@ server.post('/api/admin/validate-state', async (request, reply) => {
   }
 });
 
+// `?replace=1`: replace the file even though it is invalid on disk (the Advanced
+// JSON editor only; the invalid file is kept beside). See ConfigFile.save.
+const replacing = (request: { query: unknown }) => (request.query as { replace?: string }).replace === '1';
+
+// Admin: data.json's text as it is on disk, to fix a file the server couldn't read
+server.get('/api/admin/data/text', async (request, reply) => {
+  const text = dataConfig.text();
+  return text === null ? reply.code(404).send({ error: 'data.json not found' }) : { text };
+});
+
 // Admin: Update data.json
 server.post('/api/admin/data', async (request, reply) => {
+  const error = check(dataSchema, request.body, 'Validation failed');
+  if (error) {
+    return reply.code(400).send({ error: error.message, errors: error.errors });
+  }
   try {
-    const error = check(dataSchema, request.body, 'Validation failed');
-    if (error) {
-      return reply.code(400).send({ error: error.message, errors: error.errors });
-    }
-    writeRawConfig(request.body);
+    writeRawConfig(request.body, { replace: replacing(request) });
     return { success: true };
   } catch (error) {
+    // Refused while data.json on disk is invalid (or the write failed)
     request.log.error(error);
-    return reply.code(500).send({ error: 'Failed to save data file' });
+    return reply.code(400).send({ error: (error as Error).message });
   }
 });
 
@@ -701,9 +712,14 @@ server.get('/api/admin/exercises', async (request, reply) => {
   return readRawExercises();
 });
 
+server.get('/api/admin/exercises/text', async (request, reply) => {
+  const text = exercisesConfig.text();
+  return text === null ? reply.code(404).send({ error: 'exercises.json not found' }) : { text };
+});
+
 server.post('/api/admin/exercises', async (request, reply) => {
   try {
-    writeRawExercises(request.body);
+    writeRawExercises(request.body, { replace: replacing(request) });
     return { success: true };
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });

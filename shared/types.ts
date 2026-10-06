@@ -473,7 +473,9 @@ export interface DataConfig {
 
 export interface AppState {
   config: DataConfig; // the live data.json
-  configError: { message: string; errors: unknown[] } | null; // an invalid edit on disk; the last valid config stays live
+  // data.json or exercises.json is invalid on disk: the last valid version stays live, or, when the file
+  // couldn't be read since the start (emptyFallback), an empty one. Saving is off until it is fixed.
+  configError: { message: string; errors: unknown[]; file: string; emptyFallback: boolean } | null;
   users: User[]; // config users with their balance and assigned routines
   spendings: Spending[];
   starTransfers: StarTransfer[];
