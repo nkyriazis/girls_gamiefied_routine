@@ -6,6 +6,7 @@ import { useFeedback } from '../useFeedback';
 interface Props {
     initial?: unknown; // the document, when it is already at hand...
     load?: () => Promise<unknown>; // ...or how to fetch it
+    loadText?: () => Promise<string>; // ...or the file's own text, when it doesn't parse
     save: (data: unknown) => Promise<unknown>;
     schema?: () => Promise<object>;
     validate?: (data: unknown) => Promise<ValidationResult>;
@@ -14,7 +15,7 @@ interface Props {
 
 // Raw JSON editing, for what the forms don't cover. The text is loaded once
 // when the editor opens and doesn't follow later changes while you edit.
-export function JsonEditor({ initial, load, save, schema, validate, warning }: Props) {
+export function JsonEditor({ initial, load, loadText, save, schema, validate, warning }: Props) {
     const { run } = useFeedback();
     const [text, setText] = useState<string | null>(() => (initial === undefined ? null : JSON.stringify(initial, null, 2)));
     const [errors, setErrors] = useState<string[]>([]);
@@ -22,8 +23,9 @@ export function JsonEditor({ initial, load, save, schema, validate, warning }: P
 
     useEffect(() => {
         load?.().then(data => setText(JSON.stringify(data, null, 2)), err => setErrors([(err as Error).message]));
+        loadText?.().then(setText, err => setErrors([(err as Error).message]));
         schema?.().then(setSchemaJson, () => undefined);
-    }, [load, schema]);
+    }, [load, loadText, schema]);
 
     const beforeMount: BeforeMount = monaco => {
         if (schemaJson) {

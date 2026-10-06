@@ -20,8 +20,14 @@ const stateSchema = () => api.getSchema('state');
 // Rare admin work: raw JSON for everything the forms don't cover, files, the log.
 // Loaded on demand, so the everyday views don't download the code editor.
 export default function AdvancedView() {
-    const { config } = useGame();
+    const { config, configError } = useGame();
     const [panel, setPanel] = useState<Panel>('config');
+    // A file the server couldn't read since the start: the editor holds the file's own text, to fix
+    // and save, never the empty config that runs meanwhile (saving that would replace the family's file).
+    const unread = (file: string) => configError?.file === file && configError.emptyFallback;
+    const fixWarning = (file: string) =>
+        `Το ${file} όπως είναι στον δίσκο. Διόρθωσε το λάθος που δείχνει το μήνυμα πάνω και πάτα Αποθήκευση. ` +
+        `Το χαλασμένο αρχείο κρατιέται δίπλα ως ${file}.invalid-….`;
 
     return (
         <section className="p-section p-advanced">
@@ -31,8 +37,12 @@ export default function AdvancedView() {
                         className={panel === p.id ? 'p-chip on' : 'p-chip'} onClick={() => setPanel(p.id)}>{p.label}</button>
                 ))}
             </div>
-            {panel === 'config' && <JsonEditor key="config" initial={config} save={api.saveRawConfig} schema={dataSchema} validate={api.validateConfig} />}
-            {panel === 'exercises' && <JsonEditor key="exercises" load={api.getRawExercises} save={api.saveRawExercises} schema={api.getExerciseSchema} />}
+            {panel === 'config' && (unread('data.json')
+                ? <JsonEditor key="config-text" loadText={api.getConfigText} save={api.saveRawConfig} schema={dataSchema} validate={api.validateConfig} warning={fixWarning('data.json')} />
+                : <JsonEditor key="config" initial={config} save={api.saveRawConfig} schema={dataSchema} validate={api.validateConfig} />)}
+            {panel === 'exercises' && (unread('exercises.json')
+                ? <JsonEditor key="exercises-text" loadText={api.getExercisesText} save={api.saveRawExercises} schema={api.getExerciseSchema} warning={fixWarning('exercises.json')} />
+                : <JsonEditor key="exercises" load={api.getRawExercises} save={api.saveRawExercises} schema={api.getExerciseSchema} />)}
             {panel === 'state' && <JsonEditor key="state" load={api.getRawState} save={api.saveRawState} schema={stateSchema} validate={api.validateState}
                 warning="Αντικαθιστά όλη την κατάσταση: αστέρια, ιστορικό και ό,τι τρέχει τώρα. Για αλλαγές αστεριών χρησιμοποίησε την καρτέλα Σήμερα." />}
             {panel === 'uploads' && <UploadsPanel />}
