@@ -128,10 +128,9 @@ export const Dashboard: React.FC = () => {
 
         console.log(`[TimeSync] Server: ${serverTime.toISOString()} | Client: ${clientTime.toISOString()} | Diff: ${diff}ms`);
 
-        // If difference is more than 2 minutes
+        // More than 2 minutes apart: say so, for a parent (not which clock is wrong; either may be)
         if (diff > 2 * 60 * 1000) {
-          const diffMinutes = Math.round(diff / 60000);
-          const msg = `Time mismatch: Server is ${diffMinutes}m ${serverTime > clientTime ? 'ahead' : 'behind'}`;
+          const msg = `Η ώρα αυτής της οθόνης διαφέρει από τον server κατά ${Math.round(diff / 60000)} λεπτά`;
           setTimeWarning(msg);
           console.warn(`[TimeSync] ${msg}`);
         }
@@ -197,15 +196,9 @@ export const Dashboard: React.FC = () => {
   return (
     <HelpScreen tour={tour}>
     <div className="dashboard">
-      {timeWarning && (
-        <div className="time-warning">
-          ⚠️ {timeWarning}
-        </div>
-      )}
-
       {!hasInteracted && (
         <div className="interaction-overlay" {...sound('open')} onClick={() => setHasInteracted(true)}>
-          <div className="start-btn">Click to Start</div>
+          <div className="start-btn">Πάτα για να ξεκινήσουμε!</div>
         </div>
       )}
 
@@ -495,17 +488,22 @@ export const Dashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Time Sync Warning */}
-      {timeWarning && (
-        <motion.div
-          className="time-warning"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-        >
-          {timeWarning}
-        </motion.div>
-      )}
+      {/* The screen's clock and the server's disagree: for a parent, rare. A tap hides it, so it
+          never stays over a game's round or a kid's badge. No tour step: a kid can't fix a clock. */}
+      <AnimatePresence>
+        {timeWarning && (
+          <motion.button
+            className="time-warning"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            {...sound('close')}
+            onClick={() => setTimeWarning(null)}
+          >
+            ⚠️ {timeWarning}
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .dashboard {
@@ -552,14 +550,18 @@ export const Dashboard: React.FC = () => {
           cursor: pointer;
         }
 
+        /* Whole and centred on any screen: a phone (390 px) as well as the kiosk */
         .start-btn {
-          font-size: 3rem;
+          font-size: clamp(1.75rem, 6vw, 3rem);
           font-weight: 900;
           color: white;
-          padding: 2rem 4rem;
+          padding: clamp(1.25rem, 4vw, 2rem) clamp(1.5rem, 6vw, 4rem);
           border: 4px solid white;
           border-radius: 2rem;
-          letter-spacing: 4px;
+          letter-spacing: 2px;
+          text-align: center;
+          max-width: min(40rem, calc(100vw - 2rem));
+          box-sizing: border-box;
           animation: pulse 2s infinite;
         }
 
@@ -655,21 +657,21 @@ export const Dashboard: React.FC = () => {
           position: fixed;
           top: 1rem;
           left: 1rem;
+          max-width: calc(100vw - 2rem);
           background: rgba(255, 50, 50, 0.9);
           color: white;
+          font: inherit;
+          font-weight: bold;
+          text-align: left;
           padding: 0.75rem 1.25rem;
           border-radius: 0.5rem;
           z-index: var(--z-toasts);
-          font-weight: bold;
           backdrop-filter: blur(5px);
           box-shadow: 0 4px 12px rgba(0,0,0,0.3);
           border: 1px solid rgba(255,255,255,0.2);
-          animation: slideDown 0.5s ease-out;
-        }
-
-        @keyframes slideDown {
-          from { transform: translateY(-100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
         }
 
         @media (max-width: 768px) {
