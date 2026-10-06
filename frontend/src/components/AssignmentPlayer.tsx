@@ -25,8 +25,9 @@ interface AssignmentPlayerProps {
   onClose: () => void;
 }
 
-// What the overlay says: what was paid, «try again», or the right answer (the exercise is over)
-type Feedback = { kind: 'correct'; stars: number } | { kind: 'incorrect' } | { kind: 'answer'; text: string };
+// What the overlay says: what was paid, «try again», or the right answer (the exercise is over).
+// 'paid': a problem whose last step was shown worked is over: what it paid, in the calm blue, no «Σωστά!»
+type Feedback = { kind: 'correct'; stars: number } | { kind: 'incorrect' } | { kind: 'answer'; text: string } | { kind: 'paid'; stars: number };
 
 export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, user, onClose }) => {
   const { playSuccess, playError } = useAppSounds();
@@ -94,9 +95,10 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     }
   };
 
-  // A problem checks its own steps; this only celebrates the last one, with what it paid.
-  const handleSolved = (stars: number) => {
-    setFeedback({ kind: 'correct', stars });
+  // A problem checks its own steps; this only celebrates the last one, with what it paid
+  // (or, when the screen worked it, only says what it paid).
+  const handleSolved = (stars: number, shown: boolean) => {
+    setFeedback(shown ? { kind: 'paid', stars } : { kind: 'correct', stars });
     setTimeout(() => onClose(), 1800);
   };
 
@@ -179,9 +181,10 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 1.5, opacity: 0 }}
           >
-            <div className="feedback-icon">{feedback.kind === 'correct' ? '✨' : feedback.kind === 'answer' ? '💡' : '❌'}</div>
+            <div className="feedback-icon">{feedback.kind === 'correct' ? '✨' : feedback.kind === 'answer' ? '💡' : feedback.kind === 'paid' ? '🏁' : '❌'}</div>
             <div className="feedback-text">
               {feedback.kind === 'correct' ? (feedback.stars > 0 ? `+⭐${feedback.stars}` : '✔ Σωστά!')
+                : feedback.kind === 'paid' ? (feedback.stars > 0 ? `+⭐${feedback.stars}` : '⭐0')
                 : feedback.kind === 'answer' ? <>Η σωστή απάντηση:<br /><span className="feedback-answer">{feedback.text}</span></>
                 : 'Δοκίμασε ξανά!'}
             </div>
@@ -368,7 +371,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           box-shadow: 0 0 50px rgba(255, 71, 87, 0.5);
         }
 
-        .feedback-overlay.answer {
+        .feedback-overlay.answer, .feedback-overlay.paid {
           background: rgba(60, 70, 160, 0.97);
           box-shadow: 0 0 50px rgba(120, 130, 255, 0.4);
           max-width: min(80vw, 900px);

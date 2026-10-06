@@ -126,7 +126,8 @@ function workedValue(kind: Kind, step: ProblemStep, answer: unknown, words: numb
 interface Props {
   assignment: ExerciseAssignmentWithExercise;
   exercise: ProblemExercise;
-  onSolved: (stars: number) => void;
+  /** The problem is done: what it paid, and whether its last step was shown worked */
+  onSolved: (stars: number, shown: boolean) => void;
   /** The kid's rung on the reading ladder */
   reading?: ProblemReading;
   /** …and on the forgiveness ladder (shared/forgiveness.ts) */
@@ -208,11 +209,25 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
     try {
       const result = await api.answerExerciseAssignment(assignment.id, { step: stepIndex, value: answer });
       if (result.correct) {
+        const completed = result.assignment.status === 'completed';
+        // A step shown worked was solved by the screen, not by her: no «Σωστά!», no fanfare,
+        // only the button's own tap, and on (the last one: the overlay says what was paid)
+        if (shown) {
+          if (completed) {
+            if (result.starsAwarded > 0) sfx('stars');
+            onSolved(result.starsAwarded, true);
+            return;
+          }
+          setLocalStep(result.assignment.stepIndex ?? stepIndex + 1);
+          setBusy(false);
+          return;
+        }
         // The last step solves the whole problem: that's the big one
-        sfx(result.assignment.status === 'completed' ? 'done' : 'correct');
-        if (result.assignment.status === 'completed') {
-          sfx('stars', { delay: 700 });
-          onSolved(result.starsAwarded);
+        sfx(completed ? 'done' : 'correct');
+        if (completed) {
+          // The stars sound only for stars paid (on Αυστηρό a problem can pay nothing)
+          if (result.starsAwarded > 0) sfx('stars', { delay: 700 });
+          onSolved(result.starsAwarded, false);
           return;
         }
         setPraise(true);
