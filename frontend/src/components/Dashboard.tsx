@@ -11,7 +11,6 @@ import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
 import { ChoresDrawer } from './ChoresDrawer';
 import { useGame } from '../context/GameContext';
-import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
@@ -51,7 +50,6 @@ export const Dashboard: React.FC = () => {
   }, []);
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { isInstallable, promptInstall } = useInstallPrompt();
 
   // Store State
   const [storeUserId, setStoreUserId] = useState<string | null>(null);
@@ -471,20 +469,6 @@ export const Dashboard: React.FC = () => {
       </div>
       </div>
 
-      {/* Install PWA Button */}
-      {isInstallable && (
-        <motion.button
-          className="install-pwa-btn"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={!isTouchDevice ? { scale: 1.05 } : {}}
-          whileTap={{ scale: 0.95 }}
-          onClick={promptInstall}
-        >
-          📲 Install App
-        </motion.button>
-      )}
-
       {/* Dock (Inactive Users) */}
       {totalActiveCount === 0 && (
         <motion.div
@@ -538,8 +522,8 @@ export const Dashboard: React.FC = () => {
           /* The side buttons' column (60 px each, every --fab-step), its second at --fab-at:
              at 800 px tall and more the middle of the screen, as always; on shorter screens
              it moves up and closes up, between the top right corner and the dock. That corner
-             holds the Install button (top 1rem, 44 px) and the chore toasts (3.5rem each, 0.5rem
-             apart): --fab-top leaves room for one toast and a gap. More toasts stack over the
+             holds the chore toasts (3.5rem each, 0.5rem apart, from top 1rem): --fab-top leaves
+             room for one toast and a gap. More toasts stack over the
              column for their 5 s, as they always did on short screens. */
           --fab: 60px;
           --fab-top: 5.25rem;
@@ -941,28 +925,6 @@ export const Dashboard: React.FC = () => {
 
         .toast-text {
           font-size: 0.9rem;
-        }
-
-        .install-pwa-btn {
-          position: fixed;
-          top: 1rem;
-          right: 1rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          padding: 0.75rem 1.5rem;
-          border-radius: 2rem;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-          z-index: var(--z-dock); /* a home affordance: under every overlay, never over an ✕ */
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          -webkit-tap-highlight-color: transparent;
-          touch-action: manipulation;
-          user-select: none;
         }
       `}</style>
     </div>
