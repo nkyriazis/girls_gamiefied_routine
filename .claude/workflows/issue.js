@@ -29,6 +29,7 @@ Rules for this run (issue #${n}; the owner reviews from the PR page alone):
 - Evidence lives in ${dir}/ (git-ignored). Record it with tools/evidence (read its README first): a scenario .mjs, tools/evidence/record.sh to play it (screenshots + mp4 with sound), tools/evidence/dev.sh to set the scene. Kiosk size 1280×800, plus any size the change affects. Look at every screenshot you cite (Read the .png) and say what it shows; don't cite evidence you haven't looked at.
 - Don't use the flow skill (you are a subagent).
 - The decisions on the tracker #51 are settled; don't reopen them.
+- A PR that only does part of an issue says "Part of #${n}" and nowhere uses close, closes, fix, fixes, resolve or resolves next to an issue number: GitHub closes the issue on merge for any of them, even in a sentence about a later PR.
 `
 
 const BRIEF = {
