@@ -94,3 +94,22 @@ test('awardStars only adds; taking away is takeStars', () => {
   assert.throws(() => db.takeStars('u1', 1), refused(/^Ηλέκτρα: διαθέσιμα ⭐ 0, χρειάζονται ⭐ 1$/));
   assert.equal(stars('u1'), 0);
 });
+
+// #47: a gift whose kid left the config. Cancelling or rejecting moves no stars, so it needs neither
+// kid; it releases the promised stars. Approving would move them, so it still needs both.
+test('a gift to (or from) a kid no longer in the config can be cancelled or rejected, not approved', () => {
+  scene(100);
+  const gift = (id: string, fromUserId: string, toUserId: string) =>
+    store.starTransfers.put({ id, fromUserId, toUserId, amount: 5, createdAt: new Date().toISOString(), status: 'pending' });
+  const available = () => db.usersView().find(u => u.id === 'u1')?.available;
+  gift('to-gone', 'u1', 'u-gone');
+  assert.equal(available(), 95);
+  assert.throws(() => db.resolveGift('to-gone', 'approve'), (err: unknown) => err instanceof StarsError && err.status === 404);
+  assert.equal(db.resolveGift('to-gone', 'cancel').status, 'cancelled');
+  assert.equal(available(), 100);
+  gift('to-gone-2', 'u1', 'u-gone');
+  assert.equal(db.resolveGift('to-gone-2', 'reject').status, 'rejected');
+  gift('from-gone', 'u-gone', 'u2');
+  assert.equal(db.resolveGift('from-gone', 'reject').status, 'rejected');
+  assert.deepEqual([stars('u1'), stars('u2')], [100, 20]);
+});
