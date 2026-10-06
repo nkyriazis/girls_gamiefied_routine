@@ -70,6 +70,10 @@ export interface FlowRun {
   parentRunId?: string; // set when started by a parallel step of another run
   startedAt: string;
   stepStartedAt?: string; // when it entered the current step (runs started before it was recorded: startedAt)
+  // While it waits at an alarm, the kids the alarm is for: those of the routines its next steps
+  // start, through sub-flows, up to the next alarm, in config order; empty: everyone.
+  // Computed for clients (db.ts flowRunsView), not stored.
+  userIds?: string[];
 }
 
 // A routine on screen for a user (server state), at most one per user.
