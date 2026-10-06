@@ -380,7 +380,7 @@ export function completeTask(runId: string, taskId: string): TaskCompletion {
     store.routineRuns.put(last
       ? { ...run, finishedAt: now.toISOString() }
       : { ...run, taskIndex: run.taskIndex + 1, taskStartedAt: now.toISOString() });
-    if (stars !== 0) awardStars(execution.userId, stars);
+    if (stars > 0) awardStars(execution.userId, stars);
     logAction('TASK_COMPLETE', { executionId: runId, taskId, starsAwarded: stars, userId: execution.userId, duration, isOnTime });
     return { success: true, starsAwarded: stars };
   });
@@ -413,49 +413,153 @@ export function getEnrichedTransfers(): StarTransfer[] {
   })).sort(byNewest);
 }
 
-// Available balance: total minus stars locked in pending outgoing transfers
-export function getAvailableBalance(userId: string): number {
-  const pendingOutgoing = store.starTransfers
-    .all("fromUserId = ? AND status = 'pending'", userId)
-    .reduce((sum, t) => sum + t.amount, 0);
-  return store.getStars(userId) - pendingOutgoing;
-}
-
 export function readLastLogs(limit: number): ActionLog[] {
   return store.recentLogs(limit);
 }
 
-function commitUserStars(userId: string, newTotal: number): number {
-  store.setStars(userId, newTotal);
-  return newTotal;
+// The stars invariant: a kid's available stars are her balance minus the stars
+// promised in her pending outgoing gifts (getAvailableBalance), and no balance
+// goes below zero. Every star change goes through the functions below, each in
+// one transaction: buying a reward, a parent's take-away and a new gift check
+// the available stars; approving a gift re-checks the sender's balance. Stars
+// are added only by awardStars (positive amounts), a refund and an approved
+// gift. Only the whole-state writers set balances directly: replaceState (the
+// admin state editor) and the one-time legacy import (migrate.ts).
+
+/** A refused star operation: the routes send `status` with `message` (shown to the parent as a toast). */
+export class StarsError extends Error {
+  constructor(public status: 400 | 404, message: string) { super(message); }
 }
 
-// Adjust a user's star balance by a delta. All star-mutating code paths go
-// through this or trySpendStars, except the whole-state writers: replaceState
-// (the admin state editor) and the one-time legacy import (migrate.ts), which
-// set balances directly.
-export function adjustUserStars(userId: string, delta: number): number {
-  return store.transaction(() => commitUserStars(userId, store.getStars(userId) + delta));
+function promisedStars(userId: string): number {
+  return store.starTransfers
+    .all("fromUserId = ? AND status = 'pending'", userId)
+    .reduce((sum, t) => sum + t.amount, 0);
 }
 
-// Spend stars: balance check and deduction happen in one transaction, so
-// concurrent spends can never overdraw. Returns the new total, or null if the
-// balance is insufficient (nothing is deducted).
-export function trySpendStars(userId: string, cost: number): number | null {
-  return store.transaction(() => {
-    const balance = store.getStars(userId);
-    return balance < cost ? null : commitUserStars(userId, balance - cost);
-  });
+/** Stars a kid can spend or give now: her balance minus what pending gifts promise. */
+export function getAvailableBalance(userId: string): number {
+  return store.getStars(userId) - promisedStars(userId);
 }
 
-// Award stars to a user
+function knownUser(userId: string): UserWithStars {
+  const user = findUser(userId);
+  if (!user) throw new StarsError(404, 'User not found');
+  return user;
+}
+
+// Takes `amount` from the kid's available stars, or refuses with the reason.
+// Call it inside the transaction that records what the stars paid for.
+function spendAvailable(user: UserWithStars, amount: number): number {
+  const available = getAvailableBalance(user.id);
+  if (available < amount) {
+    const promised = promisedStars(user.id);
+    throw new StarsError(400, promised > 0
+      ? `${user.name}: διαθέσιμα ⭐ ${available} · ⭐ ${promised} περιμένουν σε δώρο. Απορρίψτε πρώτα το δώρο.`
+      : `${user.name}: διαθέσιμα ⭐ ${available}, χρειάζονται ⭐ ${amount}`);
+  }
+  return addStars(user.id, -amount);
+}
+
+function addStars(userId: string, delta: number): number {
+  const total = store.getStars(userId) + delta;
+  store.setStars(userId, total);
+  return total;
+}
+
+/** Stars earned or given by a parent (a positive whole number). */
 export function awardStars(userId: string, amount: number): { success: boolean; newTotal: number } {
-  if (!findUser(userId)) throw new Error(`User not found: ${userId}`);
-
-  const newTotal = adjustUserStars(userId, amount);
+  if (!Number.isInteger(amount) || amount <= 0) throw new StarsError(400, 'amount must be a positive integer');
+  knownUser(userId);
+  const newTotal = store.transaction(() => addStars(userId, amount));
   logAction('AWARD_STARS', { userId, amount, newBalance: newTotal });
-
   return { success: true, newTotal };
+}
+
+/** A parent takes stars away: only what isn't promised in a gift. Logged as an award of −amount, as before. */
+export function takeStars(userId: string, amount: number): { success: boolean; newTotal: number } {
+  if (!Number.isInteger(amount) || amount <= 0) throw new StarsError(400, 'amount must be a positive integer');
+  const user = knownUser(userId);
+  const newTotal = store.transaction(() => spendAvailable(user, amount));
+  logAction('AWARD_STARS', { userId, amount: -amount, newBalance: newTotal });
+  return { success: true, newTotal };
+}
+
+/** A kid buys a reward: it waits for a parent (pending) and is paid now from her available stars. */
+export function buyReward(userId: string, rewardId: string): Spending {
+  const user = findUser(userId);
+  const reward = config().rewards.find(r => r.id === rewardId);
+  if (!user || !reward) throw new StarsError(404, 'User or Reward not found');
+  const spending: Spending = {
+    id: randomUUID(), userId, rewardId, cost: reward.cost, createdAt: new Date().toISOString(), status: 'pending'
+  };
+  const newBalance = store.transaction(() => {
+    const balance = spendAvailable(user, reward.cost);
+    store.spendings.put(spending);
+    return balance;
+  });
+  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance });
+  return spending;
+}
+
+/** A parent marks a reward given (done) or revokes it, which refunds its stars. */
+export function resolveSpending(id: string, status: Spending['status']): Spending {
+  const spending = store.spendings.get(id);
+  if (!spending) throw new StarsError(404, 'Spending not found');
+  if (status !== 'done' && status !== 'revoked') throw new StarsError(400, 'Invalid status');
+  if (spending.status === 'revoked') throw new StarsError(400, 'Spending is already revoked');
+  const updated = { ...spending, status };
+  store.transaction(() => {
+    if (status === 'revoked' && findUser(spending.userId)) addStars(spending.userId, spending.cost);
+    store.spendings.put(updated);
+  });
+  logAction(`SPENDING_${status.toUpperCase()}`, { spendingId: id, userId: spending.userId, rewardId: spending.rewardId, cost: spending.cost });
+  return updated;
+}
+
+/** A kid gives stars to another: they stay hers, promised, until a parent approves or rejects. */
+export function createGift(fromUserId: string, toUserId: string, amount: number): StarTransfer {
+  const from = findUser(fromUserId);
+  if (!from || !findUser(toUserId)) throw new StarsError(404, 'User not found');
+  if (fromUserId === toUserId) throw new StarsError(400, 'Cannot transfer stars to yourself');
+  if (!Number.isInteger(amount) || amount <= 0) throw new StarsError(400, 'Amount must be positive');
+  const transfer: StarTransfer = {
+    id: randomUUID(), fromUserId, toUserId, amount, createdAt: new Date().toISOString(), status: 'pending'
+  };
+  store.transaction(() => {
+    const available = getAvailableBalance(fromUserId);
+    if (available < amount) throw new StarsError(400, `${from.name}: διαθέσιμα ⭐ ${available}, χρειάζονται ⭐ ${amount}`);
+    store.starTransfers.put(transfer);
+  });
+  logAction('TRANSFER_REQUEST', { fromUserId, toUserId, amount, transferId: transfer.id });
+  return transfer;
+}
+
+/** A parent approves or rejects a gift, or the kid cancels it. Approving moves the stars, if the sender still has them. */
+export function resolveGift(id: string, action: 'approve' | 'reject' | 'cancel'): StarTransfer {
+  const transfer = store.starTransfers.get(id);
+  if (!transfer) throw new StarsError(404, 'Transfer not found');
+  if (transfer.status !== 'pending') throw new StarsError(400, 'Transfer is already resolved');
+  const from = findUser(transfer.fromUserId);
+  if (!from || !findUser(transfer.toUserId)) throw new StarsError(404, 'User not found');
+  const outcomes = { approve: 'approved', reject: 'rejected', cancel: 'cancelled' } as const;
+  const status = outcomes[action];
+  if (!status) throw new StarsError(400, 'Invalid action');
+
+  const resolved: StarTransfer = { ...transfer, status, resolvedAt: new Date().toISOString() };
+  store.transaction(() => {
+    if (status === 'approved') {
+      // The promise was checked when the gift was made; only a whole-state write can have broken it since.
+      if (store.getStars(from.id) < transfer.amount) {
+        throw new StarsError(400, `${from.name}: δεν υπάρχουν πια ⭐ ${transfer.amount} για αυτό το δώρο`);
+      }
+      addStars(transfer.fromUserId, -transfer.amount);
+      addStars(transfer.toUserId, transfer.amount);
+    }
+    store.starTransfers.put(resolved);
+  });
+  logAction(`TRANSFER_${status.toUpperCase()}`, { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
+  return resolved;
 }
 
 // ============================================
