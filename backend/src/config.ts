@@ -36,6 +36,12 @@ const EMPTY_EXERCISES: ExercisesConfig = { categories: [], exercises: [] };
 
 const refusal = (message: string): ValidationError => ({ message, errors: [] });
 
+/** YYYY-MM-DD_HHMMSS in the process's time zone, like the backups' folders. */
+function localStamp(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
+
 function deepFreeze<T>(value: T): T {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
     Object.freeze(value);
@@ -156,8 +162,7 @@ export class ConfigFile<T> {
     }
     if (this.error && existsSync(this.file)) {
       // Keep the invalid file beside, so a replace never loses what was in it
-      const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..*/, '');
-      copyFileSync(this.file, `${this.file}.invalid-${stamp}`);
+      copyFileSync(this.file, `${this.file}.invalid-${localStamp(new Date())}`);
     }
     const text = JSON.stringify(value, null, 2);
     const tmp = `${this.file}.tmp`;
