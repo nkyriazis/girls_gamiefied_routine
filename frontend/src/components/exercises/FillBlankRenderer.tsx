@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { FillBlankExercise } from '@shared/types';
 import { help } from '../../help/anchors';
 import { sound } from '../../sound/sfx';
+import { useShuffled } from './shuffle';
 
 interface Props {
   exercise: FillBlankExercise;
@@ -15,10 +16,8 @@ export const FillBlankRenderer: React.FC<Props> = ({ exercise, onAnswer, disable
   const [filledGaps, setFilledGaps] = useState<(string | null)[]>(new Array(gapCount).fill(null));
   const [activeGapIndex, setActiveGapIndex] = useState(0);
 
-  // Shuffle options once on mount
-  const shuffledOptions = useMemo(() =>
-    [...(exercise.options || exercise.correctAnswers)].sort(() => Math.random() - 0.5),
-  [exercise.options, exercise.correctAnswers]);
+  // The word bank, shuffled once per exercise
+  const shuffledOptions = useShuffled(exercise.options || exercise.correctAnswers, exercise.id);
 
   // Which options are still available (not yet placed in a gap)
   const usedWords = filledGaps.filter(Boolean) as string[];

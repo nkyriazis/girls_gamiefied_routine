@@ -4,8 +4,8 @@ import { api } from '../api';
 import { useGame } from '../context/GameContext';
 import { help } from './anchors';
 import { sound } from '../sound/sfx';
-import { HelpContext, HelpDepth, useHelpApi, type HelpApi } from './context';
-import { playTour } from './runTour';
+import { HelpContext, HelpCovered, HelpDepth, useHelpApi, type HelpApi } from './context';
+import { playTour, stopTour } from './runTour';
 import { seenId, type Tour } from './tour';
 
 // The owl: always in a corner of the screen, explaining whatever is on top. Until a
@@ -18,7 +18,8 @@ let seq = 0;
 export const HelpProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { helpSeen } = useGame();
   const [entries, setEntries] = useState<Map<symbol, Entry>>(new Map());
-  const [playing, setPlaying] = useState(false);
+  // The tour playing, by id (null: none)
+  const [playing, setPlaying] = useState<string | null>(null);
   // Played here but maybe not on the server yet (offline, or its STATE hasn't come back)
   const [playedHere, setPlayedHere] = useState<string[]>([]);
   const seen = useMemo(() => new Set([...(helpSeen ?? []), ...playedHere]), [helpSeen, playedHere]);
@@ -33,22 +34,30 @@ export const HelpProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // The deepest screen wins; between siblings, the one that opened last
   const top = [...entries.values()].sort((a, b) => b.depth - a.depth || b.seq - a.seq)[0] ?? null;
   const current = top?.tour ?? null;
+  const currentId = current ? seenId(current.id, current.user) : null;
 
   const play = useCallback(() => {
     if (!current) return;
     const started = playTour(current, {
       seen: id => seen.has(id),
       onEnd: played => {
-        setPlaying(false);
+        setPlaying(null);
+        if (!played.length) return;
         setPlayedHere(prev => [...prev, ...played]);
         api.markHelpSeen(played).catch(err => console.warn('Help: not remembered on the server', err));
       },
     });
-    if (started) setPlaying(true);
+    if (started) setPlaying(seenId(current.id, current.user));
   }, [current, seen]);
 
+  // Something else came on top while a tour played (a routine over the store): that tour
+  // stops, not counted as played, and the owl offers to explain what is on top now
+  useEffect(() => {
+    if (playing && playing !== currentId) stopTour();
+  }, [playing, currentId]);
+
   const value = useMemo<HelpApi>(() => ({
-    register, unregister, current, playing, play,
+    register, unregister, current, playing: !!playing, play,
     inline: !!top?.inline,
     fresh: !!current && !seen.has(seenId(current.id, current.user)),
   }), [register, unregister, current, top?.inline, playing, play, seen]);
@@ -65,10 +74,12 @@ export const HelpProvider: React.FC<{ children: React.ReactNode }> = ({ children
  * A screen the owl can explain. Wrap the screen's content; nested screens (a drawer in the
  * home screen, a problem in the player) sit deeper and win while they're open. `tour`
  * null: nothing to explain right now, but the screens inside still count as nested.
+ * Under a <HelpCover covered> it explains nothing either: something else is on top.
  */
 export const HelpScreen: React.FC<{ tour: Tour | null; inline?: boolean; children: React.ReactNode }> = ({ tour, inline = false, children }) => {
   const helpApi = useContext(HelpContext);
   const depth = useContext(HelpDepth) + 1;
+  const covered = useContext(HelpCovered);
   const [key] = useState(() => Symbol('help'));
   const register = helpApi?.register, unregister = helpApi?.unregister;
   // A tour is known by its id: the same id is the same tour, whatever object carries it
@@ -76,12 +87,17 @@ export const HelpScreen: React.FC<{ tour: Tour | null; inline?: boolean; childre
   const latestTour = useEffectEvent(() => tour);
   useEffect(() => {
     const t = latestTour();
-    if (!register || !unregister || !tourKey || !t) return;
+    if (!register || !unregister || !tourKey || !t || covered) return;
     register(key, { tour: t, depth, inline });
     return () => unregister(key);
-  }, [register, unregister, key, tourKey, depth, inline]);
+  }, [register, unregister, key, tourKey, depth, inline, covered]);
   return <HelpDepth.Provider value={depth}>{children}</HelpDepth.Provider>;
 };
+
+/** The screens inside are covered by something on top (routines over the store): the owl leaves them be */
+export const HelpCover: React.FC<{ covered: boolean; children: React.ReactNode }> = ({ covered, children }) => (
+  <HelpCovered.Provider value={covered}>{children}</HelpCovered.Provider>
+);
 
 /** The owl button. Floating by default; `inline` sits in a screen's own header. */
 export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) => {
@@ -133,7 +149,7 @@ export const HelpButton: React.FC<{ inline?: boolean }> = ({ inline = false }) =
       </AnimatePresence>
       <style>{`
         .help-anchor { position: relative; display: flex; align-items: center; }
-        .help-anchor.floating { position: fixed; left: 1.5rem; bottom: 1.6rem; z-index: 7000; }
+        .help-anchor.floating { position: fixed; left: 1.5rem; bottom: 1.6rem; z-index: var(--z-owl); }
         .help-anchor.inline { margin-right: 1rem; }
         .help-btn { position: relative; width: 64px; height: 64px; min-width: 64px; padding: 0; border-radius: 50%;
           border: 3px solid rgba(255,255,255,0.85); cursor: pointer; display: grid; place-items: center;

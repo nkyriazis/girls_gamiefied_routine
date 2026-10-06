@@ -153,7 +153,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           width: 100vw;
           height: 100vh;
           background: radial-gradient(circle at center, #2a2a4a 0%, #000 100%);
-          z-index: 5000;
+          z-index: var(--z-player);
           color: white;
           display: flex;
           flex-direction: column;
@@ -304,7 +304,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           margin: auto;
           width: fit-content;
           height: fit-content;
-          z-index: 6000;
+          z-index: calc(var(--z-player) + 10);
           padding: 3rem 5rem;
           border-radius: 2rem;
           display: flex;

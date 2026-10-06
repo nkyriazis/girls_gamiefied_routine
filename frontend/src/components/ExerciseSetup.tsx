@@ -178,7 +178,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
           height: 100%;
           background: rgba(0, 0, 0, 0.85);
           backdrop-filter: blur(10px);
-          z-index: 3000;
+          z-index: var(--z-modal);
           display: flex;
           align-items: center;
           justify-content: center;

@@ -82,7 +82,7 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
           position: fixed;
           inset: 0;
           background: rgba(0, 0, 0, 0.5);
-          z-index: 100;
+          z-index: var(--z-drawer);
         }
 
         .exercises-drawer {
@@ -92,7 +92,7 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
           bottom: 0;
           width: min(420px, 92vw);
           background: linear-gradient(160deg, #16213e 0%, #1a1a2e 100%);
-          z-index: 101;
+          z-index: calc(var(--z-drawer) + 1);
           display: flex;
           flex-direction: column;
           box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);

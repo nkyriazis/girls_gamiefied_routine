@@ -506,7 +506,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           width: 100%;
           height: 100%;
           background: rgba(0,0,0,0.8);
-          z-index: 2000;
+          z-index: var(--z-modal);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -518,7 +518,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          z-index: 3000;
+          z-index: calc(var(--z-modal) + 10);
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -644,7 +644,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
           width: 100%;
           height: 100%;
           background: rgba(0,0,0,0.5);
-          z-index: 3000;
+          z-index: calc(var(--z-modal) + 10);
           display: flex;
           align-items: center;
           justify-content: center;

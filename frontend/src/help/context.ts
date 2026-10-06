@@ -22,4 +22,7 @@ export const HelpContext = createContext<HelpApi | null>(null);
 /** How deep in the screens a component sits (0: outside all of them) */
 export const HelpDepth = createContext(0);
 
+/** Under something that covers the screen (a routine over the store): its screens can't win the owl */
+export const HelpCovered = createContext(false);
+
 export const useHelpApi = () => useContext(HelpContext);
