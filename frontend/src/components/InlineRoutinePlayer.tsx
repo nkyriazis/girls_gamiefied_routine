@@ -89,7 +89,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
       <AnimatePresence>
         {isCompleted && (
           <RewardOverlay
-            starsEarned={50}
+            starsEarned={run.totalStars ?? 0}
             onClose={onClose}
           />
         )}
