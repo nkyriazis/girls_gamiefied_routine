@@ -2,8 +2,8 @@ import { useCallback, useRef } from 'react';
 import { sfx } from '../sound/sfx';
 
 // A page may not make sound before someone touches it (the browsers' autoplay rule). An
-// alarm already running when the page loads is on screen under "Click to Start" and can't
-// sound yet, so it tries again on the first touch: that click.
+// alarm already running when the page loads is on screen under the start overlay
+// («Πάτα για να ξεκινήσουμε!») and can't sound yet, so it tries again on the first touch: that tap.
 function onFirstTouch(fn: () => void): () => void {
   const events = ['pointerdown', 'keydown'] as const;
   const go = () => { stop(); fn(); };

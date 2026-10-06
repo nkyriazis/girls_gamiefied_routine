@@ -105,7 +105,7 @@ export async function start(out, { size = { width: 1280, height: 800 }, touch = 
     }
     await pause(extra);
   };
-  // Opens the kids' screen past "Click to Start"
+  // Opens the kids' screen past the start overlay («Πάτα για να ξεκινήσουμε!»)
   const open = async (path = '/') => {
     await page.goto(APP + path);
     await pause(1500);

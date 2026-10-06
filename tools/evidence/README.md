@@ -14,7 +14,7 @@ for today, fresh; `plain` makes today's plain exercises fresh; `clear-runs` take
 `stars u1 100 u2 20` sets balances and clears those kids' pending gifts and rewards.
 
 A scenario is a short Playwright script (`scenarios/smoke.mjs` is the smallest, `scenarios/owl-tours.mjs`
-a long one). `kit.mjs` gives it `open()` (the kids' screen, past "Click to Start"), `tap`, `caption` (says on
+a long one). `kit.mjs` gives it `open()` (the kids' screen, past the start overlay), `tap`, `caption` (says on
 the video what is shown), `listen` (waits for a clip to end), `shot` and `finish`. Write the "before"
 scenario first, against master, and play the same one after the fix: the two videos then compare.
 
