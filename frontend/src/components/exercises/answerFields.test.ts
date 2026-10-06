@@ -109,6 +109,14 @@ test('the slip of the issue: 37, −, then the first box and 55 makes 55 − 37 
   assert.deepEqual(r.edits.map(e => e.focus), ['op', 'y', 'x', 'y', 'result', 'result', 'result']);
 });
 
+test('the old habit after the change: 37, −, ⌫, 55 now gives 37 ○ 55; making it 55 − 37 = 18 takes 11 inputs, then Έλεγχος (12 taps; 9 before)', () => {
+  let r = play([chip(37), op('−'), ERASE, chip(55)]);
+  assert.deepEqual([r.shown, r.focus], [[37, null, 55, ''], 'op']);
+  r = play([tap('x'), chip(55), op('−'), tap('y'), chip(37), digit('1'), digit('8')], r.v, r.focus);
+  assert.deepEqual(r.shown, [55, '−', 37, '18']);
+  assert.ok(r.edits.every(e => !e.refused));
+});
+
 test('the usual path takes one input per item, as before: 18, :, 6, 3', () => {
   const r = play([chip(18), op(':'), chip(6), digit('3')]);
   assert.deepEqual(r.shown, [18, ':', 6, '3']);
