@@ -451,7 +451,7 @@ const NumbersStep: React.FC<StepProps<string[]> & { rows: { label: string; unit?
       </div>
       <div className="numbers-pad" {...help('problem.keypad')}>
         {KEYS.map(k => (
-          <motion.button key={k} type="button" className={`numbers-key ${k === 'C' ? 'clear' : ''}`} disabled={disabled} whileTap={!disabled ? { scale: 0.92 } : {}}
+          <motion.button key={k} type="button" className={`numbers-key answer-key ${k === 'C' ? 'clear' : ''}`} disabled={disabled} whileTap={!disabled ? { scale: 0.92 } : {}}
             {...sound('none')} onClick={() => input({ kind: 'key', key: k })}>{k}</motion.button>
         ))}
       </div>

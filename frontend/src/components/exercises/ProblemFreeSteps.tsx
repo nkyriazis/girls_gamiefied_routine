@@ -133,23 +133,23 @@ export const CalcBench: React.FC<{
       </div>
       <div className="calc-chips" {...help('calc.chips')}>
         {story.map(q => (
-          <button key={q.id} type="button" className="calc-chip" disabled={disabled} {...sound('none')} onClick={() => input({ kind: 'chip', n: q.value })}>
+          <button key={q.id} type="button" className="calc-chip answer-key" disabled={disabled} {...sound('none')} onClick={() => input({ kind: 'chip', n: q.value })}>
             {fmt(q.value)} <small>{q.unit}</small>
           </button>
         ))}
         {value.lines.map((l, i) => (
-          <button key={`l${i}`} type="button" className="calc-chip found" disabled={disabled} {...sound('none')} onClick={() => input({ kind: 'chip', n: l.result })}>
+          <button key={`l${i}`} type="button" className="calc-chip found answer-key" disabled={disabled} {...sound('none')} onClick={() => input({ kind: 'chip', n: l.result })}>
             {fmt(l.result)} <small>{lower(l.label)}</small>
           </button>
         ))}
       </div>
       <div className="calc-pad" {...help('calc.pad')}>
         {OPS.map(op => (
-          <motion.button key={op} type="button" className={`calc-key op ${value.op === op ? 'on' : ''}`} disabled={disabled}
+          <motion.button key={op} type="button" className={`calc-key op answer-key ${value.op === op ? 'on' : ''}`} disabled={disabled}
             whileTap={{ scale: 0.92 }} {...sound('none')} onClick={() => input({ kind: 'op', op })}>{op}</motion.button>
         ))}
         {DIGITS.map(k => (
-          <motion.button key={k} type="button" className="calc-key" disabled={disabled} whileTap={{ scale: 0.92 }} {...sound('none')} onClick={() => key(k)}>{k}</motion.button>
+          <motion.button key={k} type="button" className="calc-key answer-key" disabled={disabled} whileTap={{ scale: 0.92 }} {...sound('none')} onClick={() => key(k)}>{k}</motion.button>
         ))}
       </div>
       <style>{`
