@@ -57,7 +57,7 @@ Disk use: 14 × (routine.db + uploads/), a few MB to tens of MB. Check on the Pi
    echo 'BACKUP_DIR=/mnt/usb/routine-backups' >> .env
    ```
 
-   Optional: `BACKUP_KEEP=30`, `BACKUP_CRON=0 4 * * *`.
+   Optional: `BACKUP_KEEP=30`, `BACKUP_CRON=0 4 * * *`, `BACKUP_TIMEOUT=3600` (seconds).
 3. **Redeploy** so the backend gets the new mount: `./deploy-rpi.sh` (or
    `docker compose -f docker-compose.yml -f docker-compose.release.yml up -d backend`).
 4. **Take one now and check it:**
@@ -73,6 +73,14 @@ Disk use: 14 × (routine.db + uploads/), a few MB to tens of MB. Check on the Pi
 On a FAT/exFAT stick files have no owners (fine). On an NFS share with `root_squash` the container's root may not
 be allowed to write: `BACKUP_FAILED` in the action log says so; export the share with `no_root_squash` or make the
 folder writable by everyone.
+
+A disk or share that hangs for good (an NFS share mounted `hard` whose server is gone, a USB disk stuck in the
+kernel) would hold a backup forever. After `BACKUP_TIMEOUT` (7200 s, 2 h; set it in `.env`) the backend kills it and
+logs `BACKUP_FAILED` with `reason: "timed out"`, and the next day's backup runs as usual. The killed run leaves its
+`.partial-<stamp>` folder behind (it never counts as a backup); delete it by hand. A process stuck on a dead disk may
+only die when the disk answers or the Pi restarts, and while it hangs inside the database copy SQLite can't trim
+`routine.db-wal`, which grows on the card. So a `timed out` in Καταγραφή means: check the disk or share, and if it
+is stuck, restart the Pi.
 
 The first time with the default folder, create it as yourself before deploying (`mkdir -p backups/daily` in the
 checkout); otherwise Docker creates it as root and the backups in it are root's.
