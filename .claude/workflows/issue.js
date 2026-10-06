@@ -27,6 +27,7 @@ Rules for this run (issue #${n}; the owner reviews from the PR page alone):
 - Nothing outward-facing: never git push, never create or comment on issues or PRs (gh is read-only for you), never touch piserve. The owner decides that after reading your result.
 - Never commit backend/data.json (dev-only changes), .evidence/ or .playwright-mcp/. Never git add . or -A; add files by name. Commits: <type>(<scope>): <subject>, ending with the two attribution lines the session uses (Co-Authored-By and Claude-Session, as in git log -1 on master).
 - Evidence lives in ${dir}/ (git-ignored). Record it with tools/evidence (read its README first): a scenario .mjs, tools/evidence/record.sh to play it (screenshots + mp4 with sound), tools/evidence/dev.sh to set the scene. Kiosk size 1280×800, plus any size the change affects. Look at every screenshot you cite (Read the .png) and say what it shows; don't cite evidence you haven't looked at.
+- If a scene changes backend/data.json (directly or through the admin API, which rewrites it reformatted and root-owned), copy it aside first and put it back byte for byte and owned by your user at the end (rm, then cp from the copy); check with cmp.
 - Don't use the flow skill (you are a subagent).
 - The decisions on the tracker #51 are settled; don't reopen them.
 - A PR that only does part of an issue says "Part of #${n}" and nowhere uses close, closes, fix, fixes, resolve or resolves next to an issue number: GitHub closes the issue on merge for any of them, even in a sentence about a later PR.
