@@ -1,0 +1,2090 @@
+{
+ "1280x800": {
+  "viewport": {
+   "width": 1280,
+   "height": 800
+  },
+  "dock": {
+   "top": 680,
+   "bottom": 800,
+   "left": 0,
+   "right": 1280,
+   "height": 120
+  },
+  "dockHeightCss": "120px",
+  "items": [
+   {
+    "name": "Ηλέκτρα",
+    "stars": "⭐ 570",
+    "item": {
+     "top": 650.4,
+     "bottom": 829.6,
+     "left": 516,
+     "right": 616,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 660.4,
+     "bottom": 760.4,
+     "left": 516,
+     "right": 616,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 768.4,
+     "bottom": 792.4,
+     "left": 534.3,
+     "right": 597.7,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 800.4,
+     "bottom": 819.6,
+     "left": 545.5,
+     "right": 586.5,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 670.4,
+     "bottom": 750.4,
+     "left": 526,
+     "right": 606,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   },
+   {
+    "name": "Ιφιγένεια",
+    "stars": "⭐ 30",
+    "item": {
+     "top": 650.4,
+     "bottom": 829.6,
+     "left": 664,
+     "right": 764,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 660.4,
+     "bottom": 760.4,
+     "left": 664,
+     "right": 764,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 768.4,
+     "bottom": 792.4,
+     "left": 680.4,
+     "right": 747.6,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 800.4,
+     "bottom": 819.6,
+     "left": 697,
+     "right": 731,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 670.4,
+     "bottom": 750.4,
+     "left": 674,
+     "right": 754,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   }
+  ],
+  "clock": {
+   "top": 208,
+   "bottom": 472,
+   "left": 388,
+   "right": 892,
+   "height": 264,
+   "fitsAboveDock": true
+  },
+  "install": null,
+  "fabs": [
+   {
+    "fab": "chores-fab",
+    "box": {
+     "top": 400,
+     "bottom": 460,
+     "left": 1196,
+     "right": 1256,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "chores-fab",
+    "underDockTop": -220
+   },
+   {
+    "fab": "bonus-fab",
+    "box": {
+     "top": 480,
+     "bottom": 540,
+     "left": 1196,
+     "right": 1256,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "bonus-fab",
+    "underDockTop": -140
+   },
+   {
+    "fab": "exercise-fab",
+    "box": {
+     "top": 560,
+     "bottom": 620,
+     "left": 1196,
+     "right": 1256,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "exercise-fab",
+    "underDockTop": -60
+   },
+   {
+    "fab": "daily-exercises-fab",
+    "box": {
+     "top": 320,
+     "bottom": 380,
+     "left": 1196,
+     "right": 1256,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "daily-exercises-fab",
+    "underDockTop": -300
+   }
+  ],
+  "withInstall": {
+   "viewport": {
+    "width": 1280,
+    "height": 800
+   },
+   "dock": {
+    "top": 680,
+    "bottom": 800,
+    "left": 0,
+    "right": 1280,
+    "height": 120
+   },
+   "dockHeightCss": "120px",
+   "items": [
+    {
+     "name": "Ηλέκτρα",
+     "stars": "⭐ 570",
+     "item": {
+      "top": 650.4,
+      "bottom": 829.6,
+      "left": 516,
+      "right": 616,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 660.4,
+      "bottom": 760.4,
+      "left": 516,
+      "right": 616,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 768.4,
+      "bottom": 792.4,
+      "left": 534.3,
+      "right": 597.7,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 800.4,
+      "bottom": 819.6,
+      "left": 545.5,
+      "right": 586.5,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 670.4,
+      "bottom": 750.4,
+      "left": 526,
+      "right": 606,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    },
+    {
+     "name": "Ιφιγένεια",
+     "stars": "⭐ 30",
+     "item": {
+      "top": 650.4,
+      "bottom": 829.6,
+      "left": 664,
+      "right": 764,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 660.4,
+      "bottom": 760.4,
+      "left": 664,
+      "right": 764,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 768.4,
+      "bottom": 792.4,
+      "left": 680.4,
+      "right": 747.6,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 800.4,
+      "bottom": 819.6,
+      "left": 697,
+      "right": 731,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 670.4,
+      "bottom": 750.4,
+      "left": 674,
+      "right": 754,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    }
+   ],
+   "clock": {
+    "top": 208,
+    "bottom": 472,
+    "left": 388,
+    "right": 892,
+    "height": 264,
+    "fitsAboveDock": true
+   },
+   "install": {
+    "top": 16,
+    "bottom": 60,
+    "left": 1118,
+    "right": 1264,
+    "height": 44
+   },
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "box": {
+      "top": 400,
+      "bottom": 460,
+      "left": 1196,
+      "right": 1256,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "chores-fab",
+     "underDockTop": -220
+    },
+    {
+     "fab": "bonus-fab",
+     "box": {
+      "top": 480,
+      "bottom": 540,
+      "left": 1196,
+      "right": 1256,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "bonus-fab",
+     "underDockTop": -140
+    },
+    {
+     "fab": "exercise-fab",
+     "box": {
+      "top": 560,
+      "bottom": 620,
+      "left": 1196,
+      "right": 1256,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "exercise-fab",
+     "underDockTop": -60
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "box": {
+      "top": 320,
+      "bottom": 380,
+      "left": 1196,
+      "right": 1256,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab",
+     "underDockTop": -300
+    }
+   ]
+  }
+ },
+ "1920x1080": {
+  "viewport": {
+   "width": 1920,
+   "height": 1080
+  },
+  "dock": {
+   "top": 960,
+   "bottom": 1080,
+   "left": 0,
+   "right": 1920,
+   "height": 120
+  },
+  "dockHeightCss": "120px",
+  "items": [
+   {
+    "name": "Ηλέκτρα",
+    "stars": "⭐ 570",
+    "item": {
+     "top": 930.4,
+     "bottom": 1109.6,
+     "left": 836,
+     "right": 936,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 940.4,
+     "bottom": 1040.4,
+     "left": 836,
+     "right": 936,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 1048.4,
+     "bottom": 1072.4,
+     "left": 854.3,
+     "right": 917.7,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 1080.4,
+     "bottom": 1099.6,
+     "left": 865.5,
+     "right": 906.5,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 950.4,
+     "bottom": 1030.4,
+     "left": 846,
+     "right": 926,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   },
+   {
+    "name": "Ιφιγένεια",
+    "stars": "⭐ 30",
+    "item": {
+     "top": 930.4,
+     "bottom": 1109.6,
+     "left": 984,
+     "right": 1084,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 940.4,
+     "bottom": 1040.4,
+     "left": 984,
+     "right": 1084,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 1048.4,
+     "bottom": 1072.4,
+     "left": 1000.4,
+     "right": 1067.6,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 1080.4,
+     "bottom": 1099.6,
+     "left": 1017,
+     "right": 1051,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 950.4,
+     "bottom": 1030.4,
+     "left": 994,
+     "right": 1074,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   }
+  ],
+  "clock": {
+   "top": 348,
+   "bottom": 612,
+   "left": 708,
+   "right": 1212,
+   "height": 264,
+   "fitsAboveDock": true
+  },
+  "install": null,
+  "fabs": [
+   {
+    "fab": "chores-fab",
+    "box": {
+     "top": 540,
+     "bottom": 600,
+     "left": 1836,
+     "right": 1896,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "chores-fab",
+    "underDockTop": -360
+   },
+   {
+    "fab": "bonus-fab",
+    "box": {
+     "top": 620,
+     "bottom": 680,
+     "left": 1836,
+     "right": 1896,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "bonus-fab",
+    "underDockTop": -280
+   },
+   {
+    "fab": "exercise-fab",
+    "box": {
+     "top": 700,
+     "bottom": 760,
+     "left": 1836,
+     "right": 1896,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "exercise-fab",
+    "underDockTop": -200
+   },
+   {
+    "fab": "daily-exercises-fab",
+    "box": {
+     "top": 460,
+     "bottom": 520,
+     "left": 1836,
+     "right": 1896,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "daily-exercises-fab",
+    "underDockTop": -440
+   }
+  ],
+  "withInstall": {
+   "viewport": {
+    "width": 1920,
+    "height": 1080
+   },
+   "dock": {
+    "top": 960,
+    "bottom": 1080,
+    "left": 0,
+    "right": 1920,
+    "height": 120
+   },
+   "dockHeightCss": "120px",
+   "items": [
+    {
+     "name": "Ηλέκτρα",
+     "stars": "⭐ 570",
+     "item": {
+      "top": 930.4,
+      "bottom": 1109.6,
+      "left": 836,
+      "right": 936,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 940.4,
+      "bottom": 1040.4,
+      "left": 836,
+      "right": 936,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 1048.4,
+      "bottom": 1072.4,
+      "left": 854.3,
+      "right": 917.7,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 1080.4,
+      "bottom": 1099.6,
+      "left": 865.5,
+      "right": 906.5,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 950.4,
+      "bottom": 1030.4,
+      "left": 846,
+      "right": 926,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    },
+    {
+     "name": "Ιφιγένεια",
+     "stars": "⭐ 30",
+     "item": {
+      "top": 930.4,
+      "bottom": 1109.6,
+      "left": 984,
+      "right": 1084,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 940.4,
+      "bottom": 1040.4,
+      "left": 984,
+      "right": 1084,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 1048.4,
+      "bottom": 1072.4,
+      "left": 1000.4,
+      "right": 1067.6,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 1080.4,
+      "bottom": 1099.6,
+      "left": 1017,
+      "right": 1051,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 950.4,
+      "bottom": 1030.4,
+      "left": 994,
+      "right": 1074,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    }
+   ],
+   "clock": {
+    "top": 348,
+    "bottom": 612,
+    "left": 708,
+    "right": 1212,
+    "height": 264,
+    "fitsAboveDock": true
+   },
+   "install": {
+    "top": 16,
+    "bottom": 60,
+    "left": 1758,
+    "right": 1904,
+    "height": 44
+   },
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "box": {
+      "top": 540,
+      "bottom": 600,
+      "left": 1836,
+      "right": 1896,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "chores-fab",
+     "underDockTop": -360
+    },
+    {
+     "fab": "bonus-fab",
+     "box": {
+      "top": 620,
+      "bottom": 680,
+      "left": 1836,
+      "right": 1896,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "bonus-fab",
+     "underDockTop": -280
+    },
+    {
+     "fab": "exercise-fab",
+     "box": {
+      "top": 700,
+      "bottom": 760,
+      "left": 1836,
+      "right": 1896,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "exercise-fab",
+     "underDockTop": -200
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "box": {
+      "top": 460,
+      "bottom": 520,
+      "left": 1836,
+      "right": 1896,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab",
+     "underDockTop": -440
+    }
+   ]
+  }
+ },
+ "800x1280": {
+  "viewport": {
+   "width": 800,
+   "height": 1280
+  },
+  "dock": {
+   "top": 1160,
+   "bottom": 1280,
+   "left": 0,
+   "right": 800,
+   "height": 120
+  },
+  "dockHeightCss": "120px",
+  "items": [
+   {
+    "name": "Ηλέκτρα",
+    "stars": "⭐ 570",
+    "item": {
+     "top": 1130.4,
+     "bottom": 1309.6,
+     "left": 276,
+     "right": 376,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 1140.4,
+     "bottom": 1240.4,
+     "left": 276,
+     "right": 376,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 1248.4,
+     "bottom": 1272.4,
+     "left": 294.3,
+     "right": 357.7,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 1280.4,
+     "bottom": 1299.6,
+     "left": 305.5,
+     "right": 346.5,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 1150.4,
+     "bottom": 1230.4,
+     "left": 286,
+     "right": 366,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   },
+   {
+    "name": "Ιφιγένεια",
+    "stars": "⭐ 30",
+    "item": {
+     "top": 1130.4,
+     "bottom": 1309.6,
+     "left": 424,
+     "right": 524,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 1140.4,
+     "bottom": 1240.4,
+     "left": 424,
+     "right": 524,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 1248.4,
+     "bottom": 1272.4,
+     "left": 440.4,
+     "right": 507.6,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 1280.4,
+     "bottom": 1299.6,
+     "left": 457,
+     "right": 491,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 1150.4,
+     "bottom": 1230.4,
+     "left": 434,
+     "right": 514,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   }
+  ],
+  "clock": {
+   "top": 448,
+   "bottom": 712,
+   "left": 148,
+   "right": 652,
+   "height": 264,
+   "fitsAboveDock": true
+  },
+  "install": null,
+  "fabs": [
+   {
+    "fab": "chores-fab",
+    "box": {
+     "top": 640,
+     "bottom": 700,
+     "left": 716,
+     "right": 776,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "chores-fab",
+    "underDockTop": -460
+   },
+   {
+    "fab": "bonus-fab",
+    "box": {
+     "top": 720,
+     "bottom": 780,
+     "left": 716,
+     "right": 776,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "bonus-fab",
+    "underDockTop": -380
+   },
+   {
+    "fab": "exercise-fab",
+    "box": {
+     "top": 800,
+     "bottom": 860,
+     "left": 716,
+     "right": 776,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "exercise-fab",
+    "underDockTop": -300
+   },
+   {
+    "fab": "daily-exercises-fab",
+    "box": {
+     "top": 560,
+     "bottom": 620,
+     "left": 716,
+     "right": 776,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "daily-exercises-fab",
+    "underDockTop": -540
+   }
+  ],
+  "withInstall": {
+   "viewport": {
+    "width": 800,
+    "height": 1280
+   },
+   "dock": {
+    "top": 1160,
+    "bottom": 1280,
+    "left": 0,
+    "right": 800,
+    "height": 120
+   },
+   "dockHeightCss": "120px",
+   "items": [
+    {
+     "name": "Ηλέκτρα",
+     "stars": "⭐ 570",
+     "item": {
+      "top": 1130.4,
+      "bottom": 1309.6,
+      "left": 276,
+      "right": 376,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 1140.4,
+      "bottom": 1240.4,
+      "left": 276,
+      "right": 376,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 1248.4,
+      "bottom": 1272.4,
+      "left": 294.3,
+      "right": 357.7,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 1280.4,
+      "bottom": 1299.6,
+      "left": 305.5,
+      "right": 346.5,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 1150.4,
+      "bottom": 1230.4,
+      "left": 286,
+      "right": 366,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    },
+    {
+     "name": "Ιφιγένεια",
+     "stars": "⭐ 30",
+     "item": {
+      "top": 1130.4,
+      "bottom": 1309.6,
+      "left": 424,
+      "right": 524,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 1140.4,
+      "bottom": 1240.4,
+      "left": 424,
+      "right": 524,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 1248.4,
+      "bottom": 1272.4,
+      "left": 440.4,
+      "right": 507.6,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 1280.4,
+      "bottom": 1299.6,
+      "left": 457,
+      "right": 491,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 1150.4,
+      "bottom": 1230.4,
+      "left": 434,
+      "right": 514,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    }
+   ],
+   "clock": {
+    "top": 448,
+    "bottom": 712,
+    "left": 148,
+    "right": 652,
+    "height": 264,
+    "fitsAboveDock": true
+   },
+   "install": {
+    "top": 16,
+    "bottom": 60,
+    "left": 638,
+    "right": 784,
+    "height": 44
+   },
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "box": {
+      "top": 640,
+      "bottom": 700,
+      "left": 716,
+      "right": 776,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "chores-fab",
+     "underDockTop": -460
+    },
+    {
+     "fab": "bonus-fab",
+     "box": {
+      "top": 720,
+      "bottom": 780,
+      "left": 716,
+      "right": 776,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "bonus-fab",
+     "underDockTop": -380
+    },
+    {
+     "fab": "exercise-fab",
+     "box": {
+      "top": 800,
+      "bottom": 860,
+      "left": 716,
+      "right": 776,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "exercise-fab",
+     "underDockTop": -300
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "box": {
+      "top": 560,
+      "bottom": 620,
+      "left": 716,
+      "right": 776,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab",
+     "underDockTop": -540
+    }
+   ]
+  }
+ },
+ "1024x600": {
+  "viewport": {
+   "width": 1024,
+   "height": 600
+  },
+  "dock": {
+   "top": 480,
+   "bottom": 600,
+   "left": 0,
+   "right": 1024,
+   "height": 120
+  },
+  "dockHeightCss": "120px",
+  "items": [
+   {
+    "name": "Ηλέκτρα",
+    "stars": "⭐ 570",
+    "item": {
+     "top": 450.4,
+     "bottom": 629.6,
+     "left": 388,
+     "right": 488,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 460.4,
+     "bottom": 560.4,
+     "left": 388,
+     "right": 488,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 568.4,
+     "bottom": 592.4,
+     "left": 406.3,
+     "right": 469.7,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 600.4,
+     "bottom": 619.6,
+     "left": 417.5,
+     "right": 458.5,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 470.4,
+     "bottom": 550.4,
+     "left": 398,
+     "right": 478,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   },
+   {
+    "name": "Ιφιγένεια",
+    "stars": "⭐ 30",
+    "item": {
+     "top": 450.4,
+     "bottom": 629.6,
+     "left": 536,
+     "right": 636,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 460.4,
+     "bottom": 560.4,
+     "left": 536,
+     "right": 636,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 568.4,
+     "bottom": 592.4,
+     "left": 552.4,
+     "right": 619.6,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 600.4,
+     "bottom": 619.6,
+     "left": 569,
+     "right": 603,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 470.4,
+     "bottom": 550.4,
+     "left": 546,
+     "right": 626,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   }
+  ],
+  "clock": {
+   "top": 108,
+   "bottom": 372,
+   "left": 260,
+   "right": 764,
+   "height": 264,
+   "fitsAboveDock": true
+  },
+  "install": null,
+  "fabs": [
+   {
+    "fab": "chores-fab",
+    "box": {
+     "top": 300,
+     "bottom": 360,
+     "left": 940,
+     "right": 1000,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "chores-fab",
+    "underDockTop": -120
+   },
+   {
+    "fab": "bonus-fab",
+    "box": {
+     "top": 380,
+     "bottom": 440,
+     "left": 940,
+     "right": 1000,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "bonus-fab",
+    "underDockTop": -40
+   },
+   {
+    "fab": "exercise-fab",
+    "box": {
+     "top": 460,
+     "bottom": 520,
+     "left": 940,
+     "right": 1000,
+     "height": 60
+    },
+    "tapHitsIt": false,
+    "hit": "dock",
+    "underDockTop": 40
+   },
+   {
+    "fab": "daily-exercises-fab",
+    "box": {
+     "top": 220,
+     "bottom": 280,
+     "left": 940,
+     "right": 1000,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "daily-exercises-fab",
+    "underDockTop": -200
+   }
+  ],
+  "withInstall": {
+   "viewport": {
+    "width": 1024,
+    "height": 600
+   },
+   "dock": {
+    "top": 480,
+    "bottom": 600,
+    "left": 0,
+    "right": 1024,
+    "height": 120
+   },
+   "dockHeightCss": "120px",
+   "items": [
+    {
+     "name": "Ηλέκτρα",
+     "stars": "⭐ 570",
+     "item": {
+      "top": 450.4,
+      "bottom": 629.6,
+      "left": 388,
+      "right": 488,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 460.4,
+      "bottom": 560.4,
+      "left": 388,
+      "right": 488,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 568.4,
+      "bottom": 592.4,
+      "left": 406.3,
+      "right": 469.7,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 600.4,
+      "bottom": 619.6,
+      "left": 417.5,
+      "right": 458.5,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 470.4,
+      "bottom": 550.4,
+      "left": 398,
+      "right": 478,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    },
+    {
+     "name": "Ιφιγένεια",
+     "stars": "⭐ 30",
+     "item": {
+      "top": 450.4,
+      "bottom": 629.6,
+      "left": 536,
+      "right": 636,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 460.4,
+      "bottom": 560.4,
+      "left": 536,
+      "right": 636,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 568.4,
+      "bottom": 592.4,
+      "left": 552.4,
+      "right": 619.6,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 600.4,
+      "bottom": 619.6,
+      "left": 569,
+      "right": 603,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 470.4,
+      "bottom": 550.4,
+      "left": 546,
+      "right": 626,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    }
+   ],
+   "clock": {
+    "top": 108,
+    "bottom": 372,
+    "left": 260,
+    "right": 764,
+    "height": 264,
+    "fitsAboveDock": true
+   },
+   "install": {
+    "top": 16,
+    "bottom": 60,
+    "left": 862,
+    "right": 1008,
+    "height": 44
+   },
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "box": {
+      "top": 300,
+      "bottom": 360,
+      "left": 940,
+      "right": 1000,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "chores-fab",
+     "underDockTop": -120
+    },
+    {
+     "fab": "bonus-fab",
+     "box": {
+      "top": 380,
+      "bottom": 440,
+      "left": 940,
+      "right": 1000,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "bonus-fab",
+     "underDockTop": -40
+    },
+    {
+     "fab": "exercise-fab",
+     "box": {
+      "top": 460,
+      "bottom": 520,
+      "left": 940,
+      "right": 1000,
+      "height": 60
+     },
+     "tapHitsIt": false,
+     "hit": "dock",
+     "underDockTop": 40
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "box": {
+      "top": 220,
+      "bottom": 280,
+      "left": 940,
+      "right": 1000,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab",
+     "underDockTop": -200
+    }
+   ]
+  }
+ },
+ "800x480": {
+  "viewport": {
+   "width": 800,
+   "height": 480
+  },
+  "dock": {
+   "top": 360,
+   "bottom": 480,
+   "left": 0,
+   "right": 800,
+   "height": 120
+  },
+  "dockHeightCss": "120px",
+  "items": [
+   {
+    "name": "Ηλέκτρα",
+    "stars": "⭐ 570",
+    "item": {
+     "top": 330.4,
+     "bottom": 509.6,
+     "left": 276,
+     "right": 376,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 340.4,
+     "bottom": 440.4,
+     "left": 276,
+     "right": 376,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 448.4,
+     "bottom": 472.4,
+     "left": 294.3,
+     "right": 357.7,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 480.4,
+     "bottom": 499.6,
+     "left": 305.5,
+     "right": 346.5,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 350.4,
+     "bottom": 430.4,
+     "left": 286,
+     "right": 366,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   },
+   {
+    "name": "Ιφιγένεια",
+    "stars": "⭐ 30",
+    "item": {
+     "top": 330.4,
+     "bottom": 509.6,
+     "left": 424,
+     "right": 524,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 340.4,
+     "bottom": 440.4,
+     "left": 424,
+     "right": 524,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 448.4,
+     "bottom": 472.4,
+     "left": 440.4,
+     "right": 507.6,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 480.4,
+     "bottom": 499.6,
+     "left": 457,
+     "right": 491,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 350.4,
+     "bottom": 430.4,
+     "left": 434,
+     "right": 514,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   }
+  ],
+  "clock": {
+   "top": 48,
+   "bottom": 312,
+   "left": 148,
+   "right": 652,
+   "height": 264,
+   "fitsAboveDock": true
+  },
+  "install": null,
+  "fabs": [
+   {
+    "fab": "chores-fab",
+    "box": {
+     "top": 240,
+     "bottom": 300,
+     "left": 716,
+     "right": 776,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "chores-fab",
+    "underDockTop": -60
+   },
+   {
+    "fab": "bonus-fab",
+    "box": {
+     "top": 320,
+     "bottom": 380,
+     "left": 716,
+     "right": 776,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "bonus-fab",
+    "underDockTop": 20
+   },
+   {
+    "fab": "exercise-fab",
+    "box": {
+     "top": 400,
+     "bottom": 460,
+     "left": 716,
+     "right": 776,
+     "height": 60
+    },
+    "tapHitsIt": false,
+    "hit": "dock",
+    "underDockTop": 100
+   },
+   {
+    "fab": "daily-exercises-fab",
+    "box": {
+     "top": 160,
+     "bottom": 220,
+     "left": 716,
+     "right": 776,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "daily-exercises-fab",
+    "underDockTop": -140
+   }
+  ],
+  "withInstall": {
+   "viewport": {
+    "width": 800,
+    "height": 480
+   },
+   "dock": {
+    "top": 360,
+    "bottom": 480,
+    "left": 0,
+    "right": 800,
+    "height": 120
+   },
+   "dockHeightCss": "120px",
+   "items": [
+    {
+     "name": "Ηλέκτρα",
+     "stars": "⭐ 570",
+     "item": {
+      "top": 330.4,
+      "bottom": 509.6,
+      "left": 276,
+      "right": 376,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 340.4,
+      "bottom": 440.4,
+      "left": 276,
+      "right": 376,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 448.4,
+      "bottom": 472.4,
+      "left": 294.3,
+      "right": 357.7,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 480.4,
+      "bottom": 499.6,
+      "left": 305.5,
+      "right": 346.5,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 350.4,
+      "bottom": 430.4,
+      "left": 286,
+      "right": 366,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    },
+    {
+     "name": "Ιφιγένεια",
+     "stars": "⭐ 30",
+     "item": {
+      "top": 330.4,
+      "bottom": 509.6,
+      "left": 424,
+      "right": 524,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 340.4,
+      "bottom": 440.4,
+      "left": 424,
+      "right": 524,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 448.4,
+      "bottom": 472.4,
+      "left": 440.4,
+      "right": 507.6,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 480.4,
+      "bottom": 499.6,
+      "left": 457,
+      "right": 491,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 350.4,
+      "bottom": 430.4,
+      "left": 434,
+      "right": 514,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    }
+   ],
+   "clock": {
+    "top": 48,
+    "bottom": 312,
+    "left": 148,
+    "right": 652,
+    "height": 264,
+    "fitsAboveDock": true
+   },
+   "install": {
+    "top": 16,
+    "bottom": 60,
+    "left": 638,
+    "right": 784,
+    "height": 44
+   },
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "box": {
+      "top": 240,
+      "bottom": 300,
+      "left": 716,
+      "right": 776,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "chores-fab",
+     "underDockTop": -60
+    },
+    {
+     "fab": "bonus-fab",
+     "box": {
+      "top": 320,
+      "bottom": 380,
+      "left": 716,
+      "right": 776,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "bonus-fab",
+     "underDockTop": 20
+    },
+    {
+     "fab": "exercise-fab",
+     "box": {
+      "top": 400,
+      "bottom": 460,
+      "left": 716,
+      "right": 776,
+      "height": 60
+     },
+     "tapHitsIt": false,
+     "hit": "dock",
+     "underDockTop": 100
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "box": {
+      "top": 160,
+      "bottom": 220,
+      "left": 716,
+      "right": 776,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab",
+     "underDockTop": -140
+    }
+   ]
+  }
+ },
+ "390x844": {
+  "viewport": {
+   "width": 390,
+   "height": 844
+  },
+  "dock": {
+   "top": 724,
+   "bottom": 844,
+   "left": 0,
+   "right": 390,
+   "height": 120
+  },
+  "dockHeightCss": "120px",
+  "items": [
+   {
+    "name": "Ηλέκτρα",
+    "stars": "⭐ 570",
+    "item": {
+     "top": 694.4,
+     "bottom": 873.6,
+     "left": 71,
+     "right": 171,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 704.4,
+     "bottom": 804.4,
+     "left": 71,
+     "right": 171,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 812.4,
+     "bottom": 836.4,
+     "left": 89.3,
+     "right": 152.7,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 844.4,
+     "bottom": 863.6,
+     "left": 100.5,
+     "right": 141.5,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 714.4,
+     "bottom": 794.4,
+     "left": 81,
+     "right": 161,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   },
+   {
+    "name": "Ιφιγένεια",
+    "stars": "⭐ 30",
+    "item": {
+     "top": 694.4,
+     "bottom": 873.6,
+     "left": 219,
+     "right": 319,
+     "height": 179.2
+    },
+    "avatar": {
+     "top": 704.4,
+     "bottom": 804.4,
+     "left": 219,
+     "right": 319,
+     "height": 100
+    },
+    "nameBox": {
+     "top": 812.4,
+     "bottom": 836.4,
+     "left": 235.4,
+     "right": 302.6,
+     "height": 24
+    },
+    "starsBox": {
+     "top": 844.4,
+     "bottom": 863.6,
+     "left": 252,
+     "right": 286,
+     "height": 19.2
+    },
+    "starsOnScreen": false,
+    "hitAtStarsCentre": null,
+    "starsHit": false,
+    "avatarAtLeast44": true,
+    "avatarIcon": {
+     "top": 714.4,
+     "bottom": 794.4,
+     "left": 229,
+     "right": 309,
+     "height": 80,
+     "fontSize": "60px"
+    },
+    "overDockTop": 29.6,
+    "underDockBottom": 29.6
+   }
+  ],
+  "clock": {
+   "top": 296,
+   "bottom": 428,
+   "left": 68,
+   "right": 322,
+   "height": 132,
+   "fitsAboveDock": true
+  },
+  "install": null,
+  "fabs": [
+   {
+    "fab": "chores-fab",
+    "box": {
+     "top": 422,
+     "bottom": 482,
+     "left": 306,
+     "right": 366,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "chores-fab",
+    "underDockTop": -242
+   },
+   {
+    "fab": "bonus-fab",
+    "box": {
+     "top": 502,
+     "bottom": 562,
+     "left": 306,
+     "right": 366,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "bonus-fab",
+    "underDockTop": -162
+   },
+   {
+    "fab": "exercise-fab",
+    "box": {
+     "top": 582,
+     "bottom": 642,
+     "left": 306,
+     "right": 366,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "exercise-fab",
+    "underDockTop": -82
+   },
+   {
+    "fab": "daily-exercises-fab",
+    "box": {
+     "top": 342,
+     "bottom": 402,
+     "left": 306,
+     "right": 366,
+     "height": 60
+    },
+    "tapHitsIt": true,
+    "hit": "daily-exercises-fab",
+    "underDockTop": -322
+   }
+  ],
+  "withInstall": {
+   "viewport": {
+    "width": 390,
+    "height": 844
+   },
+   "dock": {
+    "top": 724,
+    "bottom": 844,
+    "left": 0,
+    "right": 390,
+    "height": 120
+   },
+   "dockHeightCss": "120px",
+   "items": [
+    {
+     "name": "Ηλέκτρα",
+     "stars": "⭐ 570",
+     "item": {
+      "top": 694.4,
+      "bottom": 873.6,
+      "left": 71,
+      "right": 171,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 704.4,
+      "bottom": 804.4,
+      "left": 71,
+      "right": 171,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 812.4,
+      "bottom": 836.4,
+      "left": 89.3,
+      "right": 152.7,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 844.4,
+      "bottom": 863.6,
+      "left": 100.5,
+      "right": 141.5,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 714.4,
+      "bottom": 794.4,
+      "left": 81,
+      "right": 161,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    },
+    {
+     "name": "Ιφιγένεια",
+     "stars": "⭐ 30",
+     "item": {
+      "top": 694.4,
+      "bottom": 873.6,
+      "left": 219,
+      "right": 319,
+      "height": 179.2
+     },
+     "avatar": {
+      "top": 704.4,
+      "bottom": 804.4,
+      "left": 219,
+      "right": 319,
+      "height": 100
+     },
+     "nameBox": {
+      "top": 812.4,
+      "bottom": 836.4,
+      "left": 235.4,
+      "right": 302.6,
+      "height": 24
+     },
+     "starsBox": {
+      "top": 844.4,
+      "bottom": 863.6,
+      "left": 252,
+      "right": 286,
+      "height": 19.2
+     },
+     "starsOnScreen": false,
+     "hitAtStarsCentre": null,
+     "starsHit": false,
+     "avatarAtLeast44": true,
+     "avatarIcon": {
+      "top": 714.4,
+      "bottom": 794.4,
+      "left": 229,
+      "right": 309,
+      "height": 80,
+      "fontSize": "60px"
+     },
+     "overDockTop": 29.6,
+     "underDockBottom": 29.6
+    }
+   ],
+   "clock": {
+    "top": 296,
+    "bottom": 428,
+    "left": 68,
+    "right": 322,
+    "height": 132,
+    "fitsAboveDock": true
+   },
+   "install": {
+    "top": 16,
+    "bottom": 60,
+    "left": 228,
+    "right": 374,
+    "height": 44
+   },
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "box": {
+      "top": 422,
+      "bottom": 482,
+      "left": 306,
+      "right": 366,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "chores-fab",
+     "underDockTop": -242
+    },
+    {
+     "fab": "bonus-fab",
+     "box": {
+      "top": 502,
+      "bottom": 562,
+      "left": 306,
+      "right": 366,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "bonus-fab",
+     "underDockTop": -162
+    },
+    {
+     "fab": "exercise-fab",
+     "box": {
+      "top": 582,
+      "bottom": 642,
+      "left": 306,
+      "right": 366,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "exercise-fab",
+     "underDockTop": -82
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "box": {
+      "top": 342,
+      "bottom": 402,
+      "left": 306,
+      "right": 366,
+      "height": 60
+     },
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab",
+     "underDockTop": -322
+    }
+   ]
+  }
+ }
+}

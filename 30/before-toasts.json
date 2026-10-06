@@ -1,0 +1,698 @@
+{
+ "1280x800": [
+  {
+   "toasts": 1,
+   "toastHeights": [
+    56
+   ],
+   "stackBottom": 72,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 400,
+     "clearOfToasts": 328,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 480,
+     "clearOfToasts": 408,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 560,
+     "clearOfToasts": 488,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 320,
+     "clearOfToasts": 248,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 2,
+   "toastHeights": [
+    56,
+    56
+   ],
+   "stackBottom": 136,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 400,
+     "clearOfToasts": 264,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 480,
+     "clearOfToasts": 344,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 560,
+     "clearOfToasts": 424,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 320,
+     "clearOfToasts": 184,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 3,
+   "toastHeights": [
+    56,
+    56,
+    56
+   ],
+   "stackBottom": 200,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 400,
+     "clearOfToasts": 200,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 480,
+     "clearOfToasts": 280,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 560,
+     "clearOfToasts": 360,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 320,
+     "clearOfToasts": 120,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  }
+ ],
+ "1920x1080": [
+  {
+   "toasts": 1,
+   "toastHeights": [
+    56
+   ],
+   "stackBottom": 72,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 540,
+     "clearOfToasts": 468,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 620,
+     "clearOfToasts": 548,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 700,
+     "clearOfToasts": 628,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 460,
+     "clearOfToasts": 388,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 2,
+   "toastHeights": [
+    56,
+    56
+   ],
+   "stackBottom": 136,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 540,
+     "clearOfToasts": 404,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 620,
+     "clearOfToasts": 484,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 700,
+     "clearOfToasts": 564,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 460,
+     "clearOfToasts": 324,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 3,
+   "toastHeights": [
+    56,
+    56,
+    56
+   ],
+   "stackBottom": 200,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 540,
+     "clearOfToasts": 340,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 620,
+     "clearOfToasts": 420,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 700,
+     "clearOfToasts": 500,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 460,
+     "clearOfToasts": 260,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  }
+ ],
+ "800x1280": [
+  {
+   "toasts": 1,
+   "toastHeights": [
+    56
+   ],
+   "stackBottom": 72,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 640,
+     "clearOfToasts": 568,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 720,
+     "clearOfToasts": 648,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 800,
+     "clearOfToasts": 728,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 560,
+     "clearOfToasts": 488,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 2,
+   "toastHeights": [
+    56,
+    56
+   ],
+   "stackBottom": 136,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 640,
+     "clearOfToasts": 504,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 720,
+     "clearOfToasts": 584,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 800,
+     "clearOfToasts": 664,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 560,
+     "clearOfToasts": 424,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 3,
+   "toastHeights": [
+    56,
+    56,
+    56
+   ],
+   "stackBottom": 200,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 640,
+     "clearOfToasts": 440,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 720,
+     "clearOfToasts": 520,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 800,
+     "clearOfToasts": 600,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 560,
+     "clearOfToasts": 360,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  }
+ ],
+ "1024x600": [
+  {
+   "toasts": 1,
+   "toastHeights": [
+    56
+   ],
+   "stackBottom": 72,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 300,
+     "clearOfToasts": 228,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 380,
+     "clearOfToasts": 308,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 460,
+     "clearOfToasts": 388,
+     "tapHitsIt": false,
+     "hit": "dock"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 220,
+     "clearOfToasts": 148,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 2,
+   "toastHeights": [
+    56,
+    56
+   ],
+   "stackBottom": 136,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 300,
+     "clearOfToasts": 164,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 380,
+     "clearOfToasts": 244,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 460,
+     "clearOfToasts": 324,
+     "tapHitsIt": false,
+     "hit": "dock"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 220,
+     "clearOfToasts": 84,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 3,
+   "toastHeights": [
+    56,
+    56,
+    56
+   ],
+   "stackBottom": 200,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 300,
+     "clearOfToasts": 100,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 380,
+     "clearOfToasts": 180,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 460,
+     "clearOfToasts": 260,
+     "tapHitsIt": false,
+     "hit": "dock"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 220,
+     "clearOfToasts": 20,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  }
+ ],
+ "800x480": [
+  {
+   "toasts": 1,
+   "toastHeights": [
+    56
+   ],
+   "stackBottom": 72,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 240,
+     "clearOfToasts": 168,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 320,
+     "clearOfToasts": 248,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 400,
+     "clearOfToasts": 328,
+     "tapHitsIt": false,
+     "hit": "dock"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 160,
+     "clearOfToasts": 88,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 2,
+   "toastHeights": [
+    56,
+    56
+   ],
+   "stackBottom": 136,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 240,
+     "clearOfToasts": 104,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 320,
+     "clearOfToasts": 184,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 400,
+     "clearOfToasts": 264,
+     "tapHitsIt": false,
+     "hit": "dock"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 160,
+     "clearOfToasts": 24,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 3,
+   "toastHeights": [
+    56,
+    56,
+    56
+   ],
+   "stackBottom": 200,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 240,
+     "clearOfToasts": 40,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 320,
+     "clearOfToasts": 120,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 400,
+     "clearOfToasts": 200,
+     "tapHitsIt": false,
+     "hit": "dock"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 160,
+     "clearOfToasts": -40,
+     "tapHitsIt": false,
+     "hit": "toast toast-rejected probe-toast"
+    }
+   ]
+  }
+ ],
+ "390x844": [
+  {
+   "toasts": 1,
+   "toastHeights": [
+    69.2
+   ],
+   "stackBottom": 85.2,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 422,
+     "clearOfToasts": 336.8,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 502,
+     "clearOfToasts": 416.8,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 582,
+     "clearOfToasts": 496.8,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 342,
+     "clearOfToasts": 256.8,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 2,
+   "toastHeights": [
+    69.2,
+    69.2
+   ],
+   "stackBottom": 162.4,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 422,
+     "clearOfToasts": 259.6,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 502,
+     "clearOfToasts": 339.6,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 582,
+     "clearOfToasts": 419.6,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 342,
+     "clearOfToasts": 179.6,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  },
+  {
+   "toasts": 3,
+   "toastHeights": [
+    69.2,
+    69.2,
+    69.2
+   ],
+   "stackBottom": 239.7,
+   "fabs": [
+    {
+     "fab": "chores-fab",
+     "top": 422,
+     "clearOfToasts": 182.3,
+     "tapHitsIt": true,
+     "hit": "chores-fab"
+    },
+    {
+     "fab": "bonus-fab",
+     "top": 502,
+     "clearOfToasts": 262.3,
+     "tapHitsIt": true,
+     "hit": "bonus-fab"
+    },
+    {
+     "fab": "exercise-fab",
+     "top": 582,
+     "clearOfToasts": 342.3,
+     "tapHitsIt": true,
+     "hit": "exercise-fab"
+    },
+    {
+     "fab": "daily-exercises-fab",
+     "top": 342,
+     "clearOfToasts": 102.3,
+     "tapHitsIt": true,
+     "hit": "daily-exercises-fab"
+    }
+   ]
+  }
+ ]
+}

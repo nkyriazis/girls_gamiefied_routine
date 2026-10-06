@@ -1,0 +1,596 @@
+{
+ "1280x800": {
+  "beforeTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 644,
+   "starsTop": 652,
+   "starsBottom": 679.2
+  },
+  "steps": [
+   {
+    "step": 1,
+    "title": "Γεια σου! 🦉",
+    "lit": "driver-active-element",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 679.2
+   },
+   {
+    "step": 2,
+    "title": "Η ώρα",
+    "lit": "clock-container",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 679.2
+   },
+   {
+    "step": 3,
+    "title": "Η δική σου γωνιά",
+    "lit": "dock-item",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 679.2
+   },
+   {
+    "step": 4,
+    "title": "Ασκήσεις της ημέρας",
+    "lit": "daily-exercises-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 679.2
+   },
+   {
+    "step": 5,
+    "title": "Δουλειές",
+    "lit": "chores-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 679.2
+   },
+   {
+    "step": 6,
+    "title": "Έξτρα",
+    "lit": "bonus-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 679.2
+   },
+   {
+    "step": 7,
+    "title": "Παιχνίδι παρέας",
+    "lit": "exercise-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 679.2
+   },
+   {
+    "step": 8,
+    "title": "Είμαι πάντα εδώ",
+    "lit": "help-btn",
+    "next": "Το βρήκα! 🎉",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 679.2
+   }
+  ],
+  "atKidStep": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 644,
+   "starsTop": 652,
+   "starsBottom": 679.2
+  },
+  "afterTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 644,
+   "starsTop": 652,
+   "starsBottom": 679.2
+  },
+  "maxScrollTop": 0,
+  "maxScrollY": 0
+ },
+ "1920x1080": {
+  "beforeTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 924,
+   "starsTop": 932,
+   "starsBottom": 959.2
+  },
+  "steps": [
+   {
+    "step": 1,
+    "title": "Γεια σου! 🦉",
+    "lit": "driver-active-element",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 959.2
+   },
+   {
+    "step": 2,
+    "title": "Η ώρα",
+    "lit": "clock-container",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 959.2
+   },
+   {
+    "step": 3,
+    "title": "Η δική σου γωνιά",
+    "lit": "dock-item",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 959.2
+   },
+   {
+    "step": 4,
+    "title": "Ασκήσεις της ημέρας",
+    "lit": "daily-exercises-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 959.2
+   },
+   {
+    "step": 5,
+    "title": "Δουλειές",
+    "lit": "chores-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 959.2
+   },
+   {
+    "step": 6,
+    "title": "Έξτρα",
+    "lit": "bonus-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 959.2
+   },
+   {
+    "step": 7,
+    "title": "Παιχνίδι παρέας",
+    "lit": "exercise-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 959.2
+   },
+   {
+    "step": 8,
+    "title": "Είμαι πάντα εδώ",
+    "lit": "help-btn",
+    "next": "Το βρήκα! 🎉",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 959.2
+   }
+  ],
+  "atKidStep": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 924,
+   "starsTop": 932,
+   "starsBottom": 959.2
+  },
+  "afterTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 924,
+   "starsTop": 932,
+   "starsBottom": 959.2
+  },
+  "maxScrollTop": 0,
+  "maxScrollY": 0
+ },
+ "800x1280": {
+  "beforeTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 1124,
+   "starsTop": 1132,
+   "starsBottom": 1159.2
+  },
+  "steps": [
+   {
+    "step": 1,
+    "title": "Γεια σου! 🦉",
+    "lit": "driver-active-element",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 1159.2
+   },
+   {
+    "step": 2,
+    "title": "Η ώρα",
+    "lit": "clock-container",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 1159.2
+   },
+   {
+    "step": 3,
+    "title": "Η δική σου γωνιά",
+    "lit": "dock-item",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 1159.2
+   },
+   {
+    "step": 4,
+    "title": "Ασκήσεις της ημέρας",
+    "lit": "daily-exercises-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 1159.2
+   },
+   {
+    "step": 5,
+    "title": "Δουλειές",
+    "lit": "chores-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 1159.2
+   },
+   {
+    "step": 6,
+    "title": "Έξτρα",
+    "lit": "bonus-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 1159.2
+   },
+   {
+    "step": 7,
+    "title": "Παιχνίδι παρέας",
+    "lit": "exercise-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 1159.2
+   },
+   {
+    "step": 8,
+    "title": "Είμαι πάντα εδώ",
+    "lit": "help-btn",
+    "next": "Το βρήκα! 🎉",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 1159.2
+   }
+  ],
+  "atKidStep": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 1124,
+   "starsTop": 1132,
+   "starsBottom": 1159.2
+  },
+  "afterTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 1124,
+   "starsTop": 1132,
+   "starsBottom": 1159.2
+  },
+  "maxScrollTop": 0,
+  "maxScrollY": 0
+ },
+ "1024x600": {
+  "beforeTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 469,
+   "starsTop": 477,
+   "starsBottom": 501.8
+  },
+  "steps": [
+   {
+    "step": 1,
+    "title": "Γεια σου! 🦉",
+    "lit": "driver-active-element",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 501.8
+   },
+   {
+    "step": 2,
+    "title": "Η ώρα",
+    "lit": "clock-container",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 501.8
+   },
+   {
+    "step": 3,
+    "title": "Η δική σου γωνιά",
+    "lit": "dock-item",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 501.8
+   },
+   {
+    "step": 4,
+    "title": "Ασκήσεις της ημέρας",
+    "lit": "daily-exercises-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 501.8
+   },
+   {
+    "step": 5,
+    "title": "Δουλειές",
+    "lit": "chores-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 501.8
+   },
+   {
+    "step": 6,
+    "title": "Έξτρα",
+    "lit": "bonus-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 501.8
+   },
+   {
+    "step": 7,
+    "title": "Παιχνίδι παρέας",
+    "lit": "exercise-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 501.8
+   },
+   {
+    "step": 8,
+    "title": "Είμαι πάντα εδώ",
+    "lit": "help-btn",
+    "next": "Το βρήκα! 🎉",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 501.8
+   }
+  ],
+  "atKidStep": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 469,
+   "starsTop": 477,
+   "starsBottom": 501.8
+  },
+  "afterTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 469,
+   "starsTop": 477,
+   "starsBottom": 501.8
+  },
+  "maxScrollTop": 0,
+  "maxScrollY": 0
+ },
+ "800x480": {
+  "beforeTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 364,
+   "starsTop": 372,
+   "starsBottom": 396.8
+  },
+  "steps": [
+   {
+    "step": 1,
+    "title": "Γεια σου! 🦉",
+    "lit": "driver-active-element",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 396.8
+   },
+   {
+    "step": 2,
+    "title": "Η ώρα",
+    "lit": "clock-container",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 396.8
+   },
+   {
+    "step": 3,
+    "title": "Η δική σου γωνιά",
+    "lit": "dock-item",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 396.8
+   },
+   {
+    "step": 4,
+    "title": "Ασκήσεις της ημέρας",
+    "lit": "daily-exercises-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 396.8
+   },
+   {
+    "step": 5,
+    "title": "Δουλειές",
+    "lit": "chores-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 396.8
+   },
+   {
+    "step": 6,
+    "title": "Έξτρα",
+    "lit": "bonus-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 396.8
+   },
+   {
+    "step": 7,
+    "title": "Παιχνίδι παρέας",
+    "lit": "exercise-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 396.8
+   },
+   {
+    "step": 8,
+    "title": "Είμαι πάντα εδώ",
+    "lit": "help-btn",
+    "next": "Το βρήκα! 🎉",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 396.8
+   }
+  ],
+  "atKidStep": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 364,
+   "starsTop": 372,
+   "starsBottom": 396.8
+  },
+  "afterTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 364,
+   "starsTop": 372,
+   "starsBottom": 396.8
+  },
+  "maxScrollTop": 0,
+  "maxScrollY": 0
+ },
+ "390x844": {
+  "beforeTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 688,
+   "starsTop": 696,
+   "starsBottom": 723.2
+  },
+  "steps": [
+   {
+    "step": 1,
+    "title": "Γεια σου! 🦉",
+    "lit": "driver-active-element",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 723.2
+   },
+   {
+    "step": 2,
+    "title": "Η ώρα",
+    "lit": "clock-container",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 723.2
+   },
+   {
+    "step": 3,
+    "title": "Η δική σου γωνιά",
+    "lit": "dock-item",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 723.2
+   },
+   {
+    "step": 4,
+    "title": "Ασκήσεις της ημέρας",
+    "lit": "daily-exercises-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 723.2
+   },
+   {
+    "step": 5,
+    "title": "Δουλειές",
+    "lit": "chores-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 723.2
+   },
+   {
+    "step": 6,
+    "title": "Έξτρα",
+    "lit": "bonus-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 723.2
+   },
+   {
+    "step": 7,
+    "title": "Παιχνίδι παρέας",
+    "lit": "exercise-fab",
+    "next": "Επόμενο ▶",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 723.2
+   },
+   {
+    "step": 8,
+    "title": "Είμαι πάντα εδώ",
+    "lit": "help-btn",
+    "next": "Το βρήκα! 🎉",
+    "dashboardScrollTop": 0,
+    "windowScrollY": 0,
+    "starsBottom": 723.2
+   }
+  ],
+  "atKidStep": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 688,
+   "starsTop": 696,
+   "starsBottom": 723.2
+  },
+  "afterTour": {
+   "dashboardScrollTop": 0,
+   "windowScrollY": 0,
+   "dockTop": 688,
+   "starsTop": 696,
+   "starsBottom": 723.2
+  },
+  "maxScrollTop": 0,
+  "maxScrollY": 0
+ }
+}
