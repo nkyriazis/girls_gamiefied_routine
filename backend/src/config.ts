@@ -1,7 +1,7 @@
-import { readFileSync, renameSync, unwatchFile, watchFile, writeFileSync } from 'fs';
+import { chownSync, constants, copyFileSync, existsSync, readFileSync, renameSync, statSync, unwatchFile, watchFile, writeFileSync } from 'fs';
 import path from 'path';
 import { DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
-import { DATA_FILE, EXERCISES_FILE } from './paths';
+import { DATA_EXAMPLE_FILE, DATA_FILE, EXERCISES_EXAMPLE_FILE, EXERCISES_FILE } from './paths';
 import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 
 // ============================================================================
@@ -45,8 +45,7 @@ export class ConfigFile<T> {
   constructor(
     readonly file: string,
     private readonly schema: typeof dataSchema,
-    private readonly fallback: T,
-    private readonly optional: boolean
+    private readonly fallback: T
   ) {
     this.value = deepFreeze(structuredClone(fallback));
   }
@@ -69,12 +68,8 @@ export class ConfigFile<T> {
     try {
       text = readFileSync(this.file, 'utf-8');
     } catch (err) {
-      if (this.optional && (err as NodeJS.ErrnoException).code === 'ENOENT') {
-        text = JSON.stringify(this.fallback);
-      } else {
-        this.error = { message: `Cannot read ${path.basename(this.file)}: ${(err as Error).message}`, errors: [] };
-        return 'invalid';
-      }
+      this.error = { message: `Cannot read ${path.basename(this.file)}: ${(err as Error).message}`, errors: [] };
+      return 'invalid';
     }
     if (text === this.text) {
       // Back to the live version after a broken edit: the error is resolved.
@@ -116,8 +111,46 @@ export class ConfigFile<T> {
   }
 }
 
-export const dataConfig = new ConfigFile<DataConfig>(DATA_FILE, dataSchema, EMPTY_DATA, false);
-export const exercisesConfig = new ConfigFile<ExercisesConfig>(EXERCISES_FILE, exercisesSchema, EMPTY_EXERCISES, true);
+// Both files are required: a missing one is an error the parents see, never a silent empty config.
+export const dataConfig = new ConfigFile<DataConfig>(DATA_FILE, dataSchema, EMPTY_DATA);
+export const exercisesConfig = new ConfigFile<ExercisesConfig>(EXERCISES_FILE, exercisesSchema, EMPTY_EXERCISES);
+
+const EXAMPLES = [
+  { file: DATA_FILE, example: DATA_EXAMPLE_FILE },
+  { file: EXERCISES_FILE, example: EXERCISES_EXAMPLE_FILE }
+];
+
+/**
+ * First start: create each missing config file from its example, but only on a database with
+ * no history. A live install that lost its file (history, no data.json) gets nothing: running
+ * the family on the example would hide it, so the file stays missing and the parents see the
+ * error until it is restored. Never overwrites a file. The new file belongs to its directory's
+ * owner (the backend runs as root in the image; the host's files stay the host user's).
+ */
+export function seedConfig(hasHistory: boolean, files = EXAMPLES): { seeded: string[]; missing: string[] } {
+  const seeded: string[] = [], missing: string[] = [];
+  for (const { file, example } of files) {
+    if (existsSync(file)) continue;
+    if (hasHistory) {
+      missing.push(file);
+      continue;
+    }
+    try {
+      copyFileSync(example, file, constants.COPYFILE_EXCL);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'EEXIST') continue;
+      throw err;
+    }
+    try {
+      const dir = statSync(path.dirname(file));
+      chownSync(file, dir.uid, dir.gid);
+    } catch {
+      // not root: the file is already ours
+    }
+    seeded.push(file);
+  }
+  return { seeded, missing };
+}
 
 /** The live data.json config. */
 export function config(): DataConfig {

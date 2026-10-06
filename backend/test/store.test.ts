@@ -30,6 +30,19 @@ test('records round-trip exactly, including optional, boolean and JSON fields', 
   assert.equal(store.choreInstances.get('missing'), undefined);
 });
 
+test('hasHistory: a new database has none; any star, run, log or seen tour is history', () => {
+  const { store } = openStore();
+  assert.equal(store.hasHistory(), false);
+  store.setMeta('legacyImportedAt', 'x');      // bookkeeping is not history
+  assert.equal(store.hasHistory(), false);
+  store.setStars('u1', 0);
+  assert.equal(store.hasHistory(), true);
+
+  const other = openStore().store;
+  other.appendLog({ id: uuid(1), timestamp: 't', type: 'X', details: {} });
+  assert.equal(other.hasHistory(), true);
+});
+
 test('put replaces, insertNew never overwrites', () => {
   const { store } = openStore();
   const spending = { id: uuid(1), userId: 'u1', rewardId: 'r', cost: 5, createdAt: 't', status: 'pending' as const };

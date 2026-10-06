@@ -40,6 +40,7 @@ writeFileSync(path.join(pools, 'e.json'), JSON.stringify({
   exercises: [1, 2, 3].map(n => ({ id: `e-${n}`, type: 'number-input', category: 'Μαθηματικά', title: 'x', question: `${n} + ${n}`, correctValue: 2 * n, stars: 1 }))
 }));
 writeFileSync(path.join(dir, 'data.json'), JSON.stringify(cfg));
+writeFileSync(path.join(dir, 'exercises.json'), JSON.stringify({ exercises: [] }));
 process.env.DATA_FILE = path.join(dir, 'data.json');
 process.env.EXERCISES_FILE = path.join(dir, 'exercises.json');
 process.env.DB_FILE = path.join(dir, 'routine.db');
