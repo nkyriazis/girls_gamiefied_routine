@@ -1,0 +1,6 @@
+With 135 more purchases and gifts decided 31-120 days ago (dev.sh history 120):
+  in the database: 105 purchases, 62 gifts (135 decided over 30 days ago)
+  in STATE:        35 purchases, 17 gifts (20 decided over 30 days ago:
+                   10 rewards given to u1, 10 rewards given to u2)
+  one STATE: 32.1 KB as text; its spendings + starTransfers 9.0 KB
+Ιστορικό read 6 pages over GET /api/history (the first one again on each STATE): first, first, first, before 2026-09-30T11:19, before 2026-08-22T12:04, before 2026-08-02T12:04

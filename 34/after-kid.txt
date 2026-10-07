@@ -1,0 +1,9 @@
+After tapping Ιφιγένεια (from 0.7 s):
+   1200 ms  no empty message, 0 rows, no «Περισσότερα»
+   1100 ms  no empty message, 17 rows (first: Ηλέκτρα → Ιφιγένεια), no «Περισσότερα»
+After tapping Όλα:
+   2000 ms  no empty message, 0 rows, no «Περισσότερα»
+   1000 ms  no empty message, 30 rows (first: Ηλέκτρα: Γλυκό), «Περισσότερα» shown
+After tapping Ηλέκτρα, whose page the test answers empty:
+   2000 ms  no empty message, 0 rows, no «Περισσότερα»
+   1000 ms  «Δεν υπάρχει ακόμη ιστορικό.» shown, 0 rows, no «Περισσότερα»

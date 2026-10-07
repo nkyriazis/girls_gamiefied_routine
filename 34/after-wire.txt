@@ -1,0 +1,6 @@
+:3000                  extension: permessage-deflate
+                       first frame (opcode 1, {"type":"STATE"…): 7.4 KB on the wire, 28.5 KB as text (deflated)
+:5173                  extension: permessage-deflate
+                       first frame (opcode 1, {"type":"STATE"…): 7.4 KB on the wire, 28.5 KB as text (deflated)
+:8089 (prod nginx.conf) extension: permessage-deflate
+                       first frame (opcode 1, {"type":"STATE"…): 7.4 KB on the wire, 28.5 KB as text (deflated)

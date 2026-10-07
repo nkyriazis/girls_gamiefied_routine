@@ -1,0 +1,15 @@
+STATE with 30 days of history: 8.7 KB (47 records)
+STATE with 1 year:            8.7 KB
+STATE with 3 years:           8.7 KB (47 records)
+✔ a pending gift or purchase is in STATE whatever its age (3.771589ms)
+✔ history older than the window does not ride along in STATE (1.192785ms)
+✔ records carry ids, not copies of the kids and the reward (0.381609ms)
+✔ STATE from three years of busy history stays under 16 KB (0.278374ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4093.172958
