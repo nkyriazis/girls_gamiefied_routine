@@ -130,8 +130,9 @@ test('every shipped pool is valid, and every problem can be solved step by step'
 // The story painted in whole sentences: each word of a sentence takes the colour of the phrase in it
 // nearest to it; a sentence of unneeded facts only, ⚪ (on "paint-all") or nothing; with `factless`, the
 // sentences with no fact in them 🟢 too. A sentence that holds a needed and an unneeded fact is
-// painted phrase by phrase: around an unneeded fact is too much (33 Γ΄ and 224 Ε΄ problems).
-function sentencePainting(ex: ProblemExercise, unneeded: boolean, factless = false) {
+// painted phrase by phrase, or with `whole`, whole but the unneeded fact: a word nearest the unneeded
+// fact takes the colour of the needed phrase nearest to it.
+function sentencePainting(ex: ProblemExercise, unneeded: boolean, factless = false, whole = false) {
   const read = ex.steps.find(s => s.kind === 'tag' || s.kind === 'paint')!;
   const targets = read.kind === 'paint' ? read.targets : targetsFromMarks(ex.story);
   const v = { known: [] as number[], sought: [] as number[], extra: [] as number[] };
@@ -144,7 +145,10 @@ function sentencePainting(ex: ProblemExercise, unneeded: boolean, factless = fal
     for (let w = a; w <= b; w++) {
       if (!ts.length) { if (factless) v.known.push(w); continue; }
       const t = nearest(w, ts);
-      if (mixed && dist(w, t) > 0) continue;
+      if (mixed && dist(w, t) > 0) {
+        if (whole) v[nearest(w, needed).role as 'known' | 'sought'].push(w);
+        continue;
+      }
       if (t.role !== 'extra') v[t.role].push(w);
       else if (unneeded) v.extra.push(w);
     }
@@ -181,6 +185,21 @@ test('every shipped problem: whole sentences pass on both rungs; the whole story
     problems++;
   }
   assert.ok(problems > 1000 && withExtra > 1000, `${problems} problems, ${withExtra} with an unneeded fact`);
+});
+
+test('every shipped problem: a sentence with both kinds painted whole but the unneeded fact passes on both rungs (#50)', () => {
+  // Only the clause holding the unneeded fact is strict (paintStrays), so this right painting passes everywhere
+  const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
+  let problems = 0;
+  for (const ex of shipped.flatMap(p => p.exercises)) {
+    if (ex.type !== 'problem') continue;
+    const i = ex.steps.findIndex(s => s.kind === 'tag' || s.kind === 'paint');
+    for (const reading of ['paint', 'paint-all'] as const) {
+      assert.deepEqual(db.checkProblemStep(ex, i, sentencePainting(ex, reading === 'paint-all', false, true), reading), { correct: true }, `${ex.id} whole sentences but the unneeded fact, on ${reading}`);
+    }
+    problems++;
+  }
+  assert.ok(problems > 1000, `${problems} problems`);
 });
 
 test('every shipped problem on paint-all: the whole story ⚪ with the needed phrases painted over it is too much (#50)', () => {

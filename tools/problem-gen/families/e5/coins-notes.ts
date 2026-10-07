@@ -61,7 +61,7 @@ const SETTINGS: Setting[] = [
       item('ένα φυτό', 'το φυτό', 8, 20), item('ένα παζλ', 'το παζλ', 10, 25)],
     open: [
       (coins, p, noise) => `Στο ταμείο της τάξης ${p.gen} μαζεύτηκαν, ${noise}, ${coins}.`,
-      (coins, p, noise) => `Στην τάξη ${p.gen} μάζεψαν στο ταμείο ${coins} ${noise}.`,
+      (coins, p, noise) => `Στην τάξη ${p.gen}, ${noise}, μάζεψαν στο ταμείο ${coins}.`,
     ],
     noise: n => `μέσα σε ${n + 2} μήνες`,
     buyer: () => 'Με αυτά τα παιδιά αγοράζουν', plural: true,
