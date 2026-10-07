@@ -1,0 +1,185 @@
+audit of the pool as written: 0 errors
+  ✔ g3-lang-rimata-ousiastika-001 key → «Πάολα»: the key is «Πάολα», the rule's answer «γράφει»
+  ✔ g3-lang-rimata-ousiastika-001 key → «άσκηση»: the key is «άσκηση», the rule's answer «γράφει»
+  ✔ g3-lang-rimata-ousiastika-002 key → «Ελένη»: the key is «Ελένη», the rule's answer «ρωτά»
+  ✔ g3-lang-rimata-ousiastika-002 key → «Θοδωρή»: the right option «Θοδωρή» is the only longest: it gives itself away
+  ✔ g3-lang-rimata-ousiastika-003 key → «τα»: the key is «τα», the rule's answer «τετράδια»
+  ✔ g3-lang-rimata-ousiastika-003 key → «διορθώνει»: the right option «διορθώνει» is the only longest: it gives itself away
+  ✔ g3-lang-rimata-ousiastika-004 key → «κότα»: the key is «κότα», the rule's answer «τρώει»
+  ✔ g3-lang-rimata-ousiastika-004 key → «σκουλήκι»: the right option «σκουλήκι» is the only longest: it gives itself away
+  ✔ g3-lang-rimata-ousiastika-005 key → true: key true, the lexicon says false
+  ✔ g3-lang-genos-001 key → «μαθήματα»: the right option «μαθήματα» is the only longest: it gives itself away
+  ✔ g3-lang-genos-001 key → «ομάδες»: the key is «ομάδες», the rule's answer «μαθητές»
+  ✔ g3-lang-genos-002 key → «τάξεις»: the key is «τάξεις», the rule's answer «θρανία»
+  ✔ g3-lang-genos-002 key → «δάσκαλοι»: the right option «δάσκαλοι» is the only longest: it gives itself away
+  ✔ g3-lang-genos-003 key → «γραφεία»: the key is «γραφεία», the rule's answer «αίθουσες»
+  ✔ g3-lang-genos-003 key → «διευθυντές»: the right option «διευθυντές» is the only longest: it gives itself away
+  ✔ g3-lang-arithmos-001 key → «μάθημα»: the key is «μάθημα», the rule's answer «μαθήματα»
+  ✔ g3-lang-arithmos-001 key → «μαθημάτων»: the right option «μαθημάτων» is the only longest: it gives itself away
+  ✔ g3-lang-arithmos-002 key → «διαλειμμάτων»: the key is «διαλειμμάτων», the rule's answer «διαλείμματος»
+  ✔ g3-lang-arithmos-002 key → «διάλειμμα»: the key is «διάλειμμα», the rule's answer «διαλείμματος»
+  ✔ g3-lang-arithmos-002 key → «διαλείμματα»: the key is «διαλείμματα», the rule's answer «διαλείμματος»
+  ✔ g3-lang-arithmos-003 key → «Γεωγραφιών»: the key is «Γεωγραφιών», the rule's answer «Γεωγραφίας»
+  ✔ g3-lang-arithmos-003 key → «Γεωγραφία»: the key is «Γεωγραφία», the rule's answer «Γεωγραφίας»
+  ✔ g3-lang-alfavitiki-001 swap «αίθουσα» and «αυλή»: «αυλή» does not come before «αίθουσα»
+  ✔ g3-lang-alfavitiki-001 swap «αυλή» and «κυλικείο»: «κυλικείο» does not come before «αυλή»
+  ✔ g3-lang-alfavitiki-001 swap «κυλικείο» and «σχολείο»: «σχολείο» does not come before «κυλικείο»
+  ✔ g3-lang-alfavitiki-001 swap «σχολείο» and «τάξη»: «τάξη» does not come before «σχολείο»
+  ✔ g3-lang-alfavitiki-002 swap «κασετίνα» and «κιμωλία»: «κιμωλία» does not come before «κασετίνα»
+  ✔ g3-lang-alfavitiki-002 swap «κιμωλία» and «κόλλα»: «κόλλα» does not come before «κιμωλία»
+  ✔ g3-lang-alfavitiki-002 swap «κόλλα» and «κυλικείο»: «κυλικείο» does not come before «κόλλα»
+  ✔ g3-lang-alfavitiki-003 swap «γη» and «ενώνω»: «ενώνω» does not come before «γη»
+  ✔ g3-lang-alfavitiki-003 swap «ενώνω» and «θάλασσα»: «θάλασσα» does not come before «ενώνω»
+  ✔ g3-lang-alfavitiki-003 swap «θάλασσα» and «πολιτεία»: «πολιτεία» does not come before «θάλασσα»
+  ✔ g3-lang-alfavitiki-003 swap «πολιτεία» and «ποτάμι»: «ποτάμι» does not come before «πολιτεία»
+  ✔ g3-lang-alfavitiki-004 swap «αέρας» and «βουνό»: «βουνό» does not come before «αέρας»
+  ✔ g3-lang-alfavitiki-004 swap «βουνό» and «βράχος»: «βράχος» does not come before «βουνό»
+  ✔ g3-lang-alfavitiki-004 swap «βράχος» and «γκρεμός»: «γκρεμός» does not come before «βράχος»
+  ✔ g3-lang-evdomada-001 swap «Δευτέρα» and «Τετάρτη»: not in order: Τετάρτη, Δευτέρα, Παρασκευή, Σάββατο
+  ✔ g3-lang-evdomada-001 swap «Τετάρτη» and «Παρασκευή»: not in order: Δευτέρα, Παρασκευή, Τετάρτη, Σάββατο
+  ✔ g3-lang-evdomada-001 swap «Παρασκευή» and «Σάββατο»: not in order: Δευτέρα, Τετάρτη, Σάββατο, Παρασκευή
+  ✔ g3-lang-kyria-onomata-001 key → «Κιριακή»: the key is «Κιριακή», the rule's answer «Κυριακή»
+  ✔ g3-lang-kyria-onomata-001 key → «κιριακή»: the key is «κιριακή», the rule's answer «Κυριακή»
+  ✔ g3-lang-kyria-onomata-001 key → «κυριακή»: the key is «κυριακή», the rule's answer «Κυριακή»
+  ✔ g3-lang-kyria-onomata-002 key → «οκτοβρίου»: the key is «οκτοβρίου», the rule's answer «Οκτωβρίου»
+  ✔ g3-lang-kyria-onomata-002 key → «Οκτοβρίου»: the key is «Οκτοβρίου», the rule's answer «Οκτωβρίου»
+  ✔ g3-lang-kyria-onomata-002 key → «οκτωβρίου»: the key is «οκτωβρίου», the rule's answer «Οκτωβρίου»
+  ✔ g3-lang-kyria-onomata-003 key → «σύφνο»: the key is «σύφνο», the rule's answer «Σίφνο»
+  ✔ g3-lang-kyria-onomata-003 key → «Σύφνο»: the key is «Σύφνο», the rule's answer «Σίφνο»
+  ✔ g3-lang-kyria-onomata-003 key → «σίφνο»: the key is «σίφνο», the rule's answer «Σίφνο»
+  ✔ g3-lang-kyria-onomata-004 key → «θράκης»: the key is «θράκης», the rule's answer «Θράκης»
+  ✔ g3-lang-kyria-onomata-004 key → «θράκις»: the key is «θράκις», the rule's answer «Θράκης»
+  ✔ g3-lang-kyria-onomata-004 key → «Θράκις»: the key is «Θράκις», the rule's answer «Θράκης»
+  ✔ g3-lang-kyria-onomata-005 key → false: key false, the lexicon says true
+  ✔ g3-lang-kyria-onomata-006 key → true: key true, the lexicon says false
+  ✔ g3-lang-eimai-001 key → «είστε»: the key is «είστε», the rule's answer «είμαστε»
+  ✔ g3-lang-eimai-001 key → «είμασται»: the right option «είμασται» is the only longest: it gives itself away
+  ✔ g3-lang-eimai-001 key → «είσται»: the key is «είσται», the rule's answer «είμαστε»
+  ✔ g3-lang-eimai-002 key → «είσται»: the key is «είσται», the rule's answer «είστε»
+  ✔ g3-lang-eimai-002 key → «είμαστε»: the key is «είμαστε», the rule's answer «είστε»
+  ✔ g3-lang-eimai-002 key → «είμασται»: the right option «είμασται» is the only longest: it gives itself away
+  ✔ g3-lang-eimai-003 key → «είστε»: the key is «είστε», the rule's answer «είσαι»
+  ✔ g3-lang-eimai-003 key → «είσε»: the key is «είσε», the rule's answer «είσαι»
+  ✔ g3-lang-eimai-003 key → «είσται»: the right option «είσται» is the only longest: it gives itself away
+  ✔ g3-lang-rimata-o-mai-001 key → «κρύβετε»: the key is «κρύβετε», the rule's answer «κρύβεται»
+  ✔ g3-lang-rimata-o-mai-001 key → «κρύβεσται»: the right option «κρύβεσται» is the only longest: it gives itself away
+  ✔ g3-lang-rimata-o-mai-001 key → «κρύβεστε»: the key is «κρύβεστε», the rule's answer «κρύβεται»
+  ✔ g3-lang-rimata-o-mai-002 key → «χτενιζόμαστε»: the key is «χτενιζόμαστε», the rule's answer «χτενίζεστε»
+  ✔ g3-lang-rimata-o-mai-002 key → «χτενιζόμασται»: the right option «χτενιζόμασται» is the only longest: it gives itself away
+  ✔ g3-lang-rimata-o-mai-002 key → «χτενίζεσται»: the key is «χτενίζεσται», the rule's answer «χτενίζεστε»
+  ✔ g3-lang-rimata-o-mai-003 key → «περνάμε»: the key is «περνάμε», the rule's answer «περνάτε»
+  ✔ g3-lang-rimata-o-mai-003 key → «περνάται»: the key is «περνάται», the rule's answer «περνάτε»
+  ✔ g3-lang-rimata-o-mai-003 key → «περνάμαι»: the key is «περνάμαι», the rule's answer «περνάτε»
+  ✔ g3-lang-rimata-o-mai-004 key → «φοβούντε»: the key is «φοβούντε», the rule's answer «φοβούνται»
+  ✔ g3-lang-rimata-o-mai-004 key → «φοβόμασται»: the right option «φοβόμασται» is the only longest: it gives itself away
+  ✔ g3-lang-rimata-o-mai-004 key → «φοβόμαστε»: the key is «φοβόμαστε», the rule's answer «φοβούνται»
+  ✔ g3-lang-antitheta-001 key → «ευχαριστημένος»: the right option «ευχαριστημένος» is the only longest: it gives itself away
+  ✔ g3-lang-antitheta-001 key → «πονηρός»: the key is «πονηρός», the rule's answer «λυπημένος»
+  ✔ g3-lang-antitheta-002 key → «τραγουδάει»: the right option «τραγουδάει» is the only longest: it gives itself away
+  ✔ g3-lang-antitheta-002 key → «χορεύει»: the key is «χορεύει», the rule's answer «κλαίει»
+  ✔ g3-lang-antitheta-003 key → «στριφογυρνάει»: the right option «στριφογυρνάει» is the only longest: it gives itself away
+  ✔ g3-lang-antitheta-003 key → «χαμογελάει»: the key is «χαμογελάει», the rule's answer «φανερώνεται»
+  ✔ g3-lang-fraseis-001 key → false: key false, the lexicon says true
+  ✔ g3-lang-fraseis-002 key → true: key true, the lexicon says false
+  ✔ g3-lang-fraseis-003 key → false: key false, the lexicon says true
+  ✔ g3-lang-fraseis-004 key → true: key true, the lexicon says false
+  ✔ g3-lang-fraseis-005 key → «Μίλησα για τη θάλασσα.»: the key is «Μίλησα για τη θάλασσα.», the rule's answer «Δεν έδωσα σωστή απάντηση.»
+  ✔ g3-lang-fraseis-005 key → «Απάντησα σωστά και τέλεια.»: the right option «Απάντησα σωστά και τέλεια.» is the only longest: it gives itself away
+  ✔ g3-lang-geniki-001 key → «τις»: the key is «τις», the rule's answer «της»
+  ✔ g3-lang-geniki-001 key → «των»: the key is «των», the rule's answer «της»
+  ✔ g3-lang-geniki-002 key → «παππούδων»: the right option «παππούδων» is the only longest: it gives itself away
+  ✔ g3-lang-geniki-002 key → «παππούς»: the key is «παππούς», the rule's answer «παππού»
+  ✔ g3-lang-geniki-003 key → «κορών»: the key is «κορών», the rule's answer «κόρης»
+  ✔ g3-lang-geniki-003 key → «κόρη»: the key is «κόρη», the rule's answer «κόρης»
+  ✔ g3-lang-epitheta-001 key → «πρόσχαρος»: the right option «πρόσχαρος» is the only longest: it gives itself away
+  ✔ g3-lang-epitheta-001 key → «πρόσχαρη»: the key is «πρόσχαρη», the rule's answer «πρόσχαρο»
+  ✔ g3-lang-epitheta-002 key → «ευγενικούς»: the right option «ευγενικούς» is the only longest: it gives itself away
+  ✔ g3-lang-epitheta-002 key → «ευγενικές»: the key is «ευγενικές», the rule's answer «ευγενικοί»
+  ✔ g3-lang-epitheta-003 key → «πολύχρωμα»: the key is «πολύχρωμα», the rule's answer «πολύχρωμες»
+  ✔ g3-lang-epitheta-003 key → «πολύχρωμους»: the right option «πολύχρωμους» is the only longest: it gives itself away
+  ✔ g3-lang-geitonia-001 key → «γειτονιά»: the key is «γειτονιά», the rule's answer «γειτονικό»
+  ✔ g3-lang-geitonia-001 key → «γείτονα»: the key is «γείτονα», the rule's answer «γειτονικό»
+  ✔ g3-lang-geitonia-001 key → «γειτονικός»: the right option «γειτονικός» is the only longest: it gives itself away
+  ✔ g3-lang-geitonia-002 key → «γειτονόπουλο»: the key is «γειτονόπουλο», the rule's answer «γειτονόπουλα»
+  ✔ g3-lang-geitonia-002 key → «γειτονιές»: the key is «γειτονιές», the rule's answer «γειτονόπουλα»
+  ✔ g3-lang-oikogeneies-001 key → «μάτια»: the key is «μάτια», the rule's answer «μάθημα»
+  ✔ g3-lang-oikogeneies-001 key → «μαλλιά»: the key is «μαλλιά», the rule's answer «μάθημα»
+  ✔ g3-lang-oikogeneies-002 key → «ψάρι»: the key is «ψάρι», the rule's answer «κολύμπι»
+  ✔ g3-lang-oikogeneies-002 key → «ψαρεύω»: the key is «ψαρεύω», the rule's answer «κολύμπι»
+  ✔ g3-lang-oikogeneies-002 key → «ψαρόβαρκα»: the right option «ψαρόβαρκα» is the only longest: it gives itself away
+  ✔ g3-lang-oikogeneies-003 key → «συλλεκτικός»: the right option «συλλεκτικός» is the only longest: it gives itself away
+  ✔ g3-lang-oikogeneies-003 key → «συλλέκτης»: the key is «συλλέκτης», the rule's answer «σχολείο»
+  ✔ g3-lang-oikogeneies-003 key → «συλλογή»: the key is «συλλογή», the rule's answer «σχολείο»
+  ✔ g3-lang-aitiatiki-001 key → «σκίουροι»: the key is «σκίουροι», the rule's answer «σκίουρο»
+  ✔ g3-lang-aitiatiki-001 key → «σκίουρος»: the key is «σκίουρος», the rule's answer «σκίουρο»
+  ✔ g3-lang-aitiatiki-002 key → «ακρίδας»: the key is «ακρίδας», the rule's answer «ακρίδες»
+  ✔ g3-lang-aitiatiki-002 key → «ακρίδα»: the key is «ακρίδα», the rule's answer «ακρίδες»
+  ✔ g3-lang-aoristo-arthro-001 key → «έναν»: the key is «έναν», the rule's answer «ένας»
+  ✔ g3-lang-aoristo-arthro-001 key → «ένα»: the key is «ένα», the rule's answer «ένας»
+  ✔ g3-lang-aoristo-arthro-001 key → «μια»: the key is «μια», the rule's answer «ένας»
+  ✔ g3-lang-aoristo-arthro-002 key → «ένα»: the key is «ένα», the rule's answer «μια»
+  ✔ g3-lang-aoristo-arthro-002 key → «ένας»: the right option «ένας» is the only longest: it gives itself away
+  ✔ g3-lang-tis-tis-001 key → «της»: the key is «της», the rule's answer «τις»
+  ✔ g3-lang-tis-tis-001 key → «των»: the key is «των», the rule's answer «τις»
+  ✔ g3-lang-tis-tis-002 key → «των»: the key is «των», the rule's answer «της»
+  ✔ g3-lang-tis-tis-002 key → «τις»: the key is «τις», the rule's answer «της»
+  ✔ g3-lang-tis-tis-003 key → «των»: the key is «των», the rule's answer «τις»
+  ✔ g3-lang-tis-tis-003 key → «της»: the key is «της», the rule's answer «τις»
+  ✔ g3-lang-tis-tis-004 key → «τις»: the key is «τις», the rule's answer «της»
+  ✔ g3-lang-tis-tis-004 key → «των»: the key is «των», the rule's answer «της»
+  ✔ g3-lang-tis-tis-005 key → «τις»: the key is «τις», the rule's answer «της»
+  ✔ g3-lang-tis-tis-005 key → «των»: the key is «των», the rule's answer «της»
+  ✔ g3-lang-tis-tis-006 key → «τις»: the key is «τις», the rule's answer «των»
+  ✔ g3-lang-tis-tis-006 key → «της»: the key is «της», the rule's answer «των»
+  ✔ g3-lang-stixi-001 key → «,»: the key is «,», the rule's answer «;»
+  ✔ g3-lang-stixi-001 key → «.»: the key is «.», the rule's answer «;»
+  ✔ g3-lang-stixi-002 key → «.»: the key is «.», the rule's answer «;»
+  ✔ g3-lang-stixi-002 key → «,»: the key is «,», the rule's answer «;»
+  ✔ g3-lang-stixi-003 key → «.»: the key is «.», the rule's answer «,»
+  ✔ g3-lang-stixi-003 key → «;»: the key is «;», the rule's answer «,»
+  ✔ g3-lang-stixi-004 key → «.»: the key is «.», the rule's answer «,»
+  ✔ g3-lang-stixi-004 key → «;»: the key is «;», the rule's answer «,»
+  ✔ g3-lang-stixi-005 key → «;»: the key is «;», the rule's answer «.»
+  ✔ g3-lang-stixi-005 key → «,»: the key is «,», the rule's answer «.»
+  ✔ g3-lang-paromoiosis-001 key → «γαϊδούρια»: the right option «γαϊδούρια» is the only longest: it gives itself away
+  ✔ g3-lang-paromoiosis-001 key → «κατσίκια»: the key is «κατσίκια», the rule's answer «ψάρια»
+  ✔ g3-lang-paromoiosis-002 key → «κύμα»: the key is «κύμα», the rule's answer «νερό»
+  ✔ g3-lang-paromoiosis-002 key → «χιόνι»: the right option «χιόνι» is the only longest: it gives itself away
+  ✔ g3-lang-paromoiosis-003 key → «κουδούνι»: the right option «κουδούνι» is the only longest: it gives itself away
+  ✔ g3-lang-paromoiosis-003 key → «σκοτάδι»: the key is «σκοτάδι», the rule's answer «χιόνι»
+  ✔ g3-lang-paromoiosis-004 key → «αλεπού»: the key is «αλεπού», the rule's answer «χελώνα»
+  ✔ g3-lang-paromoiosis-004 key → «γαζέλα»: the key is «γαζέλα», the rule's answer «χελώνα»
+  ✔ g3-lang-paromoiosis-005 key → «σκυλιά»: the key is «σκυλιά», the rule's answer «ποντίκια»
+  ✔ g3-lang-paromoiosis-005 key → «δελφίνια»: the key is «δελφίνια», the rule's answer «ποντίκια»
+  ✔ g3-lang-paromoiosis-006 key → «κότα»: the key is «κότα», the rule's answer «γάτα»
+  ✔ g3-lang-paromoiosis-006 key → «αλεπού»: the right option «αλεπού» is the only longest: it gives itself away
+  ✔ g3-lang-san-001 key → «όπως»: the key is «όπως», the rule's answer «όταν»
+  ✔ g3-lang-san-001 key → «επειδή»: the right option «επειδή» is the only longest: it gives itself away
+  ✔ g3-lang-san-002 key → «επειδή»: the right option «επειδή» is the only longest: it gives itself away
+  ✔ g3-lang-san-002 key → «όταν»: the key is «όταν», the rule's answer «όπως»
+  ✔ g3-lang-synonyma-001 key → «πελώριος»: the key is «πελώριος», the rule's answer «γρήγορος»
+  ✔ g3-lang-synonyma-001 key → «απότομος»: the key is «απότομος», the rule's answer «γρήγορος»
+  ✔ g3-lang-synonyma-002 key → «γρήγορος»: the key is «γρήγορος», the rule's answer «πελώριος»
+  ✔ g3-lang-synonyma-002 key → «ήμερος»: the key is «ήμερος», the rule's answer «πελώριος»
+  ✔ g3-lang-synonyma-003 key → «κήπος»: the key is «κήπος», the rule's answer «σπίτι»
+  ✔ g3-lang-synonyma-003 key → «χωριό»: the key is «χωριό», the rule's answer «σπίτι»
+  ✔ g3-lang-orthografia-001 key → «έθουσσα»: the key is «έθουσσα», the rule's answer «αίθουσα»
+  ✔ g3-lang-orthografia-001 key → «αίθουσσα»: the right option «αίθουσσα» is the only longest: it gives itself away
+  ✔ g3-lang-orthografia-001 key → «έθουσα»: the key is «έθουσα», the rule's answer «αίθουσα»
+  ✔ g3-lang-orthografia-002 key → «διευθιντή»: the key is «διευθιντή», the rule's answer «διευθυντή»
+  ✔ g3-lang-orthografia-002 key → «διεφθυντή»: the key is «διεφθυντή», the rule's answer «διευθυντή»
+  ✔ g3-lang-orthografia-002 key → «διεφθιντή»: the key is «διεφθιντή», the rule's answer «διευθυντή»
+  ✔ g3-lang-orthografia-003 key → «τηλεώραση»: the key is «τηλεώραση», the rule's answer «τηλεόραση»
+  ✔ g3-lang-orthografia-003 key → «τιλεόραση»: the key is «τιλεόραση», the rule's answer «τηλεόραση»
+  ✔ g3-lang-orthografia-003 key → «τιλεώραση»: the key is «τιλεώραση», the rule's answer «τηλεόραση»
+  ✔ g3-lang-orthografia-004 key → «καινούρειο»: the right option «καινούρειο» is the only longest: it gives itself away
+  ✔ g3-lang-orthografia-004 key → «κενούριο»: the key is «κενούριο», the rule's answer «καινούριο»
+  ✔ g3-lang-orthografia-004 key → «κενούρειο»: the key is «κενούρειο», the rule's answer «καινούριο»
+  ✔ g3-lang-orthografia-005 key → «πεχνήδι»: the key is «πεχνήδι», the rule's answer «παιχνίδι»
+  ✔ g3-lang-orthografia-005 key → «πεχνίδι»: the key is «πεχνίδι», the rule's answer «παιχνίδι»
+  ✔ g3-lang-orthografia-005 key → «παιχνήδι»: the key is «παιχνήδι», the rule's answer «παιχνίδι»
+  ✔ g3-lang-orthografia-006 key → «σιλλογή»: the key is «σιλλογή», the rule's answer «συλλογή»
+  ✔ g3-lang-orthografia-006 key → «συλογή»: the key is «συλογή», the rule's answer «συλλογή»
+  ✔ g3-lang-orthografia-006 key → «σιλογή»: the key is «σιλογή», the rule's answer «συλλογή»
+
+80 items, 182 moved keys: 182 caught, 0 missed; 80 of 80 items have every move caught

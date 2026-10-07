@@ -1,0 +1,272 @@
+
+== g3 (grade 3), exercisesPerDay 3, 60 days ==
+language items written for grade 3: 0
+language slots: 60; distinct language items seen: 9
+  g2-lang-opposites-1    b-dimotikou.json (grades 2) ⭐1 match-pairs     source: -  «Σύνδεσε κάθε λέξη με την αντίθετή της.»
+  g2-lang-spell-1        b-dimotikou.json (grades 2) ⭐1 multiple-choice source: -  «Ποια γραφή είναι η σωστή;»
+  g2-lang-alpha-1        b-dimotikou.json (grades 2) ⭐1 ordering        source: -  «Βάλε τις λέξεις σε αλφαβητική σειρά.»
+  g2-lang-tf-2           b-dimotikou.json (grades 2) ⭐1 true-false      source: -  «Μετά το γράμμα Κ έρχεται το Λ.»
+  g2-lang-article-1      b-dimotikou.json (grades 2) ⭐1 multiple-choice source: -  «Ποιο άρθρο ταιριάζει; «___ θάλασσα»»
+  g2-lang-punct-1        b-dimotikou.json (grades 2) ⭐1 multiple-choice source: -  «Τι βάζουμε στο τέλος; «Πού πας__»»
+  g2-lang-tf-1           b-dimotikou.json (grades 2) ⭐1 true-false      source: -  «Η λέξη «παίζω» είναι ρήμα.»
+  g2-lang-fb-1           b-dimotikou.json (grades 2) ⭐1 fill-blank      source: -  «Το αγόρι {0} μπάλα στην {1}.»
+  g2-lang-sentence-1     b-dimotikou.json (grades 2) ⭐1 ordering        source: -  «Βάλε τις λέξεις στη σωστή σειρά.»
+repeats within 60 days: 51; days between repeats: 9d ×51
+
+== e5 (grade 5), exercisesPerDay 3, 60 days ==
+language items written for grade 5: 0
+language slots: 60; distinct language items seen: 9
+  g4-lang-tense-tf-1     d-dimotikou.json (grades 4) ⭐1 true-false      source: -  «Ο ενεστώτας δείχνει κάτι που γίνεται τώρα.»
+  g4-lang-story-order-1  d-dimotikou.json (grades 4) ⭐1 ordering        source: -  «Βάλε τα γεγονότα στη σωστή σειρά.»
+  g4-lang-adj-tf-1       d-dimotikou.json (grades 4) ⭐1 true-false      source: -  «Η λέξη «όμορφος» είναι επίθετο.»
+  g4-lang-alpha-1        d-dimotikou.json (grades 4) ⭐1 ordering        source: -  «Βάλε τις λέξεις σε αλφαβητική σειρά.»
+  g4-lang-tense-1        d-dimotikou.json (grades 4) ⭐1 multiple-choice source: -  ««Χθες ___ στο σχολείο νωρίς.»»
+  g4-lang-tai-te-1       d-dimotikou.json (grades 4) ⭐1 fill-blank      source: -  «Ο Γιώργος ντύνε{0} γρήγορα. Εσείς ντύνεσ{1} αργά.»
+  g4-lang-fb-1           d-dimotikou.json (grades 4) ⭐1 fill-blank      source: -  «Τα παιδιά {0} στην αυλή και {1} πολύ.»
+  g4-lang-spell-1        d-dimotikou.json (grades 4) ⭐1 multiple-choice source: -  ««Στο σχολείο κάνουμε ___ στις 10:00.»»
+  g4-lang-syn-1          d-dimotikou.json (grades 4) ⭐1 match-pairs     source: -  «Σύνδεσε κάθε λέξη με το συνώνυμό της.»
+repeats within 60 days: 51; days between repeats: 9d ×51
+✔ 60 days of daily sets: the language slot (283.794157ms)
+✖ grade 3: at least 60 language items written for grade 3 (3.060152ms)
+✖ grade 3: every language slot is written for grade 3 (1.267282ms)
+✖ grade 3: no language item comes back within 60 days (0.232286ms)
+✖ grade 3: every language item drawn names its textbook chapter (source) (0.232217ms)
+✔ grade 3: a language item pays ⭐1 (0.112892ms)
+✖ grade 5: at least 60 language items written for grade 5 (0.172013ms)
+✖ grade 5: every language slot is written for grade 5 (0.098265ms)
+✖ grade 5: no language item comes back within 60 days (0.120096ms)
+✖ grade 5: every language item drawn names its textbook chapter (source) (0.224272ms)
+✔ grade 5: a language item pays ⭐1 (0.090871ms)
+✔ grade 3: no language item drawn gives its answer away (a word to spare in a fill-blank, 3+ options) (0.107161ms)
+✖ grade 3: the language true-false items drawn are «Σωστό» 40–60 % of the time (0.179287ms)
+✖ grade 5: no language item drawn gives its answer away (a word to spare in a fill-blank, 3+ options) (0.14351ms)
+✖ grade 5: the language true-false items drawn are «Σωστό» 40–60 % of the time (0.111199ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 4
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 728.424535
+
+✖ failing tests:
+
+test at ../tmp/language-draw.test.ts:85:26
+✖ grade 3: at least 60 language items written for grade 3 (3.060152ms)
+  AssertionError [ERR_ASSERTION]: 0 language items written for grade 3
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:83:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:89:26
+✖ grade 3: every language slot is written for grade 3 (1.267282ms)
+  AssertionError [ERR_ASSERTION]: 60 of 60 language slots came from another grade's pool, e.g. g2-lang-opposites-1, g2-lang-spell-1, g2-lang-alpha-1, g2-lang-tf-2
+  
+  60 !== 0
+  
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:87:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 60,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:93:26
+✖ grade 3: no language item comes back within 60 days (0.232286ms)
+  AssertionError [ERR_ASSERTION]: 51 early repeats, e.g. g2-lang-opposites-1 after 9d, g2-lang-spell-1 after 9d, g2-lang-alpha-1 after 9d, g2-lang-tf-2 after 9d
+  
+  51 !== 0
+  
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:92:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 51,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:100:26
+✖ grade 3: every language item drawn names its textbook chapter (source) (0.232217ms)
+  AssertionError [ERR_ASSERTION]: 9 drawn language items have no source: g2-lang-opposites-1, g2-lang-spell-1, g2-lang-alpha-1, g2-lang-tf-2, g2-lang-article-1, g2-lang-punct-1, g2-lang-tf-1, g2-lang-fb-1, g2-lang-sentence-1
+  
+  9 !== 0
+  
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:96:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 9,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:85:26
+✖ grade 5: at least 60 language items written for grade 5 (0.172013ms)
+  AssertionError [ERR_ASSERTION]: 0 language items written for grade 5
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:83:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:89:26
+✖ grade 5: every language slot is written for grade 5 (0.098265ms)
+  AssertionError [ERR_ASSERTION]: 60 of 60 language slots came from another grade's pool, e.g. g4-lang-tense-tf-1, g4-lang-story-order-1, g4-lang-adj-tf-1, g4-lang-alpha-1
+  
+  60 !== 0
+  
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:87:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 60,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:93:26
+✖ grade 5: no language item comes back within 60 days (0.120096ms)
+  AssertionError [ERR_ASSERTION]: 51 early repeats, e.g. g4-lang-tense-tf-1 after 9d, g4-lang-story-order-1 after 9d, g4-lang-adj-tf-1 after 9d, g4-lang-alpha-1 after 9d
+  
+  51 !== 0
+  
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:92:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 51,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:100:26
+✖ grade 5: every language item drawn names its textbook chapter (source) (0.224272ms)
+  AssertionError [ERR_ASSERTION]: 9 drawn language items have no source: g4-lang-tense-tf-1, g4-lang-story-order-1, g4-lang-adj-tf-1, g4-lang-alpha-1, g4-lang-tense-1, g4-lang-tai-te-1, g4-lang-fb-1, g4-lang-spell-1, g4-lang-syn-1
+  
+  9 !== 0
+  
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:96:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 9,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:117:26
+✖ grade 3: the language true-false items drawn are «Σωστό» 40–60 % of the time (0.179287ms)
+  AssertionError [ERR_ASSERTION]: 13 of 13 true-false slots are «Σωστό» (100 %)
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:117:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:112:26
+✖ grade 5: no language item drawn gives its answer away (a word to spare in a fill-blank, 3+ options) (0.14351ms)
+  AssertionError [ERR_ASSERTION]: 1 give the answer away: g4-lang-tai-te-1 (fill-blank, 2 options for 2 gaps)
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:111:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/language-draw.test.ts:117:26
+✖ grade 5: the language true-false items drawn are «Σωστό» 40–60 % of the time (0.111199ms)
+  AssertionError [ERR_ASSERTION]: 14 of 14 true-false slots are «Σωστό» (100 %)
+      at TestContext.<anonymous> (/tmp/language-draw.test.ts:117:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

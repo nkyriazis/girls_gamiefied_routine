@@ -1,0 +1,206 @@
+
+== g3 (grade 3), exercisesPerDay 3, 60 days ==
+language items written for grade 3: 80
+language slots: 60; distinct language items seen: 60
+  g3-lang-stixi-001      g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 2: Επιστροφή στα θρανία! (τετράδιο εργασιών, σ. 9)  «Πού πέρασες το καλοκαίρι{0}»
+  g3-lang-stixi-005      g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (τετράδιο εργασιών, σ. 41)  «Πολλούς χαιρετισμούς από τη Μάνη{0}»
+  g3-lang-rimata-ousiastika-003 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 10)  «Κύκλωσε ένα ουσιαστικό της πρότασης: «Ο δάσκαλος διορθώνει τα τετράδια.»»
+  g3-lang-eimai-001      g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 20)  «Εμείς {0} γείτονες.»
+  g3-lang-alfavitiki-002 g-dimotikou-language.json (grades 3) ⭐1 ordering        source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, Λεξιλόγιο (βιβλίο, σ. 26)  «Βάλε τις λέξεις σε αλφαβητική σειρά.»
+  g3-lang-genos-001      g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (τετράδιο εργασιών, σ. 14)  «Κύκλωσε το αρσενικό ουσιαστικό.»
+  g3-lang-kyria-onomata-003 g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 20)  «Η Κατερίνα είναι από τη {0}.»
+  g3-lang-tis-tis-004    g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (τετράδιο εργασιών, σ. 39)  «Το δελφίνι είναι πρωταθλητής {0} κολύμβησης.»
+  g3-lang-evdomada-001   g-dimotikou-language.json (grades 3) ⭐1 ordering        source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)  «Βάλε τις μέρες της εβδομάδας στη σειρά, από τη Δευτέρα.»
+  g3-lang-rimata-o-mai-004 g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)  «Οι γονείς μας {0}, επειδή περνάμε τη λεωφόρο.»
+  g3-lang-tis-tis-002    g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (τετράδιο εργασιών, σ. 39)  «Το δελφίνι έχει πτερύγιο στη μέση {0} ράχης.»
+  g3-lang-geniki-001     g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (τετράδιο εργασιών, σ. 25)  «Η αξία {0} συλλογής είναι μεγάλη.»
+  g3-lang-orthografia-005 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, Λεξιλόγιο (βιβλίο, σ. 43)  «Κύκλωσε τη λέξη που είναι γραμμένη σωστά.»
+  g3-lang-synonyma-002   g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (βιβλίο, σ. 61)  «Κύκλωσε τη λέξη που σημαίνει το ίδιο με τη λέξη «θεόρατος».»
+  g3-lang-aitiatiki-002  g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (τετράδιο εργασιών, σ. 37)  «Οι γάτες κυνηγούν τις …»
+  g3-lang-san-001        g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (τετράδιο εργασιών, σ. 44)  «Τι σημαίνει το «σαν» στην πρόταση «Σαν έφτασαν στη βρύση, κάθισαν να φάνε.»;»
+  g3-lang-kyria-onomata-001 g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 29)  «Την {0} δεν έχω σχολείο.»
+  g3-lang-synonyma-001   g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (βιβλίο, σ. 61)  «Κύκλωσε τη λέξη που σημαίνει το ίδιο με τη λέξη «γοργός».»
+  g3-lang-fraseis-002    g-dimotikou-language.json (grades 3) ⭐1 true-false      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)  «Η φράση «Δε μου βγαίνει από το μυαλό» σημαίνει «Ξεχνάω συνεχώς».»
+  g3-lang-kyria-onomata-004 g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 21)  «Είδαμε ένα ντοκιμαντέρ για τα ποτάμια της {0}.»
+  g3-lang-geniki-003     g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (βιβλίο, σ. 38)  «Το τετράδιο είναι στο σπίτι της {0} μου.»
+  g3-lang-rimata-o-mai-003 g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)  «Εσείς {0} πάντα από τη διάβαση.»
+  g3-lang-eimai-003      g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 20)  «Εσύ {0} στην Τρίτη τάξη.»
+  g3-lang-paromoiosis-004 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, Λεξιλόγιο (βιβλίο, σ. 62)  «Περπατάει αργά σαν …»
+  g3-lang-paromoiosis-003 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 1: Σπίτι με κήπον (τετράδιο εργασιών, σ. 34)  «Η γάτα μου είναι κάτασπρη σαν το …»
+  g3-lang-tis-tis-006    g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (βιβλίο, σ. 55)  «Τα δίχτυα {0} ψαράδων παγιδεύουν τα δελφίνια.»
+  g3-lang-fraseis-005    g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (βιβλίο, σ. 58)  «Τι σημαίνει εδώ η φράση «τα έκανα θάλασσα»;»
+  g3-lang-kyria-onomata-006 g-dimotikou-language.json (grades 3) ⭐1 true-false      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 30)  «Η λέξη «θάλασσα» γράφεται πάντα με κεφαλαίο.»
+  g3-lang-oikogeneies-001 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (βιβλίο, σ. 24)  «Κύκλωσε τη λέξη που ανήκει στην οικογένεια της λέξης «μαθαίνω».»
+  g3-lang-rimata-ousiastika-001 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 10)  «Κύκλωσε το ρήμα της πρότασης: «Η Πάολα γράφει την άσκηση.»»
+  g3-lang-rimata-ousiastika-002 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 10)  «Κύκλωσε το ρήμα της πρότασης: «Η Ελένη ρωτά τον Θοδωρή.»»
+  g3-lang-eimai-002      g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 20)  «Εσείς, παιδιά, από πού {0};»
+  g3-lang-paromoiosis-006 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (βιβλίο, σ. 52)  «Τρώγονται σαν τον σκύλο με τη …»
+  g3-lang-alfavitiki-001 g-dimotikou-language.json (grades 3) ⭐1 ordering        source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (βιβλίο, σ. 20)  «Βάλε τις λέξεις σε αλφαβητική σειρά.»
+  g3-lang-aoristo-arthro-001 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (βιβλίο, σ. 51)  «Είμαι … κατοικίδιος γάτος έξι μηνών.»
+  g3-lang-paromoiosis-002 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (βιβλίο, σ. 21)  «Μοιάζουν σαν δύο σταγόνες …»
+  g3-lang-genos-002      g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (τετράδιο εργασιών, σ. 14)  «Κύκλωσε το ουδέτερο ουσιαστικό.»
+  g3-lang-kyria-onomata-005 g-dimotikou-language.json (grades 3) ⭐1 true-false      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 30)  «Η λέξη «Σάββατο» γράφεται πάντα με κεφαλαίο.»
+  g3-lang-synonyma-003   g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 1: Σπίτι με κήπον (βιβλίο, σ. 49)  «Κύκλωσε τη λέξη που σημαίνει το ίδιο με τη λέξη «κατοικία».»
+  g3-lang-orthografia-006 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, Λεξιλόγιο (βιβλίο, σ. 43)  «Κύκλωσε τη λέξη που είναι γραμμένη σωστά.»
+  g3-lang-epitheta-001   g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (βιβλίο, σ. 39)  «Θυμάμαι το … πρόσωπο της κυρίας.»
+  g3-lang-tis-tis-001    g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (τετράδιο εργασιών, σ. 39)  «Τα δελφίνια πλησιάζουν συχνά {0} ακτές.»
+  g3-lang-fraseis-001    g-dimotikou-language.json (grades 3) ⭐1 true-false      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)  «Η φράση «Βγαίνω από τα ρούχα μου» σημαίνει «Αγανακτώ, θυμώνω πολύ».»
+  g3-lang-fraseis-003    g-dimotikou-language.json (grades 3) ⭐1 true-false      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)  «Η φράση «Βγαίνω να παίξω» σημαίνει «Πηγαίνω έξω να παίξω».»
+  g3-lang-alfavitiki-004 g-dimotikou-language.json (grades 3) ⭐1 ordering        source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (βιβλίο, σ. 61)  «Βάλε τις λέξεις σε αλφαβητική σειρά.»
+  g3-lang-stixi-002      g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 2: Επιστροφή στα θρανία! (τετράδιο εργασιών, σ. 9)  «Τι παιχνίδια έπαιξες το καλοκαίρι{0}»
+  g3-lang-stixi-004      g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (τετράδιο εργασιών, σ. 41)  «Η αυλή έχει κούνιες{0} τσουλήθρα και γήπεδα.»
+  g3-lang-paromoiosis-001 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (βιβλίο, σ. 21)  «Οι δίδυμοι κολυμπάνε σαν …»
+  g3-lang-genos-003      g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (τετράδιο εργασιών, σ. 14)  «Κύκλωσε το θηλυκό ουσιαστικό.»
+  g3-lang-aoristo-arthro-002 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (τετράδιο εργασιών, σ. 37)  «Τότε … αλεπού είδε τον σκύλο να τρέχει.»
+  g3-lang-rimata-o-mai-001 g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)  «Ο Γιάννης {0} πίσω από την πόρτα.»
+  g3-lang-rimata-ousiastika-005 g-dimotikou-language.json (grades 3) ⭐1 true-false      source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 11)  «Στην πρόταση «Ο Κώστας διαβάζει ένα βιβλίο.» η λέξη «βιβλίο» είναι ρήμα.»
+  g3-lang-antitheta-001  g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (βιβλίο, σ. 35)  «Κύκλωσε το αντίθετο της λέξης «χαρούμενος».»
+  g3-lang-antitheta-003  g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (βιβλίο, σ. 35)  «Κύκλωσε το αντίθετο της λέξης «κρύβεται».»
+  g3-lang-geitonia-001   g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 4: Στη νέα μας γειτονιά (βιβλίο, σ. 42)  «Μια κυρία βγήκε από το {0} σπίτι.»
+  g3-lang-stixi-003      g-dimotikou-language.json (grades 3) ⭐1 fill-blank      source: Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (βιβλίο, σ. 57)  «Στη γη υπάρχουν δάση{0} χωράφια και πόλεις.»
+  g3-lang-arithmos-002   g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (τετράδιο εργασιών, σ. 16)  «Στο τέλος του … οι δίδυμοι αλλάζουν τάξη.»
+  g3-lang-orthografia-004 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 4: Στη νέα μας γειτονιά (βιβλίο, σ. 42)  «Κύκλωσε τη λέξη που είναι γραμμένη σωστά.»
+  g3-lang-rimata-ousiastika-004 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 11)  «Κύκλωσε το ρήμα της πρότασης: «Η κότα τρώει το σκουλήκι.»»
+  g3-lang-orthografia-003 g-dimotikou-language.json (grades 3) ⭐1 multiple-choice source: Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)  «Κύκλωσε τη λέξη που είναι γραμμένη σωστά.»
+repeats within 60 days: 0; days between repeats: -
+
+== e5 (grade 5), exercisesPerDay 3, 60 days ==
+language items written for grade 5: 0
+language slots: 60; distinct language items seen: 9
+  g4-lang-syn-1          d-dimotikou.json (grades 4) ⭐1 match-pairs     source: -  «Σύνδεσε κάθε λέξη με το συνώνυμό της.»
+  g4-lang-fb-1           d-dimotikou.json (grades 4) ⭐1 fill-blank      source: -  «Τα παιδιά {0} στην αυλή και {1} πολύ.»
+  g4-lang-tense-1        d-dimotikou.json (grades 4) ⭐1 multiple-choice source: -  ««Χθες ___ στο σχολείο νωρίς.»»
+  g4-lang-tai-te-1       d-dimotikou.json (grades 4) ⭐1 fill-blank      source: -  «Ο Γιώργος ντύνε{0} γρήγορα. Εσείς ντύνεσ{1} αργά.»
+  g4-lang-story-order-1  d-dimotikou.json (grades 4) ⭐1 ordering        source: -  «Βάλε τα γεγονότα στη σωστή σειρά.»
+  g4-lang-alpha-1        d-dimotikou.json (grades 4) ⭐1 ordering        source: -  «Βάλε τις λέξεις σε αλφαβητική σειρά.»
+  g4-lang-adj-tf-1       d-dimotikou.json (grades 4) ⭐1 true-false      source: -  «Η λέξη «όμορφος» είναι επίθετο.»
+  g4-lang-spell-1        d-dimotikou.json (grades 4) ⭐1 multiple-choice source: -  ««Στο σχολείο κάνουμε ___ στις 10:00.»»
+  g4-lang-tense-tf-1     d-dimotikou.json (grades 4) ⭐1 true-false      source: -  «Ο ενεστώτας δείχνει κάτι που γίνεται τώρα.»
+repeats within 60 days: 51; days between repeats: 9d ×51
+✔ 60 days of daily sets: the language slot (1006.11528ms)
+✔ grade 3: at least 60 language items written for grade 3 (1.120429ms)
+✔ grade 3: every language slot is written for grade 3 (0.719264ms)
+✔ grade 3: no language item comes back within 60 days (0.306247ms)
+✔ grade 3: every language item drawn names its textbook chapter (source) (0.494521ms)
+✔ grade 3: a language item pays ⭐1 (0.474564ms)
+✖ grade 5: at least 60 language items written for grade 5 (11.453772ms)
+✖ grade 5: every language slot is written for grade 5 (1.874118ms)
+✖ grade 5: no language item comes back within 60 days (5.840234ms)
+✖ grade 5: every language item drawn names its textbook chapter (source) (0.946122ms)
+✔ grade 5: a language item pays ⭐1 (1.22206ms)
+✔ grade 3: no language item drawn gives its answer away (a word to spare in a fill-blank, 3+ options) (0.667507ms)
+✔ grade 3: the language true-false items written for the grade are «Σωστό» 40–60 % of the time (0.675311ms)
+✖ grade 5: no language item drawn gives its answer away (a word to spare in a fill-blank, 3+ options) (0.815275ms)
+✔ grade 5: the language true-false items written for the grade are «Σωστό» 40–60 % of the time (0.450258ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 10
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2604.552415
+
+✖ failing tests:
+
+test at ../tmp/after-language-draw.test.ts:85:26
+✖ grade 5: at least 60 language items written for grade 5 (11.453772ms)
+  AssertionError [ERR_ASSERTION]: 0 language items written for grade 5
+      at TestContext.<anonymous> (/tmp/after-language-draw.test.ts:83:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../tmp/after-language-draw.test.ts:89:26
+✖ grade 5: every language slot is written for grade 5 (1.874118ms)
+  AssertionError [ERR_ASSERTION]: 60 of 60 language slots came from another grade's pool, e.g. g4-lang-syn-1, g4-lang-fb-1, g4-lang-tense-1, g4-lang-tai-te-1
+  
+  60 !== 0
+  
+      at TestContext.<anonymous> (/tmp/after-language-draw.test.ts:87:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 60,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/after-language-draw.test.ts:93:26
+✖ grade 5: no language item comes back within 60 days (5.840234ms)
+  AssertionError [ERR_ASSERTION]: 51 early repeats, e.g. g4-lang-syn-1 after 9d, g4-lang-fb-1 after 9d, g4-lang-tense-1 after 9d, g4-lang-tai-te-1 after 9d
+  
+  51 !== 0
+  
+      at TestContext.<anonymous> (/tmp/after-language-draw.test.ts:92:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 51,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/after-language-draw.test.ts:100:26
+✖ grade 5: every language item drawn names its textbook chapter (source) (0.946122ms)
+  AssertionError [ERR_ASSERTION]: 9 drawn language items have no source: g4-lang-syn-1, g4-lang-fb-1, g4-lang-tense-1, g4-lang-tai-te-1, g4-lang-story-order-1, g4-lang-alpha-1, g4-lang-adj-tf-1, g4-lang-spell-1, g4-lang-tense-tf-1
+  
+  9 !== 0
+  
+      at TestContext.<anonymous> (/tmp/after-language-draw.test.ts:96:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 9,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../tmp/after-language-draw.test.ts:112:26
+✖ grade 5: no language item drawn gives its answer away (a word to spare in a fill-blank, 3+ options) (0.815275ms)
+  AssertionError [ERR_ASSERTION]: 1 give the answer away: g4-lang-tai-te-1 (fill-blank, 2 options for 2 gaps)
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/tmp/after-language-draw.test.ts:111:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

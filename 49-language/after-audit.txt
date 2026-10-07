@@ -1,0 +1,141 @@
+
+Grade 3: 708 problems in 27 families
+  change-left                               20 problems,  18 story shapes, 3.5 steps
+  share-equally                             20 problems,  20 story shapes, 4.7 steps
+  division-remainder                        20 problems,  13 story shapes, 3.5 steps
+  two-purchases                             20 problems,  20 story shapes, 3.7 steps
+  total-cost                                20 problems,  20 story shapes, 4.2 steps
+  compare-difference                        20 problems,  20 story shapes, 3.8 steps
+  start-unknown                             20 problems,  17 story shapes, 4.7 steps
+  bus-stops                                 20 problems,  20 story shapes, 3.4 steps
+  equal-groups                              20 problems,  16 story shapes, 4.2 steps
+  two-digit-times                           20 problems,  15 story shapes, 4.0 steps
+  table-reading                             20 problems,  20 story shapes, 3.8 steps
+  length-cm                                 20 problems,  19 story shapes, 3.6 steps
+  numberless                                20 problems,  19 story shapes, 4.5 steps
+  double-half                               20 problems,  19 story shapes, 3.8 steps
+  pages-per-day                             20 problems,  20 story shapes, 3.9 steps
+  buy-and-change                            20 problems,  20 story shapes, 3.3 steps
+  ages                                      20 problems,  20 story shapes, 3.6 steps
+  coins                                     20 problems,  19 story shapes, 3.5 steps
+  estimate-first                            20 problems,  14 story shapes, 4.0 steps
+  collection-goal                           20 problems,  20 story shapes, 3.5 steps
+  order-the-plan                            20 problems,  19 story shapes, 3.7 steps
+  missing-info                              20 problems,  18 story shapes, 3.5 steps
+  cheaper-option                            20 problems,  18 story shapes, 4.6 steps
+  days-to-goal                              20 problems,  10 story shapes, 4.6 steps
+  exchange-rate                             20 problems,  19 story shapes, 3.5 steps
+  (curated g-dimotikou-problems.json)        8 problems,   8 story shapes, 4.0 steps
+  (curated g-dimotikou-world.json)         200 problems, 200 story shapes, 3.0 steps
+
+Grade 5: 508 problems in 26 families
+  parts-ratio                               20 problems,  15 story shapes, 4.0 steps
+  unit-rate                                 20 problems,  10 story shapes, 3.7 steps
+  equalize-by-giving                        20 problems,  18 story shapes, 4.0 steps
+  big-table                                 20 problems,  20 story shapes, 3.7 steps
+  round-estimate                            20 problems,  17 story shapes, 4.3 steps
+  pattern-sum                               20 problems,  16 story shapes, 3.8 steps
+  round-table                               20 problems,  15 story shapes, 4.0 steps
+  coins-notes                               20 problems,  20 story shapes, 4.0 steps
+  growth-chain                              20 problems,  20 story shapes, 3.5 steps
+  budget                                    20 problems,  20 story shapes, 5.0 steps
+  place-value                               20 problems,  14 story shapes, 4.1 steps
+  backwards-money                           20 problems,  19 story shapes, 3.6 steps
+  sum-difference                            20 problems,  16 story shapes, 3.6 steps
+  missing-info                              20 problems,  11 story shapes, 4.0 steps
+  together-again                            20 problems,  18 story shapes, 4.0 steps
+  pack-round-up                             20 problems,  16 story shapes, 4.0 steps
+  buses-needed                              20 problems,  18 story shapes, 3.9 steps
+  arrange-rows                              20 problems,  14 story shapes, 4.3 steps
+  production                                20 problems,  18 story shapes, 3.4 steps
+  trip-costs                                20 problems,  18 story shapes, 3.5 steps
+  division-check                            20 problems,  12 story shapes, 4.0 steps
+  distance-time                             20 problems,  19 story shapes, 3.6 steps
+  compare-offers                            20 problems,  20 story shapes, 4.5 steps
+  divisibility                              20 problems,  14 story shapes, 4.4 steps
+  group-tickets                             20 problems,  18 story shapes, 4.0 steps
+  (curated e-dimotikou-problems.json)        8 problems,   8 story shapes, 4.3 steps
+
+Steps by kind: tag 1016, choice 1665, numbers 1445, order 58, paint 200, calc 200
+
+Grade 3 maths: 120 items in 26 families; multiple-choice 27, number-input 70, match-pairs 10, fill-blank 5, true-false 4, ordering 4; true-false «Σωστό» 2/4
+  words-places             5 items  κεφ. 1     multiple-choice
+  tens-in                  5 items  κεφ. 1     number-input
+  add-mental               5 items  κεφ. 2     number-input
+  money                    5 items  κεφ. 2     number-input
+  tables-match-a           5 items  κεφ. 4     match-pairs
+  tables-match-b           5 items  κεφ. 5     match-pairs
+  table-gap                5 items  κεφ. 6     fill-blank
+  divide                   5 items  κεφ. 6     number-input
+  fact-family              5 items  κεφ. 6     multiple-choice
+  length                   5 items  κεφ. 8     number-input
+  subtract                 5 items  κεφ. 10    number-input
+  times-2x1                5 items  κεφ. 11    number-input
+  table-11                 5 items  κεφ. 11    number-input
+  words-digits             5 items  κεφ. 14    multiple-choice
+  neighbours               5 items  κεφ. 14    number-input
+  hundreds-in              5 items  κεφ. 14    number-input
+  digit-value              4 items  κεφ. 14    number-input
+  digits-extreme           4 items  κεφ. 14    number-input
+  compare                  4 items  κεφ. 14    true-false
+  order                    4 items  κεφ. 14    ordering
+  expanded                 4 items  κεφ. 14    number-input
+  count-by                 4 items  κεφ. 14    number-input
+  add-sub-choice           4 items  κεφ. 15    multiple-choice
+  add                      4 items  κεφ. 15    number-input
+  times-choice             4 items  κεφ. 17    multiple-choice
+  divide-remainder         4 items  κεφ. 18    multiple-choice
+
+Grade 5 maths: 120 items in 24 families; multiple-choice 70, true-false 9, ordering 6, number-input 30, fill-blank 5; true-false «Σωστό» 5/9
+  words-digits             6 items  κεφ. 1.4   multiple-choice
+  words-places             6 items  κεφ. 1.4   multiple-choice
+  digit-value              6 items  κεφ. 1.5   multiple-choice
+  neighbours               6 items  κεφ. 1.6   multiple-choice
+  compare                  3 items  κεφ. 1.6   true-false
+  largest                  6 items  κεφ. 1.6   multiple-choice
+  order                    6 items  κεφ. 1.6   ordering
+  count-by                 5 items  κεφ. 1.6   multiple-choice
+  round                    5 items  κεφ. 1.7   multiple-choice
+  round-small              5 items  κεφ. 1.7   number-input
+  add-sub                  5 items  κεφ. 2.8   number-input
+  add-sub-big              5 items  κεφ. 2.8   multiple-choice
+  times-10                 5 items  κεφ. 2.9   multiple-choice
+  times-2d                 5 items  κεφ. 2.9   number-input
+  times-3x2                5 items  κεφ. 2.9   multiple-choice
+  multiples                5 items  κεφ. 2.10  multiple-choice
+  lcm                      5 items  κεφ. 2.10  number-input
+  divisible                3 items  κεφ. 2.11  true-false
+  divisible-choice         5 items  κεφ. 2.11  multiple-choice
+  division                 5 items  κεφ. 2.12  number-input
+  dividend                 5 items  κεφ. 2.12  number-input
+  euclid-gap               5 items  κεφ. 2.12  fill-blank
+  bad-remainder            5 items  κεφ. 2.12  multiple-choice
+  division-check           3 items  κεφ. 2.12  true-false
+
+Grade 3 language: 80 items in 22 families; multiple-choice 41, true-false 7, ordering 5, fill-blank 27; true-false «Σωστό» 3/7
+  rimata-ousiastika        5 items  pos       unit 1        multiple-choice, true-false
+  genos                    3 items  gender    unit 1        multiple-choice
+  arithmos                 3 items  agree     unit 1        multiple-choice
+  alfavitiki               4 items  alpha     unit 1, 3     ordering
+  evdomada                 1 items  week      unit 2        ordering
+  kyria-onomata            6 items  capital   unit 2        fill-blank, true-false
+  eimai                    3 items  person    unit 2        fill-blank
+  rimata-o-mai             4 items  person    unit 2        fill-blank
+  antitheta                3 items  opposite  unit 2        multiple-choice
+  fraseis                  5 items  meaning   unit 2, 3     true-false, multiple-choice
+  geniki                   3 items  agree     unit 2        fill-blank
+  epitheta                 3 items  agree     unit 2        multiple-choice
+  geitonia                 2 items  agree     unit 2        fill-blank
+  oikogeneies              3 items  family    unit 1, 2, 3  multiple-choice
+  aitiatiki                2 items  agree     unit 3        multiple-choice
+  aoristo-arthro           2 items  agree     unit 3        multiple-choice
+  tis-tis                  6 items  agree     unit 3        fill-blank
+  stixi                    5 items  punct     unit 1, 3     fill-blank
+  paromoiosis              6 items  saying    unit 1, 3     multiple-choice
+  san                      2 items  san       unit 3        multiple-choice
+  synonyma                 3 items  synonym   unit 3        multiple-choice
+  orthografia              6 items  spell     unit 1, 2     multiple-choice
+
+0 errors, 0 warnings
+
+wrote a sample to .evidence/49-language/after-language-sample.md
