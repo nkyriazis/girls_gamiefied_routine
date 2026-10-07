@@ -4,7 +4,7 @@ import type {
   ExerciseAssignmentWithExercise, Forgiveness, ProblemExercise, ProblemPhase, ProblemReading, ProblemRole, ProblemStep
 } from '@shared/types';
 import { paintStrays, readCalculation, storyWords, targetsFromMarks, usefulToAnswer, workedAnswer, type CalcLine, type Painting, type PaintTarget } from '@shared/problems';
-import { stepCounts, stepHelp } from '@shared/forgiveness';
+import { stepHelp, wrongTryCounts } from '@shared/forgiveness';
 import { api } from '../../api';
 import { CalcBench, PaintWords } from './ProblemFreeSteps';
 import { help } from '../../help/anchors';
@@ -96,7 +96,7 @@ function answerOf(kind: Kind, value: unknown): unknown {
   }
   if (kind === 'calc') {
     const v = value as CalcValue;
-    return { lines: v.lines.map(({ x, op, y, result }) => ({ x, op, y, result })), slips: v.slips };
+    return { lines: v.lines.map(({ x, op, y, result }) => ({ x, op, y, result })) };
   }
   return value;
 }
@@ -168,12 +168,17 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
   const [note, setNoteState] = useState<{ step: number; note: CalcNote } | null>(null);
   const calcNote = note?.step === stepIndex ? note.note : null;
   const setNote = (n: CalcNote | null) => setNoteState(n ? { step: stepIndex, note: n } : null);
-  // Wrong tries on this step: the server's (its reply first, the STATE after it), or the
-  // calculations taken back on a calc step. They decide what the step shows, on her rung:
-  // the hint, the wrong parts outlined, «Δείξε μου», or the step worked (shared/forgiveness.ts).
-  const tries = step.kind === 'calc' ? (typed as CalcValue).slips
-    : Math.max(assignment.mistakes?.[stepIndex] ?? 0, lastWrong?.step === stepIndex ? lastWrong.tries : 0);
-  const ladder = stepHelp(forgiveness, stepCounts(step, reading), tries);
+  // A calc step's slips that cost a star go to the server as they happen; its count of them, from
+  // its reply (before its STATE arrives)
+  const [slipReply, setSlipReply] = useState<{ step: number; mistakes: number } | null>(null);
+  const slipSent = useRef<Promise<unknown>>(Promise.resolve());
+  // Wrong tries on this step that cost a star: the server's (its reply first, the STATE after
+  // it). With them, the help: on a calc step every calculation taken back brings it, a right
+  // one that means nothing too. They decide what the step shows, on her rung: the hint, the
+  // wrong parts outlined, «Δείξε μου», or the step worked (shared/forgiveness.ts).
+  const counted = Math.max(assignment.mistakes?.[stepIndex] ?? 0, wrong?.tries ?? 0, slipReply?.step === stepIndex ? slipReply.mistakes : 0);
+  const tries = step.kind === 'calc' ? Math.max(counted, (typed as CalcValue).slips) : counted;
+  const ladder = stepHelp(forgiveness, kind, tries, counted);
   const [showStep, setShowStep] = useState<number | null>(null);
   const shown = ladder.worked || showStep === stepIndex;
   const worked = useMemo(() => workedAnswer(exercise, stepIndex, reading), [exercise, stepIndex, reading]);
@@ -200,13 +205,26 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
     if (busy || (!shown && !isReady(kind, step, value))) return;
     let answer: unknown = answerOf(kind, value);
     // Shown worked: the step as it is solved, and on («Συνέχεια»)
-    if (shown) answer = step.kind === 'calc' ? { ...(worked as object), slips: (typed as CalcValue).slips } : worked;
+    if (shown) answer = worked;
     else if (step.kind === 'calc') {
-      // Each calculation is read back here; only the one that finds the answer goes to the server
-      const read = readLine(step, value as CalcValue, usefulToAnswer(step));
+      // Each calculation is read back here. A slip that costs a star goes to the server as it
+      // happens, so the header drops with it and a reload keeps it; the one that finds the answer
+      // goes as the step's answer.
+      const v = value as CalcValue;
+      const read = readLine(step, v, usefulToAnswer(step));
       setDraft({ step: stepIndex, value: read.value });
       setNote(read.note);
-      if (read.note.kind === 'math' || read.note.kind === 'order' || read.note.kind === 'nothing') { sfx('wrong'); return; }
+      if (read.note.kind === 'math' || read.note.kind === 'order' || read.note.kind === 'nothing') {
+        sfx('wrong');
+        if (wrongTryCounts(step, read.note.kind)) {
+          const at = stepIndex;
+          const slip = { x: v.x, op: v.op, y: v.y, result: Number(v.result) };
+          slipSent.current = api.answerExerciseAssignment(assignment.id, { step: at, value: { ...(answerOf('calc', v) as object), slip } })
+            .then(r => setSlipReply({ step: at, mistakes: r.assignment.mistakes?.[at] ?? 0 }))
+            .catch(err => console.error('Slip not recorded:', err));
+        }
+        return;
+      }
       // Something found on the way to the answer is a small yes; a right sum that leads elsewhere, a nod
       if (read.note.kind === 'found') { sfx('correct', { volume: 0.7 }); return; }
       if (read.note.kind !== 'answer') { sfx('select'); return; }
@@ -214,6 +232,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
     }
     setBusy(true);
     try {
+      await slipSent.current;
       const result = await api.answerExerciseAssignment(assignment.id, { step: stepIndex, value: answer });
       if (result.correct) {
         const completed = result.assignment.status === 'completed';

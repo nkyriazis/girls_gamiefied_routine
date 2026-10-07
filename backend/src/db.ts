@@ -6,8 +6,8 @@ import {
   StarTransfer, StateSnapshot, ActionLog, User
 } from '../../shared/types';
 import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
-import { checkCalc, checkPaint, storyWords, targetsFromMarks } from '../../shared/problems';
-import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars } from '../../shared/forgiveness';
+import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
+import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
@@ -1321,23 +1321,32 @@ function answerProblemStep(
     // An answer to a step already solved (a second device, a double tap) changes nothing.
     if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true, rung };
 
-    const reading = config().users.find(u => u.id === current.userId)?.problemReading;
-    const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
     const mistakes = exercise.steps.map((_, i) => current.mistakes?.[i] ?? 0);
     const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
-    let stars = 0;
-    // Working it out, the screen reads each calculation back as she goes: the ones she
-    // took back count as mistakes of the step
+    // Working it out, the screen reads each calculation back as she goes and sends the one she
+    // got wrong as it happens: a mistake of the step if it is one that counts (a wrong result,
+    // the smaller number first), read back here. It is not an answer: the step stays hers.
     const step = exercise.steps[stepIndex];
-    const slips = (answer.value as { slips?: unknown } | null)?.slips;
-    if (step.kind === 'calc' && typeof slips === 'number' && Number.isInteger(slips)) mistakes[stepIndex] += Math.max(0, Math.min(99, slips));
+    const value = answer.value as { lines?: unknown; slip?: unknown } | null;
+    if (step.kind === 'calc' && value && typeof value === 'object' && 'slip' in value) {
+      const line = value.slip as CalcLine;
+      const slip = line && ['+', '−', '×', ':'].includes(line.op) && [line.x, line.y, line.result].every(Number.isFinite)
+        ? calcSlip(step, value.lines, line) : null;
+      if (slip && wrongTryCounts(step, slip)) mistakes[stepIndex]++;
+      store.exerciseAssignments.put(updated);
+      return { correct: false, starsAwarded: 0, assignment: updated, stale: false, rung, slip: slip ?? 'none' };
+    }
+    const reading = config().users.find(u => u.id === current.userId)?.problemReading;
+    const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
+    let stars = 0;
     if (!correct) {
-      mistakes[stepIndex]++;
+      // The same rule as the slips above decides whether this wrong try costs (shared/forgiveness.ts)
+      if (wrongTryCounts(step)) mistakes[stepIndex]++;
     } else if (stepIndex + 1 < exercise.steps.length) {
       updated.stepIndex = stepIndex + 1;
     } else {
       // A star less for each step gone wrong (the worked steps too: they had their wrong tries)
-      stars = problemStars(exercise, mistakes, reading, rung);
+      stars = problemStars(exercise, mistakes, rung);
       updated.stepIndex = exercise.steps.length;
       updated.status = 'completed';
       updated.completedAt = new Date().toISOString();
@@ -1348,11 +1357,11 @@ function answerProblemStep(
     return { correct, wrong, starsAwarded: stars, assignment: updated, stale: false, rung };
   });
 
-  const { stale, rung, ...reply } = result;
+  const { stale, rung, slip, ...reply } = result as typeof result & { slip?: string };
   if (!stale) {
     logAction('EXERCISE_PROBLEM_STEP', {
       assignmentId, userId: reply.assignment.userId, exerciseId: exercise.id, step: answer.step, forgiveness: rung,
-      kind: exercise.steps[answer.step]?.kind, correct: reply.correct, wrong: reply.wrong,
+      kind: exercise.steps[answer.step]?.kind, correct: reply.correct, wrong: reply.wrong, ...(slip ? { slip, mistakes: reply.assignment.mistakes } : {}),
       completed: reply.assignment.status === 'completed', starsAwarded: reply.starsAwarded
     });
   }

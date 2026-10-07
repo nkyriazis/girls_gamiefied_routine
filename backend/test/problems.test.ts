@@ -45,6 +45,23 @@ writeFileSync(path.join(pools, 'e.json'), JSON.stringify({
     { ...balloons, id: 'e-balloons' },
   ]
 }));
+// A calc step: 25 − 7 = 18 spent, 18 + 10 = 28 now (a pool of its own, for a grade no kid is in)
+const pocket: ProblemExercise = {
+  id: 'p-pocket', type: 'problem', category: 'Προβλήματα', title: 'Χαρτζιλίκι', stars: 3,
+  story: 'Η Άννα είχε [25 ευρώ|known]. Ξόδεψε [7 ευρώ|known]. Πήρε [10 ευρώ|known]. [Πόσα ευρώ έχει τώρα|sought];',
+  steps: [
+    { kind: 'tag', phase: 'read', prompt: 'Τι ξέρουμε;' },
+    {
+      kind: 'calc', phase: 'solve', prompt: 'Λύνουμε',
+      quantities: [{ id: 'a', value: 25, label: 'Στην αρχή' }, { id: 'b', value: 7, label: 'Ξόδεψε' }, { id: 'c', value: 18, label: 'Μετά' },
+        { id: 'd', value: 10, label: 'Πήρε' }, { id: 'e', value: 28, label: 'Τώρα' }],
+      relations: [{ out: 'c', op: '−', a: 'a', b: 'b' }, { out: 'e', op: '+', a: 'c', b: 'd' }],
+      given: ['a', 'b', 'd'], sought: 'e',
+    },
+    { kind: 'choice', phase: 'check', prompt: 'Έλεγχος', options: ['28 − 10 = 18', '28 + 10 = 38'], correctIndex: 0 },
+  ],
+};
+writeFileSync(path.join(pools, 'd.json'), JSON.stringify({ grades: [4], exercises: [pocket] }));
 writeFileSync(path.join(dir, 'data.json'), JSON.stringify(cfg));
 process.env.DATA_FILE = path.join(dir, 'data.json');
 process.env.EXERCISES_FILE = path.join(dir, 'exercises.json');
@@ -68,7 +85,7 @@ function solution(ex: ProblemExercise, step: ProblemStep): unknown {
     case 'numbers': return step.rows.map(r => r.answer);
     case 'order': return step.items;
     case 'paint': return painting(ex, true);
-    case 'calc': return { lines: workOut(step), slips: 0 };
+    case 'calc': return { lines: workOut(step) };
   }
 }
 
@@ -130,8 +147,9 @@ test('every shipped pool is valid, and every problem can be solved step by step'
 // The story painted in whole sentences: each word of a sentence takes the colour of the phrase in it
 // nearest to it; a sentence of unneeded facts only, ⚪ (on "paint-all") or nothing; with `factless`, the
 // sentences with no fact in them 🟢 too. A sentence that holds a needed and an unneeded fact is
-// painted phrase by phrase: around an unneeded fact is too much (33 Γ΄ and 224 Ε΄ problems).
-function sentencePainting(ex: ProblemExercise, unneeded: boolean, factless = false) {
+// painted phrase by phrase, or with `whole`, whole but the unneeded fact: a word nearest the unneeded
+// fact takes the colour of the needed phrase nearest to it.
+function sentencePainting(ex: ProblemExercise, unneeded: boolean, factless = false, whole = false) {
   const read = ex.steps.find(s => s.kind === 'tag' || s.kind === 'paint')!;
   const targets = read.kind === 'paint' ? read.targets : targetsFromMarks(ex.story);
   const v = { known: [] as number[], sought: [] as number[], extra: [] as number[] };
@@ -144,7 +162,10 @@ function sentencePainting(ex: ProblemExercise, unneeded: boolean, factless = fal
     for (let w = a; w <= b; w++) {
       if (!ts.length) { if (factless) v.known.push(w); continue; }
       const t = nearest(w, ts);
-      if (mixed && dist(w, t) > 0) continue;
+      if (mixed && dist(w, t) > 0) {
+        if (whole) v[nearest(w, needed).role as 'known' | 'sought'].push(w);
+        continue;
+      }
       if (t.role !== 'extra') v[t.role].push(w);
       else if (unneeded) v.extra.push(w);
     }
@@ -181,6 +202,21 @@ test('every shipped problem: whole sentences pass on both rungs; the whole story
     problems++;
   }
   assert.ok(problems > 1000 && withExtra > 1000, `${problems} problems, ${withExtra} with an unneeded fact`);
+});
+
+test('every shipped problem: a sentence with both kinds painted whole but the unneeded fact passes on both rungs (#50)', () => {
+  // Only the clause holding the unneeded fact is strict (paintStrays), so this right painting passes everywhere
+  const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
+  let problems = 0;
+  for (const ex of shipped.flatMap(p => p.exercises)) {
+    if (ex.type !== 'problem') continue;
+    const i = ex.steps.findIndex(s => s.kind === 'tag' || s.kind === 'paint');
+    for (const reading of ['paint', 'paint-all'] as const) {
+      assert.deepEqual(db.checkProblemStep(ex, i, sentencePainting(ex, reading === 'paint-all', false, true), reading), { correct: true }, `${ex.id} whole sentences but the unneeded fact, on ${reading}`);
+    }
+    problems++;
+  }
+  assert.ok(problems > 1000, `${problems} problems`);
 });
 
 test('every shipped problem on paint-all: the whole story ⚪ with the needed phrases painted over it is too much (#50)', () => {
@@ -359,7 +395,7 @@ test('extra problems: fresh ones first, one open at a time, up to the day\'s lim
   await assert.rejects(db.startExtraProblem('u3'), /class/);
 });
 
-test('unforgiving: a problem can pay nothing, and a painted reading step costs nothing', async () => {
+test('unforgiving: a problem can pay nothing, and a painted reading step costs a star like any step', async () => {
   const before = starsOf('u4');
   const a = assign('u4', 'p-balloons');
   const answer = (step: number, value: unknown) => db.answerExerciseAssignment(a.id, { step, value });
@@ -374,7 +410,7 @@ test('unforgiving: a problem can pay nothing, and a painted reading step costs n
   assert.deepEqual(r.assignment.mistakes, [2, 2, 2, 0]);
   assert.equal(starsOf('u4'), before);
 
-  // u5 paints: wrong paintings are free (until #50), a wrong choice is not
+  // u5 paints: a wrong painting costs a star, as a wrong choice does (#50)
   const b = assign('u5', 'e-balloons');
   const before5 = starsOf('u5');
   const painted = { known: [1, 2, 5, 6], sought: [8, 9] };
@@ -384,8 +420,43 @@ test('unforgiving: a problem can pay nothing, and a painted reading step costs n
   await db.answerExerciseAssignment(b.id, { step: 1, value: 1 });
   await db.answerExerciseAssignment(b.id, { step: 2, value: [8, 1] });
   r = await db.answerExerciseAssignment(b.id, { step: 3, value: ['πρώτο', 'δεύτερο', 'τρίτο'] });
-  assert.deepEqual([r.starsAwarded, r.assignment.mistakes], [2, [1, 1, 0, 0]]);
-  assert.equal(starsOf('u5'), before5 + 2);
+  assert.deepEqual([r.starsAwarded, r.assignment.mistakes], [1, [1, 1, 0, 0]]);
+  assert.equal(starsOf('u5'), before5 + 1);
+});
+
+test('a calc slip goes to the server as it happens: a wrong sum or the smaller number first costs, a right sum that means nothing does not (#50)', async () => {
+  const lines = [{ x: 25, op: '−', y: 7, result: 18 }, { x: 18, op: '+', y: 10, result: 28 }];
+  const play = async (userId: string, slips: object[]) => {
+    const a = assign(userId, 'p-pocket');
+    const answer = (step: number, value: unknown) => db.answerExerciseAssignment(a.id, { step, value });
+    await answer(0, ['known', 'known', 'known', 'sought']);
+    const counted: number[] = [];
+    for (const slip of slips) {
+      const r = await answer(1, { lines: lines.slice(0, 1), slip });
+      assert.deepEqual([r.correct, r.assignment.stepIndex], [false, 1], 'a slip is not an answer');
+      counted.push(r.assignment.mistakes![1]);
+    }
+    assert.equal((await answer(1, { lines, slips: 9 })).correct, true, 'the old count of slips taken back is ignored');
+    return { counted, paid: await answer(2, 0) };
+  };
+  const before = starsOf('u2');
+  // After 25 − 7 = 18: 18 + 10 = 27 (math), 10 − 18 (order), 25 + 10 = 35 (right, but nothing here)
+  let { counted, paid } = await play('u2', [{ x: 18, op: '+', y: 10, result: 27 }, { x: 10, op: '−', y: 18, result: 8 }, { x: 25, op: '+', y: 10, result: 35 }]);
+  assert.deepEqual(counted, [1, 2, 2]);
+  assert.deepEqual([paid.starsAwarded, paid.assignment.mistakes], [2, [0, 2, 0]]);
+  // Only right sums that mean nothing: the full price
+  ({ counted, paid } = await play('u2', [{ x: 25, op: '+', y: 10, result: 35 }, { x: 25, op: '+', y: 7, result: 32 }]));
+  assert.deepEqual([counted, paid.starsAwarded], [[0, 0], 3]);
+  assert.equal(starsOf('u2'), before + 5);
+  // Unforgiving: two counted slips, then the step is shown worked (its lines pass), and it costs its star
+  ({ counted, paid } = await play('u4', [{ x: 18, op: '+', y: 10, result: 29 }, { x: 18, op: '+', y: 10, result: 27 }]));
+  assert.deepEqual([counted, paid.starsAwarded], [[1, 2], 2]);
+  // A slip for a step already solved changes nothing
+  const a = assign('u2', 'p-pocket');
+  await db.answerExerciseAssignment(a.id, { step: 0, value: ['known', 'known', 'known', 'sought'] });
+  await db.answerExerciseAssignment(a.id, { step: 1, value: { lines } });
+  const r = await db.answerExerciseAssignment(a.id, { step: 1, value: { lines, slip: { x: 18, op: '+', y: 10, result: 27 } } });
+  assert.deepEqual(r.assignment.mistakes, [0, 0, 0]);
 });
 
 test('a plain exercise: a wrong first try loses the star; unforgiving closes it after its tries', async () => {
@@ -507,6 +578,35 @@ test('painting a needed fact\'s whole sentence is fine; around an unneeded fact 
   // …and a question sharing its sentence with a needed fact, painted all 🟡: the fact is missed
   const ifPaid = 'Αν η Ζωή πληρώνει με [100 ευρώ|known], [πόσα ρέστα θα πάρει|sought];';
   assert.deepEqual(checkPaint(targetsFromMarks(ifPaid), storyWords(ifPaid), { known: [], sought: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }), { correct: false, wrong: [0] });
+});
+
+test('a sentence with a needed and an unneeded fact: only the clause holding the unneeded one is strict (#50)', () => {
+  const range = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const ok = { correct: true };
+  // «Η βιβλιοθήκη του σχολείου, [που έχει 3 ράφια], δάνεισε τον Οκτώβριο [390 βιβλία]. …»: the needed
+  // sentences painted whole, the unneeded clause «που έχει 3 ράφια,» left out
+  const library = 'Η βιβλιοθήκη του σχολείου, [που έχει 3 ράφια|extra], δάνεισε τον Οκτώβριο [390 βιβλία|known]. [Τα 250 ήταν παραμύθια|known] και τα υπόλοιπα κόμικ και βιβλία γνώσεων. '
+    + 'Ξέρουμε ακόμα ότι [τα κόμικ ήταν τριπλάσια από τα βιβλία γνώσεων|known]. [Πόσα κόμικ|sought] και [πόσα βιβλία γνώσεων|sought];';
+  const words = storyWords(library), targets = targetsFromMarks(library);
+  const whole = { known: [...range(0, 3), ...range(8, 34)], sought: range(35, 40) };
+  assert.deepEqual(paintStrays(targets, words, whole), [], '«Η βιβλιοθήκη του σχολείου, … δάνεισε» is not around the unneeded fact');
+  assert.deepEqual(checkPaint(targets, words, whole), ok);
+  assert.deepEqual(checkPaint(targets, words, { ...whole, extra: range(4, 7) }, { unneeded: true }), ok, '…and on paint-all, the clause ⚪');
+  // The unneeded fact painted with its sentence: named, as before
+  assert.deepEqual(checkPaint(targets, words, { ...whole, known: range(0, 34) }), { correct: false, wrong: [0] });
+
+  // In the clause holding the unneeded fact, the words around it are still too much
+  const shop = 'Η Ζωή έχει [18 ευρώ|known], και στο ράφι της βιτρίνας δίπλα στην πόρτα υπάρχουν [23 παιχνίδια|extra]. [Πόσα ευρώ|sought] της λείπουν για [μια μπάλα των 25 ευρώ|known];';
+  const shopWords = storyWords(shop), shopTargets = targetsFromMarks(shop);
+  assert.equal(shopWords[14], '23');
+  const painted = { known: [...range(0, 13), ...range(21, 25)], sought: range(16, 20) };
+  assert.deepEqual(paintStrays(shopTargets, shopWords, painted), range(7, 13), '«στο ράφι της βιτρίνας δίπλα στην πόρτα υπάρχουν», less the margin');
+  assert.deepEqual(checkPaint(shopTargets, shopWords, painted), { correct: false, wrong: [-1] });
+
+  // A colon ends a clause too: a table's intro is not around its first row
+  const table = 'Ο πίνακας δείχνει πόσους επισκέπτες είχε ένα μουσείο κάθε χρονιά: [2019: 245.301|extra], [2020: 198.004|known], [2021: 300.250|known]. [Πόσους επισκέπτες είχε το 2020 και το 2021 μαζί|sought];';
+  const tableWords = storyWords(table), tableTargets = targetsFromMarks(table);
+  assert.deepEqual(checkPaint(tableTargets, tableWords, { known: [...range(0, 9), ...range(12, 15)], sought: range(16, 24) }), ok);
 });
 
 test('working it out: each calculation is read back, the answer ends it', () => {

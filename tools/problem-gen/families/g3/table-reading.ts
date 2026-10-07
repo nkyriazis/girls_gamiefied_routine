@@ -11,8 +11,9 @@ interface Setting {
   range: [number, number];
   entries: (r: Rng) => Entry[];
   intro: string;
-  /** The table as sentences: the first row with its verb, the rest after commas. */
-  rows: (es: Entry[], vs: string[]) => string;
+  /** The table's rows, to be told in one sentence: the first with its verb, the rest after commas.
+   * Each row is marked whole, its name too, so a sentence painted whole but the unneeded rows is right (#50). */
+  rows: (es: Entry[], vs: string[]) => string[];
   unit: string;            // for the number rows: ψήφους, παιδιά, πόντους, βιβλία
   diff: (a: Entry, b: Entry) => string;  // the question, without ";"
   sum: (a: Entry, b: Entry) => string;
@@ -59,7 +60,7 @@ const SETTINGS: Setting[] = [
     title: 'Οι μαθητικές εκλογές', range: [25, 160],
     entries: r => people(r, 4).map(p => ({ nom: p.nom, acc: p.acc, name: p.Nom })),
     intro: 'Στις εκλογές για το μαθητικό συμβούλιο ψήφισαν όλα τα παιδιά του σχολείου.',
-    rows: (es, vs) => `${Cap(es[0].nom)} πήρε ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} πήρε ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'ψήφους',
     diff: (a, b) => `Πόσες περισσότερες ψήφους πήρε ${a.nom} από ${b.acc}`,
     sum: (a, b) => `Πόσες ψήφους πήραν μαζί ${a.nom} και ${b.nom}`,
@@ -71,7 +72,7 @@ const SETTINGS: Setting[] = [
     title: 'Πού θα πάμε εκδρομή;', range: [12, 95],
     entries: () => PLACES,
     intro: 'Τα παιδιά του σχολείου ψήφισαν πού θα πάνε εκδρομή.',
-    rows: (es, vs) => `${Cap(es[0].nom)} ψήφισαν ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} ψήφισαν ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'παιδιά',
     diff: (a, b) => `Πόσα περισσότερα παιδιά ψήφισαν ${a.nom} από ό,τι ${b.nom}`,
     sum: (a, b) => `Πόσα παιδιά ψήφισαν ${a.nom} ή ${b.nom}`,
@@ -83,7 +84,7 @@ const SETTINGS: Setting[] = [
     title: 'Το τουρνουά μπάσκετ', range: [80, 320],
     entries: () => TEAMS,
     intro: 'Στο σχολικό τουρνουά μπάσκετ μετρήσαμε τους πόντους κάθε ομάδας.',
-    rows: (es, vs) => `${Cap(es[0].nom)} έβαλαν ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} έβαλαν ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'πόντους',
     diff: (a, b) => `Πόσους περισσότερους πόντους έβαλαν ${a.nom} από ${b.acc}`,
     sum: (a, b) => `Πόσους πόντους έβαλαν μαζί ${a.nom} και ${b.nom}`,
@@ -95,7 +96,7 @@ const SETTINGS: Setting[] = [
     title: 'Ο διαγωνισμός ανάγνωσης', range: [20, 160],
     entries: () => CLASSES,
     intro: 'Στον διαγωνισμό ανάγνωσης του σχολείου μετρήσαμε τα βιβλία που διάβασε κάθε τάξη.',
-    rows: (es, vs) => `${Cap(es[0].nom)} διάβασε ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} διάβασε ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'βιβλία',
     diff: (a, b) => `Πόσα περισσότερα βιβλία διάβασε ${a.nom} από ${b.acc}`,
     sum: (a, b) => `Πόσα βιβλία διάβασαν μαζί ${a.nom} και ${b.nom}`,
@@ -107,7 +108,7 @@ const SETTINGS: Setting[] = [
     title: 'Δημοτικές εκλογές', range: [50, 380],
     entries: () => PARTIES,
     intro: 'Αυτά είναι τα αποτελέσματα των δημοτικών εκλογών στο εκλογικό τμήμα του χωριού.',
-    rows: (es, vs) => `${Cap(es[0].nom)} πήρε ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} πήρε ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'ψήφους',
     diff: (a, b) => `Πόσες περισσότερες ψήφους πήρε ${a.nom} από ${b.acc}`,
     sum: (a, b) => `Πόσες ψήφους πήραν μαζί ${a.nom} και ${b.nom}`,
@@ -144,14 +145,14 @@ export const tableReading: Family = {
     if (kind === 'diff' && A - B < 3) return null;
     if (kind === 'two' && A + B - C < 3) return null;
     const used = kind === 'two' ? [ia, ib, ic] : [ia, ib];
-    const marked = vs.map((v, i) => (used.includes(i) ? known(unitOf(v)) : extra(unitOf(v))));
+    const rows = s.rows(es, vs.map(unitOf)).map((row, i) => (used.includes(i) ? known(row) : extra(row)));
     const question = kind === 'diff'
       ? `${sought(s.diff(a, bb))};`
       : kind === 'sum'
         ? `${sought(s.sum(a, bb))};`
         : `${sought(s.sum(a, bb))}; ${sought(s.more(c))};`;
     const noise = s.noise(r, extra);
-    const table = s.rows(es, marked);
+    const table = `${list(rows)}.`;
     const story = r.pick([
       () => `${s.intro} ${table} ${noise} ${question}`,
       () => `${s.intro} ${noise} ${table} ${question}`,

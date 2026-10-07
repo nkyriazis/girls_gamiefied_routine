@@ -1,5 +1,5 @@
 import type { ProblemCalcStep } from '@shared/types';
-import { applyOp, nextCalculation, readLines, runLabel, smallerFirst, usefulToAnswer, type CalcLine, type CalcOp, type PaintTarget } from '@shared/problems';
+import { calcSlip, nextCalculation, readLines, runLabel, usefulToAnswer, type CalcLine, type CalcOp, type PaintTarget } from '@shared/problems';
 
 // What the free steps of a problem say back to her (ProblemFreeSteps.tsx draws them).
 
@@ -46,15 +46,17 @@ export function readLine(step: ProblemCalcStep, v: CalcValue, path: Set<string>)
   const result = Number(v.result);
   if (x === null || op === null || y === null) return { note: { kind: 'nothing', text: '' }, value: v };
   const slip = (kind: CalcNote['kind'], text: string) => ({ note: { kind, text }, value: { ...v, slips: v.slips + 1 } });
-  // The smaller number first: the order is what's wrong, whatever the result says
-  if (smallerFirst(op, x, y)) {
+  // What is wrong with it, as the server reads it too (calcSlip): the smaller number first
+  // (whatever the result says), a wrong result, or a right one that means nothing here
+  const wrong = calcSlip(step, v.lines, { x, op, y, result });
+  if (wrong === 'order') {
     return slip('order', op === '−'
       ? `Δεν μπορούμε να βγάλουμε ${fmt(y)} από το ${fmt(x)}: στην αφαίρεση ο μεγαλύτερος αριθμός πάει πρώτος.`
       : `Δεν μπορούμε να διαιρέσουμε το ${fmt(x)} με το ${fmt(y)}: στη διαίρεση ο μεγαλύτερος αριθμός πάει πρώτος.`);
   }
-  if (applyOp(op, x, y) !== result) return slip('math', `Ξαναμέτρα: ${fmt(x)} ${op} ${fmt(y)} δεν κάνει ${fmt(result)}.`);
+  if (wrong === 'math') return slip('math', `Ξαναμέτρα: ${fmt(x)} ${op} ${fmt(y)} δεν κάνει ${fmt(result)}.`);
   const read = readLines(step, [...v.lines, { x, op, y, result }]).lines.at(-1);
-  if (!read) return slip('nothing', `Σωστός λογαριασμός, αλλά στην ιστορία δεν σημαίνει κάτι. Ποιοι αριθμοί πάνε μαζί;`);
+  if (wrong === 'nothing' || !read) return slip('nothing', `Σωστός λογαριασμός, αλλά στην ιστορία δεν σημαίνει κάτι. Ποιοι αριθμοί πάνε μαζί;`);
   const done = (line: CalcValue['lines'][number]) => ({ ...v, lines: [...v.lines, line], x: null, op: null, y: null, result: '' });
   // A step of a run (58 − 9 − 9): its label is what she did so far
   if (read.kind === 'run') {
