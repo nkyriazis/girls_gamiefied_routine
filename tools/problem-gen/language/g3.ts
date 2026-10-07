@@ -165,8 +165,9 @@ export const G3_LANGUAGE: LanguageFamily[] = [
     ['3.4 β57', gap('Σημεία στίξης', FILL_MARK, 'Στη γη υπάρχουν δάση{0} χωράφια και πόλεις.', ',', ['.', ';'])],
     ['3.4 τ41', gap('Σημεία στίξης', FILL_MARK, 'Η αυλή έχει κούνιες{0} τσουλήθρα και γήπεδα.', ',', ['.', ';'])],
     // τ41, exercise 2 (the postcard): a «.» key goes on a sentence with no verb; «Περνάμε υπέροχα στο
-    // χωριό της γιαγιάς» could be asked as well, with «;», so it is not offered with one
-    ['3.4 τ41', gap('Σημεία στίξης', FILL_MARK, 'Πολλούς χαιρετισμούς από την πανέμορφη Μάνη{0}', '.', [';', ','])],
+    // χωριό της γιαγιάς» could be asked as well, with «;», so it is not offered with one. The book's
+    // «από την πανέμορφη Μάνη» pushed the gap to the next line at 1280×800 (43 characters, wide letters)
+    ['3.4 τ41', gap('Σημεία στίξης', FILL_MARK, 'Πολλούς χαιρετισμούς από τη Μάνη{0}', '.', [';', ','])],
   ]),
 
   // 1.5 (β21), 3.1 (τ34: «Αυτό λέγεται παρομοίωση»), 3.2 (β52: the proverbs), Λεξιλόγιο (β62)
