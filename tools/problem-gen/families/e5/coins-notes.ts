@@ -136,7 +136,8 @@ export const coinsNotes: Family = {
     const euros = total;
     const convert = coin.perEuro
       ? [{ label: `${coin.short === 'κέρματα' ? 'Κέρματα' : 'Χαρτονομίσματα'} που κάνουν 1 €`, answer: coin.perEuro },
-        { label: r.chance(0.5) ? `${fmt(count)} : ${coin.perEuro} =` : 'Όλα τα χρήματα', answer: euros, unit: '€' }]
+        // (how many make 1 € is the row above: named, not written)
+        { label: r.chance(0.5) ? `${fmt(count)} : (${coin.short} για 1 €) =` : 'Όλα τα χρήματα', answer: euros, unit: '€' }]
       : [{ label: r.chance(0.5) ? `${fmt(count)} × ${coin.euros} =` : 'Όλα τα χρήματα', answer: euros, unit: '€' }];
     const convertHint = coin.perEuro
       ? `Το 1 € έχει 100 λεπτά. ${100 / coin.cents!} κέρματα των ${coin.cents} λεπτών κάνουν 1 €.`
@@ -153,7 +154,9 @@ export const coinsNotes: Family = {
       steps.push(b.choice('solve', `Πόσα € είναι ${coin.name(count).replace(/^[\d.]+ /, m => `τα ${m}`)};`, `${fmt(euros)} €`,
         wrongEuros.map(x => `${fmt(x)} €`), convertHint));
     } else {
-      steps.push(b.numbers('solve', 'Πρώτα βρίσκουμε πόσα € είναι όλα μαζί.', convert, convertHint));
+      // (here how many coins make 1 € is a row: the hint asks it instead of saying it)
+      steps.push(b.numbers('solve', 'Πρώτα βρίσκουμε πόσα € είναι όλα μαζί.', convert,
+        coin.perEuro ? `Το 1 € έχει 100 λεπτά: πόσες φορές χωράνε τα ${coin.cents} λεπτά στα 100;` : convertHint));
     }
     if (kind === 'many') {
       steps.push(b.numbers('solve', 'Λύνουμε.', [
@@ -165,8 +168,8 @@ export const coinsNotes: Family = {
       const named = r.chance(0.5);
       steps.push(b.numbers('solve', 'Λύνουμε.', [
         { label: named ? 'Κοστίζουν τα δύο πρώτα' : `${p1} + ${p2} =`, answer: p1 + p2, unit: '€' },
-        { label: named ? (kind === 'last' ? cap(`${costs(i3)} ${nom(i3)}`) : 'Περισσεύουν') : `${fmt(euros)} − ${p1 + p2} =`, answer: p3, unit: '€' },
-      ], `Από όλα τα χρήματα, τα ${fmt(euros)} €, βγάζουμε όσα κοστίζουν ${nom(i1)} και ${nom(i2)}.`));
+        { label: named ? (kind === 'last' ? cap(`${costs(i3)} ${nom(i3)}`) : 'Περισσεύουν') : `${fmt(euros)} − τα δύο πρώτα =`, answer: p3, unit: '€' },
+      ], `Από όλα τα χρήματα βγάζουμε όσα κοστίζουν ${nom(i1)} και ${nom(i2)}.`));
       const naive = count - p1 - p2;
       steps.push(r.chance(0.5) || naive <= 0 || naive === p3
         ? b.numbers('check', 'Πώς ελέγχουμε; Όλα μαζί πρέπει να κάνουν όσα ήταν στην αρχή.', [{ label: `${p1} + ${p2} + ${p3} =`, answer: euros, unit: '€' }])

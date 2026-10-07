@@ -102,10 +102,11 @@ export const compareOffers: Family = {
     const ops = r.chance(0.5);
     steps.push(b.numbers('solve', asksN ? `Λύνουμε για ${N} ${it.manyAcc}.` : `Λύνουμε για ${L} ${it.manyAcc}.`, [
       { label: ops ? `${A}: ${N} : ${a} =` : A, answer: N / a, ...(N / a > 1 ? { unit: s.packs } : {}) },
-      { label: ops ? `Κόστος: ${N / a} × ${pa} =` : `Κόστος με τα ${s.packs} των ${a}`, answer: (N / a) * pa, unit: '€' },
+      // (how many packs is the row above: named, not written)
+      { label: ops ? `Κόστος: τα ${s.packs} × ${pa} =` : `Κόστος με τα ${s.packs} των ${a}`, answer: (N / a) * pa, unit: '€' },
       { label: ops ? `${C}: ${N} : ${c} =` : C, answer: N / c, ...(N / c > 1 ? { unit: s.packs } : {}) },
-      { label: ops ? `Κόστος: ${N / c} × ${pc} =` : `Κόστος με τα ${s.packs} των ${c}`, answer: (N / c) * pc, unit: '€' },
-    ], `${N} : ${a} = ${N / a}, άρα ${N / a} ${s.packs} των ${a}.`));
+      { label: ops ? `Κόστος: τα ${s.packs} × ${pc} =` : `Κόστος με τα ${s.packs} των ${c}`, answer: (N / c) * pc, unit: '€' },
+    ], `Πόσες φορές χωράει το ${a} στο ${N}; Τόσα ${s.packs} των ${a} χρειάζονται.`));
     const D = diff * mult;
     if (claim) {
       steps.push(b.choice('check', `Έχει δίκιο ${q.nom};`,

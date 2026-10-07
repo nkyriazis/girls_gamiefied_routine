@@ -111,7 +111,7 @@ export const twoDigitTimes: Family = {
     steps.push(b.numbers('solve', `Χωρίζουμε το ${k} σε ${tens} και ${ones}.`, r.chance(0.5) ? [
       { label: `Οι δεκάδες: ${n} × ${tens} =`, answer: n * tens },
       { label: `Οι μονάδες: ${n} × ${ones} =`, answer: n * ones },
-      { label: `Όλα μαζί: ${fmt(n * tens)} + ${n * ones} =`, answer: total, unit: s.unit },
+      { label: 'Όλα μαζί: οι δεκάδες + οι μονάδες =', answer: total, unit: s.unit },
     ] : [
       { label: `${n} × ${tens} =`, answer: n * tens },
       { label: `${n} × ${ones} =`, answer: n * ones },

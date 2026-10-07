@@ -23,7 +23,7 @@ $N node tools/problem-gen/audit.ts --dir tools/problem-gen/.out/me --sample tool
 The output is the same on every run (each problem is seeded by its family and number, so a
 dropped draft changes only its own problem, not the ones after it), and a diff of the pool files
 shows exactly what a change did. Never edit the generated JSON by hand. `gen.ts` prints, per
-family, how many drafts it dropped and why; `--tells` also shows what the dropped choices gave away,
+family, how many drafts it dropped and why; `--tells` also shows what the dropped choices and hints gave away,
 and `--places` the prompts whose wordings can't spread the right option evenly by length (see «Steps»).
 `npm test` in the backend also loads every pool and solves every step.
 The builder's own pieces have tests that run with Node alone: `$N node --test tools/problem-gen/*.test.ts`.
@@ -160,9 +160,45 @@ The audit can't read Greek; you must. The traps the generator has already hit:
   its label («27 + 36 =») or `eq` for a row that only names its quantity (`{ label: 'Στην αρχή
   είχε', eq: '36 + 19' }`). It fits the digits («8 + 2 = 10, και μετά 3 ακόμα», «27 + 30 = 57, και
   μετά 6 ακόμα», «600 × 8 = 4.800, και μετά 6 × 8», «Πόσες φορές χωράει το 29 στο 903; Δοκιμάζουμε
-  29 × 30 = 870.») and never states a row's answer, after «=» or as a trial (2.502 : 5 tries 5 × 400,
-  not 5 × 500); a step it can't write one for throws. Written hints that work the row out («12 × 2 =
-  24.») are listed by the audit as warnings, per family.
+  29 × 30 = 870.») and never states a row's answer, after «=», as a trial (2.502 : 5 tries 5 × 400,
+  not 5 × 500) or as a part of the calculation (23 − 13 is counted up, «Μετράμε από το 13 ως το 23 …»,
+  since «23 − 10 = 13» names 10; a part that is an answer is only named, «Πρώτα 66 − 20, και μετά …»).
+  A product with zeros is asked, not worked: «Πόσο κάνει 5 × 3; Μετά βάζουμε το μηδενικό.» for
+  5 × 30, since «5 × 3 = 15» is 150 with its zero left off. A row worked from the answer of a row
+  above it gets no hint of its own: its hint would work on a number she hasn't found («200 × 2 = 400,
+  και μετά 60 × 2» for 260 × 2 under the row that asks 260) and help with a later row while she is
+  stuck on the first. So rowsHint hints an earlier row, by its digits if it must («Ξεκινάμε από τις
+  μονάδες: 4 × 5. Μετά οι δεκάδες, μαζί με τα κρατούμενα.»).
+  A step it can't write a fair one for is listed in `b.hintless`, and `gen.ts` drops the draft.
+- **Nothing on a step shows an answer still to work out** (#50 part 5d, `hintShows` in lib.ts, shared
+  by `gen.ts` and the audit). A hint shows after a wrong try, so one that works the row out is copied on
+  the second; every row of a step is on screen at once, so a label that writes the row above's answer
+  gives that row away. No prompt, hint or row label has a number that a numbers row of its step or a
+  later one asks for and she hasn't settled (the story's numbers, earlier steps' rows, the numbers of
+  earlier choices' right options): from 10 up anywhere, any size after «=» («12 : 4 = 3»), and in a
+  label also a small one that a row above asks for («3 × 7 =» under «Πόσα παιδιά [3]»). `gen.ts` drops
+  a draft that shows one («hints that tell»), the audit fails it in every pool. Showing the step is
+  «Δείξε μου»'s job.
+  - *A hint* says what to do with which numbers: a sub-calculation that isn't a row's answer
+    («Αφαιρούμε πρώτα το 20: 66 − 20 = 46. Από το 46 βγάζουμε και το 9.»), a trial below the quotient,
+    the multiples before the answer («Μετράμε ανά 10, 4 φορές: 10, 20, 30, …»), the rule rather than
+    the two candidates (estimate-first: «Κοιτάμε το ψηφίο των δεκάδων του 519: από 5 και πάνω, …»), or
+    the steps in words («Πρώτα βγάζουμε από τα 785 τα 340. Ό,τι μένει γίνεται ομάδες των 5 …»). Where the
+    rows say it all, leave the hint out and give the rows `eq`: rowsHint writes one.
+  - *A choice's hint* doesn't point at its right option either: no number only the right option has
+    and the story doesn't give. A rounding choice gives the rule, not the rounded numbers («Το 176
+    γίνεται 180 και το 449 γίνεται 450» sat above «180 + 450 = 630»; now estimate-first's choice,
+    unit-rate's check and e5-problem-apples say how to round). hintShows reads numbers rows only, so
+    nothing checks this yet: 3 such hints remain, a small number each (coins-notes' «Τα κέρματα δεν
+    αξίζουν 1 € το καθένα.» above «Μέτρησε κάθε κέρμα σαν 1 €», twice, and place-value-012's «… με
+    το 0.» above «Γράφουμε 0»), left for a follow-up.
+  - *A row label* names a row above by what it is, never by its number: «Ψωμιά σε 8 ημέρες: όσα την
+    ημέρα × 8 =», «3η ημέρα: 2η − 9 =», «Περίπου: η διαφορά τους», «Στην αρχή: ό,τι βρήκαμε + 23 =»,
+    with `eq` in numbers for rowsHint. Keep it short (it wraps to two lines at 1280×800 from about 50
+    code points, and at 390 px every label wraps) and say it the same way to every child (no «όλοι»,
+    «όλες»).
+  - The audit reads an equation from its first number, never from the middle of a calculation that
+    names a term («όσοι ήταν − 166 + 152 =» is not «166 + 152 =»).
 - A check step never states the number it asks for («Αναστοχαζόμαστε: πόσα βγαίνουν όλα μαζί;»,
   not «βγαίνουν όλα μαζί 390;» above a row whose answer is 390).
 - A family never repeats its known numbers (the [..|known] marks, sorted): `gen.ts` drops the
@@ -173,7 +209,7 @@ The audit can't read Greek; you must. The traps the generator has already hit:
   (`gender-baseline.json`, written by `audit.ts --gender-baseline` from the pools before #50 part
   5a); the ones already there are listed as warnings.
 - `b.order(...)`: plan steps whose order is unique.
-- Hints help with the step without doing it; they may show a sub-calculation.
+- Hints help with the step without doing it; they may show a sub-calculation that isn't a row's answer.
 - **Every equation you write must be true**, in the story, prompts, hints, rows and right
   options. The audit evaluates them all. Wrong options may hold wrong equations.
 

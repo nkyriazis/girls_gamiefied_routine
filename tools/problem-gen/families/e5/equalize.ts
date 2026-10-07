@@ -42,8 +42,8 @@ export const equalize: Family = {
         { label: `${other.Nom} μετά`, answer: after },
         { label: `${other.Nom} πριν`, answer: otherHas },
       ], toA
-        ? `${fmt(has)} + ${fmt(give)} = ${fmt(after)}. Τότε ${other.nom} έχει κι ${other.female ? 'αυτή' : 'αυτός'} ${fmt(after)}· πριν δώσει είχε ${fmt(give)} περισσότερα.`
-        : `${fmt(has)} − ${fmt(give)} = ${fmt(after)}. Τότε ${other.nom} έχει κι ${other.female ? 'αυτή' : 'αυτός'} ${fmt(after)}· πριν πάρει είχε ${fmt(give)} λιγότερα.`),
+        ? `Μετά ${a.nom} έχει ${fmt(has)} + ${fmt(give)}. Τόσα έχει τότε και ${other.nom}· πριν δώσει, είχε ${fmt(give)} περισσότερα.`
+        : `Μετά ${a.nom} έχει ${fmt(has)} − ${fmt(give)}. Τόσα έχει τότε και ${other.nom}· πριν πάρει, είχε ${fmt(give)} λιγότερα.`),
       b.choice('check', 'Πώς ελέγχουμε;',
         toA ? `${fmt(otherHas)} − ${fmt(give)} = ${fmt(after)} και ${fmt(has)} + ${fmt(give)} = ${fmt(after)}`
           : `${fmt(otherHas)} + ${fmt(give)} = ${fmt(after)} και ${fmt(has)} − ${fmt(give)} = ${fmt(after)}`,

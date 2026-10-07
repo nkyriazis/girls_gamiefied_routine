@@ -166,7 +166,7 @@ export const exchangeRate: Family = {
     const story = `${rate} ${has} ${noise} ${sought(s.mixAsk)};`;
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       r.chance(0.5) ? { label: `${n} × ${k} =`, answer: n * k, unit: Y.many } : { label: `${cap(Y.many)} για ${the(X)} ${n} ${X.manyAcc}`, answer: n * k },
-      { label: `${n * k} + ${m} =`, answer: n * k + m, unit: Y.many },
+      { label: `${cap(Y.many)} για ${the(X)} ${X.manyAcc} + ${m} =`, answer: n * k + m, unit: Y.many },
     ], s.title === 'Τα κιβώτια'
       ? 'Πρώτα βρίσκουμε πόσα μπουκάλια έχουν τα γεμάτα κιβώτια. Μετά προσθέτουμε τα μπουκάλια που είναι έξω από κιβώτια.'
       : `Πρώτα βρίσκουμε πόσ${Y.g === 'f' ? 'ες' : Y.g === 'm' ? 'ους' : 'α'} ${Y.manyAcc} αξίζουν ${the(X, false)} ${X.many}. Μετά προσθέτουμε ${the(Y)} ${Y.manyAcc} που υπάρχουν ήδη.`));

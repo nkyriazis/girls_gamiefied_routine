@@ -105,7 +105,8 @@ export const equalGroups: Family = {
     }
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: r.chance(0.5) ? `${n} × ${k} =` : 'Όλα μαζί', answer: total, unit: item.manyAcc },
-    ], `Μετράμε ανά ${k}: ${Array.from({ length: Math.min(n, 4) }, (_x, i) => fmt((i + 1) * k)).join(', ')}${n > 4 ? ', …' : ''}`));
+      // The count stops before the answer: «Μετράμε ανά 10, 4 φορές: 10, 20, 30, …»
+    ], `Μετράμε ανά ${k}, ${n} φορές: ${Array.from({ length: Math.min(n - 1, 3) }, (_x, i) => fmt((i + 1) * k)).join(', ')}, …`));
     const sum = (m: number) => `${Array(m).fill(k).join(' + ')} = ${fmt(k * m)}`;
     steps.push(n <= 5
       // Every option a sum, as the hint says: a product among sums stands out by its form.

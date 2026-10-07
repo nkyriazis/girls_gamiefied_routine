@@ -33,10 +33,10 @@ export const change: Family = {
       () => `${p.Nom} είχε ${known(`${fmt(have)} ευρώ`)} και ξόδεψε ${known(`${fmt(cost)} ευρώ`)} για ${item}. ${noise} ${sought(`Πόσα ευρώ ${p.his} έμειναν`)};`,
     ][telling]();
 
-    // Subtract the tens first, then the ones: 76 − 35: 76 − 30 = 46, 46 − 5 = 41
+    // Subtract the tens first, then the ones: 76 − 35: 76 − 30 = 46, and from 46 the 5 (never the answer, 41)
     const tens = cost - (cost % 10);
     const hint = cost % 10 && tens
-      ? `Αφαιρούμε πρώτα ${fmt(tens)} και μετά ${cost % 10}: ${fmt(have)} − ${fmt(tens)} = ${fmt(have - tens)}, ${fmt(have - tens)} − ${cost % 10} = ${fmt(left)}.`
+      ? `Αφαιρούμε πρώτα το ${fmt(tens)}: ${fmt(have)} − ${fmt(tens)} = ${fmt(have - tens)}. Από το ${fmt(have - tens)} βγάζουμε και το ${cost % 10}.`
       : `Από όσα είχε, βγάζουμε όσα πλήρωσε.`;
     const plan = r.chance(0.6);
     const steps = [

@@ -122,8 +122,9 @@ export const estimateFirst: Family = {
       steps.push(b.numbers('plan', `Υπολογίζουμε πρώτα περίπου: στρογγυλοποιούμε στην πιο κοντινή ${place}.`, [
         { label: `Το ${fmt(a)} είναι περίπου`, answer: ra },
         { label: `Το ${fmt(c)} είναι περίπου`, answer: rc },
-        { label: `${opText(ra, rc)} =`, answer: est, unit: s.unit },
-      ], `Το ${fmt(a)} είναι ανάμεσα στο ${fmt(Math.floor(a / to) * to)} και στο ${fmt(Math.floor(a / to) * to + to)}. Σε ποιο είναι πιο κοντά;`));
+        // (the rounded numbers are the rows above: this one names them, and the hint gives the rule, not the two candidates)
+        { label: `Περίπου: ${s.op === '+' ? 'το άθροισμά' : 'η διαφορά'} τους`, answer: est, unit: s.unit },
+      ], `Κοιτάμε το ψηφίο των ${to === 100 ? 'δεκάδων' : 'μονάδων'} του ${fmt(a)}: από 5 και πάνω, πάμε στην επόμενη ${place}.`));
     } else {
       // Wrong estimates: both rounded down, both rounded up, only one rounded
       const fa = Math.floor(a / to) * to, fc = Math.floor(c / to) * to;
@@ -134,7 +135,8 @@ export const estimateFirst: Family = {
         .filter(([v]) => v !== est).map(([, t]) => t).slice(0, 2);
       if (wrongs.length < 2) return null;
       steps.push(b.choice('plan', `Πόσο είναι περίπου; Στρογγυλοποιούμε στην πιο κοντινή ${place}.`, `${opText(ra, rc)} = ${fmt(est)}`, wrongs,
-        `Το ${fmt(a)} γίνεται ${fmt(ra)} και το ${fmt(c)} γίνεται ${fmt(rc)}.`));
+        // The rule, not the rounded numbers: they are the right option's (owner decision 3, #50 part 5d)
+        `Κοιτάμε το ψηφίο των ${to === 100 ? 'δεκάδων' : 'μονάδων'} του ${fmt(a)} και του ${fmt(c)}: από 5 και πάνω, πάμε στην επόμενη ${place}, αλλιώς μένουμε στην ίδια.`));
     }
     steps.push(b.numbers('solve', 'Τώρα υπολογίζουμε κανονικά.', [{ label: `${opText(a, c)} =`, answer: exact, unit: s.unit }],
       s.op === '+' ? 'Προσθέτουμε μονάδες, δεκάδες, εκατοντάδες. Μην ξεχάσεις τα κρατούμενα!' : 'Αφαιρούμε μονάδες, δεκάδες, εκατοντάδες. Όταν δεν φτάνουν, δανειζόμαστε μία δεκάδα ή μία εκατοντάδα.'));

@@ -98,7 +98,8 @@ export const roundEstimate: Family = {
     const rounding = b.numbers('plan', `Στρογγυλοποιούμε ${place}.`, [
       { label: `Το ${fmt(a)}`, answer: ra },
       { label: `Το ${fmt(c)}`, answer: rc },
-      { label: r.chance(0.5) ? `Περίπου: ${fmt(ra)} ${op} ${fmt(rc)} =` : 'Εκτίμηση', answer: est },
+      // (the rounded numbers are the rows above: named, not written)
+      { label: r.chance(0.5) ? `Περίπου: ${op === '+' ? 'το άθροισμά' : 'η διαφορά'} τους` : 'Εκτίμηση', answer: est },
     ], `Κοιτάμε το ψηφίο δεξιά από ${P === 1_000 ? 'τις χιλιάδες (τις εκατοντάδες)' : 'τις δεκάδες χιλιάδες (τις χιλιάδες)'}: αν είναι 5 ή μεγαλύτερο, ανεβαίνουμε.`);
     const exactStep = b.numbers('solve', 'Υπολογίζουμε ακριβώς.', [
       { label: r.chance(0.5) ? `${fmt(a)} ${op} ${fmt(c)} =` : (add ? 'Ακριβώς μαζί' : 'Ακριβώς η διαφορά'), answer: exact, unit: s.unit },

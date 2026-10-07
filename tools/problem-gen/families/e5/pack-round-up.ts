@@ -113,7 +113,10 @@ export const packRoundUp: Family = {
     const steps: ProblemStep[] = [
       b.tag(undefined, `Χρειαζόμαστε ${item.g === 'f' ? 'πόσες είναι όλες' : 'πόσα είναι όλα'}${twoDays ? ' μαζί' : ''} και ${item.g === 'f' ? 'πόσες' : 'πόσα'} χωράει ${oneBox(bx)}. Τα υπόλοιπα δεν αλλάζουν την απάντηση.`),
     ];
-    const all = twoDays ? `${fmt(x)} + ${fmt(y)} = ${fmt(n)}. ` : '';
+    // What to do with which numbers: the sum, the full boxes, what is left (each a row, never worked out here)
+    const left = `${item.g === 'f' ? 'όσες' : 'όσα'} περισσεύουν`;
+    const fill = `${howMany2(bx)} ${bx.t.many} των ${k} γεμίζουν; Ό,τι μένει περισσεύει.`;
+    const work = twoDays ? `Πρώτα ${fmt(x)} + ${fmt(y)}. Μετά: ${fill}` : cap(fill);
     if (twoDays && r.chance(0.4)) {
       steps.push(b.order('plan', 'Βάζουμε σε σειρά το σχέδιό μας.', [
         `Βρίσκω ${howManyAll(item)} είναι ${item.g === 'f' ? 'όλες' : 'όλα'} μαζί`,
@@ -125,26 +128,26 @@ export const packRoundUp: Family = {
       steps.push(b.choice('plan', `Με ποια πράξη βρίσκουμε ${howMany2(bx)} ${bx.t.many} γεμίζουν;`,
         `Κάνω ${fmt(n)} : ${k}`,
         [`Κάνω ${fmt(n)} × ${k}`, `Κάνω ${fmt(n)} − ${k}`, ...(twoDays ? [`Κάνω ${fmt(x)} : ${k}`] : [])],
-        `Σε κάθε ${bx.t.one} μπαίνουν ${k}: πόσες φορές χωράει το ${k} στο ${fmt(n)};`));
+        `Σε κάθε ${bx.t.one} μπαίνουν ${k}: πόσες φορές χωράει το ${k} ${twoDays ? 'στο σύνολο' : `στο ${fmt(n)}`};`));
     }
 
     const rows = [
       ...(twoDays ? [{ label: `${cap2(item.many)} και τις δύο ημέρες: ${fmt(x)} + ${fmt(y)} =`, answer: n }] : []),
-      { label: r.chance(0.5) ? `${cap(bx.full)} ${bx.t.many} (${fmt(n)} : ${k}, το πηλίκο)` : `${cap(bx.full)} ${bx.t.many}`, answer: q },
+      { label: r.chance(0.5) ? `${cap(bx.full)} ${bx.t.many} (${twoDays ? item.many : fmt(n)} : ${k}, το πηλίκο)` : `${cap(bx.full)} ${bx.t.many}`, answer: q },
       { label: `${cap2(item.many)} που περισσεύουν`, answer: rest },
     ];
     if (ask === 'need') {
-      steps.push(b.numbers('solve', 'Λύνουμε.', rows, `${all}${k} × ${q} = ${fmt(k * q)}.`));
+      steps.push(b.numbers('solve', 'Λύνουμε.', rows, work));
       steps.push(b.choice('solve', `${HowMany(bx.t)} ${bx.t.many} χρειάζονται;`, count(q + 1, bx.t),
         [count(q, bx.t), count(q + 2, bx.t), count(rest, bx.t)].filter((o, i, a) => o !== count(q + 1, bx.t) && a.indexOf(o) === i),
         `${cap(item.g === 'f' ? 'όσες' : 'όσα')} περισσεύουν δεν μπορούν να μείνουν έξω: θέλουν κι ${item.g === 'f' ? 'αυτές' : 'αυτά'} ${oneBox(bx)}.`));
     } else if (ask === 'full') {
-      steps.push(b.numbers('solve', 'Λύνουμε.', rows, `${all}${k} × ${q} = ${fmt(k * q)}.`));
+      steps.push(b.numbers('solve', 'Λύνουμε.', rows, work));
     } else {
       steps.push(b.numbers('solve', 'Λύνουμε.', [
         ...rows,
-        { label: r.chance(0.5) ? `Λείπουν από ${lastAcc(bx)}: ${k} − ${rest} =` : `Λείπουν από ${lastAcc(bx)}`, answer: k - rest, unit: item.many },
-      ], `${all}${k} × ${q} = ${fmt(k * q)}. ${cap2(lastNom(bx))} έχει μόνο ${rest}.`));
+        { label: r.chance(0.5) ? `Λείπουν από ${lastAcc(bx)}: ${k} − ${left} =` : `Λείπουν από ${lastAcc(bx)}`, answer: k - rest, unit: item.many },
+      ], `${work} ${cap2(lastNom(bx))} έχει μόνο ${left}.`));
     }
 
     if (r.chance(0.5)) {

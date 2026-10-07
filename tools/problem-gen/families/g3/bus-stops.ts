@@ -100,13 +100,14 @@ export const busStops: Family = {
     // "Στη Λαμία" → "μετά τη Λαμία"
     const afterStop = (i: number) => v.stops[i].replace(/^Σ/, 'μετά ');
     const style = r.int(0, 2);
+    // A row after the first says «όσοι ήταν», not the number the row above asks for
     const rows = style === 0
       ? moves.flatMap((m, i) => [
-        { label: `Κατεβαίνουν: ${fmt(i ? after[i - 1] : start)} − ${fmt(m.off)} =`, answer: mid[i] },
-        { label: `Ανεβαίνουν: ${fmt(mid[i])} + ${fmt(m.on)} =`, answer: after[i] },
+        { label: `Κατεβαίνουν: ${i ? 'όσοι ήταν' : fmt(start)} − ${fmt(m.off)} =`, answer: mid[i] },
+        { label: `Ανεβαίνουν: όσοι έμειναν + ${fmt(m.on)} =`, answer: after[i] },
       ])
       : style === 1
-        ? moves.map((m, i) => ({ label: `${Cap(afterStop(i))}: ${fmt(i ? after[i - 1] : start)} − ${fmt(m.off)} + ${fmt(m.on)} =`, answer: after[i] }))
+        ? moves.map((m, i) => ({ label: `${Cap(afterStop(i))}: ${i ? 'όσοι ήταν' : fmt(start)} − ${fmt(m.off)} + ${fmt(m.on)} =`, answer: after[i] }))
         : moves.map((_m, i) => ({ label: Cap(afterStop(i)), answer: after[i] }));
     steps.push(b.numbers('solve', 'Λύνουμε στάση στάση.', rows.map(x => ({ ...x, unit: v.who })),
       'Σε κάθε στάση: πρώτα αφαιρούμε όσους κατεβαίνουν, μετά προσθέτουμε όσους ανεβαίνουν.'));

@@ -211,6 +211,11 @@ export const togetherAgain: Family = {
         : 'Ό,τι δεν αλλάζει την απάντηση δεν χρειάζεται.'),
     ];
 
+    // The multiples of x before the Ε.Κ.Π., three at most: the list never reaches the answer («15, 30, …» for 45)
+    const upTo = (x: number) => {
+      const xs = [1, 2, 3].map(i => i * x).filter(v => v < L);
+      return xs.length ? `${xs.map(fmt).join(', ')}, …` : `${fmt(x)} και τα πολλαπλάσιά του.`;
+    };
     const plan = r.int(0, 2);
     if (plan === 0) {
       steps.push(b.choice('plan', 'Τι ψάχνουμε στην ουσία;', [`Το Ε.Κ.Π. των ${list(nums)}`, 'Το Ε.Κ.Π. τους'],
@@ -220,7 +225,7 @@ export const togetherAgain: Family = {
     } else if (plan === 1) {
       steps.push(b.choice('plan', 'Ποιο εργαλείο μας βοηθά περισσότερο;', `Ένας κατάλογος με τα πολλαπλάσια των ${list(nums)}`,
         [`Ένας κατάλογος με τους διαιρέτες των ${list(nums)}`, `Μια διαίρεση, ${fmt(big)} : ${fmt(ps[0])}, και κρατάω το πηλίκο`],
-        `Γράφουμε πότε ξαναγίνεται το καθένα: ${fmt(ps[0])}, ${fmt(2 * ps[0])}, ${fmt(3 * ps[0])}, …`));
+        `Γράφουμε πότε ξαναγίνεται το καθένα: ${upTo(ps[0])}`));
     } else {
       steps.push(b.order('plan', 'Βάζουμε σε σειρά το σχέδιό μας.', [
         `Γράφω τα πολλαπλάσια του μεγαλύτερου αριθμού, του ${fmt(big)}`,
@@ -236,15 +241,16 @@ export const togetherAgain: Family = {
       for (let i = 2; i <= k; i++) rows.push({ label: `${fmt(big)} × ${i} =`, answer: big * i });
       rows.push({ label: `Το πρώτο που διαιρείται και ${others}`, answer: L, unit: sc.unit });
       steps.push(b.numbers('solve', `Γράφουμε τα πολλαπλάσια του ${fmt(big)}.`, rows,
-        `Διαιρείται το ${fmt(2 * big)} ${others}; Αν όχι, πάμε στο επόμενο.`));
+        `Παίρνουμε τα πολλαπλάσια του ${fmt(big)} ένα ένα: διαιρείται ${others}; Αν όχι, πάμε στο επόμενο.`));
     } else if (r.chance(0.5)) {
       steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: `Ε.Κ.Π. των ${list(nums)}`, answer: L, unit: sc.unit }],
-        `Πολλαπλάσια του ${fmt(big)}: ${fmt(big)}, ${fmt(2 * big)}, ${fmt(3 * big)}, … Ποιο διαιρείται πρώτο και ${others};`));
+        `Πολλαπλάσια του ${fmt(big)}: ${upTo(big)} Ποιο διαιρείται πρώτο και ${others};`));
     } else {
       steps.push(b.numbers('solve', 'Λύνουμε και βλέπουμε πόσες φορές ξαναγίνεται το καθένα ως τότε.', [
         { label: `Ε.Κ.Π. των ${list(nums)}`, answer: L, unit: sc.unit },
-        ...ps.map((p, i) => ({ label: `${sc.each[i]} σε ${fmt(L)} ${sc.unit}: ${fmt(L)} : ${fmt(p)} =`, answer: L / p })),
-      ], `Πολλαπλάσια του ${fmt(big)}: ${fmt(big)}, ${fmt(2 * big)}, ${fmt(3 * big)}, … Ποιο διαιρείται πρώτο και ${others};`));
+        // (the Ε.Κ.Π. is the row above: named, not written)
+        ...ps.map((p, i) => ({ label: `${sc.each[i]} ως τότε: Ε.Κ.Π. : ${fmt(p)} =`, answer: L / p })),
+      ], `Πολλαπλάσια του ${fmt(big)}: ${upTo(big)} Ποιο διαιρείται πρώτο και ${others};`));
     }
 
     if (claim) {

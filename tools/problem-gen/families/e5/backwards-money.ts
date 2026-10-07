@@ -146,8 +146,9 @@ export const backwardsMoney: Family = {
     const back = [];
     for (let i = ops.length - 1; i >= 0; i--) {
       const op = ops[i];
-      const after = values[i + 1];
-      const how = op.kind === 'half' ? `${fmt(after)} × 2` : op.kind === 'minus' ? `${fmt(after)} + ${fmt(op.n)}` : `${fmt(after)} − ${fmt(op.n)}`;
+      // The row above is «ό,τι βρήκαμε», never its number; the end is the story's
+      const after = i === ops.length - 1 ? fmt(values[i + 1]) : 'ό,τι βρήκαμε';
+      const how = op.kind === 'half' ? `${after} × 2` : op.kind === 'minus' ? `${after} + ${fmt(op.n)}` : `${after} − ${fmt(op.n)}`;
       const name = i === 0 ? 'Στην αρχή' : op.before;
       back.push({ label: show ? `${name}: ${how} =` : name, answer: values[i], unit: s.unit });
     }

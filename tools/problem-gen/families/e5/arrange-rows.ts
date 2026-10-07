@@ -127,7 +127,7 @@ export const arrangeRows: Family = {
       // (one fewer only from three on: «10» beside «10 και 12» stands out; else the last swapped for one that doesn't divide)
       const wrongs = [list(wrongA), wrongB.length >= 2 ? list(wrongB) : list([...inRange.slice(0, -1), notIn[0]].sort((x, y) => x - y)), list(wrongC)].filter((o, i, a) => o !== right && a.indexOf(o) === i);
       steps.push(b.choice('solve', `Ποιοι αριθμοί από το ${fmt(lo)} ως το ${fmt(hi)} διαιρούν ακριβώς το ${fmt(n)};`, right, wrongs,
-        `Δοκιμάζουμε έναν έναν: ${fmt(n)} : ${fmt(inRange[0])} = ${fmt(n / inRange[0])}, τέλεια διαίρεση.`));
+        `Δοκιμάζουμε έναν έναν: διαιρείται το ${fmt(n)} ακριβώς με το ${fmt(inRange[0])};`));
       steps.push(b.numbers('solve', 'Πόσες σειρές βγαίνουν κάθε φορά;',
         inRange.map(d => ({ label: r.chance(0.5) ? `Με ${fmt(d)} σε κάθε σειρά: ${fmt(n)} : ${fmt(d)} =` : `Με ${fmt(d)} σε κάθε σειρά`, answer: n / d, unit: 'σειρές', eq: `${fmt(n)} : ${fmt(d)}` }))));
       steps.push(b.numbers('check', 'Αναστοχαζόμαστε: βγαίνουν πάλι όλ' + (it.g === 'f' ? 'ες' : it.g === 'm' ? 'οι' : 'α') + ';',

@@ -2,7 +2,7 @@
 //
 //   node tools/problem-gen/gen.ts            write backend/exercise-pools/*-generated.json
 //   node tools/problem-gen/gen.ts --check    generate and report, write nothing
-//   node tools/problem-gen/gen.ts --tells    also print, per family, what the dropped choices gave away
+//   node tools/problem-gen/gen.ts --tells    also print, per family, what the dropped choices and hints gave away
 //   node tools/problem-gen/gen.ts --places   also print, per family and prompt, the choices whose wordings can't
 //                                            spread the right option evenly over the places by length, and the
 //                                            busiest place's share at best (lib.ts, the place rule): where wordings are short
@@ -15,15 +15,17 @@
 // so the output is the same on every run until a family changes, and a dropped draft changes only
 // its own problem, not the ones after it. A draft is dropped when its story repeats, when its
 // known numbers (the [..|known] marks) repeat a problem of its family (the same calculation in
-// another story), or when a choice gives its answer away by length (lib.ts, lengthTell) in every
-// wording it has; the family tries again, and a family that can't fill its share leaves the rest
+// another story), when a choice gives its answer away by length (lib.ts, lengthTell) in every
+// wording it has, or when a step shows an answer still to work out (lib.ts, hintShows: a hint, a prompt or
+// a row label; a numbers step with no hint of its own that rowsHint can't write one for without an answer
+// counts too); the family tries again, and a family that can't fill its share leaves the rest
 // to the others. A choice whose options have several wordings takes the ones that put the right
 // option at a place by length that the problem's id picks (lib.ts, placeSeed): see lib.ts on the place rule.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ProblemExercise } from '../../shared/types.ts';
-import { builder, hash, READ_PROMPT_E5, READ_PROMPT_G3, placeSeed, rng, type Family } from './lib.ts';
+import { builder, hash, hintShows, READ_PROMPT_E5, READ_PROMPT_G3, placeSeed, rng, shownText, type Family } from './lib.ts';
 import { G3_FAMILIES } from './families/g3/index.ts';
 import { E5_FAMILIES } from './families/e5/index.ts';
 
@@ -49,13 +51,13 @@ const GRADES = [
 const knownNumbers = (story: string) => [...story.matchAll(/\[([^\]|]+)\|known\]/g)]
   .flatMap(m => m[1].match(/\d{1,3}(?:\.\d{3})+|\d+/g) ?? []).map(x => x.replace(/\./g, '')).sort().join(',');
 
-type Drops = { repeated: number; sameNumbers: number; tells: number };
+type Drops = { repeated: number; sameNumbers: number; tells: number; hints: number };
 
 function generate(families: Family[], prefix: string, stars: number, readPrompt: string, target: number) {
   const out: ProblemExercise[] = [];
   const stories = new Set<string>();
   const report: { id: string; made: number; wanted: number; drops: Drops; tells: string[]; uneven: Map<string, number[]> }[] = [];
-  const makers = families.map(f => ({ f, n: 0, retry: 0, numbers: new Set<string>(), drops: { repeated: 0, sameNumbers: 0, tells: 0 }, tells: [] as string[], uneven: new Map<string, number[]>() }));
+  const makers = families.map(f => ({ f, n: 0, retry: 0, numbers: new Set<string>(), drops: { repeated: 0, sameNumbers: 0, tells: 0, hints: 0 }, tells: [] as string[], uneven: new Map<string, number[]>() }));
 
   const take = (m: (typeof makers)[number], wanted: number) => {
     let made = 0;
@@ -71,6 +73,8 @@ function generate(families: Family[], prefix: string, stars: number, readPrompt:
       const numbers = knownNumbers(draft.story);
       if (numbers && m.numbers.has(numbers)) { m.drops.sameNumbers++; continue; }
       if (b.tells.length) { m.drops.tells++; if (m.tells.length < 3) m.tells.push(b.tells[0]); continue; }
+      const told = [...b.hintless.map(h => `no fair hint for ${h}`), ...hintShows(draft).map(shownText)];
+      if (told.length) { m.drops.hints++; if (m.tells.length < 6) m.tells.push(`${id}: ${told[0]}`); continue; }
       stories.add(draft.story);
       for (const u of b.uneven) m.uneven.set(u.key, [...(m.uneven.get(u.key) ?? []), u.busiest]);
       if (numbers) m.numbers.add(numbers);
@@ -126,7 +130,7 @@ for (const g of GRADES) {
   for (const x of report) {
     const d = x.drops;
     console.log(`  ${x.made < x.wanted ? '!' : ' '} ${x.id.padEnd(32)} ${String(x.made).padStart(3)} (share ${x.wanted})` +
-      `${d.repeated + d.sameNumbers + d.tells ? `  dropped: ${[d.repeated && `${d.repeated} same story`, d.sameNumbers && `${d.sameNumbers} same numbers`, d.tells && `${d.tells} options that tell`].filter(Boolean).join(', ')}` : ''}`);
+      `${d.repeated + d.sameNumbers + d.tells + d.hints ? `  dropped: ${[d.repeated && `${d.repeated} same story`, d.sameNumbers && `${d.sameNumbers} same numbers`, d.tells && `${d.tells} options that tell`, d.hints && `${d.hints} hints that tell`].filter(Boolean).join(', ')}` : ''}`);
     if (process.argv.includes('--tells')) for (const t of x.tells) console.log(`      ${t}`);
     if (process.argv.includes('--places')) for (const [k, b] of x.uneven) console.log(`      ${b.length} can't spread evenly, busiest place ${Math.round(100 * b.reduce((s, x) => s + x, 0) / b.length)}% at best: «${k}»`);
   }

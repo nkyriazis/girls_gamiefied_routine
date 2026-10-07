@@ -122,10 +122,11 @@ export const distanceTime: Family = {
         ], 'Πρώτα όσα έγιναν, μετά όσα μένουν.'));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [
-        { label: ops ? `${cap(s.v[1])}: ${fmt(k)} × ${h} =` : `Ως τώρα ${s.v[1]}`, answer: done, unit: 'χιλιόμετρα' },
-        { label: ops ? `Μένουν: ${fmt(R)} − ${fmt(done)} =` : 'Μένουν', answer: R - done, unit: 'χιλιόμετρα' },
-        ...(asksHoursLeft ? [{ label: ops ? `Ώρες ακόμα: ${fmt(R - done)} : ${fmt(k)} =` : 'Ώρες ακόμα', answer: more, unit: 'ώρες' }] : []),
-      ], `${fmt(k)} × ${h} = ${fmt(done)}.`));
+        // A row names the one above («όσα ως τώρα»), never its number; the hint is rowsHint's, from `eq`
+        { label: ops ? `${cap(s.v[1])}: ${fmt(k)} × ${h} =` : `Ως τώρα ${s.v[1]}`, answer: done, unit: 'χιλιόμετρα', eq: `${fmt(k)} × ${h}` },
+        { label: ops ? `Μένουν: ${fmt(R)} − όσα ως τώρα =` : 'Μένουν', answer: R - done, unit: 'χιλιόμετρα', eq: `${fmt(R)} − ${fmt(done)}` },
+        ...(asksHoursLeft ? [{ label: ops ? `Ώρες ακόμα: όσα μένουν : ${fmt(k)} =` : 'Ώρες ακόμα', answer: more, unit: 'ώρες', eq: `${fmt(R - done)} : ${fmt(k)}` }] : []),
+      ]));
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: πώς ελέγχουμε;', `${fmt(done)} + ${fmt(R - done)} = ${fmt(R)}`,
         [`${fmt(R)} + ${fmt(done)} = ${fmt(R + done)}`, `${fmt(R)} − ${fmt(k)} = ${fmt(R - k)}`],
         'Τα δύο κομμάτια μαζί πρέπει να κάνουν όλη τη διαδρομή.'));
@@ -135,14 +136,14 @@ export const distanceTime: Family = {
           [`${fmt(done)} × ${fmt(k)}`, `${fmt(done)} − ${fmt(k)}`], 'Κάθε ώρα «τρώει» ένα κομμάτι της διαδρομής.'));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: ops ? `${fmt(done)} : ${fmt(k)} =` : 'Θα φτάσει σε', answer: h, unit: 'ώρες' }],
-        `${fmt(k)} × 2 = ${fmt(k * 2)}, ${fmt(k)} × 3 = ${fmt(k * 3)}, …`));
+        `Πόσες φορές χωράει το ${fmt(k)} στο ${fmt(done)}; Μετράμε ανά ${fmt(k)}.`));
       steps.push(b.numbers('check', 'Αναστοχαζόμαστε: σε τόσες ώρες φτάνει;', [{ label: `${fmt(k)} × ${h} =`, answer: done, unit: 'χιλιόμετρα' }]));
     } else {
       steps.push(b.numbers('solve', 'Λύνουμε κάθε κομμάτι χωριστά.', [
-        { label: ops ? `Πρώτο κομμάτι: ${fmt(k)} × ${h} =` : 'Πρώτο κομμάτι', answer: done, unit: 'χιλιόμετρα' },
-        { label: ops ? `Δεύτερο κομμάτι: ${fmt(k2)} × ${h2} =` : 'Δεύτερο κομμάτι', answer: k2 * h2, unit: 'χιλιόμετρα' },
-        { label: ops ? `Συνολικά: ${fmt(done)} + ${fmt(k2 * h2)} =` : 'Συνολικά', answer: done + k2 * h2, unit: 'χιλιόμετρα' },
-      ], `${fmt(k)} × ${h} = ${fmt(done)}.`));
+        { label: ops ? `Πρώτο κομμάτι: ${fmt(k)} × ${h} =` : 'Πρώτο κομμάτι', answer: done, unit: 'χιλιόμετρα', eq: `${fmt(k)} × ${h}` },
+        { label: ops ? `Δεύτερο κομμάτι: ${fmt(k2)} × ${h2} =` : 'Δεύτερο κομμάτι', answer: k2 * h2, unit: 'χιλιόμετρα', eq: `${fmt(k2)} × ${h2}` },
+        { label: ops ? 'Συνολικά: πρώτο + δεύτερο =' : 'Συνολικά', answer: done + k2 * h2, unit: 'χιλιόμετρα', eq: `${fmt(done)} + ${fmt(k2 * h2)}` },
+      ]));
       const wrongSame = k * (h + h2);
       steps.push(b.choice('check', `Κάποιος έγραψε ${fmt(k)} × ${h + h2} = ${fmt(wrongSame)}. Τι λάθος έκανε;`,
         `Στο δεύτερο κομμάτι: ${fmt(k2)}, όχι ${fmt(k)}`,

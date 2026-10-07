@@ -106,7 +106,7 @@ export const twoPurchases: Family = {
       // Subtract one purchase after the other
       steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
         { label: `Μετά την πρώτη αγορά: ${fmt(have)} − ${a} =`, answer: mid, unit: 'ευρώ' },
-        { label: `Μετά τη δεύτερη αγορά: ${fmt(mid)} − ${c} =`, answer: left, unit: 'ευρώ' },
+        { label: `Μετά τη δεύτερη αγορά: ό,τι έμεινε − ${c} =`, answer: left, unit: 'ευρώ' },
       ], `Από τα ${fmt(have)} ευρώ βγάζουμε πρώτα τα ${a} ευρώ και από ό,τι μείνει βγάζουμε τα ${c}.`));
     } else if (route === 1) {
       steps.push(b.choice('plan', 'Ποια πράξη μας δίνει την απάντηση;', `${fmt(have)} − ${a} − ${c}`,
@@ -125,7 +125,7 @@ export const twoPurchases: Family = {
       ], 'Δεν μπορούμε να αφαιρέσουμε κάτι που δεν έχουμε βρει ακόμα.'));
       steps.push(b.numbers('solve', 'Λύνουμε.', [
         { label: `Ξόδεψε: ${a} + ${c} =`, answer: spent, unit: 'ευρώ' },
-        { label: `Έμειναν: ${fmt(have)} − ${spent} =`, answer: left, unit: 'ευρώ' },
+        { label: `Έμειναν: ${fmt(have)} − όσα ξόδεψε =`, answer: left, unit: 'ευρώ' },
       ], `Πρώτα προσθέτουμε τις δύο τιμές, μετά αφαιρούμε από τα ${fmt(have)}.`));
     }
     steps.push(r.chance(0.6)

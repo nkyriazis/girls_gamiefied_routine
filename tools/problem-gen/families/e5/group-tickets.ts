@@ -86,9 +86,10 @@ export const groupTickets: Family = {
       steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
         { label: ops ? `Παιδικό εισιτήριο: ${A} − ${less} =` : 'Παιδικό εισιτήριο', answer: C, unit: '€' },
         { label: ops ? `Ενήλικες: ${f.adults} × ${A} =` : 'Για τους ενήλικες', answer: f.adults * A, unit: '€' },
-        { label: ops ? `Παιδιά: ${f.kids} × ${C} =` : 'Για τα παιδιά', answer: f.kids * C, unit: '€' },
+        // A row names the one above («το παιδικό», «όλοι μαζί»), never its number
+        { label: ops ? `Παιδιά: ${f.kids} × το παιδικό =` : 'Για τα παιδιά', answer: f.kids * C, unit: '€' },
         { label: 'Όλοι μαζί', answer: total, unit: '€' },
-        ...(pays ? [{ label: ops ? `Ρέστα: ${note} − ${total} =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
+        ...(pays ? [{ label: ops ? `Ρέστα: ${note} − το σύνολο =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
       ], `Το «${less} € λιγότερα» σημαίνει ${A} − ${less}.`));
       const allAdult = nAll * A;
       steps.push(b.choice('check', `Αναστοχαζόμαστε: κάποιος βρήκε ${nAll} × ${A} = ${allAdult} €. Τι λάθος έκανε;`,
@@ -122,12 +123,12 @@ export const groupTickets: Family = {
       `Πόσες ολόκληρες δεκάδες μαθητών υπάρχουν στο ${pupils};`));
     const ops = r.chance(0.6);
     steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
-      { label: ops ? `Μαθητές: ${pupils} × ${C} =` : 'Για τους μαθητές', answer: pupils * C, unit: '€' },
+      { label: ops ? `Μαθητές: ${pupils} × ${C} =` : 'Για τους μαθητές', answer: pupils * C, unit: '€', eq: `${pupils} × ${C}` },
       { label: ops ? `Εκπαιδευτικοί που πληρώνουν: ${teachers} − ${free} =` : 'Εκπαιδευτικοί που πληρώνουν', answer: payT },
-      { label: ops ? `Για αυτούς: ${payT} × ${A} =` : 'Για τους εκπαιδευτικούς', answer: payT * A, unit: '€' },
+      { label: ops ? `Για αυτούς: όσοι πληρώνουν × ${A} =` : 'Για τους εκπαιδευτικούς', answer: payT * A, unit: '€' },
       { label: 'Όλα μαζί', answer: total, unit: '€' },
-      ...(note ? [{ label: ops ? `Ρέστα: ${note} − ${fmt(total)} =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
-    ], `${pupils} × ${C} = ${fmt(pupils * C)}.`));
+      ...(note ? [{ label: ops ? `Ρέστα: ${note} − όλα μαζί =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
+    ]));
     steps.push(b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: λίγο πάνω από τα ${fmt(pupils * C)} € των μαθητών`,
       [`Όχι: πρέπει να είναι ${fmt((pupils + teachers) * A)} €, όλοι με τιμή ενήλικα`, `Όχι: πρέπει να είναι λιγότερα από ${fmt(pupils * C)} €`],
       'Συγκρίνουμε με το ποσό για τους μαθητές μόνο.'));

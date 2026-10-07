@@ -149,9 +149,12 @@ export const divisibility: Family = {
       const options = `${s.of(2)}, των 3, των 5, των 9 ή των 10`;
       const story = `${s.open(known(count(n, it, true)), s.noise(r))} ${s.split}, χωρίς να περισσέψει ${none}. `
         + `${s.thinks} ${known(options)}. ${sought(fem(s) ? 'Ποιες από αυτές γίνονται' : 'Ποια από αυτά γίνονται')};`;
+      // The sum's row is named only: its digits would show the last one, the row above's answer. (The draw
+      // that chose between the two labels stays, so the problems after it stay the same.)
+      r.chance(0.5);
       steps.push(b.numbers('solve', `Κοιτάμε τον αριθμό ${fmt(n)}.`, [
         { label: 'Το τελευταίο ψηφίο του', answer: last },
-        { label: r.chance(0.5) ? `Το άθροισμα των ψηφίων: ${ds.join(' + ')} =` : 'Το άθροισμα των ψηφίων του', answer: sum },
+        { label: 'Το άθροισμα των ψηφίων του', answer: sum },
       ], `Το τελευταίο ψηφίο είναι το πιο δεξί του ${fmt(n)}. Μετά προσθέτουμε τα ψηφία ένα ένα, από τα αριστερά.`));
       // One with as many as the right one (one swapped for another), then lists one longer (from a
       // single one) or one shorter (from three): a list of one beside lists of two, or of three beside
@@ -190,12 +193,13 @@ export const divisibility: Family = {
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       sumRule ? { label: `Άθροισμα ψηφίων: ${ds.join(' + ')} =`, answer: sum } : { label: 'Τελευταίο ψηφίο', answer: last },
       { label: `${cap(it.many)} που περισσεύουν`, answer: rem },
-    ], sumRule ? `Το ${sum} δεν διαιρείται με το ${k}: ό,τι περισσεύει από το ${sum}, περισσεύει και από το ${fmt(n)}.`
-      : `Το ${fmt(n)} τελειώνει σε ${last}. Ο πιο κοντινός μικρότερος αριθμός που διαιρείται με το ${k} είναι το ${fmt(n - rem)}.`));
+    ], sumRule ? `Ό,τι περισσεύει από το άθροισμα των ψηφίων στη διαίρεση με το ${k}, περισσεύει και από το ${fmt(n)}.`
+      : `Κοιτάμε το τελευταίο ψηφίο του ${fmt(n)}: ό,τι περισσεύει από αυτό στη διαίρεση με το ${k}, περισσεύει και από το ${fmt(n)}.`));
     steps.push(b.numbers('check', 'Αναστοχαζόμαστε: επαληθεύουμε με την Ευκλείδεια διαίρεση.', [
       { label: `${cap(s.groups)} (πηλίκο της διαίρεσης ${fmt(n)} : ${k})`, answer: q },
-      { label: `${k} × ${fmt(q)} + ${rem} =`, answer: n },
-    ]));
+      { label: `${k} × πηλίκο + ${rem} =`, answer: n },
+      // (the second row's answer is the story's number, so rowsHint, which can't tell, would name none)
+    ], `Πόσες φορές χωράει το ${k} στο ${fmt(n)}; Μετά: Δ = δ × π + υ.`));
     return { title: r.pick(s.title), story, steps };
   },
 };
