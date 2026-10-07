@@ -56,6 +56,7 @@ const SETTINGS: Setting[] = [
     scene: (r, ps, [kid]) => {
       const grandma = r.chance(0.5);
       const who = grandma ? `Η γιαγιά ${kid.gen}` : `Ο παππούς ${kid.gen}`;
+      const whoAfter = who[0].toLowerCase() + who.slice(1); // «η γιαγιά του Μάρκου»: only the article
       const plants = r.sample(PLANTS, ps.length);
       const noise = r.chance(0.5)
         ? extra(`που είναι ${r.int(66, 86)} χρονών`)
@@ -69,7 +70,7 @@ const SETTINGS: Setting[] = [
           + `${cap(list(needs))}. ${known(`Σήμερα πότισε ${all}`)}.`,
         ask: `Σε πόσες ημέρες θα ποτίσει ξανά ${all} την ίδια ημέρα`,
         ask2: `Μετά από πόσες ημέρες θα ξαναποτίσει ${all} μαζί`,
-        named: [`Σε πόσες ημέρες θα ποτίσει ${who.toLowerCase()} ξανά ${all} την ίδια ημέρα`, `Μετά από πόσες ημέρες θα ξαναποτίσει ${who.toLowerCase()} ${all} μαζί`],
+        named: [`Σε πόσες ημέρες θα ποτίσει ${whoAfter} ξανά ${all} την ίδια ημέρα`, `Μετά από πόσες ημέρες θα ξαναποτίσει ${whoAfter} ${all} μαζί`],
         unit: 'ημέρες',
         each: plants.map(p => `Ποτίσματα ${p.of}`),
       };
