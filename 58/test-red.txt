@@ -1,0 +1,165 @@
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"aa7d94c9-1552-4c7f-89d4-0fb16f80ec18"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"0a07b9cf-68e3-442a-9226-fe1b4aa169fa"}
+[ACTION:ALARM_DISMISSED] {"runId":"5eeb3e61-3800-4e54-b689-c14b37d10cf8","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":10}
+[ACTION:TASK_COMPLETE] {"executionId":"5e3a7cf5-4788-4f75-a776-98f048bd8f2f","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":15}
+[ACTION:TASK_COMPLETE] {"executionId":"5e3a7cf5-4788-4f75-a776-98f048bd8f2f","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"5e3a7cf5-4788-4f75-a776-98f048bd8f2f","userId":"u1","finished":true}
+[ACTION:ALARM_DISMISSED] {"runId":"9d0ad367-a746-4957-89de-e94d0f2a1cde","flowId":"f2","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"1aaa2376-c2d4-4282-8809-5564a174bd43","userId":"u2","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"8ffd4350-7df3-4a3a-8691-e7112513138a"}
+[ACTION:TRIGGER_ROUTINE_SKIPPED] {"id":"a1","source":"unknown","runId":"8ffd4350-7df3-4a3a-8691-e7112513138a"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":1,"newBalance":16}
+[ACTION:TASK_COMPLETE] {"executionId":"8ffd4350-7df3-4a3a-8691-e7112513138a","taskId":"t1","starsAwarded":1,"userId":"u1","duration":120,"isOnTime":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"bb6a9a2e-61f6-4815-a3f6-ff288c6513ee"}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"e63d8307-298f-4dbd-8f76-bf378d5b9879"}
+[ACTION:ALARM_DISMISSED] {"runId":"e63d8307-298f-4dbd-8f76-bf378d5b9879","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"30b8ecdf-8141-4ad4-96c5-ee43cc687dc0"}
+[ACTION:ALARM_DISMISSED] {"runId":"30b8ecdf-8141-4ad4-96c5-ee43cc687dc0","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"b8e891e0-fcb7-4695-9c37-8ef1de8a32de"}
+[ACTION:ALARM_DISMISSED] {"runId":"cd97446a-43f3-49ec-b67c-c7a3fd454725","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":26}
+[ACTION:TASK_COMPLETE] {"executionId":"b7af2051-e466-4d02-a6c7-097e92bb7a40","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"db9cff54-157f-43c5-9bb1-0765539e7562"}
+[ACTION:ALARM_DISMISSED] {"runId":"db9cff54-157f-43c5-9bb1-0765539e7562","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"94cf92c7-4a4e-4293-97dd-7c63b80d37a5","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"dbe72428-3706-4ee8-a53f-759dd1d43fbe"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"unknown","runId":"7a9852fd-4e2b-44dd-b41d-6257088fd079"}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"dbe72428-3706-4ee8-a53f-759dd1d43fbe","userId":"u1","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"802fb890-5028-469a-bad3-e4d120553df8"}
+[ACTION:ALARM_DISMISSED] {"runId":"7ec47068-88b8-45e5-b297-936be9a2079d","flowId":"f2","stepIndex":0}
+[ACTION:ALARM_EXPIRED] {"runId":"13794cf6-511a-4f22-9c89-a4908ddd46e4","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"57202eec-364d-4b7e-a80c-11ebe2f75401","userId":"u2","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"515a88fc-52ec-4041-a31e-8e12f46416d4"}
+[ACTION:ALARM_EXPIRED] {"runId":"515a88fc-52ec-4041-a31e-8e12f46416d4","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"together","source":"unknown","runId":"79a3650c-4587-433d-8bc5-4adf2ff61f3f"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"64db8a6d-9a77-4d57-afe9-7b99e0bb39a9"}
+[ACTION:TRIGGER_FLOW] {"id":"wake","source":"unknown","runId":"9bd52527-e116-4720-b1f6-558551a00d22"}
+[ACTION:TRIGGER_FLOW] {"id":"cycle","source":"unknown","runId":"fca28008-5f0f-41ba-a848-192a2e745b6a"}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"5f6f0cab-682d-4ed2-93c8-e0fd6d961f93"}
+[ACTION:TRIGGER_FLOW] {"id":"twice","source":"unknown","runId":"eadb2841-b843-400e-87d0-e01871b4017f"}
+[ACTION:ALARM_DISMISSED] {"runId":"eadb2841-b843-400e-87d0-e01871b4017f","flowId":"twice","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"8357c5f2-31be-47c6-89be-4daaf243e59b","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"654f631c-0867-42cd-8dc3-db2db95a5d4b"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":36}
+[ACTION:TASK_COMPLETE] {"executionId":"654f631c-0867-42cd-8dc3-db2db95a5d4b","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"163107fe-3213-4ab9-8e21-396acbe8b210"}
+[ACTION:ALARM_DISMISSED] {"runId":"163107fe-3213-4ab9-8e21-396acbe8b210","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"338bd30c-4a1a-4ff6-8d40-314758ee9956"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":46}
+[ACTION:TASK_COMPLETE] {"executionId":"338bd30c-4a1a-4ff6-8d40-314758ee9956","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":51}
+[ACTION:TASK_COMPLETE] {"executionId":"338bd30c-4a1a-4ff6-8d40-314758ee9956","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"338bd30c-4a1a-4ff6-8d40-314758ee9956","userId":"u1","finished":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"edd9efa9-75f7-490e-bf3a-6e09f3483216"}
+[ACTION:ALARM_DISMISSED] {"runId":"edd9efa9-75f7-490e-bf3a-6e09f3483216","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"d52ddf80-8a2c-46b8-bdf2-2bef3032ce2f"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":61}
+[ACTION:TASK_COMPLETE] {"executionId":"d52ddf80-8a2c-46b8-bdf2-2bef3032ce2f","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":66}
+[ACTION:TASK_COMPLETE] {"executionId":"d52ddf80-8a2c-46b8-bdf2-2bef3032ce2f","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"d52ddf80-8a2c-46b8-bdf2-2bef3032ce2f","userId":"u1","finished":true}
+[ACTION:TRIGGER_FLOW] {"id":"together","source":"unknown","runId":"29ed1db1-1927-406c-900b-d4a8e041f010"}
+[ACTION:ALARM_DISMISSED] {"runId":"29ed1db1-1927-406c-900b-d4a8e041f010","flowId":"together","stepIndex":0}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"b2d97d29-0367-427b-b299-825b96687050"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":76}
+[ACTION:TASK_COMPLETE] {"executionId":"b2d97d29-0367-427b-b299-825b96687050","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":81}
+[ACTION:TASK_COMPLETE] {"executionId":"b2d97d29-0367-427b-b299-825b96687050","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"b2d97d29-0367-427b-b299-825b96687050","userId":"u1","finished":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"53d568e5-f360-41b4-aa3e-ce4256dc07be"}
+[ACTION:ALARM_DISMISSED] {"runId":"53d568e5-f360-41b4-aa3e-ce4256dc07be","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"59248e3e-10c3-455a-93bf-29525af2a25d"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":91}
+[ACTION:TASK_COMPLETE] {"executionId":"59248e3e-10c3-455a-93bf-29525af2a25d","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"59248e3e-10c3-455a-93bf-29525af2a25d","userId":"u1","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"52d29853-3646-4f8d-9002-8fa2933ada64"}
+[ACTION:ALARM_DISMISSED] {"runId":"52d29853-3646-4f8d-9002-8fa2933ada64","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"5ad47828-a210-495e-b132-59b8802ba4a9"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":101}
+[ACTION:TASK_COMPLETE] {"executionId":"5ad47828-a210-495e-b132-59b8802ba4a9","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":106}
+[ACTION:TASK_COMPLETE] {"executionId":"5ad47828-a210-495e-b132-59b8802ba4a9","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"5ad47828-a210-495e-b132-59b8802ba4a9","userId":"u1","finished":true}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"a5b46120-91e8-4236-a783-c3993b744abd"}
+✔ a flow runs on the server: alarms, parallel routines, sub-flows, then it ends (22.318419ms)
+✔ a user has one routine at a time; a late task earns lateStars (8.026506ms)
+✔ a flow whose routines are all busy moves on at once (8.102058ms)
+✔ push "alarm" shows a plain alarm until dismissed (5.109194ms)
+✔ runs are in the client state and in the database (a restart resumes them) (5.887837ms)
+✔ a routine left open on an earlier day is closed: on the next trigger and by the minute cron (15.102195ms)
+✔ an alarm nobody dismissed stops after settings.alarmMinutes, with the rest of its flow (11.754593ms)
+✔ the server says whom an alarm is for: the kids of the routines after it (14.171206ms)
+✔ she is in her routine and dismisses her alarm: her routine goes on, nothing new starts (9.162672ms)
+✖ #58: her flow reaches a routine she finished today: her alarm rings, dismissing it starts nothing (15.454599ms)
+✖ #58: a flow for both kids with one done: the alarm names both, only the other one's routine starts (14.579583ms)
+✔ #58: finished yesterday does not count: her flow starts it again (14.101485ms)
+✔ #58: started today but left unfinished (✕) does not count: her flow starts it (11.415105ms)
+✔ #58: a routine started by itself (push, its own schedule, «Ξεκίνα τώρα») still starts after she finished it (11.480538ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 12
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1098.375929
+
+✖ failing tests:
+
+test at test/runs.test.ts:238:22
+✖ #58: her flow reaches a routine she finished today: her alarm rings, dismissing it starts nothing (15.454599ms)
+  AssertionError [ERR_ASSERTION]: the routine does not start again
+  + actual - expected
+  
+  + {
+  +   flowRunId: 'edd9efa9-75f7-490e-bf3a-6e09f3483216',
+  +   id: 'a211611e-c292-48bb-883e-5f40c915c8a9',
+  +   routineId: 'a1',
+  +   taskIndex: 0,
+  +   taskStartedAt: '2026-10-07T22:52:34.498Z',
+  +   userId: 'u1'
+  + }
+  - undefined
+  
+      at TestContext.<anonymous> (/app/test/runs.test.ts:263:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { id: 'a211611e-c292-48bb-883e-5f40c915c8a9', userId: 'u1', routineId: 'a1', taskIndex: 0, taskStartedAt: '2026-10-07T22:52:34.498Z', flowRunId: 'edd9efa9-75f7-490e-bf3a-6e09f3483216' },
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/runs.test.ts:254:22
+✖ #58: a flow for both kids with one done: the alarm names both, only the other one's routine starts (14.579583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   flowRunId: '29ed1db1-1927-406c-900b-d4a8e041f010',
+  +   id: 'f09826ca-7598-4866-8bfb-8a49e6ac206b',
+  +   routineId: 'a1',
+  +   taskIndex: 0,
+  +   taskStartedAt: '2026-10-07T22:52:34.516Z',
+  +   userId: 'u1'
+  + }
+  - undefined
+  
+      at TestContext.<anonymous> (/app/test/runs.test.ts:278:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { id: 'f09826ca-7598-4866-8bfb-8a49e6ac206b', userId: 'u1', routineId: 'a1', taskIndex: 0, taskStartedAt: '2026-10-07T22:52:34.516Z', flowRunId: '29ed1db1-1927-406c-900b-d4a8e041f010' },
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

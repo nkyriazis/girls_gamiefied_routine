@@ -1,0 +1,94 @@
+{
+ "steps": [
+  {
+   "label": "0 start",
+   "stars": {
+    "u1": 100,
+    "u2": 20
+   },
+   "flowRuns": [],
+   "routineRuns": []
+  },
+  {
+   "label": "1 done by hand",
+   "stars": {
+    "u1": 140,
+    "u2": 20
+   },
+   "flowRuns": [],
+   "routineRuns": [
+    "u1 u1-assign-morning task 3 finished"
+   ]
+  },
+  {
+   "label": "2 closed",
+   "stars": {
+    "u1": 140,
+    "u2": 20
+   },
+   "flowRuns": [],
+   "routineRuns": []
+  },
+  {
+   "label": "3 flow started",
+   "stars": {
+    "u1": 140,
+    "u2": 20
+   },
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @0 (alarm) for u1",
+    "u2-morning-flow @0 (alarm) for u2"
+   ],
+   "routineRuns": []
+  },
+  {
+   "label": "4 u1 dismissed",
+   "stars": {
+    "u1": 140,
+    "u2": 20
+   },
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @1 (parallel)",
+    "u2-morning-flow @0 (alarm) for u2"
+   ],
+   "routineRuns": [
+    "u1 u1-assign-morning task 0"
+   ]
+  },
+  {
+   "label": "5 u1 first task again",
+   "stars": {
+    "u1": 150,
+    "u2": 20
+   },
+   "flowRuns": [
+    "morning-flow @0 (parallel)",
+    "u1-morning-flow @1 (parallel)",
+    "u2-morning-flow @0 (alarm) for u2"
+   ],
+   "routineRuns": [
+    "u1 u1-assign-morning task 1"
+   ]
+  }
+ ],
+ "log": [
+  "2026-10-07T20:42:50.643Z TASK_COMPLETE {\"executionId\":\"66d3b5f6-c0e4-4fee-8111-35677eebd341\",\"taskId\":\"t-pajamas\",\"starsAwarded\":10,\"userId\":\"u2\",\"duration\":6,\"isOnTime\":true}",
+  "2026-10-07T20:54:21.616Z TRIGGER_ROUTINE {\"id\":\"u2-r-evening\",\"source\":\"push_hook\",\"runId\":\"6df7e2c0-b37d-46aa-9ba8-93cface20ef8\"}",
+  "2026-10-07T20:54:27.515Z TASK_COMPLETE {\"executionId\":\"6df7e2c0-b37d-46aa-9ba8-93cface20ef8\",\"taskId\":\"t-pajamas\",\"starsAwarded\":10,\"userId\":\"u2\",\"duration\":6,\"isOnTime\":true}",
+  "2026-10-07T20:55:12.696Z ROUTINE_CLOSED {\"runId\":\"6df7e2c0-b37d-46aa-9ba8-93cface20ef8\",\"userId\":\"u2\",\"finished\":false}",
+  "2026-10-07T20:56:34.264Z TRIGGER_ROUTINE {\"id\":\"u2-r-evening\",\"source\":\"push_hook\",\"runId\":\"1de1ca4a-5573-4176-9324-b856b0d3dd3f\"}",
+  "2026-10-07T20:56:40.177Z TASK_COMPLETE {\"executionId\":\"1de1ca4a-5573-4176-9324-b856b0d3dd3f\",\"taskId\":\"t-pajamas\",\"starsAwarded\":10,\"userId\":\"u2\",\"duration\":6,\"isOnTime\":true}",
+  "2026-10-07T20:57:25.339Z ROUTINE_CLOSED {\"runId\":\"1de1ca4a-5573-4176-9324-b856b0d3dd3f\",\"userId\":\"u2\",\"finished\":false}",
+  "2026-10-07T22:44:58.569Z TRIGGER_ROUTINE {\"id\":\"u1-assign-morning\",\"source\":\"push_hook\",\"runId\":\"01fb2dd2-074f-4073-a120-a5b470bf0189\"}",
+  "2026-10-07T22:45:01.116Z TASK_COMPLETE {\"executionId\":\"01fb2dd2-074f-4073-a120-a5b470bf0189\",\"taskId\":\"t-brush\",\"starsAwarded\":10,\"userId\":\"u1\",\"duration\":3,\"isOnTime\":true}",
+  "2026-10-07T22:45:02.447Z TASK_COMPLETE {\"executionId\":\"01fb2dd2-074f-4073-a120-a5b470bf0189\",\"taskId\":\"t-wash\",\"starsAwarded\":10,\"userId\":\"u1\",\"duration\":1,\"isOnTime\":true}",
+  "2026-10-07T22:45:03.797Z TASK_COMPLETE {\"executionId\":\"01fb2dd2-074f-4073-a120-a5b470bf0189\",\"taskId\":\"t-dress\",\"starsAwarded\":10,\"userId\":\"u1\",\"duration\":1,\"isOnTime\":true}",
+  "2026-10-07T22:45:05.140Z TASK_COMPLETE {\"executionId\":\"01fb2dd2-074f-4073-a120-a5b470bf0189\",\"taskId\":\"t-breakfast\",\"starsAwarded\":10,\"userId\":\"u1\",\"duration\":1,\"isOnTime\":true}",
+  "2026-10-07T22:45:10.143Z ROUTINE_CLOSED {\"runId\":\"01fb2dd2-074f-4073-a120-a5b470bf0189\",\"userId\":\"u1\",\"finished\":true}",
+  "2026-10-07T22:45:14.147Z TRIGGER_FLOW {\"id\":\"morning-flow\",\"source\":\"push_hook\",\"runId\":\"f94ac525-1e91-4faf-80e5-5eb07fa65315\"}",
+  "2026-10-07T22:45:20.331Z ALARM_DISMISSED {\"runId\":\"f0a846ab-c183-42ca-95dc-010a87bd320d\",\"flowId\":\"u1-morning-flow\",\"stepIndex\":0}",
+  "2026-10-07T22:45:23.547Z TASK_COMPLETE {\"executionId\":\"281e02e5-bf3f-45e3-97a6-6b9caf5ed0dd\",\"taskId\":\"t-brush\",\"starsAwarded\":10,\"userId\":\"u1\",\"duration\":3,\"isOnTime\":true}"
+ ]
+}
