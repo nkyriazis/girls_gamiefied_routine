@@ -1,0 +1,5 @@
+# the branch's audit (with the choice-hint rule) on master's pools
+3 errors, 87 warnings
+  ✘ e5-gen-coins-notes-001: step 3 hint «Τα κέρματα δεν αξίζουν 1 € το καθένα.» points at the right option: 1 is in it and in no other
+  ✘ e5-gen-coins-notes-006: step 3 hint «Τα κέρματα δεν αξίζουν 1 € το καθένα.» points at the right option: 1 is in it and in no other
+  ✘ e5-gen-place-value-012: step 1 hint «Μια θέση χωρίς τίποτα δεν χάνεται: κρατάει τη θέση της με το 0.» points at the right option: 0 is in it and in no other

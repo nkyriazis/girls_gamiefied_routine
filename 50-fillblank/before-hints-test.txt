@@ -1,0 +1,49 @@
+✔ rowsHint never states a row's answer, not even as a part of the calculation (9.754594ms)
+✔ b.numbers lists a step it can write no fair hint for, and never throws (gen.ts drops the draft) (0.267844ms)
+✔ hintShows: a hint that works its own step out (A and B of the evidence) (0.424418ms)
+✔ hintShows: a hint that answers a later step, and a label that names the row above (C of the evidence) (0.228981ms)
+✔ hintShows: what she has settled is no longer an answer to work out (0.131708ms)
+✔ hintShows: small numbers count after «=», and in a label when a row above asks for them (0.109616ms)
+✖ hintShows: a choice's hint names no number only its right option has, of any size (#50 part 6) (0.730014ms)
+✔ rowsHint: a product with zeros is not worked out one zero short of the answer (0.316746ms)
+✔ rowsHint never hints a row built on the answer of a row above it (0.2337ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81.394626
+
+✖ failing tests:
+
+test at tools/problem-gen/hints.test.ts:96:1
+✖ hintShows: a choice's hint names no number only its right option has, of any size (#50 part 6) (0.730014ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   [
+  -     0,
+  -     'hint',
+  -     1,
+  -     0
+  -   ]
+  - ]
+  
+      at TestContext.<anonymous> (file:///home/kyriazis/work/girls_gamiefied_routine/tools/problem-gen/hints.test.ts:100:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ [ 0, 'hint', 1, 0 ] ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

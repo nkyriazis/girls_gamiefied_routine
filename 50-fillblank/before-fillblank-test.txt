@@ -1,0 +1,130 @@
+✔ one gap: the word fills it, and the full sentence is not checked by the tap (2.326347ms)
+✖ a word on a full sentence replaces the active gap's word: the mis-tap is fixed in one tap (2.09366ms)
+✖ words fill the gaps in order, from the active one (0.64316ms)
+✖ a tap on a filled gap empties it and makes it the active one; the sentence is no longer full (0.546688ms)
+✖ a word already in a gap stays where it is (0.461969ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 1
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 97.700956
+
+✖ failing tests:
+
+test at src/components/exercises/fillBlank.test.ts:17:1
+✖ a word on a full sentence replaces the active gap's word: the mis-tap is fixed in one tap (2.09366ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      active: 0,
+      gaps: [
+  +     'κρύβετε'
+  -     'κρύβεται'
+      ]
+    }
+  
+      at TestContext.<anonymous> (file:///app/src/components/exercises/fillBlank.test.ts:18:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { gaps: [ 'κρύβετε' ], active: 0 },
+    expected: { gaps: [ 'κρύβεται' ], active: 0 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at src/components/exercises/fillBlank.test.ts:23:1
+✖ words fill the gaps in order, from the active one (0.64316ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   active: 1,
+  -   active: 0,
+      gaps: [
+        null,
+        'χαίρονται'
+      ]
+    }
+  
+      at TestContext.<anonymous> (file:///app/src/components/exercises/fillBlank.test.ts:28:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { gaps: [ null, 'χαίρονται' ], active: 1 },
+    expected: { gaps: [ null, 'χαίρονται' ], active: 0 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at src/components/exercises/fillBlank.test.ts:32:1
+✖ a tap on a filled gap empties it and makes it the active one; the sentence is no longer full (0.546688ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      active: 0,
+      gaps: [
+  +     'παίζει',
+  -     'παίζουν',
+        'χαίρονται'
+      ]
+    }
+  
+      at TestContext.<anonymous> (file:///app/src/components/exercises/fillBlank.test.ts:39:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { gaps: [ 'παίζει', 'χαίρονται' ], active: 0 },
+    expected: { gaps: [ 'παίζουν', 'χαίρονται' ], active: 0 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at src/components/exercises/fillBlank.test.ts:42:1
+✖ a word already in a gap stays where it is (0.461969ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be reference-equal to "expected":
+  + actual - expected
+  
+    {
+      active: 1,
+      gaps: [
+        'παίζουν',
+  +     'παίζουν'
+  -     null
+      ]
+    }
+  
+      at TestContext.<anonymous> (file:///app/src/components/exercises/fillBlank.test.ts:44:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { gaps: [ 'παίζουν', 'παίζουν' ], active: 1 },
+    expected: { gaps: [ 'παίζουν', null ], active: 1 },
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
