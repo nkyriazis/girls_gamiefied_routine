@@ -47,6 +47,8 @@
 //     label has a number that a numbers row of its step or a later one asks for and she hasn't settled
 //     (the story, earlier rows, earlier choices' right options), from 10 up or after «=» («12 : 4 = 3»),
 //     and in a label also a small one that a row above asks for («3 × 7 =» under «Πόσα παιδιά [3]»);
+//     and a choice's hint has no number, of any size, that only its right option has and nothing settled
+//     («Τα κέρματα δεν αξίζουν 1 € το καθένα.» above «Μέτρησε κάθε κέρμα σαν 1 €»);
 //   - a check step's numbers don't ask for a number its prompt already states («βγαίνουν όλα
 //     μαζί 390;» with a row whose answer is 390);
 //   - no number is compared with itself («Γιατί το 3 είναι μεγαλύτερο από το 3»);
@@ -309,8 +311,8 @@ for (const pool of pools) {
       }
     });
 
-    // A prompt, a hint or a row label that shows an answer still to work out (lib.ts, hintShows): a hint
-    // shows after a wrong try, and every row of a step is on screen at once
+    // A prompt, a hint or a row label that shows an answer still to work out, or a choice's hint that points
+    // at its right option (lib.ts, hintShows): a hint shows after a wrong try, and every row of a step is on screen at once
     for (const s of hintShows(ex)) err(ex, shownText(s));
 
     // Everything she reads, by where it is

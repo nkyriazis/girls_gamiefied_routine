@@ -588,7 +588,7 @@ export function rowsHint(rows: { label: string; answer: number; eq?: string }[])
 // step is on screen at once. Showing the step is «Δείξε μου»'s job.
 
 /** A number on a step that she hasn't worked out yet, where it is and which step asks for it. */
-export interface Shown { step: number; where: string; text: string; number: number; answerOf: number }
+export interface Shown { step: number; where: string; text: string; number: number; answerOf: number; /** a choice's hint, with a number only its right option has */ points?: true }
 
 const MARKED = /\[([^\]|]+)\|(?:known|sought|extra)\]/g;
 
@@ -600,7 +600,8 @@ const MARKED = /\[([^\]|]+)\|(?:known|sought|extra)\]/g;
  * below 10 counts only after «=»: written words meet small numbers by chance («4 παιδικά» beside a
  * price of 4 €). A row label counts a small one too when a row above it asks for it: its numbers are
  * its calculation («3 × 7 =» under «Πόσα παιδιά είναι [3]»), and a digit of its own («2 + 1 + 6 + 7 =»
- * beside a remainder of 1) is not a row's answer.
+ * beside a remainder of 1) is not a row's answer. A choice's hint also has no number, of any size, that
+ * its right option has, no wrong option has and isn't settled: it would point at that option (#50 part 6).
  */
 export function hintShows(ex: { story: string; steps: ProblemStep[] }): Shown[] {
   const settled = new Set(numbersOf(ex.story.replace(MARKED, '$1')));
@@ -624,14 +625,26 @@ export function hintShows(ex: { story: string; steps: ProblemStep[] }): Shown[] 
         out.push({ step: i, where, text, number: n, answerOf: asked.get(n)! });
       }
     }
+    // A choice's hint points at its right option with a number only that option has, of any size
+    // («Τα κέρματα δεν αξίζουν 1 € το καθένα.» above «Μέτρησε κάθε κέρμα σαν 1 €»)
+    if (step.kind === 'choice' && step.hint) {
+      const right = new Set(numbersOf(step.options[step.correctIndex] ?? ''));
+      const wrong = new Set(step.options.filter((_, k) => k !== step.correctIndex).flatMap(numbersOf));
+      const told = new Set(out.filter(s => s.step === i && s.where === 'hint').map(s => s.number));
+      for (const n of new Set(numbersOf(step.hint))) {
+        if (right.has(n) && !wrong.has(n) && !settled.has(n) && !told.has(n)) out.push({ step: i, where: 'hint', text: step.hint, number: n, answerOf: i, points: true });
+      }
+    }
     if (step.kind === 'numbers') for (const r of step.rows) settled.add(r.answer);
     if (step.kind === 'choice') for (const n of numbersOf(step.options[step.correctIndex] ?? '')) settled.add(n);
   });
   return out;
 }
 
-/** «step 2 hint «…» shows 445, the answer of step 2» */
-export const shownText = (s: Shown) => `step ${s.step} ${s.where} «${s.text}» shows ${fmt(s.number)}, the answer of step ${s.answerOf}`;
+/** «step 2 hint «…» shows 445, the answer of step 2», or «step 3 hint «…» points at the right option: 1 is in it and in no other» */
+export const shownText = (s: Shown) => s.points
+  ? `step ${s.step} hint «${s.text}» points at the right option: ${fmt(s.number)} is in it and in no other`
+  : `step ${s.step} ${s.where} «${s.text}» shows ${fmt(s.number)}, the answer of step ${s.answerOf}`;
 
 // ---------------------------------------------------------------------------
 // Steps. Choices are shuffled here, so a family lists the right answer first.
