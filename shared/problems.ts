@@ -252,25 +252,125 @@ export function pathToAnswer(w: CalcWorld): Set<string> {
   return path;
 }
 
+/** A subtraction or a division with the smaller number first: 36 − 58, 6 : 18. */
+export const smallerFirst = (op: CalcOp, x: number, y: number) => (op === '−' || op === ':') && x < y;
+
+/**
+ * The same quantity added or taken away again and again (#50): a × relation P = n × m, where
+ * m is the factor with P's unit (stamps in an envelope, euros a week, the stock «διπλάσια»
+ * doubles) and n the other (how many times, a number she has). A run starts from a number B
+ * she has with B ± m (m + B too), when B ± P means something (where it is heading), or with
+ * m + m (heading for P itself). Each next line takes its latest value ± m again. A step can
+ * also be a run m + m + … of her own (58 − 18 with 18 = 9 + 9: two at once). Short of n
+ * times, its value is hers to use; at n times the line means where it was heading; past n,
+ * nothing.
+ */
+export interface CalcRun {
+  /** The × relation, by index */
+  rel: number;
+  m: number;
+  n: number;
+  op: '+' | '−';
+  /** The number it started from; null for m + m + … */
+  base: number | null;
+  /** How many times m so far */
+  k: number;
+  value: number;
+  target: CalcQuantity;
+  /** The line that last moved it */
+  at: number;
+}
+
+/** A run as she wrote it, in m's: «58 − 9 − 9», «9 + 9 + 9». */
+export const runLabel = (r: CalcRun, fmt: (n: number) => string = String) =>
+  [...(r.base === null ? [] : [fmt(r.base)]), ...Array(r.k).fill(fmt(r.m))].join(` ${r.op} `);
+
+/** What one line of hers means: a quantity of the story, a step of a run, or nothing. */
+export type LineReading = { kind: 'quantity'; q: CalcQuantity } | { kind: 'run'; run: CalcRun } | null;
+
+/** The × relations that can be done as runs: one factor with the product's unit. */
+function runnable(w: CalcWorld) {
+  const q = new Map(w.quantities.map(q => [q.id, q]));
+  return w.relations.flatMap((r, i) => {
+    if (r.op !== '×') return [];
+    const P = q.get(r.out)!, [a, b] = [q.get(r.a)!, q.get(r.b)!];
+    const same = [a, b].filter(f => f.unit !== undefined && f.unit === P.unit);
+    if (same.length !== 1) return [];
+    const m = same[0], n = m === a ? b : a;
+    return [{ rel: i, P, m, n }];
+  });
+}
+
+/**
+ * Her calculations, in order, read back: each must use numbers she has (the story's, what
+ * earlier lines found, a run's latest value), be done right, and mean something in the story,
+ * as a quantity (readCalculation, tried first) or as a run step. A line can be both: a run
+ * step that is also a quantity counts as both, so the run goes on from it. `have` is what
+ * she has after the last line (her chips).
+ */
+export function readLines(w: CalcWorld, lines: unknown): { lines: LineReading[]; runs: CalcRun[]; have: Set<number> } {
+  const q = new Map(w.quantities.map(q => [q.id, q]));
+  const rels = runnable(w);
+  const ids = new Set(w.given.filter(id => q.has(id)));
+  let runs: CalcRun[] = [];
+  const have = () => new Set([...[...ids].map(id => q.get(id)!.value), ...runs.map(r => r.value)]);
+  const out: LineReading[] = (Array.isArray(lines) ? lines : []).map((l: CalcLine, at): LineReading => {
+    const nums = have();
+    if (!l || !['+', '−', '×', ':'].includes(l.op) || !nums.has(l.x) || !nums.has(l.y) || applyOp(l.op, l.x, l.y) !== l.result) return null;
+    const found = readCalculation(w, l.x, l.op, l.y);
+    const step = runStep(l, at, nums);
+    if (step) {
+      runs = runs.filter(r => r !== step.from && !(r.rel === step.run.rel && r.op === step.run.op && r.base === step.run.base && r.k === step.run.k));
+      if (step.run.k < step.run.n) runs.push(step.run);
+      else ids.add(step.run.target.id);
+    }
+    if (found) { ids.add(found.id); return { kind: 'quantity', q: found }; }
+    if (!step) return null;
+    return step.run.k < step.run.n ? { kind: 'run', run: step.run } : { kind: 'quantity', q: step.run.target };
+  });
+  return { lines: out, runs, have: have() };
+
+  // The run this line moves or starts, if any
+  function runStep(l: CalcLine, at: number, nums: Set<number>): { run: CalcRun; from?: CalcRun } | null {
+    if (l.op !== '+' && l.op !== '−') return null;
+    const op = l.op;
+    for (const { rel, P, m, n } of rels) {
+      if (!ids.has(m.id) || !ids.has(n.id)) continue;
+      // m once, or a run of m's of her own (m + m + …, short of n) at once
+      const sizes = [{ v: m.value, j: 1 }, ...runs.filter(r => r.rel === rel && r.base === null).map(r => ({ v: r.value, j: r.k }))];
+      const pairs: [number, number][] = op === '+' ? [[l.x, l.y], [l.y, l.x]] : [[l.x, l.y]];
+      const make = (base: number | null, k: number, target: CalcQuantity, from?: CalcRun) =>
+        k <= n.value ? { run: { rel, m: m.value, n: n.value, op, base, k, value: l.result, target, at }, from } : null;
+      // On from her latest value…
+      for (const [cur, other] of pairs) for (const s of sizes) {
+        if (s.v !== other) continue;
+        const moved = runs.find(r => r.rel === rel && r.op === op && r.value === cur)
+          ?? (op === '+' && cur === m.value ? { rel, m: m.value, n: n.value, op, base: null, k: 1, value: m.value, target: P, at } as CalcRun : undefined);
+        const next = moved && make(moved.base, moved.k + s.j, moved.target, moved);
+        if (next) return next;
+      }
+      // …or a new one from a number she has, where B ± P means something
+      for (const [cur, other] of pairs) for (const s of sizes) {
+        if (s.v !== other || !nums.has(cur)) continue;
+        const target = readCalculation(w, cur, op, P.value);
+        const next = target && make(cur, s.j, target);
+        if (next) return next;
+      }
+    }
+    return null;
+  }
+}
+
 /**
  * Her calculations, in order: each uses numbers the story gives or she found before,
- * is done right, and means something in the story; the last finds the answer.
+ * is done right, and means something in the story (readLines); one finds the answer.
  */
 export function checkCalc(w: CalcWorld, lines: unknown): { correct: boolean; wrong?: number[] } {
   if (!Array.isArray(lines) || !lines.length) return { correct: false };
-  const q = new Map(w.quantities.map(q => [q.id, q]));
-  const have = new Set(w.given.map(id => q.get(id)?.value));
-  const wrong: number[] = [];
-  let found = false;
-  (lines as CalcLine[]).forEach((l, i) => {
-    const ok = l && have.has(l.x) && have.has(l.y) && ['+', '−', '×', ':'].includes(l.op) && applyOp(l.op, l.x, l.y) === l.result;
-    const means = ok ? readCalculation(w, l.x, l.op, l.y) : null;
-    if (!means) { wrong.push(i); return; }
-    have.add(means.value);
-    if (means.id === w.sought) found = true;
-  });
+  const read = readLines(w, lines);
+  const wrong = read.lines.flatMap((r, i) => (r ? [] : [i]));
   if (wrong.length) return { correct: false, wrong };
-  return { correct: found };
+  return { correct: read.lines.some(r => r?.kind === 'quantity' && r.q.id === w.sought) };
 }
 
 /** A calculation that gets her closer to the answer from what she has, for when she's stuck. */

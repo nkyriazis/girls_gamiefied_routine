@@ -46,7 +46,7 @@ export const nextCalcFocus = (v: CalcValue): CalcField => CALC_FIELDS.find(f => 
 /**
  * One input on the calc line. A chip goes into the selected x or y, or else the first
  * empty of the two; an operator always into op; a digit into the result (the only box
- * that takes digits: typed trial numbers in x and y are #50), from op or the result.
+ * that takes digits: typed trial numbers in x and y are #50 part 3b), from op or the result.
  * ⌫ erases in the selected box, or steps back to the last filled one before it (never past
  * the start of the line); C empties the selected box.
  */
@@ -81,8 +81,9 @@ export function calcInput(v: CalcValue, focus: CalcField, input: CalcInput): Fie
 /**
  * The selected box after «Έλεγχος» (which happens outside the line), from the note it gave:
  * an accepted line starts the next one at x; a wrong sum («Ξαναμέτρα…») puts the focus on
- * its result; a right sum that means nothing in the story («Ποιοι αριθμοί πάνε μαζί;») on x,
- * since she changes a number next and a chip is refused while the result is selected.
+ * its result; a right sum that means nothing in the story («Ποιοι αριθμοί πάνε μαζί;») or the
+ * smaller number first («…ο μεγαλύτερος αριθμός πάει πρώτος», 'order') on x, since she
+ * changes a number next and a chip is refused while the result is selected.
  */
 export function calcFocusAfterCheck(
   before: { lines: number; slips: number }, v: CalcValue, focus: CalcField, note: CalcNote['kind'] | undefined,

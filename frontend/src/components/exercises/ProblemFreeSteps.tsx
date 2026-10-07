@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import type { ProblemCalcStep } from '@shared/types';
 import type { CalcOp } from '@shared/problems';
 import { help } from '../../help/anchors';
-import { fmt, lower, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
+import { fmt, liveLines, lower, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 import { sfx, sound } from '../../sound/sfx';
 import { calcFocusAfterCheck, calcInput, type CalcField, type CalcInput } from './answerFields';
 import { ANSWER_BOX_CSS, wiggle } from './answerBox';
@@ -88,6 +88,7 @@ export const CalcBench: React.FC<{
 }> = ({ step, value, setValue, disabled, note }) => {
   const byId = new Map(step.quantities.map(q => [q.id, q]));
   const story = step.given.map(id => byId.get(id)!);
+  const live = liveLines(step, value);
   const [focus, setFocus] = useState<CalcField>('x');
   // «Έλεγχος» happens outside the line: a found line starts the next at x, a wrong sum puts the focus on its result
   const [checked, setChecked] = useState({ lines: value.lines.length, slips: value.slips });
@@ -139,7 +140,8 @@ export const CalcBench: React.FC<{
             {fmt(q.value)} <small>{q.unit}</small>
           </button>
         ))}
-        {value.lines.map((l, i) => (
+        {/* What she found, and each run's latest value only (58 − 9 − 9 replaces 58 − 9) */}
+        {value.lines.map((l, i) => live[i] && (
           <button key={`l${i}`} type="button" className="calc-chip found answer-key" disabled={disabled} {...sound('none')} onClick={() => input({ kind: 'chip', n: l.result })}>
             {fmt(l.result)} <small>{lower(l.label)}</small>
           </button>

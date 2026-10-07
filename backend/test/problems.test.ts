@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import { DataConfig, ProblemExercise, ProblemStep } from '../../shared/types';
 import { tempDir } from './helpers';
-import { applyOp, checkCalc, checkPaint, paintSentences, paintStrays, readCalculation, storyWords, targetsFromMarks, workedAnswer, type CalcLine, type CalcWorld } from '../../shared/problems';
+import { applyOp, checkCalc, checkPaint, paintSentences, paintStrays, readCalculation, readLines, runLabel, smallerFirst, storyWords, targetsFromMarks, workedAnswer, workedCalc, type CalcLine, type CalcWorld } from '../../shared/problems';
 
 // db.ts and the pool provider read their files from the environment when they
 // load, so point them at a temp dir first and load them afterwards.
@@ -528,6 +528,147 @@ test('working it out: each calculation is read back, the answer ends it', () => 
   assert.deepEqual(checkCalc(w, right.slice(0, 1)), { correct: false }, 'not there yet');
   assert.deepEqual(checkCalc(w, [{ x: 22, op: '−', y: 16, result: 5 }]), { correct: false, wrong: [0] }, 'miscounted');
   assert.deepEqual(checkCalc(w, [{ x: 6, op: '+', y: 25, result: 31 }]), { correct: false, wrong: [0] }, '6 is not hers yet');
+});
+
+// Lines as she writes them: '58 − 9 = 49, 49 − 9 = 40'
+const L = (s: string): CalcLine[] => s.split(',').map(t => {
+  const [x, op, y, , r] = t.trim().split(' ');
+  return { x: +x, op: op as CalcLine['op'], y: +y, result: +r };
+});
+// g3-world-022: four envelopes of 9 stamps, now 58: how many at first (9 × 4 = 36, 58 − 36 = 22)
+const stamps: CalcWorld = {
+  quantities: [
+    { id: 's0', value: 22, label: 'Γραμματόσημα στην αρχή', unit: 'γραμματόσημα' }, { id: 'e1n', value: 4, label: 'Φάκελοι', unit: 'φάκελοι' },
+    { id: 'e1m', value: 9, label: 'Γραμματόσημα σε κάθε φάκελο', unit: 'γραμματόσημα' }, { id: 'e1', value: 36, label: 'Γραμματόσημα στους φακέλους', unit: 'γραμματόσημα' },
+    { id: 's1', value: 58, label: 'Γραμματόσημα τώρα', unit: 'γραμματόσημα' }, { id: 'z', value: 13, label: 'Γραμματόσημα της Ελένης', unit: 'γραμματόσημα' },
+  ],
+  relations: [{ out: 'e1', op: '×', a: 'e1n', b: 'e1m' }, { out: 's1', op: '+', a: 's0', b: 'e1' }],
+  given: ['e1n', 'e1m', 's1', 'z'], sought: 's0',
+};
+// g3-world-139: 68 cards, two packs of 8: how many now (2 × 8 = 16, 68 + 16 = 84)
+const cards: CalcWorld = {
+  quantities: [
+    { id: 's0', value: 68, label: 'Κάρτες στην αρχή', unit: 'κάρτες' }, { id: 'e1n', value: 2, label: 'Πακέτα', unit: 'πακέτα' },
+    { id: 'e1m', value: 8, label: 'Κάρτες σε κάθε πακέτο', unit: 'κάρτες' }, { id: 'e1', value: 16, label: 'Κάρτες στα πακέτα', unit: 'κάρτες' },
+    { id: 's1', value: 84, label: 'Κάρτες τώρα', unit: 'κάρτες' },
+  ],
+  relations: [{ out: 'e1', op: '×', a: 'e1n', b: 'e1m' }, { out: 's1', op: '+', a: 's0', b: 'e1' }],
+  given: ['s0', 'e1n', 'e1m'], sought: 's1',
+};
+const ok = { correct: true };
+
+test('working it out: the same quantity taken away again and again reads back, up to the count (#50)', () => {
+  // One envelope at a time: each step short of 4 is a run step, the 4th is where it was heading
+  const r = readLines(stamps, L('58 − 9 = 49, 49 − 9 = 40, 40 − 9 = 31, 31 − 9 = 22'));
+  assert.deepEqual(r.lines.map(l => l?.kind), ['run', 'run', 'run', 'quantity']);
+  assert.deepEqual(r.lines.slice(0, 3).map(l => (l?.kind === 'run' ? runLabel(l.run) : null)), ['58 − 9', '58 − 9 − 9', '58 − 9 − 9 − 9']);
+  assert.equal(r.lines[0]?.kind === 'run' && r.lines[0].run.target.id, 's0', 'heading for 58 − 36');
+  assert.equal(r.lines[3]?.kind === 'quantity' && r.lines[3].q.id, 's0');
+  assert.deepEqual(checkCalc(stamps, L('58 − 9 = 49, 49 − 9 = 40, 40 − 9 = 31, 31 − 9 = 22')), ok);
+  // Only the run's latest value is hers to use: 49 is gone once 40 is there
+  const two = readLines(stamps, L('58 − 9 = 49, 49 − 9 = 40'));
+  assert.ok(two.have.has(40) && !two.have.has(49));
+  assert.deepEqual(checkCalc(stamps, L('58 − 9 = 49, 49 − 9 = 40, 49 − 9 = 40')), { correct: false, wrong: [2] });
+  // Past the count, it means nothing
+  assert.deepEqual(checkCalc(stamps, L('58 − 9 = 49, 49 − 9 = 40, 40 − 9 = 31, 31 − 9 = 22, 22 − 9 = 13')), { correct: false, wrong: [4] });
+  // Lines in between don't break a run: it follows its latest value
+  assert.deepEqual(checkCalc(stamps, L('58 − 9 = 49, 9 × 4 = 36, 49 − 9 = 40, 40 − 9 = 31, 31 − 9 = 22')), ok);
+  // Added up, then taken off: 9 + 9 + 9 + 9 is the stamps in the envelopes
+  const up = readLines(stamps, L('9 + 9 = 18, 18 + 9 = 27, 27 + 9 = 36'));
+  assert.deepEqual(up.lines.map(l => (l?.kind === 'run' ? runLabel(l.run) : l?.kind === 'quantity' ? l.q.id : null)), ['9 + 9', '9 + 9 + 9', 'e1']);
+  assert.deepEqual(checkCalc(stamps, L('9 + 9 = 18, 18 + 9 = 27, 27 + 9 = 36, 58 − 36 = 22')), ok);
+  // Mixed: two envelopes added (18), taken off the stock at once, then one at a time or two again
+  assert.deepEqual(checkCalc(stamps, L('9 + 9 = 18, 58 − 18 = 40, 40 − 9 = 31, 31 − 9 = 22')), ok);
+  assert.deepEqual(checkCalc(stamps, L('9 + 9 = 18, 58 − 18 = 40, 40 − 18 = 22')), ok);
+  const mixed = readLines(stamps, L('9 + 9 = 18, 58 − 18 = 40'));
+  assert.equal(mixed.lines[1]?.kind === 'run' && runLabel(mixed.lines[1].run), '58 − 9 − 9');
+  assert.deepEqual(checkCalc(stamps, L('9 + 9 = 18, 58 − 18 = 40, 40 − 18 = 22, 22 − 9 = 13')), { correct: false, wrong: [3] }, 'one too many');
+  // Still nothing: the count added, a run heading nowhere, a number not hers
+  assert.deepEqual(checkCalc(stamps, L('4 + 4 = 8')), { correct: false, wrong: [0] });
+  assert.deepEqual(checkCalc(stamps, L('13 + 9 = 22')), { correct: false, wrong: [0] }, '13 + 36 means nothing here');
+  assert.deepEqual(checkCalc(stamps, L('58 − 10 = 48')), { correct: false, wrong: [0] });
+  // Without the count, no run: she would be counting how many times
+  const noCount = { ...stamps, given: ['e1m', 's1', 's0'], sought: 'e1n' };
+  assert.equal(readLines(noCount, L('9 + 9 = 18')).lines[0], null);
+});
+
+test('working it out: a pack at a time, the two packs added, «διπλάσια» (#50)', () => {
+  assert.deepEqual(checkCalc(cards, L('8 + 8 = 16, 68 + 16 = 84')), ok, 'the two packs: the whole product');
+  assert.equal(readLines(cards, L('8 + 8 = 16')).lines[0]?.kind === 'quantity' && (readLines(cards, L('8 + 8 = 16')).lines[0] as { q: { label: string } }).q.label, 'Κάρτες στα πακέτα');
+  assert.deepEqual(checkCalc(cards, L('68 + 8 = 76, 76 + 8 = 84')), ok, 'a pack at a time');
+  assert.deepEqual(checkCalc(cards, L('8 + 68 = 76, 8 + 76 = 84')), ok, 'either order for +');
+  assert.deepEqual(checkCalc(cards, L('68 + 8 = 76, 76 + 8 = 84, 84 + 8 = 92')), { correct: false, wrong: [2] }, 'a third pack');
+  assert.deepEqual(checkCalc(cards, L('2 + 2 = 4')), { correct: false, wrong: [0] }, 'the count, not the cards');
+  const double: CalcWorld = {
+    quantities: [{ id: 's2', value: 38, label: 'Ευρώ της Άννας', unit: 'ευρώ' }, { id: 'd', value: 2, label: 'Φορές', unit: 'φορές' }, { id: 'f', value: 76, label: 'Ευρώ του Άρη', unit: 'ευρώ' }],
+    relations: [{ out: 'f', op: '×', a: 's2', b: 'd' }], given: ['s2', 'd'], sought: 'f',
+  };
+  assert.deepEqual(checkCalc(double, L('38 + 38 = 76')), ok);
+  // A world without units has no runs (only the relations' own ways)
+  const bare = { ...cards, quantities: cards.quantities.map(({ unit: _, ...q }) => q) };
+  assert.deepEqual(checkCalc(bare, L('8 + 8 = 16, 68 + 16 = 84')), { correct: false, wrong: [0, 1] });
+});
+
+test('working it out: a run step that is also a quantity is read both ways (#50)', () => {
+  // 58 − 9 = 49 is a quantity of its own here, and the first step of taking the envelopes off
+  const w: CalcWorld = {
+    ...stamps,
+    quantities: [...stamps.quantities, { id: 'h', value: 49, label: 'Γραμματόσημα χωρίς έναν φάκελο', unit: 'γραμματόσημα' }],
+    relations: [...stamps.relations, { out: 'h', op: '−', a: 's1', b: 'e1m' }],
+  };
+  const r = readLines(w, L('58 − 9 = 49, 49 − 9 = 40, 40 − 9 = 31, 31 − 9 = 22'));
+  assert.equal(r.lines[0]?.kind === 'quantity' && r.lines[0].q.id, 'h');
+  assert.equal(r.lines[1]?.kind === 'run' && runLabel(r.lines[1].run), '58 − 9 − 9');
+  assert.deepEqual(checkCalc(w, L('58 − 9 = 49, 49 − 9 = 40, 40 − 9 = 31, 31 − 9 = 22')), ok);
+  // …and a partial that happens to equal a quantity she found: used both ways
+  const w2: CalcWorld = {
+    ...stamps,
+    quantities: [...stamps.quantities, { id: 'k', value: 40, label: 'Γραμματόσημα του Νίκου', unit: 'γραμματόσημα' }, { id: 'k2', value: 53, label: 'Γραμματόσημα μαζί', unit: 'γραμματόσημα' }],
+    relations: [...stamps.relations, { out: 'k2', op: '+', a: 'k', b: 'z' }], given: [...stamps.given, 'k'],
+  };
+  assert.deepEqual(checkCalc(w2, L('58 − 9 = 49, 49 − 9 = 40, 40 + 13 = 53, 40 − 9 = 31, 31 − 9 = 22')), ok);
+});
+
+test('the smaller number first, in a subtraction or a division (#50)', () => {
+  assert.equal(smallerFirst('−', 36, 58), true);
+  assert.equal(smallerFirst('−', 58, 36), false);
+  assert.equal(smallerFirst(':', 6, 18), true);
+  assert.equal(smallerFirst(':', 18, 6), false);
+  assert.equal(smallerFirst('+', 3, 9), false);
+  assert.equal(smallerFirst('×', 3, 9), false);
+});
+
+test('every shipped world problem with a × on its way: the same way with the × done as a run passes (#50)', () => {
+  const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
+  let runs = 0, stocks = 0;
+  for (const ex of shipped.flatMap(p => p.exercises)) {
+    if (ex.type !== 'problem') continue;
+    for (const step of ex.steps) {
+      if (step.kind !== 'calc') continue;
+      const lines = workedCalc(step);
+      const at = lines.findIndex(l => l.op === '×');
+      if (at < 0) continue;
+      const q = new Map(step.quantities.map(x => [x.id, x]));
+      const product = lines[at].result;
+      const rel = step.relations.find(r => r.op === '×' && q.get(r.out)!.value === product)!;
+      const [m, n] = [rel.a, rel.b].map(id => q.get(id)!).sort((a, b) => Number(b.unit === q.get(rel.out)!.unit) - Number(a.unit === q.get(rel.out)!.unit)).map(x => x.value);
+      // m + m + … n times, in place of the ×
+      const run = Array.from({ length: n - 1 }, (_, i) => ({ x: (i + 1) * m, op: '+' as const, y: m, result: (i + 2) * m }));
+      assert.deepEqual(checkCalc(step, [...lines.slice(0, at), ...run, ...lines.slice(at + 1)]), ok, `${ex.id}: ${m} + ${m} … ${n} times`);
+      runs++;
+      // The product applied to a stock once: the run straight from the stock instead
+      const uses = lines.map((l, i) => ({ l, i })).filter(({ l, i }) => i > at && (l.x === product || l.y === product));
+      if (uses.length !== 1 || !['+', '−'].includes(uses[0].l.op)) continue;
+      const { l, i } = uses[0];
+      if (l.op === '−' && l.y !== product) continue;
+      const B = l.x === product ? l.y : l.x;
+      const fromStock = Array.from({ length: n }, (_, k) => ({ x: applyOp(l.op, B, k * m), op: l.op, y: m, result: applyOp(l.op, B, (k + 1) * m) }));
+      const way = [...lines.slice(0, at), ...lines.slice(at + 1, i), ...fromStock, ...lines.slice(i + 1)];
+      assert.deepEqual(checkCalc(step, way), ok, `${ex.id}: ${B} ${l.op} ${m} … ${n} times`);
+      stocks++;
+    }
+  }
+  assert.ok(runs >= 49 && stocks > 20, `${runs} runs, ${stocks} from a stock`);
 });
 
 test('a problem regenerated under its id (#50): progress that no longer fits it starts again at step 0', async () => {

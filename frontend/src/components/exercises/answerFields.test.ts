@@ -133,6 +133,7 @@ test('after Έλεγχος: an accepted line starts the next at x; a wrong sum p
   assert.equal(calcFocusAfterCheck(before, found, 'result', 'found'), 'x');
   assert.equal(calcFocusAfterCheck(before, { ...line(55, '−', 37, '19'), slips: 1 }, 'result', 'math'), 'result');
   assert.equal(calcFocusAfterCheck(before, line(55, '−', 37, '19'), 'y', undefined), 'y', 'no check, no change');
+  assert.equal(calcFocusAfterCheck(before, { ...line(37, '−', 55, '18'), slips: 1 }, 'result', 'order'), 'x', 'the smaller first: she swaps the numbers next (#50)');
 });
 
 test('after Έλεγχος of a right sum that means nothing in the story, the focus goes to x and the next chip is taken', () => {
