@@ -170,9 +170,9 @@ test('the next day the Δ΄ kid starts one further round the mix, the Γ΄ kid w
 const NO_REPEAT_DAYS = 30;
 /**
  * The grades the family's kids are in this school year. Move it every September, when they
- * go up a grade (and write that grade's pools first, or npm test fails). #49 part 3b adds 5.
+ * go up a grade (and write that grade's pools first, or npm test fails).
  */
-const KIDS_GRADES: SchoolGrade[] = [3];
+const KIDS_GRADES: SchoolGrade[] = [3, 5];
 
 test('shipped pools: days before a daily item comes back, per grade and category', t => {
   const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
@@ -211,6 +211,6 @@ test('shipped pools: days before a daily item comes back, per grade and category
   for (const w of warnings) t.diagnostic(`warning: ${w}`);
   // A kid's grade: every category of the mix her own, lasting NO_REPEAT_DAYS
   assert.deepEqual(failures, [], `the kids' grades (KIDS_GRADES ${KIDS_GRADES.join(', ')}) need every mix category of their own, lasting ${NO_REPEAT_DAYS} days`);
-  // The problems, written per grade, must be there for both grades with a kid in them or to come (#49 part 3b)
+  // The problems, written per grade, must be there for both grades with a kid in them
   for (const grade of [3, 5] as SchoolGrade[]) assert.ok(pool.poolsForGrade(shipped, grade).own.some(e => e.type === 'problem'));
 });
