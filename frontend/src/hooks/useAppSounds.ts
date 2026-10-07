@@ -15,18 +15,23 @@ function onFirstTouch(fn: () => void): () => void {
 export const useAppSounds = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  const getAudioContext = () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+  // Stable (useCallback) like everything this hook returns: playAlarm and playWakeUpLoop use them
+  const getAudioContext = useCallback((): AudioContext => {
+    let ctx = audioContextRef.current;
+    if (!ctx) {
+      // Safari before 14.1 has only the prefixed one
+      const Ctx = window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext!;
+      ctx = new Ctx();
+      audioContextRef.current = ctx;
     }
     // Resume context if suspended (browser autoplay policy)
-    if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
     }
-    return audioContextRef.current;
-  };
+    return ctx;
+  }, []);
 
-  const playTone = (freq: number, type: OscillatorType, duration: number) => {
+  const playTone = useCallback((freq: number, type: OscillatorType, duration: number) => {
     const audioCtx = getAudioContext();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
@@ -42,7 +47,7 @@ export const useAppSounds = () => {
 
     oscillator.start();
     oscillator.stop(audioCtx.currentTime + duration);
-  };
+  }, [getAudioContext]);
 
   // Right, wrong and finished are the palette's (sound/sfx.ts), like every other sound
   const playSuccess = useCallback(() => sfx('correct'), []);
@@ -52,10 +57,10 @@ export const useAppSounds = () => {
   const playAlarm = useCallback(() => {
     playTone(440, 'square', 0.5);
     setTimeout(() => playTone(440, 'square', 0.5), 600);
-  }, []);
+  }, [playTone]);
 
   // Alarm Loop Ref
-  const alarmIntervalRef = useRef<any>(null);
+  const alarmIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const playWakeUpLoop = useCallback(() => {
     if (alarmIntervalRef.current) return;
@@ -85,7 +90,7 @@ export const useAppSounds = () => {
 
     playMelody();
     alarmIntervalRef.current = setInterval(playMelody, 2000);
-  }, []);
+  }, [getAudioContext]);
 
   const stopWakeUpLoop = useCallback(() => {
     if (alarmIntervalRef.current) {
