@@ -17,7 +17,8 @@ export interface SaveOptions {
 
 const STALE = 'Οι ρυθμίσεις άλλαξαν στο μεταξύ από άλλη οθόνη. Δες τις τρέχουσες τιμές και κάνε την αλλαγή σου πάλι.';
 
-// Saves one list of the live config (data.json). The server validates it
+// Saves lists of the live config (data.json), one or several in one POST (a routine
+// lives in three: routines, routineTasks, routineAssignments). The server validates it
 // against the schema and every client gets the new config in the next STATE.
 // While data.json on disk is invalid the forms don't save: the live config is
 // then the last valid one (or, after a start with a broken file, an empty
@@ -28,10 +29,10 @@ const STALE = 'Οι ρυθμίσεις άλλαξαν στο μεταξύ από
 // Each save names the version of data.json the form edited (#33): if another
 // screen saved since, the server answers 409 and writes nothing, so the form
 // shows the current values instead of putting its old ones over that save.
-export function useConfigSave() {
+export function useConfigPatch() {
     const { config, configVersion, configError, hasState } = useGame();
     const { notify } = useFeedback();
-    return useCallback(async <K extends keyof DataConfig>(key: K, value: DataConfig[K], options: SaveOptions = {}): Promise<SaveOutcome> => {
+    return useCallback(async (patch: Partial<DataConfig>, options: SaveOptions = {}): Promise<SaveOutcome> => {
         if (!hasState) {
             notify('Οι ρυθμίσεις δεν έχουν φορτώσει ακόμα. Περίμενε λίγο και ξαναδοκίμασε.', 'error');
             return 'refused';
@@ -41,7 +42,7 @@ export function useConfigSave() {
             return 'refused';
         }
         try {
-            await api.saveConfig({ ...config, [key]: value }, options.version ?? configVersion.data);
+            await api.saveConfig({ ...config, ...patch }, options.version ?? configVersion.data);
             notify(options.done ?? 'Αποθηκεύτηκε');
             return 'saved';
         } catch (err) {
@@ -50,4 +51,11 @@ export function useConfigSave() {
             return stale ? 'stale' : 'refused';
         }
     }, [config, configVersion, configError, hasState, notify]);
+}
+
+// Saves one list of the live config (see useConfigPatch).
+export function useConfigSave() {
+    const patch = useConfigPatch();
+    return useCallback(<K extends keyof DataConfig>(key: K, value: DataConfig[K], options: SaveOptions = {}) =>
+        patch({ [key]: value } as Partial<DataConfig>, options), [patch]);
 }
