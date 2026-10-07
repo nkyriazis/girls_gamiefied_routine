@@ -25,8 +25,8 @@ scenario first, against master, and play the same one after the fix: the two vid
 
 `start(out, { browser: 'webkit', device: 'iPhone 13' })` plays in WebKit, Safari's engine, with the device's
 user agent, mobile viewport and touch (pass `size` to choose the viewport; the scale stays 1). The parents' page is
-phone-first, so a change to it can be checked as on an iPhone too, over the LAN address
-(`http://192.168.122.1:5173`, not a secure context, as the Pi's `http://<pi>/`). Linux WebKit only approximates
+phone-first, so a change to it can be checked as on an iPhone too, over a non-localhost address
+(on this machine `http://192.168.122.1:5173`, the libvirt bridge; any non-localhost address works; not a secure context, as the Pi's `http://<pi>/`). Linux WebKit only approximates
 iOS Safari (the same engine, not the same browser): a real phone has the last word.
 
 ## How the sound gets in
