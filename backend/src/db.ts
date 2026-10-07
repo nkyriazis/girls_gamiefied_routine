@@ -8,6 +8,7 @@ import {
 import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
+import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
@@ -1029,8 +1030,13 @@ export function submitExerciseAnswer(
   const exercise = readExercises().find(e => e.id === exerciseId);
   if (!exercise) throw new Error('Exercise not found');
 
-  // Absolute question index (answers accumulate across rounds)
-  const overallQuestionIndex = (session.currentRound - 1) * session.questionsPerRound + session.currentQuestionIndex;
+  // An answer counts once, for the question on screen, from the player on turn. Anything else (the
+  // same answer again from a second screen or a repeated request) is refused: nothing paid or stored.
+  const overallQuestionIndex = currentQuestion(session);
+  const existingUserIds = config().users.map(u => u.id);
+  const relevantPlayerIds = session.playerIds.filter(pid => existingUserIds.includes(pid));
+  if (exerciseId !== session.exerciseIds[overallQuestionIndex]) throw new Error('Not the current question');
+  if (userId !== playerOnTurn(session, relevantPlayerIds)) throw new Error("Not this player's turn");
 
   const isCorrect = checkExerciseAnswer(exercise, answer);
   const earnedStars = isCorrect ? exercise.stars : 0;
@@ -1050,9 +1056,6 @@ export function submitExerciseAnswer(
   }
 
   // Advance question index if all players answered this overall question
-  const existingUserIds = config().users.map(u => u.id);
-  const relevantPlayerIds = session.playerIds.filter(pid => existingUserIds.includes(pid));
-
   const allAnsweredCurrent = relevantPlayerIds.every(pid =>
     session.answers[pid] && session.answers[pid].length > overallQuestionIndex
   );
