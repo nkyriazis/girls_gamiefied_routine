@@ -6,7 +6,7 @@ in several ways and settings, picks numbers within the grade's range, and comput
 answer from those numbers. `gen.ts` writes 500 problems per grade into
 `backend/exercise-pools/*-generated.json`, and `audit.ts` checks them independently. The daily
 plain maths of Γ΄ and Ε΄ comes from `maths/` the same way (see «Plain maths» below), and the
-daily Γ΄ language from `language/`, written by hand and audited against a lexicon (see «Plain language»).
+daily Γ΄ and Ε΄ language from `language/`, written by hand and audited against a lexicon (see «Plain language»).
 
 It runs with Node 24 alone (no packages): in Docker, from the repo root:
 
@@ -190,12 +190,13 @@ in (`KIDS_GRADES`) a mix category under 30 days, or filled from revision, fails.
 
 ## Plain language (`language/`)
 
-The daily language card of the Γ΄ kid (#49 part 3a; Ε΄ is part 3b): plain exercises in the existing
+The daily language card of the Γ΄ and Ε΄ kids (#49 parts 3a and 3b): plain exercises in the existing
 types, no new widget. Unlike the maths, the items are **written by hand**, close to the book's own
 sentences, because templated Greek reads badly: `language/g3.ts` lists 80 of them from «Τα απίθανα
-μολύβια», units 1–3 (to about the end of October; later units come with #71's month gating), and
-`language/gen-language.ts` writes them to `backend/exercise-pools/g-dimotikou-language.json` with
-their ids, source and generatorParams, shuffling the options seeded by the id.
+μολύβια», units 1–3, and `language/e5.ts` 68 from «Της γλώσσας ρόδι και ροδάνι», units 1–2 (each to
+about the end of October; later units come with #71's month gating). `language/gen-language.ts` writes
+them to `backend/exercise-pools/g-dimotikou-language.json` and `e-dimotikou-language.json` with their
+ids (`g3-lang-*`, `e5-lang-*`), source and generatorParams, shuffling the options seeded by the id.
 
 ```bash
 $N node tools/problem-gen/language/gen-language.ts    # write the pool (stops on an item that breaks a rule)
@@ -208,15 +209,24 @@ pages each takes in the student book and the workbook (printed numbers, one less
 item names its place as `'2.2 τ23'` (unit 2, lesson 2, workbook page 23; lesson 0 is the unit's
 Λεξιλόγιο, `β` the student book); its `source` reads «Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά,
 μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)». The audit fails a page outside the lesson
-or a unit the class hasn't reached (`units`).
+or a unit the class hasn't reached (`units`). Ε΄'s workbook sections don't follow the book's texts, so
+a lesson is a student-book text (1.1–1.3, 2.1–2.4, under the heading the book prints) and then each
+workbook section, numbered after them (1.4–1.7, 2.5–2.8). A grade's `reference` pages are what the
+lexicon may cite besides the lessons: Γ΄'s grammar summary (β85–87), and for Ε΄ the grammar book
+«Γραμματική Ε΄ και ΣΤ΄ Δημοτικού» (10-0138, `γ104`) for the paradigms units 1–2 use but don't print
+in full (λεωφόρος, the -ης/-ες adjectives, numerals, the conjugation tables). An item never cites it.
 
-**The lexicon** (`language/lexicon/g3.ts`): the words the audit checks against, typed out of
-`materials/` at development time with the page each comes from: nouns with their forms by case and
-number, adjectives in three genders, verbs by person (as the book's tables: β86–87, τ22), the
-words of an exercise or a spelling list as the page prints them, opposites, synonyms, word families,
-the book's phrases with the meanings it offers (right and wrong), similes and proverbs. Every form is
-written out; nothing builds a form from a stem, and nothing reads `materials/` when the audit runs.
-Words on check-gender's list stay out (φίλος, όλοι, έτοιμος, μόνος…).
+**The lexicon** (`language/lexicon/g3.ts`, `lexicon/e5.ts`): the words the audit checks against, typed
+out of `materials/` at development time with the page each comes from: nouns with their forms by case
+and number, adjectives in three genders, verbs by person in a tense and mood (a compound tense is one
+form, «έχουν μολυνθεί»; a subjunctive without its «να»), the words of an exercise or a spelling list as
+the page prints them, opposites, synonyms, word families, the book's phrases with the meanings it offers
+(right and wrong), similes and proverbs; for Ε΄ also the pieces of a sentence and what they tell
+(`expressions`: χρόνο, τόπο, τρόπο, with their kind; «αργά» tells two), compounds with their parts,
+numerals with their number and kind, the book's definitions and the ones too close to offer together
+(`confusable`). Every form is written out; nothing builds a form from a stem, and nothing reads
+`materials/` when the audit runs. Words on check-gender's list stay out (φίλος, όλοι, έτοιμος, μόνος…;
+the β20 proverbs with «όποιος» and «όλοι»).
 
 **Skills and their wordings** (`generatorParams.skill`; the audit's solver reads the wording and
 derives the key again from the lexicon and the rule, written apart from the items):
@@ -237,6 +247,21 @@ derives the key again from the lexicon and the rule, written apart from the item
 | `san` | «Τι σημαίνει το «σαν» στην πρόταση «…»;» | before a verb «όταν», before a noun «όπως» (τ44) |
 | `punct` | fill-blank with the gap right after a word, options «.», «;», «,» | a question word first: «;»; a small letter after: «,»; «.» only after a sentence with no verb («Πολλούς χαιρετισμούς από τη Μάνη», τ41): a Greek yes/no question is the statement with «;», so a sentence with a verb and no question word could take either |
 | `spell` | «Κύκλωσε τη λέξη που είναι γραμμένη σωστά.» | one spelling of the lexicon; the rest one or two slips of it (ι/η/υ/ει/οι, ο/ω, ε/αι, ευ/εφ, a double letter) |
+| `tense` (Ε΄) | «Κύκλωσε τον χρόνο του ρήματος «κυλούσε».», the sentence as body; options tense names | the form's tense; the whole form is asked («έχουν μολυνθεί»), and a form that is also a subjunctive or imperative isn't |
+| `retense` (Ε΄) | «Βάλε το ρήμα στον αόριστο: «Το πλοίο πλησιάζει τις Κυκλάδες.»» | the sentence's one verb form; options are its forms in the same person, one in the asked tense |
+| `time` (Ε΄) | «Κύκλωσε αυτό που φανερώνει χρόνο στην πρόταση.» (options are pieces of the sentence); «Τι είναι το «…» στην πρόταση;» (επίρρημα, προθετική φράση, χρονική πρόταση) | the `expressions`: one piece tells time; its kind |
+| `mood` (Ε΄) | «Κύκλωσε την έγκλιση του ρήματος «πάρε».», options as the tables name them («οριστική ενεστώτα», «συνοπτική προστακτική», …) | after «να» or «μη(ν)» the subjunctive, without them never; a form still two moods (ακούτε) is an error |
+| `negation` (Ε΄) | fill-blank before a verb, options δε, δεν, μη, μην | δε(ν) with the indicative, μη(ν) with the subjunctive (β26), -ν before a vowel, κ π τ μπ ντ γκ ξ ψ (γ55); only after «να», before «θα» or before a past tense, where nothing else could follow |
+| `adverb` (Ε΄) | «Τι φανερώνει το επίρρημα «εμπρός» στην πρόταση;», options τόπο, χρόνο, τρόπο | what the adverb tells; one that can tell two (αργά) is never asked |
+| `numeral` (Ε΄) | «Κύκλωσε το τακτικό αριθμητικό του 7.», «Κύκλωσε το αναλογικό αριθμητικό.» | the numerals' number and kind (β37) |
+| `compound` (Ε΄) | «Κύκλωσε τη σύνθετη λέξη με συνθετικά «οίκος + πεδίο».», «… που έχει α΄/β΄ συνθετικό τη λέξη «οδός».» | the compounds' parts; a part the lexicon doesn't know can't be ruled out |
+| `define` (Ε΄) | «Κύκλωσε τη λέξη που ταιριάζει στον ορισμό: «…».» | the book's definitions; never two `confusable` words together (αφετηρία, σταθμός, στάση, τέρμα) |
+
+`agree` also reads a gap with no article before it: before a noun it takes the noun's form («λεπτά και
+… συναισθήματα»), after «είναι» the subject's in the nominative («Η διαφορά στον ήχο είναι …»); and it
+fails the masculine genitive of an -ης adjective, since everyday speech says «του διεθνή» (γ104) and that
+right answer would be offered as wrong. `person` reads «Ένα/Μια …» as the 3rd singular, and every option
+must be a form of the lexicon or a slip of one.
 
 A wrong option may be a real word (another person, case or article: that is the point), but never
 one the rule also accepts: the audit fails an item with more than one acceptable option. A new
@@ -266,7 +291,7 @@ audit knows μια, για, πιο, δυο… as one syllable); no Latin letters
 (`--all-language`).
 
 **Counts.** 60–80 good items rather than padded ones; the audit fails under 60. Γ΄ has 80, so an item
-comes back after 80 days.
+comes back after 80 days; Ε΄ has 68, back after 68.
 
 ## Layout
 - `lib.ts`: randomness, names, counted nouns, step builders, `Family`.
@@ -274,7 +299,7 @@ comes back after 80 days.
   `set-*.ts` group families written together).
 - `gen.ts`, `audit.ts`: see the top of each.
 - `maths/`: the plain maths (`curriculum.ts`, `grades.ts`, `lib.ts`, `g3.ts`, `e5.ts`, `gen-maths.ts`, `check.ts`).
-- `language/`: the plain language (`curriculum.ts`, `lexicon.ts` and `lexicon/g3.ts`, `lib.ts`, `g3.ts`, `gen-language.ts`, `check.ts`).
+- `language/`: the plain language (`curriculum.ts`, `lexicon.ts` and `lexicon/g3.ts`, `lexicon/e5.ts`, `lib.ts`, `g3.ts`, `e5.ts`, `gen-language.ts`, `check.ts`).
 
 ## World models (`world/`)
 
