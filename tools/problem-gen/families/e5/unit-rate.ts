@@ -88,7 +88,7 @@ export const unitRate: Family = {
       b.numbers('solve', 'Λύνουμε.', [
         { label: s.one, answer: per },
         { label: s.all(many), answer: total, unit: s.unit },
-      ], `${fmt(few * per)} : ${few} = ${per}. Μετά ${fmt(many)} × ${per}.`),
+      ], `Πρώτα για ένα: ${fmt(few * per)} : ${few}. Μετά πολλαπλασιάζουμε με το ${fmt(many)}.`),
       b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: είναι περίπου ${fmt(round)} × ${per} = ${fmt(round * per)}`,
         [`Όχι: πρέπει να είναι κάτω από ${fmt(many)}`, `Όχι: πρέπει να είναι περίπου ${fmt(round * per * 10)}`],
         `Στρογγυλοποιούμε το ${fmt(many)} στο ${fmt(round)}.`),

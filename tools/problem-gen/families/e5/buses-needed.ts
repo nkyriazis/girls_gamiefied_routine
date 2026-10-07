@@ -103,12 +103,13 @@ export const busesNeeded: Family = {
     const showOps = r.chance(0.5);
     const rows: { label: string; answer: number; unit?: string }[] = [];
     if (counts.length > 1) rows.push({ label: showOps ? `Επιβάτες: ${fmt(counts[0])} + ${fmt(counts[1])} =` : 'Επιβάτες όλοι μαζί', answer: total });
-    rows.push({ label: showOps ? `Γεμάτα λεωφορεία (${fmt(total)} : ${seats}, το πηλίκο)` : 'Γεμάτα λεωφορεία', answer: q });
+    // A row names a number a row above asks for («όλοι μαζί», «όσοι περισσεύουν»), never writes it
+    rows.push({ label: showOps ? `Γεμάτα λεωφορεία (${counts.length > 1 ? 'επιβάτες' : fmt(total)} : ${seats}, το πηλίκο)` : 'Γεμάτα λεωφορεία', answer: q });
     rows.push({ label: 'Επιβάτες που περισσεύουν', answer: rest });
     rows.push({ label: 'Λεωφορεία που χρειάζονται', answer: need });
-    if (ask === 'empty') rows.push({ label: showOps ? `Άδειες θέσεις στο τελευταίο: ${seats} − ${rest} =` : 'Άδειες θέσεις στο τελευταίο', answer: empty });
-    if (ask === 'cost') rows.push({ label: showOps ? `Κόστος: ${need} × ${fmt(price)} =` : 'Κόστος', answer: need * price, unit: '€' });
-    const hint = `${counts.length > 1 ? `${fmt(counts[0])} + ${fmt(counts[1])} = ${fmt(total)}. ` : ''}${seats} × ${q} = ${fmt(seats * q)}, άρα ${rest === 1 ? 'περισσεύει 1' : `περισσεύουν ${rest}`}.`;
+    if (ask === 'empty') rows.push({ label: showOps ? `Άδειες θέσεις στο τελευταίο: ${seats} − όσοι περισσεύουν =` : 'Άδειες θέσεις στο τελευταίο', answer: empty });
+    if (ask === 'cost') rows.push({ label: showOps ? `Κόστος: τα λεωφορεία × ${fmt(price)} =` : 'Κόστος', answer: need * price, unit: '€' });
+    const hint = `${counts.length > 1 ? `Πρώτα ${s.groups[0].many} και ${s.groups[1].many} μαζί: ${fmt(counts[0])} + ${fmt(counts[1])}. Μετά: π` : 'Π'}όσα λεωφορεία των ${seats} γεμίζουν, και πόσοι μένουν;`;
     if (rows.length > 4 && r.chance(0.5)) {
       // Split into two steps: the division, then the answer
       const cut = rows.findIndex(x => x.label === 'Λεωφορεία που χρειάζονται');

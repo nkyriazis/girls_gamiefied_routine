@@ -42,7 +42,8 @@ const theatre: Scenario = (r, b, p) => {
     b.numbers('solve', 'Λύνουμε.', [
       ...(named ? [{ label: 'Πόσα παιδιά είναι', answer: kids }] : []),
       { label: r.chance(0.5) ? `Ένα παιδικό εισιτήριο: ${adult} − ${off} =` : 'Ένα παιδικό εισιτήριο', answer: child, unit: '€' },
-      { label: r.chance(0.5) ? `Τα παιδιά: ${kids} × ${child} =` : 'Τα εισιτήρια των παιδιών', answer: kids * child, unit: '€' },
+      // (the child ticket is the row above: named, never its number; so is the children's count when it is a row)
+      { label: r.chance(0.5) && !named ? `Τα παιδιά: ${kids} × το παιδικό =` : 'Τα εισιτήρια των παιδιών', answer: kids * child, unit: '€' },
       { label: adults === 2 ? `Οι γονείς: 2 × ${adult} =` : named ? 'Το εισιτήριο της μητέρας' : 'Το εισιτήριο του ενήλικα', answer: adults * adult, unit: '€' },
       { label: 'Όλοι μαζί', answer: total, unit: '€' },
     ], named ? `Τα παιδιά είναι τα ${sib} αδέρφια και ${p.female ? 'η ίδια' : 'ο ίδιος'} ${p.nom}.` : `Το παιδικό εισιτήριο κοστίζει ${off} € λιγότερα από τα ${adult} €.`),
@@ -75,10 +76,10 @@ const buses: Scenario = (r, b) => {
     b.tag(undefined, TAG_HINT),
     b.numbers('solve', 'Λύνουμε.', [
       { label: r.chance(0.5) ? `Όλοι μαζί: ${pupils} + ${teachers} =` : 'Όλοι μαζί', answer: all, unit: 'άτομα' },
-      { label: `Γεμάτα λεωφορεία: το πηλίκο της διαίρεσης ${all} : ${seats}`, answer: full },
+      { label: `Γεμάτα λεωφορεία: το πηλίκο της διαίρεσης με το ${seats}`, answer: full },
       { label: 'Άτομα που περισσεύουν: το υπόλοιπο', answer: rest },
       { label: 'Λεωφορεία που χρειάζονται', answer: full + 1 },
-    ], `Διαίρεση με υπόλοιπο: ${all} = ${full} × ${seats} + ${rest}. Και όσοι περισσεύουν χρειάζονται θέση.`),
+    ], `Πρώτα μαθητές και εκπαιδευτικοί μαζί. Μετά διαίρεση με υπόλοιπο: πόσες φορές χωράει το ${seats}; Και όσοι περισσεύουν χρειάζονται θέση.`),
     b.choice('check', `Κάποιος απάντησε «${full}». Τι ξέχασε;`, `Ένα λεωφορείο ακόμα για τα ${rest}`,
       [NOTHING_FORGOTTEN, ['Να αφαιρέσει τους εκπαιδευτικούς', 'Τους εκπαιδευτικούς', 'Να βγάλει τους εκπαιδευτικούς']],
       'Κανείς δεν μένει πίσω από την εκδρομή.'),
@@ -103,10 +104,10 @@ const boxes: Scenario = (r, b) => {
     b.tag(undefined, TAG_HINT),
     b.numbers('solve', 'Λύνουμε.', [
       { label: r.chance(0.5) ? `Όλα τα σοκολατάκια: ${d1} + ${d2} =` : 'Όλα τα σοκολατάκια', answer: all },
-      { label: `Γεμάτα κουτιά: το πηλίκο της διαίρεσης ${fmt(all)} : ${per}`, answer: full },
+      { label: `Γεμάτα κουτιά: το πηλίκο της διαίρεσης με το ${per}`, answer: full },
       { label: 'Σοκολατάκια που περισσεύουν: το υπόλοιπο', answer: rest },
       { label: 'Κουτιά που χρειάζονται', answer: full + 1 },
-    ], `Διαίρεση με υπόλοιπο: ${fmt(all)} = ${full} × ${per} + ${rest}. Και όσα περισσεύουν θέλουν κουτί.`),
+    ], `Πρώτα όλα μαζί. Μετά διαίρεση με υπόλοιπο: πόσες φορές χωράει το ${per}; Και όσα περισσεύουν θέλουν κουτί.`),
     b.numbers('check', 'Πώς ελέγχουμε; Τα γεμάτα κουτιά και όσα περισσεύουν πρέπει να κάνουν όλα τα σοκολατάκια.', [
       { label: `${full} × ${per} + ${rest} =`, answer: all },
     ]),
@@ -132,7 +133,7 @@ const change: Scenario = (r, b, p) => {
     b.numbers('solve', 'Λύνουμε.', [
       { label: r.chance(0.5) ? `Τα βιβλία: ${n} × ${each} =` : 'Τα βιβλία', answer: n * each, unit: '€' },
       { label: 'Όλα μαζί', answer: cost, unit: '€' },
-      { label: r.chance(0.5) ? `Ρέστα: ${paid} − ${cost} =` : 'Ρέστα', answer: paid - cost, unit: '€' },
+      { label: r.chance(0.5) ? `Ρέστα: ${paid} − όλα μαζί =` : 'Ρέστα', answer: paid - cost, unit: '€' },
     ], `Τα βιβλία είναι ${n}, των ${each} € το καθένα.`),
     b.numbers('check', 'Πώς ελέγχουμε; Όσα πλήρωσε για όλα και τα ρέστα κάνουν όσα έδωσε.', [
       { label: `${cost} + ${paid - cost} =`, answer: paid, unit: '€' },
@@ -158,10 +159,10 @@ const pizza: Scenario = (r, b) => {
     b.tag(undefined, TAG_HINT),
     b.numbers('solve', 'Λύνουμε.', [
       { label: r.chance(0.5) ? `Όλα τα κομμάτια: ${kids} × ${each} =` : 'Όλα τα κομμάτια', answer: all },
-      { label: `Γεμάτες πίτσες: το πηλίκο της διαίρεσης ${all} : ${slices}`, answer: full },
+      { label: `Γεμάτες πίτσες: το πηλίκο της διαίρεσης με το ${slices}`, answer: full },
       { label: 'Κομμάτια που περισσεύουν: το υπόλοιπο', answer: rest },
       { label: 'Πίτσες που χρειάζονται', answer: need },
-    ], rest ? `${all} = ${full} × ${slices} + ${rest}. Για τα κομμάτια που περισσεύουν χρειάζεται μία πίτσα ακόμα.` : `${all} = ${full} × ${slices}: δεν περισσεύει κανένα κομμάτι.`),
+    ], `Πρώτα όλα τα κομμάτια. Μετά: πόσες φορές χωράει το ${slices}; Αν περισσεύουν κομμάτια, χρειάζεται μία πίτσα ακόμα.`),
     rest
       ? b.choice('check', `Κάποιος απάντησε «${full}». Τι ξέχασε;`, `Μία πίτσα ακόμα για ${rest} κομμάτια`,
         [NOTHING_FORGOTTEN, ['Να προσθέσει και τη δασκάλα στο πάρτι', 'Τη δασκάλα', 'Να μετρήσει και τη δασκάλα']], 'Αν παραγγείλουν μόνο τόσες, κάποια παιδιά δεν θα φάνε όσα κομμάτια πρέπει.')

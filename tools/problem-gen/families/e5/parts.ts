@@ -117,7 +117,8 @@ export const parts: Family = {
         { label: `Ομάδες των ${m + 1}`, answer: small },
         { label: s.small, answer: small },
         { label: s.big, answer: big },
-      ], `${fmt(total)} − ${fmt(first)} = ${fmt(small + big)}. Κάθε ομάδα έχει ${m + 1}: ${fmt(small + big)} : ${m + 1} = ${fmt(small)}.`),
+        // What to do with which numbers, never a row's result (the rows ask for every one of them)
+      ], `Πρώτα βγάζουμε από ${s.g === 'f' ? 'τις' : 'τα'} ${fmt(total)} ${s.g === 'f' ? 'τις' : 'τα'} ${fmt(first)}. Ό,τι μένει γίνεται ομάδες των ${m + 1} (${groupWord}): πόσες ομάδες χωράνε;`),
       r.chance(0.5)
         ? b.numbers('check', 'Αναστοχαζόμαστε: πόσα βγαίνουν όλα μαζί;', [{ label: `${fmt(first)} + ${fmt(big)} + ${fmt(small)} =`, answer: total }])
         : b.choice('check', `Κάποιος απάντησε: «${fmt(big)} και ${fmt(small)}». Τι λείπει από την απάντηση;`,

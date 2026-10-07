@@ -89,6 +89,7 @@ export const production: Family = {
       : `${cap(month)} δούλεψε ${known(`${d} ημέρες`)}. ${both ? `${sought(`${HowMany(it)} ${it.manyAcc} ${s.makes} την ημέρα`)} και ${sought(`${HowMany(it).toLowerCase()} ${s.made} ${month}`)}` : sought(`${HowMany(it)} ${it.manyAcc} ${s.made} ${month}`)};`;
     const story = `${opening} ${question}`;
     const U = cap(it.many);
+    const asMany = it.g === 'f' ? 'όσες' : it.g === 'm' ? 'όσοι' : 'όσα';
 
     const steps: ProblemStep[] = [
       b.tag(undefined, ask === 'two' ? 'Δουλεύουν και οι δύο. Ό,τι δεν αλλάζει πόσα φτιάχνονται δεν χρειάζεται.' : 'Ό,τι δεν αλλάζει πόσα φτιάχνονται δεν χρειάζεται.'),
@@ -101,12 +102,13 @@ export const production: Family = {
             ...(ask === 'two' ? [`Υπολογίζω μόνο ${s.one}`] : [])],
           `${h} ώρες την ημέρα, ${d} ημέρες: πρώτα η μία ημέρα.`));
       }
+      // A row names the one above («όσα την ημέρα × 8»), never its number; the hint is rowsHint's, from `eq`
       const rows = [
-        ...(ask === 'two' ? [{ label: showOps ? `${U} την ώρα ${s.both}: ${fmt(rate)} + ${fmt(rate2)} =` : `${U} την ώρα ${s.both}`, answer: perHour }] : []),
-        { label: showOps ? `${U} την ημέρα: ${fmt(perHour)} × ${h} =` : `${U} την ημέρα`, answer: perDay },
-        { label: showOps ? `${U} σε ${d} ημέρες: ${fmt(perDay)} × ${d} =` : `${U} ${month}`, answer: total, unit: it.many },
+        ...(ask === 'two' ? [{ label: showOps ? `${U} την ώρα ${s.both}: ${fmt(rate)} + ${fmt(rate2)} =` : `${U} την ώρα ${s.both}`, answer: perHour, eq: `${fmt(rate)} + ${fmt(rate2)}` }] : []),
+        { label: showOps ? `${U} την ημέρα: ${ask === 'two' ? `${asMany} την ώρα` : fmt(perHour)} × ${h} =` : `${U} την ημέρα`, answer: perDay, eq: `${fmt(perHour)} × ${h}` },
+        { label: showOps ? `${U} σε ${d} ημέρες: ${asMany} την ημέρα × ${d} =` : `${U} ${month}`, answer: total, unit: it.many, eq: `${fmt(perDay)} × ${d}` },
       ];
-      steps.push(b.numbers('solve', 'Λύνουμε.', rows, `${fmt(perHour)} × ${h} = ${fmt(perDay)}.`));
+      steps.push(b.numbers('solve', 'Λύνουμε.', rows));
       if (r.chance(0.5)) {
         steps.push(b.choice('check', 'Αναστοχαζόμαστε: ποια πράξη δίνει το ίδιο αποτέλεσμα;',
           `${fmt(perHour)} × ${fmt(h * d)}`,
@@ -128,8 +130,8 @@ export const production: Family = {
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [
         { label: showOps ? `${U} την ημέρα: ${fmt(rate)} × ${h} =` : `${U} την ημέρα`, answer: perDay },
-        { label: showOps ? `Ημέρες: ${fmt(total)} : ${fmt(perDay)} =` : 'Ημέρες για την παραγγελία', answer: d, unit: 'ημέρες' },
-      ], `${fmt(rate)} × ${h} = ${fmt(perDay)}. Πόσες φορές χωράει το ${fmt(perDay)} στο ${fmt(total)};`));
+        { label: showOps ? `Ημέρες: ${fmt(total)} : ${asMany} την ημέρα =` : 'Ημέρες για την παραγγελία', answer: d, unit: 'ημέρες' },
+      ], `Πρώτα π${asMany} την ημέρα: ${fmt(rate)} × ${h}. Μετά: πόσες φορές χωράει αυτό στο ${fmt(total)};`));
       const wrongs = [`${fmt(total)} : ${fmt(rate)} = ${fmt(h * d)}, άρα ${fmt(h * d)} ημέρες`, `${fmt(perDay)} × ${d} = ${fmt(total)}, άρα ${fmt(total)} ημέρες`];
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;',
         `${fmt(perDay)} × ${d} = ${fmt(total)}, άρα ${d} ημέρες`, wrongs,

@@ -105,6 +105,8 @@ export const divisionCheck: Family = {
       divisor: { right: `${fmt(D)} = ; × ${q} + ${u}`, wrong: [`; = ${fmt(D)} × ${q} + ${u}`, `${fmt(D)} = ${q} × ${u} + ;`, `; = ${fmt(D)} + ${q} + ${u}`] },
     }[find];
     const Q = (x: string) => x.replace(/;/g, '□');
+    // A row names the one above by what it is, never its number
+    const shared = `${s.th.g === 'f' ? 'όσες' : s.th.g === 'm' ? 'όσοι' : 'όσα'} μοιράστηκαν`;
 
     const steps: ProblemStep[] = [
       b.tag(undefined, find === 'qr' ? 'Ότι κάτι περίσσεψε το ξέρουμε· πόσο ακριβώς, το ψάχνουμε.' : 'Το υπόλοιπο μετράει κι αυτό.'),
@@ -113,9 +115,10 @@ export const divisionCheck: Family = {
     ];
     if (find === 'qr') {
       steps.push(b.numbers('solve', `Κάνουμε τη διαίρεση ${fmt(D)} : ${d}.`, [
-        { label: `${s.eachLabel} (πηλίκο)`, answer: q },
+        // rowsHint, from the division: a trial below the quotient («Δοκιμάζουμε 22 × 30 = 660»)
+        { label: `${s.eachLabel} (πηλίκο)`, answer: q, eq: `${fmt(D)} : ${d}` },
         { label: `${cap(s.th.many)} που περίσσεψαν (υπόλοιπο)`, answer: u },
-      ], `${d} × ${q} = ${fmt(d * q)} και ${d} × ${q + 1} = ${fmt(d * (q + 1))}, που είναι μεγαλύτερο από το ${fmt(D)}.`));
+      ]));
       if (q > 1 && r.chance(0.6)) {
         steps.push(b.choice('check', `Κάποιος βρήκε πηλίκο ${q - 1} και υπόλοιπο ${u + d}. Τι λάθος έκανε;`,
           `Το υπόλοιπο ${u + d} είναι πολύ μεγάλο`,
@@ -128,9 +131,9 @@ export const divisionCheck: Family = {
     } else if (find === 'dividend') {
       const ops = r.chance(0.5);
       steps.push(b.numbers('solve', 'Λύνουμε.', [
-        { label: ops ? `${cap(s.th.many)} που μοιράστηκαν: ${d} × ${q} =` : `${cap(s.th.many)} που μοιράστηκαν`, answer: d * q },
-        { label: ops ? `Μαζί με το υπόλοιπο: ${fmt(d * q)} + ${u} =` : 'Μαζί με το υπόλοιπο', answer: D, unit: s.th.many },
-      ], `${d} × ${q} = ${fmt(d * q)}.`));
+        { label: ops ? `${cap(s.th.many)} που μοιράστηκαν: ${d} × ${q} =` : `${cap(s.th.many)} που μοιράστηκαν`, answer: d * q, eq: `${d} × ${q}` },
+        { label: ops ? `Μαζί με το υπόλοιπο: ${shared} + ${u} =` : 'Μαζί με το υπόλοιπο', answer: D, unit: s.th.many },
+      ]));
       steps.push(b.numbers('check', `Αναστοχαζόμαστε: κάνουμε τη διαίρεση ${fmt(D)} : ${d}. Βγαίνουν τα ίδια;`, [
         { label: `Πηλίκο της διαίρεσης ${fmt(D)} : ${d}`, answer: q },
         { label: 'Υπόλοιπο', answer: u },
@@ -139,8 +142,8 @@ export const divisionCheck: Family = {
       const ops = r.chance(0.5);
       steps.push(b.numbers('solve', 'Λύνουμε: αφαιρούμε πρώτα το υπόλοιπο.', [
         { label: ops ? `${cap(s.th.many)} που μοιράστηκαν: ${fmt(D)} − ${u} =` : `${cap(s.th.many)} που μοιράστηκαν`, answer: d * q },
-        { label: ops ? `${s.toLabel}: ${fmt(d * q)} : ${q} =` : s.toLabel, answer: d },
-      ], `${fmt(D)} − ${u} = ${fmt(d * q)}. Πόσες φορές χωράει το ${q} στο ${fmt(d * q)};`));
+        { label: ops ? `${s.toLabel}: ${shared} : ${q} =` : s.toLabel, answer: d },
+      ], `Πρώτα βγάζουμε το υπόλοιπο από το ${fmt(D)}. Μετά: πόσες φορές χωράει το ${q} σε ό,τι μένει;`));
       if (r.chance(0.5)) {
         steps.push(b.numbers('check', 'Αναστοχαζόμαστε: επαληθεύουμε.', [{ label: `${d} × ${q} + ${u} =`, answer: D }], 'Δ = δ × π + υ'));
       } else {

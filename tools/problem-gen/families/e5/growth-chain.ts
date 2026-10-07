@@ -102,11 +102,12 @@ export const growthChain: Family = {
 
     const show = r.chance(0.5);
     const day = (i: number) => `${i + 1}η ημέρα`;
+    // A day the rows above find is named by its place («2η + 3η»), never by its number
     const rows = [
       { label: show ? `${day(1)}: ${a} × ${m2} =` : day(1), answer: d2, unit: s.noun },
-      { label: show ? `${day(2)}: ${kind3 === 'times' ? `${d2} × ${m3}` : kind3 === 'more' ? `${d2} + ${k}` : `${d2} − ${k}`} =` : day(2), answer: d3, unit: s.noun },
-      { label: show ? `${day(3)}: ${all ? `${a} + ${d2} + ${d3}` : `${d2} + ${d3}`} =` : day(3), answer: d4, unit: s.noun },
-      { label: show ? `Όλες οι ημέρες: ${a} + ${d2} + ${d3} + ${d4} =` : 'Όλες οι ημέρες', answer: total, unit: s.noun },
+      { label: show ? `${day(2)}: ${kind3 === 'times' ? `2η × ${m3}` : kind3 === 'more' ? `2η + ${k}` : `2η − ${k}`} =` : day(2), answer: d3, unit: s.noun },
+      { label: show ? `${day(3)}: ${all ? '1η + 2η + 3η' : '2η + 3η'} =` : day(3), answer: d4, unit: s.noun },
+      { label: show ? 'Όλες οι ημέρες: 1η + 2η + 3η + 4η =' : 'Όλες οι ημέρες', answer: total, unit: s.noun },
     ];
     if (r.chance(0.3)) rows.unshift({ label: day(0), answer: a, unit: s.noun });
 

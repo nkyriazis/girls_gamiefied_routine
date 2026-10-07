@@ -120,12 +120,13 @@ export const sumDifference: Family = {
       steps.push(b.choice('plan', 'Ποια στρατηγική μας βοηθά;',
         STRATEGY.draw,
         [[`Μοιράζω τα ${fmt(T)} στα δύο και τελείωσα`, `Μοιράζω τα ${fmt(T)} στα δύο`], [`Αφαιρώ ${fmt(T)} − ${fmt(d)} και τελείωσα`, `Αφαιρώ ${fmt(T)} − ${fmt(d)}`]],
-        `Αν βγάλουμε τη διαφορά, ${['μαθητές', 'κάτοικοι', 'επισκέπτες'].includes(s.unit) ? 'οι' : 'τα'} ${withUnit(s, T - d).replace('κατοίκους', 'κάτοικοι')} που μένουν μοιράζονται στα δύο εξίσου.`));
+        'Αν βγάλουμε τη διαφορά από το σύνολο, ό,τι μένει μοιράζεται στα δύο εξίσου.'));
     }
     steps.push(b.numbers('solve', 'Λύνουμε: βγάζουμε τη διαφορά, μοιράζουμε στα δύο, ξαναβάζουμε τη διαφορά.', [
       { label: show ? `${fmt(T)} − ${fmt(d)} =` : 'Χωρίς τη διαφορά', answer: T - d, unit: s.unit },
-      { label: show ? `${smallName}: ${fmt(T - d)} : 2 =` : smallName, answer: small, unit: s.unit },
-      { label: show ? `${bigName}: ${fmt(small)} + ${fmt(d)} =` : bigName, answer: big, unit: s.unit },
+      // (the rows above by what they are: «ό,τι μένει», «το μισό»)
+      { label: show ? `${smallName}: ό,τι μένει : 2 =` : smallName, answer: small, unit: s.unit },
+      { label: show ? `${bigName}: το μισό + ${fmt(d)} =` : bigName, answer: big, unit: s.unit },
     ], `Χωρίς τη διαφορά, οι δύο λωρίδες είναι ίσες. ${s.equal}.`));
     steps.push(r.chance(0.5) || T % 2
       ? b.numbers('check', 'Αναστοχαζόμαστε: ισχύουν και τα δύο που λέει η ιστορία;', [
