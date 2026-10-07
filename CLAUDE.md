@@ -97,8 +97,9 @@ Release: `./build.sh` / `build.ps1` triggers the GitHub Actions workflow (`.gith
 - Heartbeat: the server sends `HEARTBEAT` every 10 s; a client that hears nothing for 25 s drops the socket and reconnects.
 - All messages are `ServerMessage` (`{ type, payload }`), sent to every client with no per-user filtering.
 
-### Scheduling (backend/src/server.ts)
-- `node-cron` runs `checkSchedules()` every minute. It matches `schedules[].cron` using cron-parser in `settings.timezone` (default Europe/Athens), then calls `triggerAction(targetId)`. It also generates, expires and cleans up chore instances according to each chore's own cron.
+### Scheduling (backend/src/server.ts, cron.ts)
+- `node-cron` runs `checkSchedules()` every minute. It matches `schedules[].cron` for the tick's minute, then calls `triggerAction(targetId)`. It also generates, expires and cleans up chore instances according to each chore's own cron (always on the real clock: `/api/debug/time` and `/api/hooks/push` simulate schedules, not chores).
+- Schedules and chores both match with `cronMatchesAt(expr, date, timezone)` in `backend/src/cron.ts`: cron-parser's `includesDate` on the minute, in `settings.timezone` (default Europe/Athens). It is the only place the backend decides from a cron when something happens (`nextCronRun` there serves `/api/hooks/push` and `/api/debug/schedule`). Full cron rules, so whatever the parent form writes is read: lists of ranges and steps (`1-3,5`, `0-30/10`), 0 and 7 are Sunday, day of month OR day of week. DST: a time in the skipped hour (last Sunday of March, 03:xx) never happens; one in the repeated hour (last Sunday of October, 03:xx) fires twice, which is left as is. Missed minutes stay missed (#51). A cron cron-parser can't read logs `SCHEDULE_ERROR` every minute, or `CHORE_CRON_ERROR` once per chore and cron; the config doesn't reject it yet. Other cron readers, none of which decide when a schedule or chore fires: node-cron's `BACKUP_CRON` (container `TZ`, BACKUP.md), `simpleCronToTime` in db.ts (a plain `M H` for the routine's display time) and the parent form's `frontend/src/components/parent/cron.ts` (reads and writes the `M H * * DAYS` shape).
 - Flows are multi-step sequences, including alarm steps and parallel routine starts. Routines are assigned to users through `routineAssignments`.
 
 ### Backend layout
