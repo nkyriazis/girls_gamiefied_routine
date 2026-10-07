@@ -20,7 +20,7 @@ export const ANCHORS = [
   // One exercise, and the ways to answer one
   'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit', 'exercise.show',
   'answer.options', 'answer.truefalse', 'answer.match-left', 'answer.match-right', 'answer.order', 'answer.order-submit',
-  'answer.blank', 'answer.words', 'answer.number', 'answer.numpad',
+  'answer.blank', 'answer.words', 'answer.blank-check', 'answer.number', 'answer.numpad',
   // The group game
   'game.players', 'game.subjects', 'game.length', 'game.start',
   'game.turn', 'game.progress', 'game.question', 'game.answer', 'game.exit', 'game.scores', 'game.finish',

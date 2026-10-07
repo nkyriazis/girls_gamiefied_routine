@@ -22,6 +22,7 @@ export const answerSteps = (type: Exercise['type'] | undefined): HelpStep[] => {
     case 'fill-blank': return [
       { el: 'answer.blank', title: 'Τα κενά', text: 'Πάτα ένα κενό…', side: 'bottom', demo: 'tap' },
       { el: 'answer.words', title: 'Οι λέξεις', text: '…και μετά τη λέξη που ταιριάζει. Πάτα ξανά μια λέξη στο κενό για να τη βγάλεις.', side: 'top', demo: 'tap', say: 'Και μετά, τη λέξη που ταιριάζει. Πάτα ξανά μια λέξη στο κενό για να τη βγάλεις.' },
+      { el: 'answer.blank-check', title: 'Τελείωσες;', text: 'Διάβασε την πρόταση. Αν είναι σωστή, πάτα εδώ.', side: 'top' },
     ];
     case 'number-input': return [
       { el: 'answer.number', title: 'Η απάντησή σου', text: 'Εδώ φαίνεται ο αριθμός που γράφεις.', side: 'bottom' },

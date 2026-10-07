@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ProblemStep } from '../../shared/types.ts';
-import { builder, hintShows, rng, rowsHint } from './lib.ts';
+import { builder, hintShows, rng, rowsHint, shownText } from './lib.ts';
 
 const NUM = /(?<![\d.])(?:\d{1,3}(?:\.\d{3})+|\d+)(?![\d.]*\d)/g;
 const numbers = (s: string) => (s.match(NUM) ?? []).map(x => Number(x.replace(/\./g, '')));
@@ -91,6 +91,21 @@ test('hintShows: small numbers count after «=», and in a label when a row abov
   assert.deepEqual(hintShows({ story: 'Το εισιτήριο κοστίζει [7 €|known].', steps: [numbersStep([['Πόσα παιδιά είναι', 3], ['Τα παιδιά: 3 × 7 =', 21]])] }).map(s => [s.where, s.number]), [['row 1', 3]]);
   // A digit of the story's number beside a remainder of 1 is no answer; nor a small number in words
   assert.deepEqual(hintShows({ story: 'Έχει [2.167 λουλούδια|known].', steps: [numbersStep([['Άθροισμα ψηφίων: 2 + 1 + 6 + 7 =', 16], ['Περισσεύουν', 1]], 'Μένει 1 ή 2;')] }), []);
+});
+
+test('hintShows: a choice\'s hint names no number only its right option has, of any size (#50 part 6)', () => {
+  const story = 'Έχει [162 κέρματα των 2 €|known] και αγοράζει [ένα παζλ των 12 €|known].';
+  const coins = (hint: string) => hintShows({ story, steps: [choice(['Μέτρησε κάθε κέρμα σαν 1 €', 'Ξέχασε να αφαιρέσει το παζλ', 'Κανένα λάθος, είναι σωστό'], 0, hint)] });
+  // e5-gen-coins-notes-001: the 1 of «σαν 1 €» is in the hint and in no other option
+  assert.deepEqual(coins('Τα κέρματα δεν αξίζουν 1 € το καθένα.').map(shownText),
+    ['step 0 hint «Τα κέρματα δεν αξίζουν 1 € το καθένα.» points at the right option: 1 is in it and in no other']);
+  assert.deepEqual(coins('Κάνε εσύ τον λογαριασμό από την αρχή: πόσα € είναι όλα τα χρήματα, και τι βγάζουμε από αυτά;'), []);
+  // e5-gen-place-value-012: «… με το 0.» above «Γράφουμε 0»
+  const place = (hint: string) => hintShows({ story: 'Ο αριθμός έχει [3 Μ και 5 Ε|known].', steps: [choice(['Γράφουμε 0', 'Τις αφήνουμε', 'Γράφουμε 1'], 0, hint)] });
+  assert.deepEqual(place('Μια θέση χωρίς τίποτα δεν χάνεται: κρατάει τη θέση της με το 0.').map(s => s.number), [0]);
+  // A number a wrong option has too, or the story gives, points at nothing
+  assert.deepEqual(place('Το 1 τι θα έδειχνε εκεί;'), []);
+  assert.deepEqual(hintShows({ story: 'Ο αριθμός έχει [3 Μ|known].', steps: [choice(['Τα 3 μπαίνουν πρώτα', 'Τις αφήνουμε'], 0, 'Το 3 είναι οι μονάδες.')] }), []);
 });
 
 test('rowsHint: a product with zeros is not worked out one zero short of the answer', () => {

@@ -185,13 +185,14 @@ The audit can't read Greek; you must. The traps the generator has already hit:
     the two candidates (estimate-first: «Κοιτάμε το ψηφίο των δεκάδων του 519: από 5 και πάνω, …»), or
     the steps in words («Πρώτα βγάζουμε από τα 785 τα 340. Ό,τι μένει γίνεται ομάδες των 5 …»). Where the
     rows say it all, leave the hint out and give the rows `eq`: rowsHint writes one.
-  - *A choice's hint* doesn't point at its right option either: no number only the right option has
-    and the story doesn't give. A rounding choice gives the rule, not the rounded numbers («Το 176
+  - *A choice's hint* doesn't point at its right option either: no number, of any size, that only the
+    right option has and nothing has settled (hintShows reads it since #50 part 6: `gen.ts` drops such a
+    draft, the audit fails it). Nor does it point by topic: it asks for the work that tells the options
+    apart («Κάνε τον λογαριασμό από την αρχή: πόσα € είναι όλα τα κέρματα μαζί, και πόσα κοστίζουν όσα
+    αγοράζονται;» above «Μέτρησε κάθε κέρμα σαν 1 €», «Δεν αφαίρεσε …», «Κανένα λάθος»), which no check
+    can read, so write it that way. A rounding choice gives the rule, not the rounded numbers («Το 176
     γίνεται 180 και το 449 γίνεται 450» sat above «180 + 450 = 630»; now estimate-first's choice,
-    unit-rate's check and e5-problem-apples say how to round). hintShows reads numbers rows only, so
-    nothing checks this yet: 3 such hints remain, a small number each (coins-notes' «Τα κέρματα δεν
-    αξίζουν 1 € το καθένα.» above «Μέτρησε κάθε κέρμα σαν 1 €», twice, and place-value-012's «… με
-    το 0.» above «Γράφουμε 0»), left for a follow-up.
+    unit-rate's check and e5-problem-apples say how to round).
   - *A row label* names a row above by what it is, never by its number: «Ψωμιά σε 8 ημέρες: όσα την
     ημέρα × 8 =», «3η ημέρα: 2η − 9 =», «Περίπου: η διαφορά τους», «Στην αρχή: ό,τι βρήκαμε + 23 =»,
     with `eq` in numbers for rowsHint. Keep it short (it wraps to two lines at 1280×800 from about 50
