@@ -307,6 +307,12 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           width: 100%;
         }
 
+        /* Stacked: «Δείξε μου» (it costs the exercise) well apart from the check above it (#50 part 6).
+           Side by side, the renderer's auto margins already keep them apart. */
+        .exercise-show {
+          margin-top: 1.5rem;
+        }
+
         @media (min-width: 900px) and (orientation: landscape) {
           .assignment-split {
             flex-direction: row;
