@@ -4,6 +4,7 @@
 // errors (#50 part 5b); story-check.test.ts holds a case for each rule.
 //
 // People are the children of lib.ts and relatives and friends («η γιαγιά», «ο θείος», «η φίλη της»).
+// The grown-ups at work («ο οδηγός», «η δασκάλα», «ο προπονητής») count only for the worst case below.
 //   - a clitic before a verb («του χάρισε», «της έμειναν») has one person of its gender to point
 //     at: in the sentence before (not the sentence's own subject), or else the only one so far;
 //   - two sentences in a row don't open with the same person («Ο Θοδωρής … Ο Θοδωρής …»);
@@ -19,7 +20,10 @@
 //   - the worst case: right after a sentence whose subject is someone the story isn't about (another
 //     child, or a relative or friend of the hero), a question with no subject of its own reads as
 //     about that one, by its verb («… Η φίλη του έχει 12 νομίσματα. Πόσα λεπτά έχει;») or by its
-//     «του/της» («… Η αδερφή της είναι 7 χρονών. Πόσα ευρώ θα της μείνουν;»);
+//     «του/της» («… Η αδερφή της είναι 7 χρονών. Πόσα ευρώ θα της μείνουν;»). A grown-up at work is
+//     someone else too («… Ο οδηγός κάνει αυτή τη δουλειά 19 χρόνια. Πόσα χιλιόμετρα διάνυσε
+//     συνολικά;»), unless the story opens with them («Ο φούρναρης έφτιαξε…»);
+//   - a child's name is never in lowercase («ο παππούς του μάρκου»);
 //   - «Αναρωτιέται»: whoever wonders is named in that sentence, or is the one person of the sentence
 //     before, or the only one so far (the clitic's rule, any gender);
 //   - a gift between two people who both have a «… τώρα» quantity is in each one's relations
@@ -28,7 +32,8 @@
 //   - prices (readPrices): every price names its item in its own sentence, and the item costs
 //     within its range (ITEMS below, per piece: a pack «με 6 χυμούς» or a total «τα πέντε τετράδια
 //     κοστίζουν» is divided by its count); notes and coins are real ones; «πληρώνει με» is a sum of
-//     real notes, at least the price, that needs its largest note.
+//     real notes, at least the price, that needs its largest note. A «για X» right after a price
+//     names its item («… των 935 € και 730 € για το λεωφορείο»), never the item of the price before.
 
 import type { ProblemExercise } from '../../shared/types.ts';
 import { PEOPLE, type Person } from './lib.ts';
@@ -69,12 +74,30 @@ export const RELATIVES: Who[] = [
   relative('φίλη', 'φίλης', 'φίλη', true), relative('φίλος', 'φίλου', 'φίλο', false),
 ];
 const WHO: Who[] = [...PEOPLE.map(child), ...RELATIVES];
+/** The grown-ups at work the families write: someone else for the worst case, never a clitic's referent. */
+export const AT_WORK: Who[] = [
+  relative('οδηγός', 'οδηγού', 'οδηγό', false), relative('οδηγός', 'οδηγού', 'οδηγό', true),
+  relative('δάσκαλος', 'δασκάλου', 'δάσκαλο', false), relative('δασκάλα', 'δασκάλας', 'δασκάλα', true),
+  relative('προπονητής', 'προπονητή', 'προπονητή', false), relative('προπονήτρια', 'προπονήτριας', 'προπονήτρια', true),
+  relative('γυμναστής', 'γυμναστή', 'γυμναστή', false), relative('γυμνάστρια', 'γυμνάστριας', 'γυμνάστρια', true),
+  relative('διευθυντής', 'διευθυντή', 'διευθυντή', false), relative('διευθύντρια', 'διευθύντριας', 'διευθύντρια', true),
+  relative('υπεύθυνος', 'υπεύθυνου', 'υπεύθυνο', false), relative('υπεύθυνη', 'υπεύθυνης', 'υπεύθυνη', true),
+  relative('βιβλιοθηκάριος', 'βιβλιοθηκάριου', 'βιβλιοθηκάριο', false), relative('βιβλιοθηκάριος', 'βιβλιοθηκάριου', 'βιβλιοθηκάριο', true),
+  relative('κηπουρός', 'κηπουρού', 'κηπουρό', false), relative('φούρναρης', 'φούρναρη', 'φούρναρη', false),
+  relative('ζαχαροπλάστης', 'ζαχαροπλάστη', 'ζαχαροπλάστη', false), relative('ζαχαροπλάστρια', 'ζαχαροπλάστριας', 'ζαχαροπλάστρια', true),
+];
+/** A child's name in lowercase («του μάρκου»); «χαρά» and «ζωή» are words too. */
+const LOWER_NAMES = PEOPLE.flatMap(p => [p.bare, p.gen.split(' ')[1], p.acc.split(' ')[1]])
+  .map(n => n.toLowerCase()).filter(n => !/^(?:χαρά|χαράς|ζωή|ζωής)$/.test(n));
 const CHILD = new Map(PEOPLE.map(p => [p.bare, p]));
 
 const word = (w: string) => new RegExp(`(?<!\\p{L})(?:${w})(?!\\p{L})`, 'u');
 const mentions = (s: string) => WHO.filter(p => p.words.some(f => word(f).test(s)));
 /** People in the nominative, with their article: «ο Θοδωρής», «Η γιαγιά» (not «τη Χαρά»). */
-const subjects = (s: string) => WHO.filter(p => word(`(?:${p.female ? 'η|Η' : 'ο|Ο'}) ${p.bare}`).test(s));
+const subjectsAmong = (among: Who[], s: string) => among.filter(p => word(`(?:${p.female ? 'η|Η' : 'ο|Ο'}) ${p.bare}`).test(s));
+const subjects = (s: string) => subjectsAmong(WHO, s);
+/** Without accents, in lowercase: «Αγόρασε» → «αγορασε». */
+const bare = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const opener = (s: string) => WHO.find(p => new RegExp(`^${p.Nom}(?!\\p{L})`, 'u').test(s));
 const isQuestion = (s: string) => /[;;]$/.test(s) || /^(Να βρεις|Θέλουμε να βρούμε)/.test(s) || /ναρωτιέται/.test(s);
 const CLITIC = /(?<!\p{L})(του|της) (?:θα )?(χάρισε|χαρίζει|έδωσε|δίνει|πήρε|περισσέψουν|περισσεύουν|έμειναν|μένουν|μείνουν|λείπουν|λείψουν)(?!\p{L})/u;
@@ -100,14 +123,17 @@ const firstVerb = (q: string): { form: 'sg' | 'pl'; at: number; word: string } |
 };
 // A neuter «το/τα …» after these is their subject («Πόσα € κοστίζει το κουδουνάκι;»); after others
 // it may be the object («Πόσες φορές θα γεμίσει το δοχείο;»), unless «Πόσα <thing>» is the object
-// already («Πόσα € θα πληρώσει το σχολείο;»). Times and counts of times are no object.
-const STATIVE = /^(?:έχει|είχε|κοστίζει|κόστιζε|κόστισε|κοστίσει|κρατάει|κρατά|κράτησε|διαρκεί|διάρκεσε|χωράει|χωρά|ζυγίζει|ζύγιζε|μένει|έμεινε|περισσεύει|περίσσεψε|λείπει|χρειάζεται|απέχει)$/u;
+// already («Πόσα € θα πληρώσει το σχολείο;»). Times and counts of times are no object. «Φτάνει» takes
+// none («Σε πόσες ώρες θα φτάσει το φορτηγό;»).
+const STATIVE = /^(?:έχει|είχε|κοστίζει|κόστιζε|κόστισε|κοστίσει|κρατάει|κρατά|κράτησε|διαρκεί|διάρκεσε|χωράει|χωρά|ζυγίζει|ζύγιζε|μένει|έμεινε|περισσεύει|περίσσεψε|λείπει|χρειάζεται|απέχει|φτάνει|φτάσει|έφτασε)$/u;
 const MEASURES = /^(?:φορές|λεπτά|ώρες|ημέρες|μέρες|δευτερόλεπτα|εβδομάδες|μήνες|χρόνια|χρονών)$/u;
+const EVERY_TIME = '(?:ημέρα|μέρα|εβδομάδα|ώρα|μήνα|χρόνο|πρωί|βράδυ|φορά|λεπτό|Σάββατο|Κυριακή)(?!\\p{L})';
 const PREPOSITION = '(?:για|από|με|σε|στο|στα|στον|στη|στην|στις|στους|προς|ως|μέχρι|χωρίς|μετά|πριν|ανά)';
 const ownSubject = (q: string, verb: { at: number; word: string }) => {
   if (/(?<!\p{L})(?:ο|η|οι|Ο|Η|Οι) \p{L}/u.test(q)) return true; // «η ρόδα», «ο καθένας», «οι δύο»
   if (/(?<!\p{L})(?:[Ππ]οιο|[Ππ]οιος|[Ππ]οια|[Ππ]οιοι)(?!\p{L})/u.test(q)) return true; // «ποιο παιδί»
-  if (new RegExp(`(?<!${PREPOSITION} )(?<!\\p{L})(?:κάθε \\p{L}+|το καθένα|η καθεμία|η καθεμιά)`, 'u').test(q)) return true;
+  // «κάθε σειρά» (not «κάθε εβδομάδα»: a time is no subject)
+  if (new RegExp(`(?<!${PREPOSITION} )(?<!\\p{L})(?:κάθε (?!${EVERY_TIME})\\p{L}+|το καθένα|η καθεμία|η καθεμιά)`, 'u').test(q)) return true;
   const after = q.slice(verb.at + verb.word.length);
   const neuter = new RegExp(`(?<!${PREPOSITION} )(?<!\\p{L})(?:το|τα) \\p{L}+`, 'u').test(after);
   if (!neuter) return false;
@@ -177,6 +203,8 @@ const ITEMS: Item[] = [
   // A school's or a club's lot («αξίας»)
   ['ηχεία', 30, 1500], ['στρώματα γυμναστικής', 80, 3000], ['μπάλες αξίας', 30, 800], ['στολές(?: για την ομάδα)?', 100, 3000],
   ['καλάθι μπάσκετ', 80, 1500],
+  // A coach for a club's away games over the season: a day's hire is 250–600 €
+  ['λεωφορείο για τους αγώνες', 150, 3000],
 ];
 
 const NOTES = [5, 10, 20, 50, 100, 200, 500];
@@ -188,7 +216,7 @@ const MONEY = new RegExp(`(?<![\\p{L}\\d.])(${COUNT})\\s*(ευρώ|€)(?:\\s+κ
 const COST = /(?:κοστίζει|κοστίζουν|κόστιζε|κόστιζαν|κόστισε|κόστισαν|κοστίσει|κοστίσουν)\s*$/iu;
 const COST_PLURAL = /(?:κοστίζουν|κόστιζαν|κόστισαν|κοστίσουν|κάνουν|έκαναν)\s*$/iu;
 const MAKES = /(?:κάνει|κάνουν|έκανε|έκαναν)\s*$/iu; // «που κάνει 25 ευρώ»: a price only with its item
-const PAY = /(?<!\p{L})(?:ξόδεψε|ξοδεύει|ξόδεψαν|ξοδεύουν|πλήρωσε|πληρώνει|πλήρωσαν|πληρώνουν|πληρώσει|πληρώσουν|πληρώσουμε|έδωσε|δίνει|έδωσαν|δίνουν|δώσει|δώσουν|έβγαλε|βγάζει)(?!\p{L})/iu;
+const PAY = /(?<!\p{L})(?:ξόδεψε|ξοδεύει|ξόδεψαν|ξοδεύουν|πλήρωσε|πληρώνει|πλήρωσαν|πληρώνουν|πληρώσει|πληρώσουν|πληρώσουμε|έδωσε|δίνει|έδωσαν|δίνουν|δώσει|δώσουν|έβγαλε|βγάζει|πάρει|πάρουν)(?!\p{L})/iu;
 const PER = /^\s*(?:το κιλό|την καθεμία|την καθεμιά|το καθένα|ο καθένας|η καθεμία|η καθεμιά|το άτομο|τη νύχτα|την ημέρα|την ώρα|τον μήνα|για την καθεμία|για το καθένα)(?!\p{L})/iu;
 const DENOMINATION = /(χαρτονόμισμα|χαρτονομίσματα|κέρμα|κέρματα|νόμισμα|νομίσματα) των\s*$/u;
 
@@ -208,6 +236,12 @@ const nearest = (text: string, fromEnd: boolean) => {
     }
   });
   return best;
+};
+
+/** The item a «για …» names: within its first few words («για ένα καινούργιο καλάθι μπάσκετ»), or none. */
+const itemOf = (forText: string) => {
+  const near = nearest(forText, false);
+  return near && forText.slice(0, near[1].index).trim().split(/\s+/).filter(Boolean).length <= 3 ? near : undefined;
 };
 
 /** The text ends with an item: «Για κάθε παιδί πληρώνει εισιτήριο ». */
@@ -241,21 +275,25 @@ export function readPrices(story: string): (Price | { sentence: string; note: st
       if (/^\s*(?:λιγότερ|περισσότερ)/u.test(after)) return; // a difference, not a price
       if (cents && !COST.test(before)) return; // «40 λεπτά» is mostly minutes
       const per = PER.test(after);
-      const forItem = after.match(/^\s*(?:ο καθένας |η καθεμία |η καθεμιά )?για (?!την καθεμία|την καθεμιά|το καθένα|κάθε|να )([^,]*)/u);
+      const forItem = after.match(/^\s*(?:ο καθένας |η καθεμία |η καθεμιά )?για (?!την καθεμία|την καθεμιά|το καθένα|κάθε|να |όλη |όλο |όλες |όλους |όλα )([^,]*)/u);
       const forToBuy = after.match(/^\s*για να (?:αγοράσει|αγοράσουν|πάρει|πάρουν) ([^,]*)/u);
       let item: [number, RegExpMatchArray] | undefined;
       let kind: 'cost' | 'makes' | 'of' | 'pay' | 'per' | 'elided' | undefined;
       if (COST.test(before)) kind = 'cost';
       else if (MAKES.test(before)) kind = 'makes';
-      else if (/(?<!\p{L})(?:των|(?<!συνολικής )αξίας|στα|για)\s*$/u.test(before) || (/(?<!\p{L})με\s*$/u.test(before) && /αγορ/u.test(before))) kind = 'of';
+      // «αγόρασε X με N ευρώ», any tense or accent («Αγοράζει», «αγόρασε»), the verb maybe in an
+      // earlier price of the sentence («… και ένα εισιτήριο για τη ρόδα με 4 ευρώ»), not «πληρώνει με»
+      else if (/(?<!\p{L})(?:των|(?<!συνολικής )αξίας|στα|για)\s*$/u.test(before)
+        || (/(?<!\p{L})με\s*$/u.test(before) && /(?<!\p{L})αγορ/u.test(bare(s.slice(0, m.index))) && !PAY.test(before))) kind = 'of';
       else if (PAY.test(s.slice(0, m.index)) && (forItem || forToBuy || (/(?<!\p{L})[Γγ]ια (?!κάθε)/u.test(before) && new RegExp(`${PAY.source}\\s*$`, 'iu').test(before)))) kind = 'pay';
       else if (per) kind = 'per';
       else if (wasPrice && before.trim().split(/\s+/).length <= 7 && !before.split(/[\s,]+/).some(w => !NOT_VERB.has(w.toLowerCase()) && w.length > 2 && (PLURAL.test(w) || SINGULAR.test(w)))) kind = 'elided';
       else if (PAY.test(s.slice(0, m.index)) && endsWithItem(before)) kind = 'of'; // «πληρώνει εισιτήριο 4 ευρώ»
       if (!kind) return;
-      const forText = kind === 'pay' && (forToBuy ?? forItem) ? (forToBuy ?? forItem)![1] : undefined;
-      // «… για ένα σκοινάκι και μετά άλλα 20 ευρώ για μια φανέλα»: the item is after «για», or none
-      if (forText !== undefined) item = nearest(forText, false);
+      const forText = (kind === 'pay' || kind === 'elided') && (forToBuy ?? forItem) ? (forToBuy ?? forItem)![1] : undefined;
+      // «… για ένα σκοινάκι και μετά άλλα 20 ευρώ για μια φανέλα», «… των 935 € και 730 € για το
+      // λεωφορείο»: the item is after «για», or none (never the price before's)
+      if (forText !== undefined) item = itemOf(forText);
       else item = nearest(before, true) ?? (kind === 'elided' || kind === 'pay' ? wasPrice?.item : undefined);
       if (kind === 'makes' && !item) return;
       last = { item };
@@ -280,6 +318,9 @@ export function checkStory(ex: ProblemExercise): string[] {
   const text = plain(ex.story);
   const ss = text.split(/(?<=[.;;])\s+/);
   const told = ss.filter(s => !isQuestion(s));
+  // A sentence that tells nothing known or sought, in a story that marks what it tells
+  const raw = ex.story.split(/(?<=[.;;])\s+/);
+  const noise = (i: number) => raw.length === ss.length && /\|known\]/.test(ex.story) && !/\|(?:known|sought)\]/.test(raw[i]);
 
   // Who a clitic points at: one person of its gender in the sentence before (not the
   // sentence's own subject), or else the only one named so far (either gender: «Αναρωτιέται»)
@@ -298,6 +339,10 @@ export function checkStory(ex: ProblemExercise): string[] {
     if (who === undefined) out.push(`«${m[0]}» before anyone it could mean is named: «${s}»`);
     if (who === null) out.push(`«${m[0]}» could mean more than one person: «${s}»`);
   });
+
+  for (const s of ss) {
+    for (const n of LOWER_NAMES) if (word(n).test(s)) out.push(`a child's name in lowercase, «${n}»: «${s}»`);
+  }
 
   for (let i = 1; i < ss.length; i++) {
     const p = opener(ss[i]);
@@ -340,7 +385,15 @@ export function checkStory(ex: ProblemExercise): string[] {
     // κασετίνα του Πυθαγόρα… Η φίλη του έχει 12 νομίσματα. Πόσα λεπτά έχει;»
     const prevSubjects = i > 0 && !isQuestion(ss[i - 1]) ? subjects(ss[i - 1]) : [];
     const S = prevSubjects.length === 1 ? prevSubjects[0] : undefined;
-    const other = S && hero && S !== hero ? S : undefined;
+    // A grown-up at work is someone else when a child or relative is the subject the story is about,
+    // or when their sentence is noise (nothing in it is known or sought): «… Ο οδηγός κάνει αυτή τη
+    // δουλειά [19 χρόνια|extra]. Πόσα χιλιόμετρα διάνυσε συνολικά;». Not when the story opens with
+    // them («Ο φούρναρης έφτιαξε…»), nor when they do what is asked («Ο γυμναστής θέλει να τους βάλει
+    // σε ίσες σειρές, [με …|known]. Με πόσους τρόπους μπορεί να το κάνει;», «Από το σχολείο της
+    // Σοφίας … Η κυρία Μυρτώ, η υπεύθυνη της εκδρομής, θα πληρώσει [με …|known]. Πόσα ρέστα θα πάρει;»).
+    const atWork = i > 0 && !isQuestion(ss[i - 1]) && !prevSubjects.length && ((hero && who.includes(hero)) || noise(i - 1))
+      ? subjectsAmong(AT_WORK, ss[i - 1]).filter(p => !subjectsAmong(AT_WORK, ss[0]).includes(p)) : [];
+    const other = S && hero && S !== hero ? S : atWork.length === 1 ? atWork[0] : undefined;
     const cl = q.match(CLITIC);
     const to = cl && referent(i, cl[1] === 'της');
     if (other && to === other) {
@@ -351,7 +404,8 @@ export function checkStory(ex: ProblemExercise): string[] {
     if (verb?.form !== 'sg' || ownSubject(q, verb)) return;
     if (who.length >= 2 || other) {
       const reads = other ? `; it reads as about ${other.nom}, the sentence before` : '';
-      out.push(`the question names no one, and ${who.map(p => p.nom).join(', ')} ${who.length > 1 ? 'are subjects' : 'is the subject'}${reads}: «${q}»`);
+      const are = who.length ? `, and ${who.map(p => p.nom).join(', ')} ${who.length > 1 ? 'are subjects' : 'is the subject'}` : '';
+      out.push(`the question names no one${are}${reads}: «${q}»`);
     }
   });
 
