@@ -28,7 +28,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         <FeedbackContext.Provider value={{ run, notify }}>
             {children}
             <div className="p-toasts" role="status" aria-live="polite">
-                {toasts.map(t => <div key={t.id} className={`p-toast ${t.tone}`}>{t.text}</div>)}
+                {toasts.map(t => <div key={t.id} className={`p-toast ${t.tone}`}><span className="p-toast-text">{t.text}</span></div>)}
             </div>
         </FeedbackContext.Provider>
     );
