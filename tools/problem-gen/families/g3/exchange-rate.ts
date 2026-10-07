@@ -151,7 +151,7 @@ export const exchangeRate: Family = {
           { label: cap(X.many), answer: q },
           { label: `${cap(Y.many)} που περισσεύουν`, answer: rest },
         ], `Σκέψου την προπαίδεια του ${k}: ποιο γινόμενο φτάνει πιο κοντά στο ${m} χωρίς να το ξεπερνά;`));
-        steps.push(b.choice('check', 'Πώς ελέγχουμε;', `${q} × ${k} + ${rest} = ${m}`, [`${q} + ${k} + ${rest} = ${q + k + rest}`, `${m} − ${rest} = ${m - rest}`],
+        steps.push(b.choice('check', 'Πώς ελέγχουμε;', `${q} × ${k} + ${rest} = ${m}`, [`${q} + ${k} + ${rest} = ${q + k + rest}`, `${q} × ${k} − ${rest} = ${q * k - rest}`],
           `${q} ομάδες των ${k}, μαζί με όσα περισσεύουν, πρέπει να κάνουν ${m}.`));
       }
       return { title, story, steps };
@@ -166,12 +166,12 @@ export const exchangeRate: Family = {
     const story = `${rate} ${has} ${noise} ${sought(s.mixAsk)};`;
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       r.chance(0.5) ? { label: `${n} × ${k} =`, answer: n * k, unit: Y.many } : { label: `${cap(Y.many)} για ${the(X)} ${n} ${X.manyAcc}`, answer: n * k },
-      { label: `${n * k} + ${m} =`, answer: n * k + m, unit: Y.many },
+      { label: `${cap(Y.many)} για ${the(X)} ${X.manyAcc} + ${m} =`, answer: n * k + m, unit: Y.many },
     ], s.title === 'Τα κιβώτια'
       ? 'Πρώτα βρίσκουμε πόσα μπουκάλια έχουν τα γεμάτα κιβώτια. Μετά προσθέτουμε τα μπουκάλια που είναι έξω από κιβώτια.'
       : `Πρώτα βρίσκουμε πόσ${Y.g === 'f' ? 'ες' : Y.g === 'm' ? 'ους' : 'α'} ${Y.manyAcc} αξίζουν ${the(X, false)} ${X.many}. Μετά προσθέτουμε ${the(Y)} ${Y.manyAcc} που υπάρχουν ήδη.`));
-    steps.push(b.choice('check', 'Ποιο λάθος κάνει όποιος απαντήσει ' + fmt(n + m) + ';', `Προσθέτει ${X.manyAcc} και ${Y.manyAcc}, σαν να ήταν το ίδιο`,
-      ['Κανένα, αυτή είναι η σωστή απάντηση', `Ξεχνάει ${the(Y)} ${m} ${Y.manyAcc}`],
+    steps.push(b.choice('check', 'Ποιο λάθος κάνει όποιος απαντήσει ' + fmt(n + m) + ';', 'Τα προσθέτει σαν να ήταν ίδια',
+      [['Κανένα, αυτή είναι η σωστή απάντηση', 'Κανένα, είναι σωστή', 'Κανένα, είναι η σωστή απάντηση'], ['Μετράει μόνο το ένα είδος', 'Μετράει μόνο ένα είδος', 'Μετράει μόνο το ένα από τα δύο είδη']],
       `${cap(X.g === 'm' ? 'ένας' : X.g === 'f' ? 'μία' : 'ένα')} ${X.one} δεν είναι ${Y.g === 'm' ? 'ένας' : Y.g === 'f' ? 'μία' : 'ένα'} ${Y.one}.`));
     return { title, story, steps };
   },

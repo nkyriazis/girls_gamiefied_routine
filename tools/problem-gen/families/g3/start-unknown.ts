@@ -29,7 +29,8 @@ const SETTINGS: Setting[] = [
   },
   {
     t: thing('ευρώ', 'ευρώ', 'n'), some: 'κάποια χρήματα στον κουμπαρά', min: 15, max: 150,
-    lose: n => `Έβγαλε ${n} για να αγοράσει ένα βιβλίο`,
+    // what that money buys: a book up to 30 €, then a board game, then a scooter
+    lose: n => `Έβγαλε ${n} για να αγοράσει ${((x: number) => x > 60 ? 'ένα πατίνι' : x > 30 ? 'ένα επιτραπέζιο παιχνίδι' : 'ένα βιβλίο')(Number(n.replace(/\D/g, '')))}`,
     gain: (n, p) => `Πήρε ${n} από τη γιαγιά ${p.his}`,
     noise: (r, p) => `Ο κουμπαράς ${p.his} είναι ένα γουρουνάκι ψηλό ${extra(`${r.int(15, 25)} εκατοστά`)}.`,
   },
@@ -69,7 +70,7 @@ export const startUnknown: Family = {
     const nowPhrase = known(count(now, t, true));
     const story = r.pick([
       () => `${p.Nom} είχε ${s.some}. ${happened}. ${noise} Τώρα έχει ${nowPhrase}. ${sought(`${Many} ${t.manyAcc} είχε στην αρχή`)};`,
-      () => `Τώρα ${p.nom} έχει ${nowPhrase}. Νωρίτερα, ${happened[0].toLowerCase()}${happened.slice(1)}. ${noise} ${sought(`${Many} ${t.manyAcc} είχε πριν`)};`,
+      () => `Τώρα ${p.nom} έχει ${nowPhrase}. Νωρίτερα ${happened[0].toLowerCase()}${happened.slice(1)}. ${noise} ${sought(`${Many} ${t.manyAcc} είχε πριν`)};`,
       () => `${p.Nom} δεν θυμάται πόσ${t.g === 'n' ? 'α' : t.g === 'f' ? 'ες' : 'ους'} ${t.manyAcc} είχε. Ξέρει ότι ${happened[0].toLowerCase()}${happened.slice(1)} και ότι τώρα έχει ${nowPhrase}. ${noise} ${sought(`${Many} ${t.manyAcc} είχε στην αρχή`)};`,
     ])();
 
@@ -79,7 +80,8 @@ export const startUnknown: Family = {
     const style = r.int(0, 2);
     if (style === 0) {
       steps.push(b.choice('plan', 'Πώς το λύνουμε;', 'Ξεκινάμε από το τέλος και γυρίζουμε πίσω',
-        ['Προσθέτουμε όλους τους αριθμούς', 'Κάνουμε ό,τι λέει η ιστορία, με την ίδια σειρά'],
+        [['Προσθέτουμε όλους τους αριθμούς', 'Προσθέτουμε τους αριθμούς της ιστορίας', 'Προσθέτουμε τους αριθμούς'],
+          ['Κάνουμε ό,τι λέει η ιστορία, με την ίδια σειρά', 'Κάνουμε ό,τι λέει η ιστορία', 'Ακολουθούμε τη σειρά της ιστορίας']],
         'Την αρχή δεν την ξέρουμε. Ξέρουμε όμως το τέλος.'));
     } else if (style === 1) {
       steps.push(b.order('plan', 'Βάζουμε σε σειρά το σχέδιό μας.', [
@@ -88,10 +90,10 @@ export const startUnknown: Family = {
         `Βρίσκουμε ${howMany(t)} ${t.manyAcc} είχε στην αρχή`,
       ], 'Δουλεύουμε αντίστροφα: από το τέλος προς την αρχή.'));
     }
-    steps.push(b.choice('plan', 'Ποια πράξη μας βοηθά;', right, [wrongOp, `Καμία, η απάντηση είναι ${count(now, t)}`],
+    steps.push(b.choice('plan', 'Ποια πράξη μας βοηθά;', right, [wrongOp, `${fmt(now)} × ${fmt(change)}`],
       `Πριν από αυτό που έγινε, είχε ${lost ? 'περισσότερ' : 'λιγότερ'}${t.g === 'n' ? 'α' : t.g === 'f' ? 'ες' : 'ους'}.`));
     steps.push(b.numbers('solve', 'Λύνουμε.', [
-      { label: style === 2 ? `${right} =` : 'Στην αρχή είχε', answer: start, unit: t.manyAcc },
+      { label: style === 2 ? `${right} =` : 'Στην αρχή είχε', answer: start, unit: t.manyAcc, eq: right },
     ]));
     steps.push(b.choice('check', 'Πώς ελέγχουμε;',
       lost ? `${fmt(start)} − ${fmt(change)} = ${fmt(now)}` : `${fmt(start)} + ${fmt(change)} = ${fmt(now)}`,

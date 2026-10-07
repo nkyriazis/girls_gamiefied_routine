@@ -1,43 +1,23 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { useAppSounds } from '../hooks/useAppSounds';
 import { help } from '../help/anchors';
+import { SmartIcon } from './SmartIcon';
 import { type User, type AlarmProps } from '@shared/types';
 
 interface GlobalAlarmProps {
   flowId: string;
-  user: User | null;
+  users: User[]; // the kids it is for (none: everyone)
   alarmProps?: AlarmProps;
   onDismiss: (flowId: string) => void;
 }
 
-export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmProps = {}, onDismiss }) => {
-  const { playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound } = useAppSounds();
-
+export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, users, alarmProps = {}, onDismiss }) => {
   const {
-    sound = 'melody',
     title = 'Ειδοποίηση',
     message,
     icon = '🔔',
-    dismissText = 'OK'
+    dismissText = 'Εντάξει!'
   } = alarmProps;
-
-  useEffect(() => {
-    // Determine which sound to play
-    if (typeof sound === 'object' && sound.type === 'upload') {
-      // Play custom uploaded MP3 in loop
-      playCustomSound(sound.value, true);
-      return () => stopCustomSound();
-    } else if (sound === 'melody' || !sound) {
-      // Play built-in melody
-      playWakeUpLoop();
-      return () => stopWakeUpLoop();
-    } else if (sound === 'beep') {
-      // Play simple beep alarm (you could add playAlarm in a loop if needed)
-      playWakeUpLoop(); // For now, fallback to melody
-      return () => stopWakeUpLoop();
-    }
-  }, [sound, playWakeUpLoop, stopWakeUpLoop, playCustomSound, stopCustomSound]);
 
   const handleDismiss = () => {
     onDismiss(flowId);
@@ -63,16 +43,17 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
         </motion.div>
 
         <h1>{title}</h1>
-        {user && (
-          <div className="alarm-user-info">
-            {typeof user.avatar === 'string' ? (
-              <div className="user-avatar-emoji">{user.avatar}</div>
-            ) : user.avatar.type === 'emoji' ? (
-              <div className="user-avatar-emoji">{user.avatar.value}</div>
-            ) : user.avatar.type === 'image' ? (
-              <img src={`/uploads/${user.avatar.value}`} alt={user.name} className="user-avatar-img" />
-            ) : null}
-            <p className="user-name" style={{ color: user.color }}>{user.name}</p>
+        {users.length > 0 && (
+          <div className={`alarm-users${users.length > 1 ? ' several' : ''}`}>
+            {users.map(user => (
+              <div key={user.id} className="alarm-user-info">
+                {/* The kid's colour rings the avatar; the name is white on a dark plate, readable on the orange */}
+                <div className="alarm-user-badge" style={{ background: user.color, borderColor: user.color }}>
+                  <SmartIcon value={user.avatar} size={96} style={{ width: '100%', height: '100%', fontSize: 'inherit' }} />
+                </div>
+                <p className="user-name">{user.name}</p>
+              </div>
+            ))}
           </div>
         )}
         {message && <p>{message}</p>}
@@ -120,12 +101,23 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
           line-height: 1;
         }
 
+        /* A short card (a phone with three items): the icon gives way to the words and the OK */
+        @container (max-height: 300px) {
+          .alarm-icon { font-size: 14cqmin; }
+        }
+
         .global-alarm-container h1 {
-          font-size: 8cqmin;
+          font-size: max(1.5rem, 8cqmin);
           margin: 0;
           text-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
           font-weight: 900;
           line-height: 1.2;
+        }
+
+        .alarm-users {
+          display: flex;
+          justify-content: center;
+          gap: 5cqmin;
         }
 
         .alarm-user-info {
@@ -135,30 +127,39 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
           gap: 1cqmin;
         }
 
-        .user-avatar-emoji {
-          font-size: 18cqmin;
-          filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
-          line-height: 1;
-        }
-
-        .user-avatar-img {
+        .alarm-user-badge {
           width: 20cqmin;
           height: 20cqmin;
           border-radius: 50%;
-          object-fit: cover;
-          border: 4px solid white;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          border: 4px solid; /* the kid's colour (inline) */
+          box-shadow: 0 0 0 3px white, 0 4px 20px rgba(0, 0, 0, 0.3);
+          font-size: 12cqmin; /* an emoji avatar, sized with its badge */
         }
 
-        .user-name {
-          font-size: 6cqmin;
+        .alarm-users.several .alarm-user-badge {
+          width: 15cqmin;
+          height: 15cqmin;
+        }
+
+        /* White on a dark plate: at least 4.5:1 against every part of the orange gradient.
+           Scoped to the card (this style is global) and the size it had: the card's p rule won before. */
+        .global-alarm-container .user-name {
+          font-size: max(1rem, 5cqmin);
           font-weight: 900;
           margin: 0;
-          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+          color: white;
+          opacity: 1;
+          background: rgba(20, 10, 40, 0.75);
+          padding: 0.1em 0.6em;
+          border-radius: 1em;
         }
 
         .global-alarm-container p {
-          font-size: 5cqmin;
+          font-size: max(1rem, 5cqmin);
           opacity: 0.9;
           margin: 0;
         }
@@ -166,8 +167,10 @@ export const GlobalAlarm: React.FC<GlobalAlarmProps> = ({ flowId, user, alarmPro
         .btn-dismiss-global {
           background: rgba(255, 255, 255, 0.95);
           color: #ff0055;
-          font-size: 5cqmin;
-          padding: 2cqmin 6cqmin;
+          /* Sized with its card, but never too small for a finger (48 px tall at least) */
+          font-size: max(1.25rem, 5cqmin);
+          padding: max(0.75rem, 2cqmin) max(2rem, 6cqmin);
+          min-height: 48px;
           border-radius: 100px;
           font-weight: 900;
           border: none;

@@ -1,7 +1,7 @@
 // Have a, need b, gather c every day or week: how many days or weeks? What is missing is
 // divided by c, and a remainder means one more day (Γ΄ κεφ. 18 «Διαιρέσεις» και κεφ. 10).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { extra, fmt, known, PEOPLE, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, PEOPLE, sought, type Family, type Person, type Rng, type Wording } from '../../lib.ts';
 
 interface Period {
   HowMany: string; // "Σε πόσες εβδομάδες"
@@ -47,15 +47,16 @@ const SETTINGS: Setting[] = [
         return r.int(Math.max(it.min, need + 10), it.max);
       },
     }),
+    // After the sister, «θα έχει όσα χρειάζεται» could be hers: the question names whom it means
     story: (p, n, per, noise, given, r) => {
       const item = r.pick(ITEMS.filter(x => x.min <= n.b && n.b <= x.max));
       if (!item) return '';
       const every = per === WEEKS ? 'Κάθε εβδομάδα βάζει' : 'Κάθε Σάββατο βάζει';
       return given
         ? `${p.Nom} μαζεύει χρήματα για ${item.what}. Έχει ${extra(`${n.a} ευρώ`)} και ${p.his} λείπουν ακόμη ${known(`${n.need} ευρώ`)}. `
-          + `${every} στον κουμπαρά ${known(`${n.c} ευρώ`)} από το χαρτζιλίκι ${p.his}. ${noise} ${sought(`${per.HowMany} θα έχει όσα χρειάζεται`)};`
+          + `${every} στον κουμπαρά ${known(`${n.c} ευρώ`)} από το χαρτζιλίκι ${p.his}. ${noise} ${sought(`${per.HowMany} θα έχει${/^Η αδερφή/.test(noise) ? ` ${p.nom}` : ''} όσα χρειάζεται`)};`
         : `${p.Nom} θέλει να αγοράσει ${item.what} που κοστίζει ${known(`${n.b} ευρώ`)}. Έχει ήδη στον κουμπαρά ${known(`${n.a} ευρώ`)}. `
-          + `${every} ${known(`${n.c} ευρώ`)} ${r.pick(['από το χαρτζιλίκι', 'από τις οικονομίες'])} ${p.his}. ${noise} ${sought(`${per.HowMany} θα έχει όσα χρειάζεται`)};`;
+          + `${every} ${known(`${n.c} ευρώ`)} ${r.pick(['από το χαρτζιλίκι', 'από τις οικονομίες'])} ${p.his}. ${noise} ${sought(`${per.HowMany} θα έχει${/^Η αδερφή/.test(noise) ? ` ${p.nom}` : ''} όσα χρειάζεται`)};`;
     },
     still: (p, rest) => (rest === 1 ? `θα ${p.his} λείπει ακόμη 1 ευρώ` : `θα ${p.his} λείπουν ακόμη ${rest} ευρώ`),
     noise: (r, p) => r.pick([
@@ -68,8 +69,9 @@ const SETTINGS: Setting[] = [
     title: 'Το άλμπουμ', unit: 'αυτοκόλλητα',
     period: () => DAYS,
     numbers: r => ({ c: r.pick([4, 5, 6]), q: r.int(3, 10), b: need => r.step(Math.max(160, need + 60), 300, 20) }),
+    // After the friend, «θα γεμίσει το άλμπουμ» could be the friend's doing: the question names her
     story: (p, n, per, noise) => `Το άλμπουμ ${p.gen} έχει θέσεις για ${known(`${n.b} αυτοκόλλητα`)}. Έχει ήδη κολλήσει ${known(`${n.a} αυτοκόλλητα`)}. `
-      + `Κάθε μέρα ανοίγει ένα φακελάκι με ${known(`${n.c} αυτοκόλλητα`)}, όλα καινούργια. ${noise} ${sought(`${per.HowMany} θα γεμίσει το άλμπουμ`)};`,
+      + `Κάθε μέρα ανοίγει ένα φακελάκι με ${known(`${n.c} αυτοκόλλητα`)}, όλα καινούργια. ${noise} ${sought(`${per.HowMany} θα γεμίσει${/^(?:Η φίλη|Ο φίλος)/.test(noise) ? ` ${p.nom}` : ''} το άλμπουμ`)};`,
     still: (_p, rest) => (rest === 1 ? 'θα λείπει ακόμη 1 αυτοκόλλητο' : `θα λείπουν ακόμη ${rest} αυτοκόλλητα`),
     noise: (r, p) => r.pick([
       `Το άλμπουμ έχει ${extra(`${r.int(20, 40)} σελίδες`)}.`,
@@ -161,13 +163,13 @@ export const daysToGoal: Family = {
         { label: `${cap(s.unit)} που περισσεύουν`, answer: rest },
       ], c >= 10 ? `Μετράμε ανά ${c}: ${c}, ${2 * c}, ${3 * c}, … Πού σταματάμε, πριν ξεπεράσουμε το ${need};`
         : `Σκέψου την προπαίδεια του ${c}: ποιο γινόμενο φτάνει πιο κοντά στο ${need} χωρίς να το ξεπερνά;`));
-      const wrongs = [`${q}, γιατί τόσες φορές χωράει το ${c} στο ${need}`];
-      if (rest > 1 && rest !== q && rest !== q + 1) wrongs.push(`${rest}, γιατί τόσα περισσεύουν`);
-      else if (!given && Math.ceil(total / c) !== q + 1 && Math.ceil(total / c) !== q) wrongs.push(`${Math.ceil(total / c)}, γιατί ${fmt(total)} : ${c}`);
-      if (wrongs.length < 2 && rest > 1 && q + rest !== q + 1) wrongs.push(`${q + rest}, γιατί προσθέτουμε και όσα περισσεύουν`);
-      if (wrongs.length < 2) wrongs.push(`${need - c}, γιατί ${need} − ${c}`);
+      const wrongs: Wording[] = [[`${q}, γιατί τόσες φορές χωράει το ${c} στο ${need}`, `${q}, όσες φορές χωράει το ${c}`]];
+      if (rest > 1 && rest !== q && rest !== q + 1) wrongs.push([`${rest}, όσα περισσεύουν στο τέλος`, `${rest}, γιατί τόσα περισσεύουν στο τέλος`, `${rest}, όσα περισσεύουν`]);
+      else if (!given && Math.ceil(total / c) !== q + 1 && Math.ceil(total / c) !== q) wrongs.push(`${Math.ceil(total / c)}, όσες φορές χωράει το ${c} στο ${fmt(total)}`);
+      if (wrongs.length < 2 && rest > 1 && q + rest !== q + 1) wrongs.push([`${q + rest}, γιατί προσθέτουμε και όσα περισσεύουν`, `${q + rest}, μαζί με όσα περισσεύουν`]);
+      if (wrongs.length < 2) wrongs.push(`${need - c}, γιατί αφαιρούμε ${need} − ${c}`);
       steps.push(b.choice('check', `${per.HowMany} λοιπόν;`,
-        `${q + 1}, γιατί σε ${q} ${per.many} ${s.still(p, rest)}`, wrongs,
+        `${q + 1}, ${per.oneMore} για όσα μένουν`, wrongs,
         `Αυτά που περισσεύουν χρειάζονται κι αυτά ${per.oneMore}.`));
     }
     return { title: r.pick([s.title, 'Ο στόχος', 'Πότε θα φτάσουμε;']), story, steps };

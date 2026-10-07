@@ -2,22 +2,23 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type AlarmProps, type FlowRun, type RoutineRun } from '@shared/types';
+import { type AlarmProps, type FlowRun, type Routine, type RoutineRun, type User } from '@shared/types';
 import { api } from '../api';
 import { InlineRoutinePlayer } from './InlineRoutinePlayer';
 import { GlobalAlarm } from './GlobalAlarm';
+import { alarmSoundKey, useAlarmSound } from '../hooks/useAlarmSound';
 import { SmartIcon } from './SmartIcon';
 import { StoreModal } from './StoreModal';
 import { ChoresDrawer } from './ChoresDrawer';
 import { useGame } from '../context/GameContext';
-import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { useTouchDevice } from '../hooks/useTouchDevice';
 import { ExerciseSetup } from './ExerciseSetup';
 import { ExerciseGame } from './ExerciseGame';
 import { ExercisesDrawer } from './ExercisesDrawer';
+import { waitingCount } from './exerciseCounts';
 import { help } from '../help/anchors';
 import { sound } from '../sound/sfx';
-import { HelpScreen } from '../help/HelpProvider';
+import { HelpCover, HelpScreen } from '../help/HelpProvider';
 import { homeTour, routineTour } from './Dashboard.help';
 
 // Toast for a chore outcome (from a server event)
@@ -31,14 +32,11 @@ interface ChoreNotification {
 
 const TOAST_MS = 5000;
 
+// `order`: where it goes on screen, by kid (the config's order; an alarm for everyone first)
 type ActiveItem =
-  | { type: 'alarm'; key: string; userId: string | null; run: FlowRun; props: AlarmProps }
-  | { type: 'routine'; key: string; userId: string; run: RoutineRun };
-
-// The user a flow is for: its first routine action's user (null: everyone).
-const flowUserId = (run: FlowRun): string | null =>
-  run.steps.flatMap(step => (step.type === 'parallel' ? step.actions : []))
-    .flatMap(action => (action.type === 'routine' ? [action.userId] : []))[0] ?? null;
+  | { type: 'alarm'; key: string; order: number; userIds: string[]; run: FlowRun; props: AlarmProps }
+  | { type: 'routine'; key: string; order: number; run: RoutineRun; user: User; routine: Routine };
+type AlarmItem = Extract<ActiveItem, { type: 'alarm' }>;
 const CHORE_TOAST_TYPE = { CHORE_CONFIRMED: 'confirmed', CHORE_REJECTED: 'rejected', CHORE_EXPIRED: 'expired' } as const;
 
 export const Dashboard: React.FC = () => {
@@ -52,7 +50,6 @@ export const Dashboard: React.FC = () => {
   }, []);
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { isInstallable, promptInstall } = useInstallPrompt();
 
   // Store State
   const [storeUserId, setStoreUserId] = useState<string | null>(null);
@@ -82,10 +79,8 @@ export const Dashboard: React.FC = () => {
     }).length;
   }, [choreInstances, chores]);
 
-  // Count pending daily exercise assignments
-  const pendingExercisesCount = useMemo(() => {
-    return exerciseAssignments.filter(a => a.status === 'pending').length;
-  }, [exerciseAssignments]);
+  // The daily sets still to do (the drawer counts the same; extra problems are apart)
+  const pendingExercisesCount = useMemo(() => waitingCount(exerciseAssignments), [exerciseAssignments]);
 
   // Count active bonus activities
   const activeBonusCount = useMemo(() => {
@@ -133,10 +128,9 @@ export const Dashboard: React.FC = () => {
 
         console.log(`[TimeSync] Server: ${serverTime.toISOString()} | Client: ${clientTime.toISOString()} | Diff: ${diff}ms`);
 
-        // If difference is more than 2 minutes
+        // More than 2 minutes apart: say so, for a parent (not which clock is wrong; either may be)
         if (diff > 2 * 60 * 1000) {
-          const diffMinutes = Math.round(diff / 60000);
-          const msg = `Time mismatch: Server is ${diffMinutes}m ${serverTime > clientTime ? 'ahead' : 'behind'}`;
+          const msg = `Η ώρα αυτής της οθόνης διαφέρει από τον server κατά ${Math.round(diff / 60000)} λεπτά`;
           setTimeWarning(msg);
           console.warn(`[TimeSync] ${msg}`);
         }
@@ -155,38 +149,46 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   // Running flows and routines come from the server; this only lays them out
-  // in "lanes" and reports what the kids do.
+  // and reports what the kids do.
   const sortedActiveItems = React.useMemo(() => {
-    const items: ActiveItem[] = [];
+    const order = (userId: string) => users.findIndex(u => u.id === userId);
+    const busy = new Set(routineRuns.map(r => r.userId));
 
-    // Alarms (skipped if the user already has a routine on screen)
-    flowRuns.forEach(run => {
+    // An alarm is never hidden. The server says whom it is for (none: everyone). While
+    // a kid's alarm is up it takes her routine's place, so it can't be missed: her
+    // routine stays on the server and comes back as it was once she dismisses it.
+    const alarms: AlarmItem[] = flowRuns.flatMap(run => {
       const step = run.steps[run.stepIndex];
-      if (step?.type !== 'alarm') return;
-      const userId = flowUserId(run);
-      if (userId && routineRuns.some(r => r.userId === userId)) return;
-      items.push({ type: 'alarm', key: `alarm-${run.id}`, userId, run, props: step.props });
+      if (step?.type !== 'alarm') return [];
+      const userIds = run.userIds ?? [];
+      const at = userIds.find(id => busy.has(id)) ?? userIds[0];
+      return [{ type: 'alarm' as const, key: `alarm-${run.id}`, order: at ? order(at) : -1, userIds, run, props: step.props }];
+    });
+    const covered = new Set(alarms.flatMap(alarm => alarm.userIds));
+    // A run whose kid or routine is gone from the config shows nothing, so it doesn't count
+    const routines: ActiveItem[] = routineRuns.flatMap(run => {
+      const user = users.find(u => u.id === run.userId);
+      const routine = user?.routines.find(r => r.id === run.routineId);
+      if (!user || !routine || covered.has(run.userId)) return [];
+      return [{ type: 'routine' as const, key: `routine-${run.id}`, order: order(run.userId), run, user, routine }];
     });
 
-    routineRuns.forEach(run => {
-      items.push({ type: 'routine', key: `routine-${run.id}`, userId: run.userId, run });
-    });
-
-    // Sort by User Index (Global items first)
-    return items.sort((a, b) => {
-      if (!a.userId && b.userId) return -1;
-      if (a.userId && !b.userId) return 1;
-      if (!a.userId && !b.userId) return 0;
-
-      const userIndexA = users.findIndex(u => u.id === a.userId);
-      const userIndexB = users.findIndex(u => u.id === b.userId);
-      return userIndexA - userIndexB;
-    });
+    return [...alarms, ...routines].sort((a, b) => a.order - b.order);
   }, [flowRuns, routineRuns, users]);
 
-  // Determine View Mode based on actual displayed items
+  // One alarm sound for every alarm card on screen (the first one's)
+  const firstAlarm = sortedActiveItems.find((item): item is AlarmItem => item.type === 'alarm');
+  useAlarmSound(firstAlarm ? alarmSoundKey(firstAlarm.props) : null);
+
+  // The stage's grid: in landscape up to 3 items in one row, 4 as 2x2; in portrait one
+  // column (the CSS picks by orientation). Every track shrinks, so every item fits.
   const totalActiveCount = sortedActiveItems.length;
-  const viewMode = totalActiveCount === 0 ? 'IDLE' : totalActiveCount === 1 ? 'SINGLE' : totalActiveCount === 2 ? 'DUAL' : 'GRID';
+  const stageCols = totalActiveCount <= 3 ? totalActiveCount : Math.ceil(totalActiveCount / 2);
+  const stageGrid = {
+    '--items': totalActiveCount,
+    '--cols': stageCols,
+    '--rows': Math.ceil(totalActiveCount / Math.max(1, stageCols)),
+  } as React.CSSProperties;
 
   // The owl explains the home screen, or the routines on it (once the screen is started)
   const tour = !hasInteracted ? null : totalActiveCount === 0 ? homeTour() : routineTour();
@@ -194,18 +196,16 @@ export const Dashboard: React.FC = () => {
   return (
     <HelpScreen tour={tour}>
     <div className="dashboard">
-      {timeWarning && (
-        <div className="time-warning">
-          ⚠️ {timeWarning}
-        </div>
-      )}
-
       {!hasInteracted && (
         <div className="interaction-overlay" {...sound('open')} onClick={() => setHasInteracted(true)}>
-          <div className="start-btn">Click to Start</div>
+          <div className="start-btn">Πάτα για να ξεκινήσουμε!</div>
         </div>
       )}
 
+      {/* What a kid can open. A routine or alarm covers it all (the stage below), and it
+          waits there as it was: an answer half done, the store, the group game. Meanwhile
+          the owl explains what is on top, not what is hidden. */}
+      <HelpCover covered={totalActiveCount > 0}>
       <AnimatePresence>
         {storeUser && (
           <StoreModal
@@ -324,8 +324,8 @@ export const Dashboard: React.FC = () => {
           <ExerciseSetup
             users={users}
             onClose={() => setSetupOpen(false)}
-            onStart={(p, c, r, q) => {
-              api.startExerciseSession(p, c, r, q);
+            onStart={async (p, c, r, q) => {
+              await api.startExerciseSession(p, c, r, q);   // a refusal stays in the setup, which says why
               setSetupOpen(false);
             }}
           />
@@ -335,11 +335,13 @@ export const Dashboard: React.FC = () => {
       <AnimatePresence>
         {exerciseSessions.length > 0 && (
           <ExerciseGame
+            key={exerciseSessions[0].id}
             session={exerciseSessions[0]}
-            onClose={() => api.cancelExerciseSession(exerciseSessions[0].id)}
+            onClose={() => api.closeExerciseSession(exerciseSessions[0].id)}
           />
         )}
       </AnimatePresence>
+      </HelpCover>
 
       {/* Toast Notifications for Chores */}
       <div className="toast-container">
@@ -389,11 +391,12 @@ export const Dashboard: React.FC = () => {
         </AnimatePresence>
       </div>
 
-      {/* Background Animation */}
-      <div className="bg-gradient" />
-
-      {/* Main Stage */}
-      <div className={`stage ${viewMode.toLowerCase()}`}>
+      {/* Main Stage: the clock, or the routines and alarms in a layer over everything */}
+      <div className={`routines-layer ${totalActiveCount > 0 ? 'covering' : ''}`}>
+      <div
+        className={`stage${totalActiveCount > 0 ? ' items' : ''}${totalActiveCount === 1 ? ' one' : ''}`}
+        style={totalActiveCount > 0 ? stageGrid : undefined}
+      >
         <AnimatePresence>
           {totalActiveCount === 0 && (
             <motion.div
@@ -417,7 +420,7 @@ export const Dashboard: React.FC = () => {
         {sortedActiveItems.map((item) => {
           if (item.type === 'alarm') {
             const { run } = item;
-            const user = users.find(u => u.id === item.userId) || null;
+            const alarmUsers = users.filter(u => item.userIds.includes(u.id));
             return (
               <motion.div
                 key={item.key}
@@ -429,19 +432,14 @@ export const Dashboard: React.FC = () => {
               >
                 <GlobalAlarm
                   flowId={run.id}
-                  user={user}
+                  users={alarmUsers}
                   alarmProps={item.props}
                   onDismiss={() => api.dismissAlarm(run.id, run.stepIndex).catch(console.error)}
                 />
               </motion.div>
             );
           } else {
-            const { run } = item;
-            const user = users.find(u => u.id === run.userId);
-            const routine = user?.routines.find(r => r.id === run.routineId);
-
-            if (!user || !routine) return null;
-
+            const { run, user, routine } = item;
             return (
               <motion.div
                 key={item.key}
@@ -463,20 +461,7 @@ export const Dashboard: React.FC = () => {
           }
         })}
       </div>
-
-      {/* Install PWA Button */}
-      {isInstallable && (
-        <motion.button
-          className="install-pwa-btn"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={!isTouchDevice ? { scale: 1.05 } : {}}
-          whileTap={{ scale: 0.95 }}
-          onClick={promptInstall}
-        >
-          📲 Install App
-        </motion.button>
-      )}
+      </div>
 
       {/* Dock (Inactive Users) */}
       {totalActiveCount === 0 && (
@@ -494,48 +479,71 @@ export const Dashboard: React.FC = () => {
               whileTap={{ scale: 0.95 }}
             >
               <div className="dock-avatar" style={{ background: user.color }} {...sound('open')} onClick={() => setStoreUserId(user.id)}>
-                <SmartIcon value={user.avatar} size={80} />
+                {/* 80% of the avatar, an emoji's glyph too (SmartIcon's size={80} is the kiosk's) */}
+                <SmartIcon value={user.avatar} size={80} style={{ width: '80%', height: '80%', fontSize: 'calc(var(--dock-avatar) * 0.6)' }} />
+                <span className="dock-stars">⭐ {user.stars}</span>
               </div>
               <span className="dock-name">{user.name}</span>
-              <span className="dock-stars">⭐ {user.stars}</span>
             </motion.div>
           ))}
         </motion.div>
       )}
 
-      {/* Time Sync Warning */}
-      {timeWarning && (
-        <motion.div
-          className="time-warning"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-        >
-          {timeWarning}
-        </motion.div>
-      )}
+      {/* The screen's clock and the server's disagree: for a parent, rare. A tap hides it, so it
+          never stays over a game's round or a kid's badge. No tour step: a kid can't fix a clock. */}
+      <AnimatePresence>
+        {timeWarning && (
+          <motion.button
+            className="time-warning"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            {...sound('close')}
+            onClick={() => setTimeWarning(null)}
+          >
+            ⚠️ {timeWarning}
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .dashboard {
           height: 100vh; /* Fallback */
           height: 100dvh;
           width: 100vw;
-          overflow: hidden;
+          overflow: hidden; /* Fallback */
+          overflow: clip; /* not even a script (a tour's scrollIntoView) can scroll it */
           position: relative;
+          /* The dock's size, from its content: the avatar (100 px down to 800 px tall, never
+             under a finger's 44 px) + 1rem over it + the gap and the name's line + 0.625rem */
+          --dock-avatar: clamp(48px, 12.5dvh, 100px);
+          --dock-h: calc(var(--dock-avatar) + 3.5rem);
+          /* The side buttons' column (60 px each, every --fab-step), its second at --fab-at:
+             at 800 px tall and more the middle of the screen, as always; on shorter screens
+             it moves up and closes up, between the top right corner and the dock. That corner
+             holds the chore toasts (3.5rem each, 0.5rem apart, from top 1rem): --fab-top leaves
+             room for one toast and a gap. More toasts stack over the
+             column for their 5 s, as they always did on short screens. */
+          --fab: 60px;
+          --fab-top: 5.25rem;
+          --fab-step: min(80px, (100dvh - var(--dock-h) - 1rem - var(--fab-top) - var(--fab)) / 3);
+          --fab-at: min(50%, 100dvh - var(--dock-h) - 1rem - var(--fab) - 2 * var(--fab-step));
           display: flex;
           flex-direction: column;
           color: white;
-          isolation: isolate;
+          /* No stacking context here (no isolation, no z-index): the overlays inside, the
+             exercise player portalled to <body> and the owl share one scale (layers.css) */
+          background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
         }
 
         .interaction-overlay {
-          position: absolute;
+          position: fixed;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
           background: rgba(0,0,0,0.7);
-          z-index: 1000;
+          z-index: var(--z-start);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -543,25 +551,19 @@ export const Dashboard: React.FC = () => {
           cursor: pointer;
         }
 
+        /* Whole and centred on any screen: a phone (390 px) as well as the kiosk */
         .start-btn {
-          font-size: 3rem;
+          font-size: clamp(1.75rem, 6vw, 3rem);
           font-weight: 900;
           color: white;
-          padding: 2rem 4rem;
+          padding: clamp(1.25rem, 4vw, 2rem) clamp(1.5rem, 6vw, 4rem);
           border: 4px solid white;
           border-radius: 2rem;
-          letter-spacing: 4px;
+          letter-spacing: 2px;
+          text-align: center;
+          max-width: min(40rem, calc(100vw - 2rem));
+          box-sizing: border-box;
           animation: pulse 2s infinite;
-        }
-
-        .bg-gradient {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-          z-index: -1;
         }
 
         .stage {
@@ -575,13 +577,62 @@ export const Dashboard: React.FC = () => {
           overflow: visible;
         }
 
-        .stage.single .routine-slot { width: 100%; height: 100%; max-width: 600px; }
-        .stage.dual .routine-slot { width: 50%; height: 100%; }
-        .stage.grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        .routines-layer {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* Routines and alarms own the screen: a layer over everything a kid can open.
+           The stage inside lays them out the same way. */
+        .routines-layer.covering {
+          position: fixed;
+          inset: 0;
+          z-index: var(--z-routines);
+          overflow: hidden;
+          background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        }
+
+        /* Every item gets a share of the screen: minmax(0, 1fr) tracks (a plain 1fr won't
+           shrink below a card's content) in a stage that may shrink too. Landscape: one row
+           of up to 3, then 2 rows; portrait: one column. Each slot is a size container, so
+           its card sizes to the cell (cqmin), up to its full size. */
+        .stage.items {
+          display: grid;
+          grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+          grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+          min-height: 0;
+          min-width: 0;
+          align-items: stretch;
+          justify-items: stretch;
+        }
+        @media (orientation: portrait) {
+          .stage.items {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: repeat(var(--items), minmax(0, 1fr));
+          }
+        }
 
         .routine-slot {
           height: 100%;
           width: 100%;
+          min-width: 0;
+          min-height: 0;
+          container-type: size; /* its card sizes to it (cqmin) */
+        }
+        .stage.one .routine-slot { max-width: 600px; justify-self: center; }
+        /* The clock still fading out as the first item comes in stays out of the grid's
+           cells: in the flow it would take the only one, and the item would wait in a
+           0 px row until the clock was gone. It fades behind the item. */
+        .stage.items > .clock-container {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
         }
 
         .clock-container {
@@ -607,44 +658,44 @@ export const Dashboard: React.FC = () => {
           position: fixed;
           top: 1rem;
           left: 1rem;
+          max-width: calc(100vw - 2rem);
           background: rgba(255, 50, 50, 0.9);
           color: white;
+          font: inherit;
+          font-weight: bold;
+          text-align: left;
           padding: 0.75rem 1.25rem;
           border-radius: 0.5rem;
-          z-index: 2000;
-          font-weight: bold;
+          z-index: var(--z-toasts);
           backdrop-filter: blur(5px);
           box-shadow: 0 4px 12px rgba(0,0,0,0.3);
           border: 1px solid rgba(255,255,255,0.2);
-          animation: slideDown 0.5s ease-out;
-        }
-
-        @keyframes slideDown {
-          from { transform: translateY(-100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
         }
 
         @media (max-width: 768px) {
           .time-display { font-size: 6rem; }
           .date-display { font-size: 1.5rem; }
           .stage { padding: 1rem; gap: 1rem; }
-          .stage.grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-          .stage.dual { flex-direction: column; }
-          .stage.dual .routine-slot { width: 100%; height: 50%; }
         }
 
+        /* As tall as what it holds (--dock-h), so nothing hangs off it: the last child of a
+           100dvh column, whatever hung under it was under the screen's edge */
         .dock {
-          height: 120px;
+          height: var(--dock-h);
+          flex: none;
           background: rgba(255,255,255,0.1);
           backdrop-filter: blur(20px);
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: center;
-          gap: 3rem;
-          padding: 0 2rem;
-          overflow: visible;
+          gap: 1rem;
+          padding: 1rem 2rem 0.625rem;
+          overflow: hidden;
           width: 100%;
-          z-index: 100;
+          z-index: var(--z-dock);
           position: relative;
         }
 
@@ -656,10 +707,10 @@ export const Dashboard: React.FC = () => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.375rem;
+          padding: 0 1rem; /* room for the star badge, inside the item (a tour lights all of it) */
           cursor: pointer;
-          padding: 10px 0;
-          z-index: 101;
+          z-index: 1;
           position: relative;
           -webkit-tap-highlight-color: transparent;
           touch-action: manipulation;
@@ -667,8 +718,9 @@ export const Dashboard: React.FC = () => {
         }
 
         .dock-avatar {
-          width: 100px;
-          height: 100px;
+          position: relative;
+          width: var(--dock-avatar);
+          height: var(--dock-avatar);
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -679,24 +731,39 @@ export const Dashboard: React.FC = () => {
 
         .dock-name {
           font-size: 1rem;
+          line-height: 1.5rem;
           font-weight: 600;
         }
-        
+
+        /* Her balance, a badge on her avatar like the side buttons' counts: gold, readable
+           across the room */
         .dock-stars {
-          font-size: 0.8rem;
-          color: gold;
+          position: absolute;
+          top: -0.5rem;
+          right: -1rem;
+          background: linear-gradient(135deg, #ffd60a, #fb8500);
+          color: #1a1a2e;
+          font-size: clamp(0.95rem, calc(var(--dock-avatar) * 0.18), 1.1rem);
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+          line-height: 1;
+          padding: 0.3rem 0.55rem;
+          border-radius: 1rem;
+          white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.35);
         }
 
+        /* The side buttons. top is each one's top edge: framer-motion's transform (x) replaces
+           any translate here. Spaced by --fab-step from --fab-at (see .dashboard). */
         /* Floating Chores Button */
         .chores-fab {
           position: fixed;
           right: 1.5rem;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 60px;
-          height: 60px;
-          min-width: 60px;
-          min-height: 60px;
+          top: var(--fab-at);
+          width: var(--fab);
+          height: var(--fab);
+          min-width: var(--fab);
+          min-height: var(--fab);
           padding: 0;
           border-radius: 50%;
           background: linear-gradient(135deg, #4cc9f0, #4361ee);
@@ -707,7 +774,7 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
+          z-index: var(--z-dock);
         }
 
         .chores-fab-badge {
@@ -728,12 +795,11 @@ export const Dashboard: React.FC = () => {
         .bonus-fab {
           position: fixed;
           right: 1.5rem;
-          top: calc(50% + 80px);
-          transform: translateY(-50%);
-          width: 60px;
-          height: 60px;
-          min-width: 60px;
-          min-height: 60px;
+          top: calc(var(--fab-at) + var(--fab-step));
+          width: var(--fab);
+          height: var(--fab);
+          min-width: var(--fab);
+          min-height: var(--fab);
           padding: 0;
           border-radius: 50%;
           background: linear-gradient(135deg, #667eea, #764ba2);
@@ -744,7 +810,7 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
+          z-index: var(--z-dock);
         }
 
         .bonus-fab-badge {
@@ -765,12 +831,11 @@ export const Dashboard: React.FC = () => {
         .exercise-fab {
           position: fixed;
           right: 1.5rem;
-          top: calc(50% + 160px);
-          transform: translateY(-50%);
-          width: 60px;
-          height: 60px;
-          min-width: 60px;
-          min-height: 60px;
+          top: calc(var(--fab-at) + 2 * var(--fab-step));
+          width: var(--fab);
+          height: var(--fab);
+          min-width: var(--fab);
+          min-height: var(--fab);
           padding: 0;
           border-radius: 50%;
           background: linear-gradient(135deg, #f72585, #7209b7);
@@ -781,19 +846,18 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
+          z-index: var(--z-dock);
         }
 
         /* Floating Daily Exercises Button */
         .daily-exercises-fab {
           position: fixed;
           right: 1.5rem;
-          top: calc(50% - 80px);
-          transform: translateY(-50%);
-          width: 60px;
-          height: 60px;
-          min-width: 60px;
-          min-height: 60px;
+          top: calc(var(--fab-at) - var(--fab-step));
+          width: var(--fab);
+          height: var(--fab);
+          min-width: var(--fab);
+          min-height: var(--fab);
           padding: 0;
           border-radius: 50%;
           background: linear-gradient(135deg, #ffd60a, #fb8500);
@@ -804,7 +868,7 @@ export const Dashboard: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
+          z-index: var(--z-dock);
         }
 
         .daily-exercises-fab-badge {
@@ -826,7 +890,7 @@ export const Dashboard: React.FC = () => {
           position: fixed;
           top: 1rem;
           right: 1rem;
-          z-index: 1000;
+          z-index: var(--z-toasts);
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
@@ -864,28 +928,6 @@ export const Dashboard: React.FC = () => {
 
         .toast-text {
           font-size: 0.9rem;
-        }
-
-        .install-pwa-btn {
-          position: fixed;
-          top: 1rem;
-          right: 1rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          padding: 0.75rem 1.5rem;
-          border-radius: 2rem;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          -webkit-tap-highlight-color: transparent;
-          touch-action: manipulation;
-          user-select: none;
         }
       `}</style>
     </div>

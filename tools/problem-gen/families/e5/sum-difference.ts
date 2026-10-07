@@ -1,6 +1,6 @@
 // Two quantities with a known total and a known difference: take the difference away, halve,
 // then add it back (Ε΄ κεφ. 1.3, στρατηγική «Παρουσιάζω το πρόβλημα» με σχέδιο).
-import { extra, fmt, known, people, sought, type Family, type Person } from '../../lib.ts';
+import { extra, fmt, known, people, sought, STRATEGY, type Family, type Person } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 interface Setting {
@@ -101,10 +101,13 @@ export const sumDifference: Family = {
     const small = (T - d) / 2, big = small + d;
     const [bigName, smallName] = s.names(p, q);
 
-    const rel = r.chance(0.6) ? s.more(p, q, fmt(d)) : s.less(p, q, fmt(d));
-    const together = s.together(p, q, known(withUnit(s, T)));
+    const more = r.chance(0.6);
+    const rel = more ? s.more(p, q, fmt(d)) : s.less(p, q, fmt(d));
     const noise = extra(s.noise(r.int(2, 9)));
     const t = r.int(0, 2);
+    // «Η Χαρά και ο Νίκος έχουν… Η Χαρά έχει…»: when the relation (about p) comes next, the sum
+    // names the other first, so two sentences in a row don't open with one name
+    const together = t === 0 && more ? s.together(q, p, known(withUnit(s, T))) : s.together(p, q, known(withUnit(s, T)));
     const story = t === 0
       ? `${together}. ${known(rel)}. ${noise}. ${sought(s.ask(p, q))};`
       : t === 1
@@ -115,14 +118,15 @@ export const sumDifference: Family = {
     const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε το σύνολο και τη διαφορά. Ό,τι δεν αλλάζει τους αριθμούς το αφήνουμε.')];
     if (r.chance(0.6)) {
       steps.push(b.choice('plan', 'Ποια στρατηγική μας βοηθά;',
-        `Παρουσιάζω το πρόβλημα: ζωγραφίζω δύο λωρίδες, τη μία μεγαλύτερη κατά ${fmt(d)}`,
-        [`Μοιράζω τα ${fmt(T)} στα δύο, ${fmt(T)} : 2, και τελείωσα`, `Αφαιρώ ${fmt(T)} − ${fmt(d)} και αυτή είναι η απάντηση`],
-        `Αν βγάλουμε τη διαφορά, ${['μαθητές', 'κάτοικοι', 'επισκέπτες'].includes(s.unit) ? 'οι' : 'τα'} ${withUnit(s, T - d).replace('κατοίκους', 'κάτοικοι')} που μένουν μοιράζονται στα δύο εξίσου.`));
+        STRATEGY.draw,
+        [[`Μοιράζω τα ${fmt(T)} στα δύο και τελείωσα`, `Μοιράζω τα ${fmt(T)} στα δύο`], [`Αφαιρώ ${fmt(T)} − ${fmt(d)} και τελείωσα`, `Αφαιρώ ${fmt(T)} − ${fmt(d)}`]],
+        'Αν βγάλουμε τη διαφορά από το σύνολο, ό,τι μένει μοιράζεται στα δύο εξίσου.'));
     }
     steps.push(b.numbers('solve', 'Λύνουμε: βγάζουμε τη διαφορά, μοιράζουμε στα δύο, ξαναβάζουμε τη διαφορά.', [
       { label: show ? `${fmt(T)} − ${fmt(d)} =` : 'Χωρίς τη διαφορά', answer: T - d, unit: s.unit },
-      { label: show ? `${smallName}: ${fmt(T - d)} : 2 =` : smallName, answer: small, unit: s.unit },
-      { label: show ? `${bigName}: ${fmt(small)} + ${fmt(d)} =` : bigName, answer: big, unit: s.unit },
+      // (the rows above by what they are: «ό,τι μένει», «το μισό»)
+      { label: show ? `${smallName}: ό,τι μένει : 2 =` : smallName, answer: small, unit: s.unit },
+      { label: show ? `${bigName}: το μισό + ${fmt(d)} =` : bigName, answer: big, unit: s.unit },
     ], `Χωρίς τη διαφορά, οι δύο λωρίδες είναι ίσες. ${s.equal}.`));
     steps.push(r.chance(0.5) || T % 2
       ? b.numbers('check', 'Αναστοχαζόμαστε: ισχύουν και τα δύο που λέει η ιστορία;', [
@@ -130,8 +134,8 @@ export const sumDifference: Family = {
         { label: `${fmt(big)} − ${fmt(small)} =`, answer: d, unit: s.unit },
       ], 'Μαζί πρέπει να κάνουν το σύνολο, και η διαφορά τους να είναι αυτή της ιστορίας.')
       : b.choice('check', `Κάποιος απάντησε «${fmt(T / 2)} και ${fmt(T / 2)}». Γιατί είναι λάθος;`,
-        `Γιατί τότε θα ήταν ίσα, ενώ η διαφορά είναι ${fmt(d)}`,
-        ['Δεν είναι λάθος', `Γιατί μαζί δεν κάνουν ${fmt(T)}`],
+`Γιατί δεν έχουν διαφορά ${fmt(d)}`,
+        [['Δεν είναι λάθος καθόλου', 'Δεν είναι λάθος', 'Δεν είναι λάθος, ισχύουν όλα'], [`Γιατί όλα μαζί δεν κάνουν ${fmt(T)}`, `Δεν κάνουν ${fmt(T)} μαζί`, `Γιατί μαζί δεν κάνουν ${fmt(T)}`]],
         `Ελέγχουμε και τα δύο: το σύνολο και τη διαφορά.`));
     return { title: s.title, story, steps };
   },

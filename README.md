@@ -1,134 +1,77 @@
 # Girls Gamified Routine
 
-This project uses a **Docker Compose** setup with a "Base + Override" pattern to efficiently manage Development and Production environments.
+A gamified routine and chore app for children, run as a kiosk-style PWA, typically on a Raspberry Pi 4. The kids'
+screen shows the routines the schedules start (a morning alarm first, if a flow has one), chores, the day's school
+exercises and a store where the stars they earn buy rewards. Parents run it from their phones at `/parent`. The
+screens are in Greek.
 
-## 🚀 Quick Start (Development)
+How it works, and every design decision, is in [CLAUDE.md](CLAUDE.md): it is the architecture doc and is kept current
+with each change. This page only gets you running.
 
-Use this mode for day-to-day coding. It features hot-reloading, local file mounting, and full debugging capabilities.
+## Run it
 
-```powershell
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
-```
-
-- **Frontend**: [http://localhost:5173](http://localhost:5173)
-- **Backend**: Internal (proxied via Frontend)
-- **Changes**: Edit files in `frontend/` or `backend/` and see changes instantly.
-
----
-
-## 🚢 Production Mode
-
-Use this mode to test the optimized build or deploy the application. It uses Nginx and pre-compiled Node.js code.
-
-```powershell
-docker-compose up --build
-```
-
-- **Frontend**: [http://localhost](http://localhost) (Default Port 80, configurable via `.env`)
-- **Backend**: Internal (proxied via Nginx)
-- **Performance**: Optimized assets, no file watchers, native file system speed.
-
-> **Note**: To stop the production server, press `Ctrl+C`. To run it in the background, add `-d` to the end of the command.
-
-### Customizing the Port
-
-To change the production frontend port, create a `.env` file in the project root:
+Everything runs in Docker; nothing is installed on the host.
 
 ```bash
-FRONTEND_PORT=8080
+# Development, hot reload: kids' screen http://localhost:5173, parents http://localhost:5173/parent,
+# backend http://localhost:3000 (Vite proxies /api, /ws and /uploads to it)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# Production-like: the built images, nginx on port 80 (FRONTEND_PORT in .env changes it)
+docker compose up --build
 ```
 
-Then restart the containers. The frontend will be accessible at the port you specified.
+`docker compose up` without `-f` loads `docker-compose.yml` with `docker-compose.override.yml` (the production
+builds). The dev file swaps those for `node:24-alpine` containers that mount `backend/` and `frontend/` and watch them.
+Don't run dev mode on the Pi: the polling watchers use too much CPU.
 
----
+The config lives in `backend/data.json` and `backend/exercises.json`, the stars and history in the SQLite database
+`backend/routine.db`. The two config files are git-ignored (each install has its own): a new install, with an empty
+database, gets them from `backend/data.example.json` and `backend/exercises.example.json` on its first start. `.env.example` lists the settings `.env` can override.
 
-## 🛠️ Architecture Guide
+## Test, lint, build
 
-We use two Docker Compose files to manage configuration:
+In the running dev containers (the dependencies live there, not on the host):
 
-1.  **`docker-compose.yml` (Base)**
-    -   Defines the *shared* infrastructure (Service names, Networks, Timezone).
-    -   *Edit this when:* You add a new service (e.g., a database) or change a shared environment variable.
-
-2.  **`docker-compose.override.yml` (Production Override)**
-    -   *Automatically loaded by `docker-compose up`.*
-    -   Configures production builds: `Dockerfile` builds, Nginx, Restart policies.
-    -   Uses environment variables from `.env` for port configuration.
-    -   *Edit this when:* You change how the app is built or deployed.
-
-3.  **`docker-compose.dev.yml` (Development Override)**
-    -   *Explicitly load with `-f` for development mode.*
-    -   Configures development tools: `nodemon`, `vite`, volume mounts, file watchers.
-    -   *Edit this when:* You need to change dev server ports or dev-specific flags.
-
-## 📦 Common Tasks
-
-### Adding a New Package
-Since `node_modules` are inside the container, you should install packages via the container or rebuild.
-
-**Option A: Install inside running container (Fastest for Dev)**
-```powershell
-# Frontend
-docker-compose exec frontend npm install <package-name>
-
-# Backend
-docker-compose exec backend npm install <package-name>
-```
-
-**Option B: Rebuild (Cleanest)**
-1.  Stop the containers.
-2.  Delete `node_modules` locally (optional but recommended if syncing issues occur).
-3.  Run:
-    ```powershell
-    docker-compose up --build
-    ```
-
-### Troubleshooting
-**"File not found" or "Module not found" in Prod**
--   Production builds are stricter than Dev.
--   Check `.dockerignore` in `frontend/` and `backend/`.
--   Ensure you aren't relying on dev-only dependencies in your production code.
-
-**"Port already in use"**
--   Dev uses port `5173`. Prod uses port `80` by default (configurable via `.env`).
--   Ensure no other service is running on these ports.
-
-## 🍓 Raspberry Pi 4 Deployment
-
-Deploy using pre-built images (no building on RPi):
-
-**One-time setup:**
-See [GITHUB_TOKEN.md](GITHUB_TOKEN.md) to create and save your GitHub token.
-
-**On your development machine:**
-```powershell
-# Trigger CI/CD build (uses Docker, no local tools needed)
-.\build.ps1
-
-# Wait ~5-10 minutes for build to complete
-```
-
-**On your Raspberry Pi:**
 ```bash
-# First time setup
-git clone https://github.com/nkyriazis/girls_gamiefied_routine.git
-cd girls_gamiefied_routine
-chmod +x deploy-rpi.sh
-
-# Deploy (pulls pre-built images in ~30 seconds)
-./deploy-rpi.sh
+dc="docker compose -f docker-compose.yml -f docker-compose.dev.yml exec"
+$dc backend npm test              # backend tests (node:test)
+$dc backend npm run build         # tsc
+$dc backend npm run test-schemas  # the example configs, and the local ones when present, against their schemas
+$dc frontend npm test             # frontend tests
+$dc frontend npm run lint         # the help, voice, sound and gender checks, then eslint (0 problems)
+$dc frontend npm run build        # tsc, vite build, the bundle check
 ```
 
-**Note:** See [GITHUB_TOKEN.md](GITHUB_TOKEN.md) for one-time authentication setup.
+CI: the «Checks» workflow (`.github/workflows/ci.yml`) runs these on every pull request and every push to master,
+and first in every image build.
 
-**Alternative - Build locally on RPi:**
-If you prefer building on the Pi itself (takes 10-15 minutes):
-```bash
-docker-compose up --build -d
-```
+## Release and deploy to the Pi
 
-**Backups:** the backend backs up the database, config and uploads every day. Until `BACKUP_DIR` in `.env` points
-at a USB disk or NAS they stay on the SD card. See [BACKUP.md](BACKUP.md) to set the destination and to restore.
+1. Once: create a GitHub token, see [GITHUB_TOKEN.md](GITHUB_TOKEN.md).
+2. On the development machine: `./build.sh` (Windows: `build.ps1`) starts the image build on GitHub Actions. It runs the
+   Checks first; if one fails, nothing is built. The images are multi-arch, tagged `:latest` and
+   `:sha-<first 7 of the commit>`, so an older build can be pulled back by its commit.
+3. On the Pi, in its checkout: `./deploy-rpi.sh`. It backs up the data, pulls the code and the images
+   (`docker-compose.release.yml`) and restarts.
 
-**Performance Tip:**
-Do **not** use Development mode on the Pi. The file-watching mechanism consumes too much CPU on low-power devices.
+Backups: the backend backs up the database, the config and the uploads every day. Until `BACKUP_DIR` in `.env` points
+at a USB disk or a NAS they stay on the SD card. [BACKUP.md](BACKUP.md) says how to set the destination and restore.
+
+## Docs
+
+| Doc | What it covers |
+| --- | --- |
+| [CLAUDE.md](CLAUDE.md) | Architecture, commands, decisions, the Pi; the guide for coding agents too |
+| [BACKUP.md](BACKUP.md) | Daily backups, where they go, restoring one |
+| [VALIDATION.md](VALIDATION.md) | How the config and state are checked against their schemas, with examples |
+| [CUSTOM_SOUNDS.md](CUSTOM_SOUNDS.md) | An uploaded sound for a morning alarm |
+| [GITHUB_TOKEN.md](GITHUB_TOKEN.md) | The token `build.sh` needs |
+| [tools/evidence/README.md](tools/evidence/README.md) | Screenshots and videos with sound for a pull request |
+| [tools/help-voice/README.md](tools/help-voice/README.md) | Recording the owl's voice |
+| [tools/sfx/README.md](tools/sfx/README.md) | The screens' sound palette |
+| [tools/problem-gen/README.md](tools/problem-gen/README.md) | Generating the word problems |
+| [tools/edu-materials/README.md](tools/edu-materials/README.md) | The textbook mirror the exercises are written from |
+| [docs/exercises-journey/](docs/exercises-journey/) | Screenshots of a school-exercise session |
+| `docs/pr-14/`, `docs/pr-15/`, `docs/pr-42/` | Archived evidence of old pull requests; their scripts drive retired endpoints, don't run them |
+| `.cursorrules` | The agent rules for Cursor, a copy of CLAUDE.md's |

@@ -2,9 +2,11 @@
 // with multiplication; what is left of a budget; the share of each (Ε΄ κεφ. 2.8 και 2.9:
 // πρόσθεση, αφαίρεση και πολλαπλασιασμός στους φυσικούς αριθμούς).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { extra, fmt, known, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, people, sought, type Family, type Person, type Rng, type Wording } from '../../lib.ts';
 
-interface Cost { label: string; ops: string; value: number }
+// ops: the row's calculation as she reads it, naming a row above by what it is («μία διαδρομή × 2»);
+// eq: the same in numbers, for rowsHint, when ops names a row
+interface Cost { label: string; ops: string; eq?: string; value: number }
 interface Plan {
   /** The sentences with the prices (every number marked) */
   text: string;
@@ -12,7 +14,7 @@ interface Plan {
   /** Does the number of travellers matter? */
   perPerson: boolean;
   /** A total with one thing forgotten, what was forgotten, and wrong explanations */
-  slip: { value: number; what: string; others: string[] };
+  slip: { value: number; what: string; others: Wording[] };
 }
 
 interface Setting {
@@ -31,11 +33,11 @@ const SETTINGS: Setting[] = [
         text: `Το εισιτήριο του πλοίου κοστίζει ${known(`${t} € το άτομο`)} και για το αυτοκίνητο ${known(`${car} €`)}, ${known('για κάθε διαδρομή')}. Θα ταξιδέψουν με το πλοίο ${known('και στο πήγαινε και στο έλα')}.`,
         costs: [
           { label: 'Εισιτήρια ατόμων, μία διαδρομή', ops: `${n} × ${t}`, value: n * t },
-          { label: 'Αυτοκίνητο και άτομα, μία διαδρομή', ops: `${fmt(n * t)} + ${car}`, value: n * t + car },
-          { label: 'Πήγαινε και έλα', ops: `${fmt(n * t + car)} × 2`, value: 2 * (n * t + car) },
+          { label: 'Αυτοκίνητο και άτομα, μία διαδρομή', ops: `τα εισιτήρια + ${car}`, eq: `${fmt(n * t)} + ${car}`, value: n * t + car },
+          { label: 'Πήγαινε και έλα', ops: 'μία διαδρομή × 2', eq: `${fmt(n * t + car)} × 2`, value: 2 * (n * t + car) },
         ],
         perPerson: true,
-        slip: { value: n * t + car, what: 'Την επιστροφή: πληρώνουν και τις δύο διαδρομές', others: ['Το εισιτήριο του αυτοκινήτου', 'Ένα άτομο'] },
+        slip: { value: n * t + car, what: 'Την επιστροφή', others: [['Το αυτοκίνητο', 'Το αμάξι'], 'Ένα άτομο'] },
       };
     },
     noise: r => `Το ταξίδι με το πλοίο κρατά ${extra(`${r.int(4, 7)} ώρες`)}.`,
@@ -49,10 +51,10 @@ const SETTINGS: Setting[] = [
         costs: [
           { label: 'Διόδια', ops: `${toll} × 2`, value: toll * 2 },
           { label: 'Ξενώνας', ops: `${night} × 2`, value: night * 2 },
-          { label: 'Όλα μαζί', ops: `${fuel} + ${toll * 2} + ${night * 2}`, value: fuel + toll * 2 + night * 2 },
+          { label: 'Όλα μαζί', ops: `${fuel} + διόδια + ξενώνας`, eq: `${fuel} + ${toll * 2} + ${night * 2}`, value: fuel + toll * 2 + night * 2 },
         ],
         perPerson: false,
-        slip: { value: fuel + toll + night * 2, what: 'Τα διόδια της επιστροφής', others: ['Τη βενζίνη', 'Τη δεύτερη νύχτα'] },
+        slip: { value: fuel + toll + night * 2, what: 'Τα διόδια της επιστροφής', others: [['Τη βενζίνη του γυρισμού', 'Τη βενζίνη ως εκεί', 'Τη βενζίνη για την επιστροφή'], ['Τη δεύτερη νύχτα στο ξενοδοχείο', 'Τη δεύτερη νύχτα στον ξενώνα', 'Τη δεύτερη νύχτα εκεί']] },
       };
     },
     noise: r => `Το χωριό απέχει ${extra(`${r.int(150, 320)} χιλιόμετρα`)}.`,
@@ -65,10 +67,10 @@ const SETTINGS: Setting[] = [
         text: `Η είσοδος κοστίζει ${known(`${entry} € το άτομο`)} και το πάρκινγκ ${known(`${park} €`)} για όλη την ημέρα. Για βενζίνη θα δώσουν ${known(`${fuel} €`)}.`,
         costs: [
           { label: 'Είσοδοι', ops: `${n} × ${entry}`, value: n * entry },
-          { label: 'Όλα μαζί', ops: `${fmt(n * entry)} + ${park} + ${fuel}`, value: n * entry + park + fuel },
+          { label: 'Όλα μαζί', ops: `οι είσοδοι + ${park} + ${fuel}`, eq: `${fmt(n * entry)} + ${park} + ${fuel}`, value: n * entry + park + fuel },
         ],
         perPerson: true,
-        slip: { value: (n - 1) * entry + park + fuel, what: 'Μία είσοδο: ξέχασε ένα άτομο', others: ['Το πάρκινγκ', 'Τη βενζίνη'] },
+        slip: { value: (n - 1) * entry + park + fuel, what: 'Την είσοδο ενός ατόμου', others: [['Το πάρκινγκ του αυτοκινήτου', 'Το πάρκινγκ τους'], ['Τη βενζίνη ως εκεί', 'Τη βενζίνη για τη διαδρομή']] },
       };
     },
     noise: r => `Το πάρκο έχει ${extra(`${r.int(25, 60)} παιχνίδια`)}.`,
@@ -81,12 +83,12 @@ const SETTINGS: Setting[] = [
         text: `Το εισιτήριο του τρένου κοστίζει ${known(`${t} € το άτομο`)} ${known('για κάθε διαδρομή')}, και θα γυρίσουν πάλι με το τρένο. Εκεί θα επισκεφτούν ένα μουσείο με εισιτήριο ${known(`${mus} € το άτομο`)}.`,
         costs: [
           { label: 'Τρένο για ένα άτομο, πήγαινε και έλα', ops: `${t} × 2`, value: t * 2 },
-          { label: 'Τρένο για όλους', ops: `${n} × ${t * 2}`, value: n * t * 2 },
+          { label: 'Τρένο για όλους', ops: `${n} × το τρένο του ενός`, eq: `${n} × ${t * 2}`, value: n * t * 2 },
           { label: 'Μουσείο για όλους', ops: `${n} × ${mus}`, value: n * mus },
-          { label: 'Όλα μαζί', ops: `${fmt(n * t * 2)} + ${fmt(n * mus)}`, value: n * t * 2 + n * mus },
+          { label: 'Όλα μαζί', ops: 'τρένο + μουσείο', eq: `${fmt(n * t * 2)} + ${fmt(n * mus)}`, value: n * t * 2 + n * mus },
         ],
         perPerson: true,
-        slip: { value: n * t + n * mus, what: 'Τα εισιτήρια της επιστροφής', others: ['Το μουσείο', 'Ένα άτομο στο μουσείο'] },
+        slip: { value: n * t + n * mus, what: 'Τα εισιτήρια του γυρισμού', others: [['Τα εισιτήρια του μουσείου', 'Το μουσείο για όλους'], 'Ένα άτομο στο μουσείο'] },
       };
     },
     noise: r => `Το τρένο φεύγει ${extra(`στις ${r.int(6, 9)} το πρωί`)}.`,
@@ -99,11 +101,11 @@ const SETTINGS: Setting[] = [
         text: `Η κάρτα για τους αναβατήρες κοστίζει ${known(`${pass} € την ημέρα για κάθε άτομο`)} και θα κάνουν σκι ${known(`${days} ημέρες`)}. Η βενζίνη θα κοστίσει ${known(`${fuel} €`)}.`,
         costs: [
           { label: 'Κάρτες για μία ημέρα', ops: `${n} × ${pass}`, value: n * pass },
-          { label: `Κάρτες για ${days} ημέρες`, ops: `${fmt(n * pass)} × ${days}`, value: n * pass * days },
-          { label: 'Όλα μαζί', ops: `${fmt(n * pass * days)} + ${fuel}`, value: n * pass * days + fuel },
+          { label: `Κάρτες για ${days} ημέρες`, ops: `μία ημέρα × ${days}`, eq: `${fmt(n * pass)} × ${days}`, value: n * pass * days },
+          { label: 'Όλα μαζί', ops: `οι κάρτες + ${fuel}`, eq: `${fmt(n * pass * days)} + ${fuel}`, value: n * pass * days + fuel },
         ],
         perPerson: true,
-        slip: { value: n * pass + fuel, what: `Ότι θα κάνουν σκι ${days} ημέρες, όχι μία`, others: ['Τη βενζίνη', 'Ένα άτομο'] },
+        slip: { value: n * pass + fuel, what: `Ότι κάνουν σκι ${days} ημέρες`, others: [['Τη βενζίνη του ταξιδιού', 'Τη βενζίνη ως εκεί'], 'Το πάσο ενός ατόμου'] },
       };
     },
     noise: r => `Το βουνό έχει ύψος ${extra(`${fmt(r.step(1700, 2400, 10))} μέτρα`)}.`,
@@ -164,17 +166,17 @@ export const tripCosts: Family = {
         ask === 'share' ? `Μην ξεχάσεις ${p.acc}.` : `Μετράμε ${p.acc}, τους δύο γονείς και όσους αναφέρει ακόμα.`));
     }
     const showOps = r.chance(0.6);
-    const rows = pl.costs.map(c => ({ label: showOps ? `${c.label}: ${c.ops} =` : c.label, answer: c.value, unit: '€' }));
-    if (ask === 'left') rows.push({ label: showOps ? `Περισσεύουν: ${fmt(budget)} − ${fmt(total)} =` : 'Περισσεύουν', answer: budget - total, unit: '€' });
-    if (ask === 'share') rows.push({ label: showOps ? `Για τον καθένα: ${fmt(total)} : ${pt.n} =` : 'Για τον καθένα', answer: total / pt.n, unit: '€' });
-    steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', rows, `${pl.costs[0].ops} = ${fmt(pl.costs[0].value)}.`));
+    const rows = pl.costs.map(c => ({ label: showOps ? `${c.label}: ${c.ops} =` : c.label, answer: c.value, unit: '€', eq: c.eq ?? c.ops }));
+    if (ask === 'left') rows.push({ label: showOps ? `Περισσεύουν: ${fmt(budget)} − όλα μαζί =` : 'Περισσεύουν', answer: budget - total, unit: '€', eq: `${fmt(budget)} − ${fmt(total)}` });
+    if (ask === 'share') rows.push({ label: showOps ? `Για τον καθένα: όλα μαζί : ${pt.n} =` : 'Για τον καθένα', answer: total / pt.n, unit: '€', eq: `${fmt(total)} : ${pt.n}` });
+    steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', rows));
 
     if (ask === 'share') {
       steps.push(b.numbers('check', 'Αναστοχαζόμαστε: αν πληρώσουν όλοι το μερίδιό τους, βγαίνει το σύνολο;',
         [{ label: `${pt.n} × ${fmt(total / pt.n)} =`, answer: total }]));
     } else if (ask === 'left') {
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: πώς ελέγχουμε την αφαίρεση;', `${fmt(total)} + ${fmt(budget - total)} = ${fmt(budget)}`,
-        [`${fmt(budget)} + ${fmt(total)} = ${fmt(budget + total)}`, `${fmt(budget - total)} − ${fmt(total)}`], 'Ό,τι ξόδεψαν συν ό,τι περισσεύει κάνει όσα είχαν.'));
+        [`${fmt(budget)} + ${fmt(total)} = ${fmt(budget + total)}`, `${fmt(budget - total)} + ${fmt(budget - total)} = ${fmt(2 * (budget - total))}`], 'Ό,τι ξόδεψαν συν ό,τι περισσεύει κάνει όσα είχαν.'));
     } else {
       steps.push(b.choice('check', `Αναστοχαζόμαστε: κάποιος βρήκε ${fmt(pl.slip.value)} €. Τι ξέχασε;`, pl.slip.what, pl.slip.others,
         `Η διαφορά είναι ${fmt(total)} − ${fmt(pl.slip.value)} = ${fmt(total - pl.slip.value)} €. Σε ποιο ποσό αντιστοιχεί;`));

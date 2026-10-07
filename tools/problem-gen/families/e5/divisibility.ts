@@ -89,11 +89,11 @@ function groupsText(s: Setting, ks: number[]): string {
   return `Σε ${s.groups} ${list(ks.map(k => `των ${k}`))}`;
 }
 
-function why(n: number, k: number): string {
-  const ds = digits(n), last = ds[ds.length - 1], sum = digitSum(n);
-  if (k === 3 || k === 9) return `Γιατί το άθροισμα των ψηφίων είναι ${sum}, που ${sum % k === 0 ? '' : 'δεν '}διαιρείται με το ${k}`;
-  return `Γιατί το τελευταίο ψηφίο είναι ${last}`;
-}
+// The two criteria, told the same way so that neither stands out: the right one names the number
+// its criterion looks at, and she judges it
+const bySum = (n: number) => `Γιατί το άθροισμα των ψηφίων του είναι ${digitSum(n)}`;
+const byLast = (n: number) => `Γιατί το τελευταίο του ψηφίο είναι το ${n % 10}`;
+const why = (n: number, k: number) => (k === 3 || k === 9 ? bySum(n) : byLast(n));
 
 export const divisibility: Family = {
   id: 'divisibility',
@@ -122,12 +122,15 @@ export const divisibility: Family = {
         + `Ξέρουμε ότι ${lower(verb)} ${known(how)}, χωρίς να περισσέψει ${none}. ${sought('Ποιο είναι το ψηφίο που λείπει')};`;
       const need39 = cond.includes(3) || cond.includes(9);
       // Conditions on the last digit first, then the one on the sum of the digits
-      const rules = [...cond].sort((x, y) => Number(x === 3 || x === 9) - Number(y === 3 || y === 9))
-        .map(k => k === 3 || k === 9 ? `το άθροισμα των ψηφίων του να διαιρείται με το ${k}` : k === 2 ? 'να τελειώνει σε 0, 2, 4, 6 ή 8' : k === 5 ? 'να τελειώνει σε 0 ή 5' : 'να τελειώνει σε 0');
-      steps.push(b.choice('plan', 'Τι πρέπει να ισχύει για τον αριθμό;', cap(list(rules)),
-        [`Να διαιρείται το πρώτο ψηφίο με το ${cond[cond.length - 1]}`, `Να τελειώνει σε ${cond[cond.length - 1] % 10}`, 'Να είναι άρτιος']
-          .filter(o => !(o === 'Να τελειώνει σε 0' && cond.includes(10)) && !(o === 'Να είναι άρτιος' && cond.includes(2))),
-        criteria));
+      // One criterion: the sum of the digits, beside the product and the last digit (the same words, so
+      // no option stands out); two: both criteria, beside one of them or just the last
+      const [k1, k2] = cond;
+      steps.push(cond.length === 1
+        ? b.choice('plan', 'Τι πρέπει να ισχύει για τον αριθμό;', `Το άθροισμα των ψηφίων να διαιρείται με το ${k1}`,
+          [`Το γινόμενο των ψηφίων να διαιρείται με το ${k1}`, `Το τελευταίο ψηφίο να διαιρείται με το ${k1}`], criteria)
+        : b.choice('plan', 'Τι πρέπει να ισχύει για τον αριθμό;', `Να ισχύουν τα κριτήρια και του ${k1} και του ${k2}`,
+          [`Να ισχύει ένα από τα κριτήρια, του ${k1} ή του ${k2}`, `Να ισχύει μόνο το κριτήριο του ${k2}`, `Να διαιρείται το πρώτο ψηφίο με το ${k2}`],
+          criteria));
       if (need39) {
         steps.push(b.numbers('solve', 'Προσθέτουμε τα ψηφία που φαίνονται.', [{ label: `${digits(head).join(' + ')} =`, answer: S }]));
       }
@@ -146,21 +149,30 @@ export const divisibility: Family = {
       const options = `${s.of(2)}, των 3, των 5, των 9 ή των 10`;
       const story = `${s.open(known(count(n, it, true)), s.noise(r))} ${s.split}, χωρίς να περισσέψει ${none}. `
         + `${s.thinks} ${known(options)}. ${sought(fem(s) ? 'Ποιες από αυτές γίνονται' : 'Ποια από αυτά γίνονται')};`;
+      // The sum's row is named only: its digits would show the last one, the row above's answer. (The draw
+      // that chose between the two labels stays, so the problems after it stay the same.)
+      r.chance(0.5);
       steps.push(b.numbers('solve', `Κοιτάμε τον αριθμό ${fmt(n)}.`, [
         { label: 'Το τελευταίο ψηφίο του', answer: last },
-        { label: r.chance(0.5) ? `Το άθροισμα των ψηφίων: ${ds.join(' + ')} =` : 'Το άθροισμα των ψηφίων του', answer: sum },
-      ]));
-      const wrongs = new Set<string>();
-      for (const k of r.shuffle(KS)) {
-        const t = divs.includes(k) ? divs.filter(d => d !== k) : [...divs, k].sort((x, y) => x - y);
-        if (t.length) wrongs.add(groupsText(s, t));
+        { label: 'Το άθροισμα των ψηφίων του', answer: sum },
+      ], `Το τελευταίο ψηφίο είναι το πιο δεξί του ${fmt(n)}. Μετά προσθέτουμε τα ψηφία ένα ένα, από τα αριστερά.`));
+      // One with as many as the right one (one swapped for another), then lists one longer (from a
+      // single one) or one shorter (from three): a list of one beside lists of two, or of three beside
+      // two, stands out by its length, so two of the right one's size are swapped instead
+      const others = KS.filter(k => !divs.includes(k));
+      const sorted = (t: number[]) => [...t].sort((x, y) => x - y);
+      const swaps = divs.flatMap(d => others.map(k => sorted([...divs.filter(x => x !== d), k])));
+      const wrongs = new Set<string>([groupsText(s, r.pick(swaps))]);
+      const more = divs.length === 1 ? others.map(k => sorted([...divs, k])) : divs.length === 3 ? divs.map(k => divs.filter(d => d !== k)) : swaps;
+      for (const t of r.shuffle(more)) {
+        wrongs.add(groupsText(s, t));
         if (wrongs.size === 3) break;
       }
       steps.push(b.choice('solve', `${fem(s) ? 'Ποιες' : 'Ποια'} γίνονται, χωρίς να περισσέψει ${none};`, groupsText(s, divs), [...wrongs], criteria));
       const notK = r.pick(KS.filter(k => !divs.includes(k)));
       steps.push(b.choice('check', `Αναστοχαζόμαστε: γιατί δεν γίνονται ${s.of(notK)};`, why(n, notK),
-        [`Γιατί ο αριθμός έχει ${ds.length} ψηφία`, `Γιατί ${notK === 9 || notK === 3 ? `το τελευταίο ψηφίο είναι ${last}` : `το άθροισμα των ψηφίων είναι ${sum}`}`, `Γιατί το ${notK} είναι μεγαλύτερο από το ${ds[0]}`]
-          .filter(o => o !== why(n, notK)),
+        // the other criterion, and two that are true of every number but beside the point
+        [notK === 9 || notK === 3 ? byLast(n) : bySum(n), `Γιατί ο αριθμός αυτός έχει ${ds.length} ψηφία`, `Γιατί το πρώτο ψηφίο του αριθμού είναι το ${ds[0]}`],
         `Το κριτήριο για το ${notK}: ${notK === 3 || notK === 9 ? 'το άθροισμα των ψηφίων' : 'το τελευταίο ψηφίο'}.`));
       return { title: r.pick(s.title), story, steps };
     }
@@ -172,20 +184,22 @@ export const divisibility: Family = {
     const q = Math.floor(n / k);
     const story = `${s.open(known(count(n, it, true)), s.noise(r))} ${known(`${s.will} ${s.of(k)}`)}. `
       + `${sought(`${cap(howManyNom(it))} ${it.many} θα περισσέψουν`)};`;
-    const bySum = k === 3 || k === 9;
+    const sumRule = k === 3 || k === 9;
     steps.push(b.choice('plan', 'Πώς βρίσκουμε γρήγορα αν θα περισσέψουν;',
-      bySum ? `Από το άθροισμα των ψηφίων, με το κριτήριο του ${k}` : `Από το τελευταίο ψηφίο, με το κριτήριο του ${k}`,
-      [bySum ? `Από το τελευταίο ψηφίο, με το κριτήριο του ${k}` : `Από το άθροισμα των ψηφίων, με το κριτήριο του ${k}`, 'Από το πρώτο ψηφίο', 'Από το πλήθος των ψηφίων'],
+      sumRule ? 'Από το άθροισμα των ψηφίων' : 'Από το τελευταίο ψηφίο',
+      [sumRule ? ['Από το τελευταίο ψηφίο', 'Από το τελευταίο'] : ['Από το άθροισμα των ψηφίων', 'Από το άθροισμα'],
+        ['Από το πρώτο ψηφίο', 'Από το πρώτο ψηφίο αριστερά', 'Από το πρώτο'], ['Από το πλήθος των ψηφίων του', 'Από το πλήθος των ψηφίων', 'Από πόσα ψηφία έχει']],
       criteria));
     steps.push(b.numbers('solve', 'Λύνουμε.', [
-      bySum ? { label: `Άθροισμα ψηφίων: ${ds.join(' + ')} =`, answer: sum } : { label: 'Τελευταίο ψηφίο', answer: last },
+      sumRule ? { label: `Άθροισμα ψηφίων: ${ds.join(' + ')} =`, answer: sum } : { label: 'Τελευταίο ψηφίο', answer: last },
       { label: `${cap(it.many)} που περισσεύουν`, answer: rem },
-    ], bySum ? `Το ${sum} δεν διαιρείται με το ${k}: ό,τι περισσεύει από το ${sum}, περισσεύει και από το ${fmt(n)}.`
-      : `Το ${fmt(n)} τελειώνει σε ${last}. Ο πιο κοντινός μικρότερος αριθμός που διαιρείται με το ${k} είναι το ${fmt(n - rem)}.`));
+    ], sumRule ? `Ό,τι περισσεύει από το άθροισμα των ψηφίων στη διαίρεση με το ${k}, περισσεύει και από το ${fmt(n)}.`
+      : `Κοιτάμε το τελευταίο ψηφίο του ${fmt(n)}: ό,τι περισσεύει από αυτό στη διαίρεση με το ${k}, περισσεύει και από το ${fmt(n)}.`));
     steps.push(b.numbers('check', 'Αναστοχαζόμαστε: επαληθεύουμε με την Ευκλείδεια διαίρεση.', [
       { label: `${cap(s.groups)} (πηλίκο της διαίρεσης ${fmt(n)} : ${k})`, answer: q },
-      { label: `${k} × ${fmt(q)} + ${rem} =`, answer: n },
-    ]));
+      { label: `${k} × πηλίκο + ${rem} =`, answer: n },
+      // (the second row's answer is the story's number, so rowsHint, which can't tell, would name none)
+    ], `Πόσες φορές χωράει το ${k} στο ${fmt(n)}; Μετά: Δ = δ × π + υ.`));
     return { title: r.pick(s.title), story, steps };
   },
 };

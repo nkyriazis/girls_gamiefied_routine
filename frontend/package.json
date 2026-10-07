@@ -5,37 +5,44 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "node scripts/check-help.mjs && node scripts/help-lines.mjs --check && node scripts/check-sound.mjs && node scripts/check-gender.mjs && eslint .",
+    "build": "tsc -b && vite build && node scripts/check-bundle.mjs",
+    "lint": "node scripts/check-help.mjs && node scripts/help-lines.mjs --check && node scripts/check-sound.mjs && node scripts/check-gender.mjs && eslint . --max-warnings 0",
     "check-help": "node scripts/check-help.mjs",
     "check-voice": "node scripts/help-lines.mjs --check",
     "check-sound": "node scripts/check-sound.mjs",
     "check-gender": "node scripts/check-gender.mjs",
-    "preview": "vite preview"
+    "check-bundle": "node scripts/check-bundle.mjs",
+    "preview": "vite preview",
+    "test": "node --test 'src/**/*.test.ts'"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "date-fns": "^4.1.0",
     "driver.js": "^1.8.0",
     "framer-motion": "^12.43.0",
+    "monaco-editor": "^0.57.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.6",
-    "use-sound": "^5.0.0"
+    "react-router-dom": "^7.18.4"
+  },
+  "overrides": {
+    "monaco-editor": {
+      "dompurify": "3.4.16"
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.0",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
-    "@vitejs/plugin-react": "^5.1.0",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.3",
-    "vite": "^7.2.2",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^7.3.7",
     "vite-plugin-pwa": "^1.1.0"
   }
 }

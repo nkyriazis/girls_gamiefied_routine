@@ -10,17 +10,32 @@ tools/evidence/record.sh .evidence/52/before.mjs                          # play
 ```
 
 `dev.sh` helpers (`dev/*.js`) change the dev database only: `problem <kid> <exerciseId>` sets a kid's problem
-for today, fresh; `plain` makes today's plain exercises fresh; `clear-runs` takes flows and routines off screen.
+for today, fresh; `exercise <kid> <exerciseId>` puts any pool item in the slot of its category
+(maths, language), fresh; `plain` makes today's plain exercises fresh; `clear-runs` takes flows and routines off screen;
+`stars u1 100 u2 20` sets balances and clears those kids' pending gifts and rewards; `game u1,u2 math-mc-1,lang-tf-1`
+starts a group game (📚) with those questions in one round, alone: every other game, running or finished, is removed.
+`history 120` adds a busy family's purchases and gifts decided 31 to 120 days ago, older than STATE's window
+(ids `cafe0000-…`), and `history undo` removes exactly those. `chore u1 chore-dishes` puts a chore the kid
+claimed and did in front of a parent, waiting to be confirmed (id `c4073000-…`); `chore undo` removes it.
 
 A scenario is a short Playwright script (`scenarios/smoke.mjs` is the smallest, `scenarios/owl-tours.mjs`
-a long one). `kit.mjs` gives it `open()` (the kids' screen, past "Click to Start"), `tap`, `caption` (says on
+a long one). `kit.mjs` gives it `open()` (the kids' screen, past the start overlay), `tap`, `caption` (says on
 the video what is shown), `listen` (waits for a clip to end), `shot` and `finish`. Write the "before"
 scenario first, against master, and play the same one after the fix: the two videos then compare.
+
+`start(out, { browser: 'webkit', device: 'iPhone 13' })` plays in WebKit, Safari's engine, with the device's
+user agent, mobile viewport and touch (pass `size` to choose the viewport; the scale stays 1). The parents' page is
+phone-first, so a change to it can be checked as on an iPhone too, over a non-localhost address
+(on this machine `http://192.168.122.1:5173`, the libvirt bridge; any non-localhost address works; not a secure context, as the Pi's `http://<pi>/`). Linux WebKit only approximates
+iOS Safari (the same engine, not the same browser): a real phone has the last word.
 
 ## How the sound gets in
 
 Playwright's video has no sound. `kit.mjs` logs every clip and screen sound the page plays, with the time,
-and a corner square flips every second. `mix.sh` finds the flips in the video, so it knows the video's
+and a corner square flips every second. Web Audio tones (the alarm's built-in melody, a routine's time-up
+beeps) have no file: each tone that sounds is logged with its wave, pitch and length, and `mix.sh` makes it
+again with ffmpeg at the page's level. A tone started while the page may not make sound yet isn't heard, so
+it isn't logged either. `mix.sh` finds the flips in the video, so it knows the video's
 clock against the page's (frames come late under load), speeds the video back to the page's pace, and lays
 each sound from `frontend/public` where it played. Both logs live on the Node side and the square shows the page
 clock's second, so a scenario may navigate (`open()` again, `page.goto`) without losing either.

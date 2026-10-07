@@ -18,6 +18,8 @@ interface Scene {
   ask: string;
   /** The same question, told another way. */
   ask2: string;
+  /** Both, naming who does it: after a child's claim, «θα ξαναποτίσει» alone would be the child's */
+  named?: [string, string];
   unit: string;
   /** What the kid counts in the rows: "Ποτίσματα της τριανταφυλλιάς" */
   each: string[];
@@ -54,6 +56,7 @@ const SETTINGS: Setting[] = [
     scene: (r, ps, [kid]) => {
       const grandma = r.chance(0.5);
       const who = grandma ? `Η γιαγιά ${kid.gen}` : `Ο παππούς ${kid.gen}`;
+      const whoAfter = who[0].toLowerCase() + who.slice(1); // «η γιαγιά του Μάρκου»: only the article
       const plants = r.sample(PLANTS, ps.length);
       const noise = r.chance(0.5)
         ? extra(`που είναι ${r.int(66, 86)} χρονών`)
@@ -67,6 +70,7 @@ const SETTINGS: Setting[] = [
           + `${cap(list(needs))}. ${known(`Σήμερα πότισε ${all}`)}.`,
         ask: `Σε πόσες ημέρες θα ποτίσει ξανά ${all} την ίδια ημέρα`,
         ask2: `Μετά από πόσες ημέρες θα ξαναποτίσει ${all} μαζί`,
+        named: [`Σε πόσες ημέρες θα ποτίσει ${whoAfter} ξανά ${all} την ίδια ημέρα`, `Μετά από πόσες ημέρες θα ξαναποτίσει ${whoAfter} ${all} μαζί`],
         unit: 'ημέρες',
         each: plants.map(p => `Ποτίσματα ${p.of}`),
       };
@@ -192,10 +196,14 @@ export const togetherAgain: Family = {
     // A friend multiplies the periods: a common multiple, but not the least
     const claim = prod > L && r.chance(0.4);
     const c = who[2];
+    // After someone else of the scene («Ο Μιχάλης κάνει…», «Ο παππούς του Μάρκου…»), «Έχει δίκιο;»
+    // names who claims it
+    const crowd = who.slice(0, 2).some(x => sc.intro.includes(x.Nom) || sc.intro.includes(x.nom)) || /(?:Η γιαγιά|Ο παππούς)/.test(sc.intro);
     const claimText = claim
-      ? ` ${known(`${c.Nom} λέει ότι αυτό θα ξαναγίνει σε ${fmt(prod)} ${sc.unit}, γιατί ${ps.map(fmt).join(' × ')} = ${fmt(prod)}`)}. ${sought(`Έχει δίκιο`)};`
+      ? ` ${known(`${c.Nom} λέει ότι αυτό θα ξαναγίνει σε ${fmt(prod)} ${sc.unit}, γιατί ${ps.map(fmt).join(' × ')} = ${fmt(prod)}`)}. ${sought(`Έχει δίκιο${crowd ? ` ${c.nom}` : ''}`)};`
       : '';
-    const story = `${sc.intro}${claimText} ${sought(r.chance(0.5) ? sc.ask : sc.ask2)};`;
+    const [ask, ask2] = claim && sc.named ? sc.named : [sc.ask, sc.ask2];
+    const story = `${sc.intro}${claimText} ${sought(r.chance(0.5) ? ask : ask2)};`;
 
     const steps: ProblemStep[] = [
       b.tag(undefined, claim
@@ -203,15 +211,21 @@ export const togetherAgain: Family = {
         : 'Ό,τι δεν αλλάζει την απάντηση δεν χρειάζεται.'),
     ];
 
+    // The multiples of x before the Ε.Κ.Π., three at most: the list never reaches the answer («15, 30, …» for 45)
+    const upTo = (x: number) => {
+      const xs = [1, 2, 3].map(i => i * x).filter(v => v < L);
+      return xs.length ? `${xs.map(fmt).join(', ')}, …` : `${fmt(x)} και τα πολλαπλάσιά του.`;
+    };
     const plan = r.int(0, 2);
     if (plan === 0) {
-      steps.push(b.choice('plan', 'Τι ψάχνουμε στην ουσία;', `Το Ε.Κ.Π. των ${list(nums)}: το μικρότερο κοινό τους πολλαπλάσιο`,
-        [`Το άθροισμα ${nums.join(' + ')}`, `Έναν κοινό διαιρέτη των ${list(nums)}`, `Το ${fmt(big)}, τον μεγαλύτερο αριθμό`],
+      steps.push(b.choice('plan', 'Τι ψάχνουμε στην ουσία;', [`Το Ε.Κ.Π. των ${list(nums)}`, 'Το Ε.Κ.Π. τους'],
+        [[`Το άθροισμα ${nums.join(' + ')}`, `Το άθροισμα των ${list(nums)}`, 'Το άθροισμά τους'], [`Έναν διαιρέτη των ${list(nums)}`, 'Έναν διαιρέτη τους'],
+          [`Το ${fmt(big)}, τον μεγαλύτερο αριθμό`, `Το ${fmt(big)}, τον μεγαλύτερο`]],
         `Ξανασυμπίπτουν σε έναν αριθμό ${sc.unit === 'ημέρες' ? 'ημερών' : sc.unit === 'λεπτά' ? 'λεπτών' : 'δευτερολέπτων'} που είναι πολλαπλάσιο ${nums.map(n => `και του ${n}`).join(' ')}.`));
     } else if (plan === 1) {
       steps.push(b.choice('plan', 'Ποιο εργαλείο μας βοηθά περισσότερο;', `Ένας κατάλογος με τα πολλαπλάσια των ${list(nums)}`,
-        [`Ένας κατάλογος με τους διαιρέτες των ${list(nums)}`, `Μια διαίρεση ${fmt(big)} : ${fmt(ps[0])}`],
-        `Γράφουμε πότε ξαναγίνεται το καθένα: ${fmt(ps[0])}, ${fmt(2 * ps[0])}, ${fmt(3 * ps[0])}, …`));
+        [`Ένας κατάλογος με τους διαιρέτες των ${list(nums)}`, `Μια διαίρεση, ${fmt(big)} : ${fmt(ps[0])}, και κρατάω το πηλίκο`],
+        `Γράφουμε πότε ξαναγίνεται το καθένα: ${upTo(ps[0])}`));
     } else {
       steps.push(b.order('plan', 'Βάζουμε σε σειρά το σχέδιό μας.', [
         `Γράφω τα πολλαπλάσια του μεγαλύτερου αριθμού, του ${fmt(big)}`,
@@ -227,28 +241,33 @@ export const togetherAgain: Family = {
       for (let i = 2; i <= k; i++) rows.push({ label: `${fmt(big)} × ${i} =`, answer: big * i });
       rows.push({ label: `Το πρώτο που διαιρείται και ${others}`, answer: L, unit: sc.unit });
       steps.push(b.numbers('solve', `Γράφουμε τα πολλαπλάσια του ${fmt(big)}.`, rows,
-        `Διαιρείται το ${fmt(2 * big)} ${others}; Αν όχι, πάμε στο επόμενο.`));
+        `Παίρνουμε τα πολλαπλάσια του ${fmt(big)} ένα ένα: διαιρείται ${others}; Αν όχι, πάμε στο επόμενο.`));
     } else if (r.chance(0.5)) {
       steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: `Ε.Κ.Π. των ${list(nums)}`, answer: L, unit: sc.unit }],
-        `Πολλαπλάσια του ${fmt(big)}: ${fmt(big)}, ${fmt(2 * big)}, ${fmt(3 * big)}, … Ποιο διαιρείται πρώτο και ${others};`));
+        `Πολλαπλάσια του ${fmt(big)}: ${upTo(big)} Ποιο διαιρείται πρώτο και ${others};`));
     } else {
       steps.push(b.numbers('solve', 'Λύνουμε και βλέπουμε πόσες φορές ξαναγίνεται το καθένα ως τότε.', [
         { label: `Ε.Κ.Π. των ${list(nums)}`, answer: L, unit: sc.unit },
-        ...ps.map((p, i) => ({ label: `${sc.each[i]} σε ${fmt(L)} ${sc.unit}: ${fmt(L)} : ${fmt(p)} =`, answer: L / p })),
-      ], `Πολλαπλάσια του ${fmt(big)}: ${fmt(big)}, ${fmt(2 * big)}, ${fmt(3 * big)}, … Ποιο διαιρείται πρώτο και ${others};`));
+        // (the Ε.Κ.Π. is the row above: named, not written)
+        ...ps.map((p, i) => ({ label: `${sc.each[i]} ως τότε: Ε.Κ.Π. : ${fmt(p)} =`, answer: L / p })),
+      ], `Πολλαπλάσια του ${fmt(big)}: ${upTo(big)} Ποιο διαιρείται πρώτο και ${others};`));
     }
 
     if (claim) {
-      steps.push(b.choice('check', `Έχει δίκιο ${c.nom};`, `Όχι: το ${fmt(prod)} είναι κοινό πολλαπλάσιο, αλλά το μικρότερο είναι το ${fmt(L)}`,
-        [`Ναι: για να βρούμε πότε συμπίπτουν, πολλαπλασιάζουμε τους αριθμούς`, `Όχι: έπρεπε να προσθέσει ${nums.join(' + ')} = ${fmt(sum)}`],
+      steps.push(b.choice('check', `Έχει δίκιο ${c.nom};`, `Όχι: συμπίπτουν νωρίτερα, στο ${fmt(L)}`,
+        ['Ναι: τους πολλαπλασιάζουμε', `Όχι: έπρεπε να προσθέσει ${nums.join(' + ')} = ${fmt(sum)}`],
         `Συμπίπτουν και στο ${fmt(prod)}, αλλά μήπως συμπίπτουν νωρίτερα;`));
     } else if (r.chance(0.5)) {
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;',
-        `${ps.map(p => `${fmt(L)} : ${fmt(p)} = ${fmt(L / p)}`).join(' και ')}, και κανένας μικρότερος αριθμός δεν διαιρείται με όλους`,
-        [`${nums.join(' + ')} = ${fmt(sum)}`, `Το ${fmt(L)} είναι μεγαλύτερο από το ${fmt(big)}`],
+        // The right one is the whole of it: divides by each, and the smallest such. Beside it the
+        // greatest for the smallest (Μ.Κ.Δ. for Ε.Κ.Π.), half of it (true of every common multiple), and
+        // a true one beside the point (bigger than each)
+        `Είναι το μικρότερο που διαιρείται με ${list(nums.map(n => `το ${n}`))}`,
+        [`Είναι το μεγαλύτερο που διαιρείται με ${list(nums.map(n => `το ${n}`))}`, `Διαιρείται με ${list(nums.map(n => `το ${n}`))}`,
+          `Είναι μεγαλύτερο από ${list(nums.map(n => `το ${n}`))}`],
         'Το Ε.Κ.Π. διαιρείται ακριβώς με καθέναν από τους αριθμούς, και είναι το μικρότερο τέτοιο.'));
     } else {
-      steps.push(b.numbers('check', `Αναστοχαζόμαστε: διαιρείται το ${fmt(L)} ακριβώς με ${list(nums.map(n => `το ${n}`))};`,
+      steps.push(b.numbers('check', `Αναστοχαζόμαστε: διαιρείται το ${fmt(L)} ακριβώς με καθέναν από τους αριθμούς;`,
         ps.map(p => ({ label: `${fmt(L)} : ${fmt(p)} =`, answer: L / p }))));
     }
     return { title: sc.title, story, steps };

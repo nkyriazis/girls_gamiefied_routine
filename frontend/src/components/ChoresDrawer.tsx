@@ -63,9 +63,9 @@ interface ChoreWithInstance {
 function getDrawerConfig(category: ChoreCategory) {
     if (category === 'bonus') {
         return {
-            title: '🌟 Bonus Δραστηριότητες',
+            title: '🌟 Έξτρα δραστηριότητες',
             emptyIcon: '🌟',
-            emptyText: 'Δεν υπάρχουν διαθέσιμες bonus δραστηριότητες.',
+            emptyText: 'Δεν υπάρχουν έξτρα δραστηριότητες τώρα.',
             emptyHint: 'Νέες δραστηριότητες εμφανίζονται καθημερινά!',
             claimQuestion: 'Ποιο παιδί το πέτυχε;',
             doneButtonText: (name: string) => `${name}: Το πέτυχα! 🎉`,
@@ -280,7 +280,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
           position: fixed;
           inset: 0;
           background: rgba(0, 0, 0, 0.5);
-          z-index: 100;
+          z-index: var(--z-drawer);
         }
 
         .chores-drawer {
@@ -290,7 +290,7 @@ export const ChoresDrawer: React.FC<ChoresDrawerProps> = ({ isOpen, onClose, cat
           bottom: 0;
           width: min(420px, 92vw);
           background: var(--color-surface, #1a1a2e);
-          z-index: 101;
+          z-index: calc(var(--z-drawer) + 1);
           display: flex;
           flex-direction: column;
           box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);

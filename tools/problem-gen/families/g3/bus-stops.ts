@@ -94,31 +94,32 @@ export const busStops: Family = {
 
     const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε όσους ήταν στην αρχή, όσους κατεβαίνουν και όσους ανεβαίνουν.')];
     if (r.chance(0.4)) {
-      steps.push(b.choice('plan', 'Τι κάνουμε με όσους κατεβαίνουν;', 'Τους αφαιρούμε', ['Τους προσθέτουμε', 'Δεν τους χρειαζόμαστε'],
+      steps.push(b.choice('plan', 'Τι κάνουμε με όσους κατεβαίνουν;', 'Τους αφαιρούμε', ['Τους προσθέτουμε', 'Τους αγνοούμε'],
         `Όταν κατεβαίνουν, ${v.on} μένουν λιγότεροι.`));
     }
     // "Στη Λαμία" → "μετά τη Λαμία"
     const afterStop = (i: number) => v.stops[i].replace(/^Σ/, 'μετά ');
     const style = r.int(0, 2);
+    // A row after the first says «όσοι ήταν», not the number the row above asks for
     const rows = style === 0
       ? moves.flatMap((m, i) => [
-        { label: `Κατεβαίνουν: ${fmt(i ? after[i - 1] : start)} − ${fmt(m.off)} =`, answer: mid[i] },
-        { label: `Ανεβαίνουν: ${fmt(mid[i])} + ${fmt(m.on)} =`, answer: after[i] },
+        { label: `Κατεβαίνουν: ${i ? 'όσοι ήταν' : fmt(start)} − ${fmt(m.off)} =`, answer: mid[i] },
+        { label: `Ανεβαίνουν: όσοι έμειναν + ${fmt(m.on)} =`, answer: after[i] },
       ])
       : style === 1
-        ? moves.map((m, i) => ({ label: `${Cap(afterStop(i))}: ${fmt(i ? after[i - 1] : start)} − ${fmt(m.off)} + ${fmt(m.on)} =`, answer: after[i] }))
+        ? moves.map((m, i) => ({ label: `${Cap(afterStop(i))}: ${i ? 'όσοι ήταν' : fmt(start)} − ${fmt(m.off)} + ${fmt(m.on)} =`, answer: after[i] }))
         : moves.map((_m, i) => ({ label: Cap(afterStop(i)), answer: after[i] }));
     steps.push(b.numbers('solve', 'Λύνουμε στάση στάση.', rows.map(x => ({ ...x, unit: v.who })),
       'Σε κάθε στάση: πρώτα αφαιρούμε όσους κατεβαίνουν, μετά προσθέτουμε όσους ανεβαίνουν.'));
     const moreNow = ons > offs;
     steps.push(b.choice('check', 'Είναι λογική η απάντηση;',
       moreNow
-        ? `Ναι, ανέβηκαν περισσότεροι από όσους κατέβηκαν, άρα τώρα είναι περισσότεροι από ${fmt(start)}`
-        : `Ναι, κατέβηκαν περισσότεροι από όσους ανέβηκαν, άρα τώρα είναι λιγότεροι από ${fmt(start)}`,
+        ? 'Ναι, ανέβηκαν πιο πολλοί από όσους κατέβηκαν'
+        : 'Ναι, κατέβηκαν πιο πολλοί από όσους ανέβηκαν',
       [moreNow
-        ? `Όχι, πρέπει να είναι λιγότεροι από ${fmt(start)}`
-        : `Όχι, πρέπει να είναι περισσότεροι από ${fmt(start)}`,
-      `Όχι, πρέπει να είναι ${fmt(start + offs + ons)}, όλοι οι αριθμοί μαζί`],
+        ? [`Όχι, πρέπει να είναι λιγότεροι από ${fmt(start)}`, `Όχι, πρέπει να είναι λιγότεροι από τους ${fmt(start)}`]
+        : [`Όχι, πρέπει να είναι περισσότεροι από ${fmt(start)}`, `Όχι, περισσότεροι από ${fmt(start)}`],
+      [`Όχι, πρέπει να είναι ${fmt(start + offs + ons)}, όλοι οι αριθμοί μαζί`, `Όχι, πρέπει να είναι ${fmt(start + offs + ons)}: όλα μαζί`]],
       `Συγκρίνουμε: κατέβηκαν ${fmt(offs)} και ανέβηκαν ${fmt(ons)}.`));
     return { title: r.pick(['Στάση στάση', 'Ανεβαίνουν και κατεβαίνουν', 'Το ταξίδι', 'Πόσοι είναι τώρα;']), story, steps };
   },

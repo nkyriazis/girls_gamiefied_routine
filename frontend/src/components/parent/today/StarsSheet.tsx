@@ -11,6 +11,9 @@ export function StarsSheet({ user, onClose }: { user: User; onClose: () => void 
     const { run } = useFeedback();
     const [amount, setAmount] = useState(10);
     const valid = Number.isInteger(amount) && amount > 0;
+    // Stars promised in pending gifts can't be taken until the gift is approved or rejected
+    const promised = user.stars - user.available;
+    const blockedByGift = valid && amount > user.available && promised > 0;
 
     const change = async (delta: number) => {
         const verb = delta > 0 ? `+${delta}` : `${delta}`;
@@ -24,6 +27,7 @@ export function StarsSheet({ user, onClose }: { user: User; onClose: () => void 
                 <div>
                     <div className="p-kid-name">{user.name}</div>
                     <div className="p-kid-stars big">⭐ {user.stars}</div>
+                    {promised > 0 && <div className="p-row-sub">Διαθέσιμα ⭐ {user.available} · ⭐ {promised} σε δώρο που περιμένει</div>}
                 </div>
             </div>
             <div className="p-chips" role="group" aria-label="Πόσα αστέρια">
@@ -34,9 +38,10 @@ export function StarsSheet({ user, onClose }: { user: User; onClose: () => void 
                     value={amount} onChange={e => setAmount(e.target.valueAsNumber)} />
             </div>
             <div className="p-actions">
-                <button type="button" className="p-btn ghost" disabled={!valid || amount > user.stars} onClick={() => change(-amount)}>− Αφαίρεση {valid ? amount : ''}</button>
+                <button type="button" className="p-btn ghost" disabled={!valid || amount > user.available} onClick={() => change(-amount)}>− Αφαίρεση {valid ? amount : ''}</button>
                 <button type="button" className="p-btn primary" disabled={!valid} onClick={() => change(amount)}>+ Προσθήκη {valid ? amount : ''}</button>
             </div>
+            {blockedByGift && <p className="p-hint" role="note" style={{ marginTop: 12 }}>Για να αφαιρέσετε πάνω από ⭐ {user.available}, απορρίψτε πρώτα το δώρο.</p>}
         </Sheet>
     );
 }

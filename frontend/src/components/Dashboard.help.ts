@@ -18,13 +18,15 @@ export const homeTour = (): Tour => ({
   ],
 });
 
+// Quiet: no «Να σου δείξω;» over the routine and alarm cards (the owl still wiggles)
 export const routineTour = (): Tour => ({
   id: 'routine',
+  quiet: true,
   steps: [
     { el: 'routine.timeline', title: 'Η ρουτίνα σου', text: 'Κάθε τελεία είναι μια δουλειά της ρουτίνας. Η φωτεινή είναι αυτή που κάνεις τώρα.' },
     { el: 'routine.task', title: 'Τι κάνεις τώρα', text: 'Αυτή είναι η δουλειά σου. Το ρολόι μετράει πόσος χρόνος μένει.' },
-    { el: 'routine.done', title: 'Τελείωσες;', text: 'Μόλις την τελειώσεις, πάτα εδώ. Όσο πιο γρήγορα, τόσο περισσότερα αστέρια!', side: 'top', demo: 'tap' },
-    { el: 'routine.exit', title: 'Κλείσιμο', text: 'Με το ✕ κλείνει η ρουτίνα. Καλύτερα να την τελειώσεις πρώτα!', side: 'bottom', say: 'Κλείσιμο. Με το Χ κλείνει η ρουτίνα. Καλύτερα να την τελειώσεις πρώτα!' },
+    { el: 'routine.done', title: 'Τελείωσες;', text: 'Μόλις την τελειώσεις, πάτα εδώ. Αν προλάβεις πριν τελειώσει το ρολόι, παίρνεις όλα τα αστέρια!', side: 'top', demo: 'tap' },
+    { el: 'routine.exit', title: 'Κλείσιμο', text: 'Το ✕ ρωτάει αν θα κλείσει η ρουτίνα. Καλύτερα να την τελειώσεις πρώτα!', side: 'bottom', say: 'Κλείσιμο. Το Χ ρωτάει αν θα κλείσει η ρουτίνα. Καλύτερα να την τελειώσεις πρώτα!' },
     { el: 'alarm.dismiss', title: 'Ξυπνητήρι', text: 'Πάτα εδώ για να το σταματήσεις.', side: 'top', demo: 'tap' },
     OWL,
   ],

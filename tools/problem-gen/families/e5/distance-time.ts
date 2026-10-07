@@ -1,7 +1,7 @@
 // A car, train or ship covers k km every hour for h hours: the distance; what is left of a
 // route; the hours a route needs (Ε΄ κεφ. 2.9 και 2.12: πολλαπλασιασμός και διαίρεση).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { cap, extra, fmt, known, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { cap, extra, fmt, known, NO_MISTAKE, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
 
 interface Setting {
   title: string[];
@@ -84,16 +84,20 @@ export const distanceTime: Family = {
 
     let text: string;
     const asksHoursLeft = ask === 'left' && r.chance(0.5);
+    const noise = s.noise(r);
+    // A person in the noise right before the question («Ο οδηγός κάνει αυτή τη δουλειά 19 χρόνια.»):
+    // the question names the vehicle, or it reads as about them (#50)
+    const it = /^(?:Ο|Η|Οι) /.test(noise) ? ` ${s.it[0].toLowerCase()}${s.it.slice(1)}` : '';
     if (ask === 'far') {
-      text = `${s.it} ${s.v[0]} ${rate}. ${s.noise(r)} ${sought(`Πόσα χιλιόμετρα ${s.v[2]}`)} ${known(`σε ${h} ώρες`)};`;
+      text = `${s.it} ${s.v[0]} ${rate}. ${noise} ${sought(`Πόσα χιλιόμετρα ${s.v[2]}${it}`)} ${known(`σε ${h} ώρες`)};`;
     } else if (ask === 'left') {
-      text = `Όλη η διαδρομή είναι ${known(`${fmt(R)} χιλιόμετρα`)}. ${s.it} ${s.v[0]} ${rate}. ${s.noise(r)} `
+      text = `Όλη η διαδρομή είναι ${known(`${fmt(R)} χιλιόμετρα`)}. ${s.it} ${s.v[0]} ${rate}. ${noise} `
         + `${known(`Έχουν περάσει ${h} ώρες από την αναχώρηση`)}. ${sought(`Πόσα χιλιόμετρα μένουν ακόμα`)}${asksHoursLeft ? ` και ${sought(`σε πόσες ώρες ${s.v[3]}, αν ${s.v[4]} έτσι`)}` : ''};`;
     } else if (ask === 'hours') {
-      text = `Όλη η διαδρομή είναι ${known(`${fmt(done)} χιλιόμετρα`)}. ${s.it} ${s.v[0]} ${rate}. ${s.noise(r)} ${sought(`Σε πόσες ώρες ${s.v[3]}`)};`;
+      text = `Όλη η διαδρομή είναι ${known(`${fmt(done)} χιλιόμετρα`)}. ${s.it} ${s.v[0]} ${rate}. ${noise} ${sought(`Σε πόσες ώρες ${s.v[3]}${it}`)};`;
     } else {
       text = `${s.it} ${s.v[0]} πρώτα ${rate} ${known(`για ${h} ώρες`)} και μετά, σε πιο δύσκολο δρόμο, ${known(`${fmt(k2)} χιλιόμετρα κάθε ώρα`)} ${known(`για ${h2 === 1 ? '1 ώρα' : `${h2} ώρες`}`)}. `
-        + `${s.noise(r)} ${sought(`Πόσα χιλιόμετρα ${s.v[1]} συνολικά`)};`;
+        + `${noise} ${sought(`Πόσα χιλιόμετρα ${s.v[1]} συνολικά${it}`)};`;
     }
     const story = `${s.intro(p)} ${text}`;
 
@@ -101,8 +105,8 @@ export const distanceTime: Family = {
     const ops = r.chance(0.5);
     if (ask === 'far') {
       if (r.chance(0.6)) {
-        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `Πολλαπλασιασμό: ${h} φορές από ${fmt(k)} χιλιόμετρα`,
-          [`Πρόσθεση: ${fmt(k)} + ${h}`, `Διαίρεση: ${fmt(k)} : ${h}`], `Κάθε ώρα προστίθενται ${fmt(k)} χιλιόμετρα.`));
+        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `${fmt(k)} × ${h}`,
+          [`${fmt(k)} + ${h}`, `${fmt(k)} : ${h}`], `Κάθε ώρα προστίθενται ${fmt(k)} χιλιόμετρα.`));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: ops ? `${fmt(k)} × ${h} =` : `Σε ${h} ώρες`, answer: done, unit: 'χιλιόμετρα' }],
         `${fmt(k)} + ${fmt(k)} + … ${h} φορές.`));
@@ -118,31 +122,32 @@ export const distanceTime: Family = {
         ], 'Πρώτα όσα έγιναν, μετά όσα μένουν.'));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [
-        { label: ops ? `${cap(s.v[1])}: ${fmt(k)} × ${h} =` : `Ως τώρα ${s.v[1]}`, answer: done, unit: 'χιλιόμετρα' },
-        { label: ops ? `Μένουν: ${fmt(R)} − ${fmt(done)} =` : 'Μένουν', answer: R - done, unit: 'χιλιόμετρα' },
-        ...(asksHoursLeft ? [{ label: ops ? `Ώρες ακόμα: ${fmt(R - done)} : ${fmt(k)} =` : 'Ώρες ακόμα', answer: more, unit: 'ώρες' }] : []),
-      ], `${fmt(k)} × ${h} = ${fmt(done)}.`));
-      steps.push(b.choice('check', 'Αναστοχαζόμαστε: πώς ελέγχουμε;', `${fmt(done)} + ${fmt(R - done)} = ${fmt(R)}: όσα ${s.v[1]} και όσα μένουν κάνουν όλη τη διαδρομή`,
-        [`${fmt(R)} + ${fmt(done)} = ${fmt(R + done)}`, `${fmt(R)} − ${fmt(k)} = ${fmt(R - k)}: μένουν τόσα`],
+        // A row names the one above («όσα ως τώρα»), never its number; the hint is rowsHint's, from `eq`
+        { label: ops ? `${cap(s.v[1])}: ${fmt(k)} × ${h} =` : `Ως τώρα ${s.v[1]}`, answer: done, unit: 'χιλιόμετρα', eq: `${fmt(k)} × ${h}` },
+        { label: ops ? `Μένουν: ${fmt(R)} − όσα ως τώρα =` : 'Μένουν', answer: R - done, unit: 'χιλιόμετρα', eq: `${fmt(R)} − ${fmt(done)}` },
+        ...(asksHoursLeft ? [{ label: ops ? `Ώρες ακόμα: όσα μένουν : ${fmt(k)} =` : 'Ώρες ακόμα', answer: more, unit: 'ώρες', eq: `${fmt(R - done)} : ${fmt(k)}` }] : []),
+      ]));
+      steps.push(b.choice('check', 'Αναστοχαζόμαστε: πώς ελέγχουμε;', `${fmt(done)} + ${fmt(R - done)} = ${fmt(R)}`,
+        [`${fmt(R)} + ${fmt(done)} = ${fmt(R + done)}`, `${fmt(R)} − ${fmt(k)} = ${fmt(R - k)}`],
         'Τα δύο κομμάτια μαζί πρέπει να κάνουν όλη τη διαδρομή.'));
     } else if (ask === 'hours') {
       if (r.chance(0.6)) {
-        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `Διαίρεση: πόσες φορές χωράει το ${fmt(k)} στο ${fmt(done)}`,
-          [`Πολλαπλασιασμό: ${fmt(done)} × ${fmt(k)}`, `Αφαίρεση: ${fmt(done)} − ${fmt(k)}`], 'Κάθε ώρα «τρώει» ένα κομμάτι της διαδρομής.'));
+        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `${fmt(done)} : ${fmt(k)}`,
+          [`${fmt(done)} × ${fmt(k)}`, `${fmt(done)} − ${fmt(k)}`], 'Κάθε ώρα «τρώει» ένα κομμάτι της διαδρομής.'));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: ops ? `${fmt(done)} : ${fmt(k)} =` : 'Θα φτάσει σε', answer: h, unit: 'ώρες' }],
-        `${fmt(k)} × 2 = ${fmt(k * 2)}, ${fmt(k)} × 3 = ${fmt(k * 3)}, …`));
+        `Πόσες φορές χωράει το ${fmt(k)} στο ${fmt(done)}; Μετράμε ανά ${fmt(k)}.`));
       steps.push(b.numbers('check', 'Αναστοχαζόμαστε: σε τόσες ώρες φτάνει;', [{ label: `${fmt(k)} × ${h} =`, answer: done, unit: 'χιλιόμετρα' }]));
     } else {
       steps.push(b.numbers('solve', 'Λύνουμε κάθε κομμάτι χωριστά.', [
-        { label: ops ? `Πρώτο κομμάτι: ${fmt(k)} × ${h} =` : 'Πρώτο κομμάτι', answer: done, unit: 'χιλιόμετρα' },
-        { label: ops ? `Δεύτερο κομμάτι: ${fmt(k2)} × ${h2} =` : 'Δεύτερο κομμάτι', answer: k2 * h2, unit: 'χιλιόμετρα' },
-        { label: ops ? `Συνολικά: ${fmt(done)} + ${fmt(k2 * h2)} =` : 'Συνολικά', answer: done + k2 * h2, unit: 'χιλιόμετρα' },
-      ], `${fmt(k)} × ${h} = ${fmt(done)}.`));
+        { label: ops ? `Πρώτο κομμάτι: ${fmt(k)} × ${h} =` : 'Πρώτο κομμάτι', answer: done, unit: 'χιλιόμετρα', eq: `${fmt(k)} × ${h}` },
+        { label: ops ? `Δεύτερο κομμάτι: ${fmt(k2)} × ${h2} =` : 'Δεύτερο κομμάτι', answer: k2 * h2, unit: 'χιλιόμετρα', eq: `${fmt(k2)} × ${h2}` },
+        { label: ops ? 'Συνολικά: πρώτο + δεύτερο =' : 'Συνολικά', answer: done + k2 * h2, unit: 'χιλιόμετρα', eq: `${fmt(done)} + ${fmt(k2 * h2)}` },
+      ]));
       const wrongSame = k * (h + h2);
       steps.push(b.choice('check', `Κάποιος έγραψε ${fmt(k)} × ${h + h2} = ${fmt(wrongSame)}. Τι λάθος έκανε;`,
-        `Στο δεύτερο κομμάτι ${s.v[0]} ${fmt(k2)} χιλιόμετρα την ώρα, όχι ${fmt(k)}`,
-        ['Κανένα: έτσι βρίσκουμε το σύνολο', `Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)} = ${fmt(k + k2)}`],
+        `Στο δεύτερο κομμάτι: ${fmt(k2)}, όχι ${fmt(k)}`,
+        [NO_MISTAKE, [`Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)} = ${fmt(k + k2)}`, `Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)}`]],
         'Οι δύο δρόμοι δεν είναι ίδιοι.'));
     }
     return { title: r.pick(s.title), story, steps };

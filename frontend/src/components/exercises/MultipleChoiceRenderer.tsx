@@ -3,17 +3,23 @@ import { motion } from 'framer-motion';
 import type { MultipleChoiceExercise } from '@shared/types';
 import { help } from '../../help/anchors';
 import { sound } from '../../sound/sfx';
+import { optionLetter, useSeededOrder } from './shuffle';
 
 interface Props {
   exercise: MultipleChoiceExercise;
   onAnswer: (index: number) => void;
   disabled?: boolean;
+  /** Fixes the options' order: the assignment's id on her own, the exercise's in the group game */
+  seed?: string;
 }
 
-export const MultipleChoiceRenderer: React.FC<Props> = ({ exercise, onAnswer, disabled }) => {
+// The options in an order fixed by the seed (the right one isn't always first); the answer
+// sent is still the option's own index.
+export const MultipleChoiceRenderer: React.FC<Props> = ({ exercise, onAnswer, disabled, seed }) => {
+  const order = useSeededOrder(exercise.options.length, seed ?? exercise.id);
   return (
     <div className="options-grid" {...help('answer.options')}>
-      {exercise.options.map((option, index) => (
+      {order.map((index, place) => (
         <motion.button
           key={index}
           className="option-btn"
@@ -23,8 +29,8 @@ export const MultipleChoiceRenderer: React.FC<Props> = ({ exercise, onAnswer, di
           whileHover={!disabled ? { scale: 1.02, backgroundColor: "rgba(255,255,255,0.15)" } : {}}
           whileTap={!disabled ? { scale: 0.98 } : {}}
         >
-          <div className="option-letter">{String.fromCharCode(65 + index)}</div>
-          <div className="option-text">{option}</div>
+          <div className="option-letter">{optionLetter(place)}</div>
+          <div className="option-text">{exercise.options[index]}</div>
         </motion.button>
       ))}
 

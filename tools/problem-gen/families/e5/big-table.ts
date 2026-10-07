@@ -1,7 +1,7 @@
 // A table of large numbers in the story (visitors per year, cars per month): add or compare
 // two of its rows; the other rows are there but not needed (Ε΄ κεφ. 2.8, the visitors of
 // the Acropolis Museum).
-import { cap, extra, fmt, known, people, sought, type Family, type Person } from '../../lib.ts';
+import { cap, extra, fmt, known, NO_MISTAKE, people, sought, type Family, type Person } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 // "2021" / "το 2021", "Ιούνιος" / "τον Ιούνιο"; w: how busy that period is (2020 had few visitors, August many)
@@ -69,7 +69,7 @@ const SETTINGS: Setting[] = [
     title: 'Οι επιβάτες του λιμανιού', periods: SUMMER, range: [60_000, 320_000], unit: 'επιβάτες',
     open: [
       rows => `Ο πίνακας δείχνει πόσοι επιβάτες ταξίδεψαν από ένα λιμάνι κάθε μήνα: ${rows}.`,
-      rows => `Από ένα λιμάνι των Κυκλάδων ταξίδεψαν ${rows}.`,
+      rows => `Ένα λιμάνι των Κυκλάδων μετράει τους επιβάτες του. Ταξίδεψαν ${rows}.`,
       (rows, p) => `${p.Nom} διάβασε στην εφημερίδα πόσοι επιβάτες ταξίδεψαν από το λιμάνι του νησιού ${p.his}: ${rows}.`,
     ],
     phrase: (n, at, first) => first ? `${n} επιβάτες ${at}` : `${n} ${at}`,
@@ -83,7 +83,7 @@ const SETTINGS: Setting[] = [
     title: 'Τα εισιτήρια του ζωολογικού κήπου', periods: YEARS, range: [80_000, 360_000], unit: 'εισιτήρια',
     open: [
       rows => `Ο πίνακας δείχνει πόσα εισιτήρια πούλησε ένας ζωολογικός κήπος κάθε χρονιά: ${rows}.`,
-      rows => `Ένας ζωολογικός κήπος πούλησε ${rows}.`,
+      rows => `Ένας ζωολογικός κήπος μετράει τα εισιτήρια που πουλάει. Πούλησε ${rows}.`,
       (rows, p) => `${p.Nom} ρώτησε στο ταμείο του ζωολογικού κήπου πόσα εισιτήρια πουλήθηκαν κάθε χρονιά. ${cap(p.his)} είπαν: ${rows}.`,
     ],
     phrase: (n, at, first) => first ? `${n} εισιτήρια ${at}` : `${n} ${at}`,
@@ -97,7 +97,7 @@ const SETTINGS: Setting[] = [
     title: 'Το εργοστάσιο εμφιάλωσης', periods: WINTER, range: [200_000, 480_000], unit: 'μπουκάλια',
     open: [
       rows => `Ο πίνακας δείχνει πόσα μπουκάλια νερό γέμισε ένα εργοστάσιο εμφιάλωσης κάθε μήνα: ${rows}.`,
-      rows => `Ένα εργοστάσιο εμφιάλωσης γέμισε ${rows}.`,
+      rows => `Ένα εργοστάσιο εμφιάλωσης μετράει τα μπουκάλια που γεμίζει. Γέμισε ${rows}.`,
       (rows, p) => `Η τάξη ${p.gen} επισκέφτηκε ένα εργοστάσιο εμφιάλωσης. Εκεί τα παιδιά είδαν πόσα μπουκάλια νερό γέμισε κάθε μήνα: ${rows}.`,
     ],
     phrase: (n, at, first) => first ? `${n} μπουκάλια νερό ${at}` : `${n} ${at}`,
@@ -147,8 +147,8 @@ export const bigTable: Family = {
     const steps: ProblemStep[] = [b.tag(undefined, 'Από τον πίνακα χρειαζόμαστε μόνο όσα ρωτάει η ερώτηση. Τα άλλα τα αφήνουμε.')];
     if (kind === 'sum') {
       if (r.chance(0.5)) {
-        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `Πρόσθεση μόνο των δύο αριθμών: ${fmt(a)} + ${fmt(c)}`,
-          ['Πρόσθεση όλων των αριθμών του πίνακα', `Αφαίρεση: ${fmt(Math.max(a, c))} − ${fmt(Math.min(a, c))}`],
+        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `Πρόσθεση: ${fmt(a)} + ${fmt(c)}`,
+          ['Πρόσθεση όλων των αριθμών', `Αφαίρεση: ${fmt(Math.max(a, c))} − ${fmt(Math.min(a, c))}`],
           `Η ερώτηση λέει «μαζί» και ρωτάει μόνο για ${periods[i].at} και ${periods[j].at}.`));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [
@@ -177,7 +177,7 @@ export const bigTable: Family = {
         ? b.numbers('check', 'Πώς ελέγχουμε; Προσθέτουμε τη διαφορά στον μικρότερο αριθμό.', [{ label: `${fmt(diff)} + ${fmt(lo)} =`, answer: hi }],
           `Πρέπει να βρούμε τον μεγαλύτερο αριθμό, το ${fmt(hi)}.`)
         : b.choice('check', `Κάποιος απάντησε «${fmt(hi + lo)}». Τι έκανε λάθος;`, 'Πρόσθεσε αντί να αφαιρέσει',
-          ['Τίποτα, είναι σωστό', `Πήρε λάθος ${s.periods === YEARS ? 'χρονιά' : 'μήνα'} από τον πίνακα`],
+          [NO_MISTAKE, [`Πήρε λάθος ${s.periods === YEARS ? 'χρονιά' : 'μήνα'} από τον πίνακα`, `Πήρε λάθος ${s.periods === YEARS ? 'χρονιά' : 'μήνα'}`, `Διάβασε λάθος ${s.periods === YEARS ? 'χρονιά' : 'μήνα'}`]],
           `Το ${fmt(hi + lo)} είναι το άθροισμα των δύο αριθμών. Η ερώτηση όμως ζητάει τη διαφορά τους.`));
     }
     return { title: s.title, story, steps };

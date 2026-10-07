@@ -7,7 +7,7 @@ const path = require('path');
 // state.json is the legacy runtime state). Exits 1 when any file is invalid.
 
 // Don't validate formats strictly (date-time format is not critical for our test)
-const ajv = new Ajv({ allErrors: true, validateFormats: false });
+const ajv = new Ajv({ allErrors: true, validateFormats: false, discriminator: true });
 const read = name => JSON.parse(fs.readFileSync(path.join(__dirname, name), 'utf-8'));
 // Registered under their file names, as the backend does (exercises.schema.json $refs data.schema.json)
 for (const schema of ['data.schema.json', 'exercises.schema.json', 'state.schema.json']) ajv.addSchema(read(schema), schema);

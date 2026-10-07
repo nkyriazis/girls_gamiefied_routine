@@ -2,7 +2,7 @@
 // λιγότερα»), paid with a note, the change; or a school group where one teacher for every
 // 10 pupils goes in free (Ε΄ Επαναληπτικό 2, 3ο πρόβλημα; κεφ. 2.8 και 2.9).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { extra, fmt, known, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, NO_MISTAKE, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
 
 interface Venue {
   title: string[];
@@ -11,16 +11,18 @@ interface Venue {
   /** "στην παράσταση" */
   go: string;
   adult: [number, number];
+  /** The least a child's or a pupil's ticket costs there (a school group's price included) */
+  child: number;
   noise: (r: Rng) => string;
 }
 
 const VENUES: Venue[] = [
-  { title: ['Στο θέατρο', 'Η θεατρική παράσταση'], ticket: 'Το εισιτήριο μιας θεατρικής παράστασης', go: 'στην παράσταση', adult: [12, 20], noise: r => `Η παράσταση διαρκεί ${extra(`${r.step(70, 120, 10)} λεπτά`)}.` },
-  { title: ['Ο ζωολογικός κήπος', 'Μια μέρα με τα ζώα'], ticket: 'Το εισιτήριο του ζωολογικού κήπου', go: 'στον ζωολογικό κήπο', adult: [14, 22], noise: r => `Ο κήπος έχει ${extra(`${r.int(80, 250)} είδη ζώων`)}.` },
-  { title: ['Το ενυδρείο', 'Στο ενυδρείο'], ticket: 'Το εισιτήριο του ενυδρείου', go: 'στο ενυδρείο', adult: [10, 18], noise: r => `Το ενυδρείο έχει ${extra(`${r.int(40, 90)} δεξαμενές`)}.` },
-  { title: ['Στον κινηματογράφο', 'Η ταινία'], ticket: 'Το εισιτήριο του κινηματογράφου', go: 'στον κινηματογράφο', adult: [8, 12], noise: r => `Η ταινία αρχίζει ${extra(`στις ${r.int(5, 7)} το απόγευμα`)}.` },
-  { title: ['Το πλανητάριο', 'Ταξίδι στα αστέρια'], ticket: 'Το εισιτήριο του πλανηταρίου', go: 'στο πλανητάριο', adult: [8, 14], noise: r => `Ο θόλος του πλανηταρίου έχει διάμετρο ${extra(`${r.int(15, 25)} μέτρα`)}.` },
-  { title: ['Το μουσείο', 'Επίσκεψη στο μουσείο'], ticket: 'Το εισιτήριο του μουσείου φυσικής ιστορίας', go: 'στο μουσείο', adult: [6, 12], noise: r => `Το μουσείο έχει ${extra(`${r.int(8, 20)} αίθουσες`)}.` },
+  { title: ['Στο θέατρο', 'Η θεατρική παράσταση'], ticket: 'Το εισιτήριο μιας θεατρικής παράστασης', go: 'στην παράσταση', adult: [12, 20], child: 5, noise: r => `Η παράσταση διαρκεί ${extra(`${r.step(70, 120, 10)} λεπτά`)}.` },
+  { title: ['Ο ζωολογικός κήπος', 'Μια μέρα με τα ζώα'], ticket: 'Το εισιτήριο του ζωολογικού κήπου', go: 'στον ζωολογικό κήπο', adult: [14, 22], child: 6, noise: r => `Ο κήπος έχει ${extra(`${r.int(80, 250)} είδη ζώων`)}.` },
+  { title: ['Το ενυδρείο', 'Στο ενυδρείο'], ticket: 'Το εισιτήριο του ενυδρείου', go: 'στο ενυδρείο', adult: [10, 18], child: 5, noise: r => `Το ενυδρείο έχει ${extra(`${r.int(40, 90)} δεξαμενές`)}.` },
+  { title: ['Στον κινηματογράφο', 'Η ταινία'], ticket: 'Το εισιτήριο του κινηματογράφου', go: 'στον κινηματογράφο', adult: [8, 12], child: 4, noise: r => `Η ταινία αρχίζει ${extra(`στις ${r.int(5, 7)} το απόγευμα`)}.` },
+  { title: ['Το πλανητάριο', 'Ταξίδι στα αστέρια'], ticket: 'Το εισιτήριο του πλανηταρίου', go: 'στο πλανητάριο', adult: [8, 14], child: 4, noise: r => `Ο θόλος του πλανηταρίου έχει διάμετρο ${extra(`${r.int(15, 25)} μέτρα`)}.` },
+  { title: ['Το μουσείο', 'Επίσκεψη στο μουσείο'], ticket: 'Το εισιτήριο του μουσείου φυσικής ιστορίας', go: 'στο μουσείο', adult: [6, 12], child: 3, noise: r => `Το μουσείο έχει ${extra(`${r.int(8, 20)} αίθουσες`)}.` },
 ];
 
 const WORDS = ['', 'ένα', 'δύο', 'τρία', 'τέσσερα'];
@@ -66,7 +68,7 @@ export const groupTickets: Family = {
       const C = A - less;
       const total = f.adults * A + f.kids * C;
       const note = NOTES.find(n => n > total);
-      if (!note || C < 3) return null;
+      if (!note || C < Math.max(3, v.child)) return null;
       const pays = r.chance(0.6);
       const intro = `${v.ticket} κοστίζει ${known(`${A} € για τους ενήλικες`)} και ${known(`για τα παιδιά ${less} € λιγότερα`)}.`;
       // "Μια οικογένεια με τρία παιδιά" has no digit; the others name the people
@@ -77,21 +79,23 @@ export const groupTickets: Family = {
       steps.push(b.tag(undefined, 'Μετράμε χωριστά τους ενήλικες και τα παιδιά: έχουν άλλη τιμή.'));
       const right = `${adults(f.adults)} και ${kidsT(f.kids)}`;
       steps.push(b.choice('plan', 'Πόσα εισιτήρια ενηλίκων και πόσα παιδικά χρειάζονται;', right,
-        [adults(nAll), `${adults(f.adults)} και ${kidsT(f.kids - 1 || f.kids + 1)}`, `${adults(f.adults - 1)} και ${kidsT(f.kids + 1)}`]
+        [`${adults(nAll)} και κανένα παιδικό`, `${adults(f.adults)} και ${kidsT(f.kids - 1 || f.kids + 1)}`, `${adults(f.adults - 1)} και ${kidsT(f.kids + 1)}`]
           .filter((o, i, a) => o !== right && a.indexOf(o) === i),
         f.mine ? `Μην ξεχάσεις ${p.acc}: είναι κι ${p.female ? 'αυτή' : 'αυτός'} παιδί.` : 'Μια οικογένεια έχει δύο γονείς.'));
       const ops = r.chance(0.6);
       steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
         { label: ops ? `Παιδικό εισιτήριο: ${A} − ${less} =` : 'Παιδικό εισιτήριο', answer: C, unit: '€' },
         { label: ops ? `Ενήλικες: ${f.adults} × ${A} =` : 'Για τους ενήλικες', answer: f.adults * A, unit: '€' },
-        { label: ops ? `Παιδιά: ${f.kids} × ${C} =` : 'Για τα παιδιά', answer: f.kids * C, unit: '€' },
+        // A row names the one above («το παιδικό», «όλοι μαζί»), never its number
+        { label: ops ? `Παιδιά: ${f.kids} × το παιδικό =` : 'Για τα παιδιά', answer: f.kids * C, unit: '€' },
         { label: 'Όλοι μαζί', answer: total, unit: '€' },
-        ...(pays ? [{ label: ops ? `Ρέστα: ${note} − ${total} =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
+        ...(pays ? [{ label: ops ? `Ρέστα: ${note} − το σύνολο =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
       ], `Το «${less} € λιγότερα» σημαίνει ${A} − ${less}.`));
       const allAdult = nAll * A;
       steps.push(b.choice('check', `Αναστοχαζόμαστε: κάποιος βρήκε ${nAll} × ${A} = ${allAdult} €. Τι λάθος έκανε;`,
-        `Πλήρωσε και τα παιδιά σαν ενήλικες· τα παιδιά πληρώνουν ${less} € λιγότερα`,
-        ['Κανένα: έτσι βρίσκουμε το σύνολο', f.kids > 1 ? `Έπρεπε να αφαιρέσει ${less} € μόνο μία φορά` : `Έπρεπε να προσθέσει ${less} €`],
+        'Πλήρωσε τα παιδιά σαν ενήλικες',
+        [NO_MISTAKE, f.kids > 1 ? [`Έπρεπε να αφαιρέσει ${less} € μόνο μία φορά`, `Έπρεπε να αφαιρέσει ${less} € μία φορά`]
+          : [`Έπρεπε να προσθέσει ${less} € στο σύνολο`, `Έπρεπε να προσθέσει ${less} €`, `Έπρεπε να προσθέσει άλλα ${less} €`]],
         `Η διαφορά είναι ${f.kids} × ${less} = ${f.kids * less} €.`));
       return { title: r.pick(v.title), story, steps };
     }
@@ -101,6 +105,7 @@ export const groupTickets: Family = {
     const free = Math.floor(pupils / 10);
     const teachers = free + r.int(1, 3);
     const C = r.int(3, Math.max(4, A - 4));
+    if (C < v.child) return null;
     const payT = teachers - free;
     const total = pupils * C + payT * A;
     const note = r.chance(0.5) ? NOTES.find(n => n > total) : undefined;
@@ -112,18 +117,19 @@ export const groupTickets: Family = {
     if (note && note - total > 150) return null;
     steps.push(b.tag(undefined, 'Το «για κάθε 10 μαθητές» μάς λέει πόσοι εκπαιδευτικοί δεν πληρώνουν.'));
     steps.push(b.choice('plan', 'Πόσοι εκπαιδευτικοί μπαίνουν δωρεάν;', `${free}, γιατί ${pupils} = 10 × ${free} + ${pupils % 10}`,
-      [`${teachers}: όλοι`, ...(pupils % 10 ? [`${free + 1}, γιατί ${pupils} μαθητές είναι περίπου ${Math.ceil(pupils / 10) * 10}`] : []), ...(free > 1 ? [`${free - 1}`] : ['Κανένας'])]
-        .filter(o => !o.startsWith(`${free + 1}`) || free + 1 !== teachers || o.includes('όλοι')),
+      [[`${teachers}, δηλαδή κάθε εκπαιδευτικός`, `${teachers}, κάθε εκπαιδευτικός`],
+        ...(pupils % 10 && free + 1 !== teachers ? [[`${free + 1}, γιατί το ${pupils} είναι περίπου ${Math.ceil(pupils / 10) * 10}`, `${free + 1}, περίπου ${Math.ceil(pupils / 10) * 10} μαθητές`]] : []),
+        ...(free > 1 ? [[`${free - 1}, γιατί ${free - 1} × 10 = ${(free - 1) * 10}`, `${free - 1}, γιατί ${free - 1} × 10 = ${(free - 1) * 10} μαθητές`]] : ['Κανένας, γιατί είναι λίγοι'])],
       `Πόσες ολόκληρες δεκάδες μαθητών υπάρχουν στο ${pupils};`));
     const ops = r.chance(0.6);
     steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
-      { label: ops ? `Μαθητές: ${pupils} × ${C} =` : 'Για τους μαθητές', answer: pupils * C, unit: '€' },
+      { label: ops ? `Μαθητές: ${pupils} × ${C} =` : 'Για τους μαθητές', answer: pupils * C, unit: '€', eq: `${pupils} × ${C}` },
       { label: ops ? `Εκπαιδευτικοί που πληρώνουν: ${teachers} − ${free} =` : 'Εκπαιδευτικοί που πληρώνουν', answer: payT },
-      { label: ops ? `Για αυτούς: ${payT} × ${A} =` : 'Για τους εκπαιδευτικούς', answer: payT * A, unit: '€' },
+      { label: ops ? `Για αυτούς: όσοι πληρώνουν × ${A} =` : 'Για τους εκπαιδευτικούς', answer: payT * A, unit: '€' },
       { label: 'Όλα μαζί', answer: total, unit: '€' },
-      ...(note ? [{ label: ops ? `Ρέστα: ${note} − ${fmt(total)} =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
-    ], `${pupils} × ${C} = ${fmt(pupils * C)}.`));
-    steps.push(b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: οι μαθητές μόνοι τους κάνουν ${fmt(pupils * C)} €, και οι εκπαιδευτικοί προσθέτουν λίγα`,
+      ...(note ? [{ label: ops ? `Ρέστα: ${note} − όλα μαζί =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
+    ]));
+    steps.push(b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: λίγο πάνω από τα ${fmt(pupils * C)} € των μαθητών`,
       [`Όχι: πρέπει να είναι ${fmt((pupils + teachers) * A)} €, όλοι με τιμή ενήλικα`, `Όχι: πρέπει να είναι λιγότερα από ${fmt(pupils * C)} €`],
       'Συγκρίνουμε με το ποσό για τους μαθητές μόνο.'));
     return { title: r.pick(v.title), story, steps };

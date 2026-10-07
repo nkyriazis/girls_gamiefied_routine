@@ -7,6 +7,7 @@ import { help } from '../help/anchors';
 import { HelpScreen } from '../help/HelpProvider';
 import { exercisesTour } from './ExercisesDrawer.help';
 import { sound } from '../sound/sfx';
+import { dailyCount, kidsShown, pillText } from './exerciseCounts';
 
 interface ExercisesDrawerProps {
     isOpen: boolean;
@@ -17,9 +18,13 @@ interface ExercisesDrawerProps {
 export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClose }) => {
     const { users, exerciseAssignments, config } = useGame();
     const extraLimit = config.settings.extraProblemsPerDay ?? 10;
+    // A kid with a set today, or one who may ask for an extra problem; the empty state only when none
+    const shown = kidsShown(users, exerciseAssignments, extraLimit);
+    // A revision card on screen: the tour's edition that explains its pill
+    const revision = exerciseAssignments.some(a => a.revision && !a.extra && shown.some(u => u.id === a.userId));
 
     return (
-        <HelpScreen tour={isOpen ? exercisesTour() : null}>
+        <HelpScreen tour={isOpen ? exercisesTour(revision) : null}>
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -47,24 +52,22 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
                         </div>
 
                         <div className="exercises-content">
-                            {users.map(user => {
-                                const mine = exerciseAssignments.filter(a => a.userId === user.id && !a.extra);
-                                if (mine.length === 0 && !(user.grade && extraLimit > 0)) return null;
-                                const done = mine.filter(a => a.status === 'completed').length;
+                            {shown.map(user => {
+                                const count = dailyCount(exerciseAssignments, user.id);
                                 return (
                                     <UserExercises key={user.id} user={user} header={
                                         <div className="user-header" {...help('exercises.kid')} style={{ '--user-color': user.color } as React.CSSProperties}>
                                             <SmartIcon value={user.avatar || '👧'} size={36} />
                                             <h3>{user.name}</h3>
-                                            <span className={`progress-pill ${done === mine.length ? 'done' : ''}`}>
-                                                {done === mine.length ? 'Όλα έτοιμα! 🎉' : `${done} / ${mine.length}`}
+                                            <span className={`progress-pill ${count.total === 0 ? 'none' : count.waiting === 0 ? 'done' : ''}`}>
+                                                {pillText(count)}
                                             </span>
                                         </div>
                                     } />
                                 );
                             })}
 
-                            {exerciseAssignments.length === 0 && (
+                            {shown.length === 0 && (
                                 <div className="empty-state">
                                     <span className="empty-icon">✏️</span>
                                     <p>Δεν υπάρχουν ασκήσεις σήμερα.</p>
@@ -82,7 +85,7 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
           position: fixed;
           inset: 0;
           background: rgba(0, 0, 0, 0.5);
-          z-index: 100;
+          z-index: var(--z-drawer);
         }
 
         .exercises-drawer {
@@ -92,7 +95,7 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
           bottom: 0;
           width: min(420px, 92vw);
           background: linear-gradient(160deg, #16213e 0%, #1a1a2e 100%);
-          z-index: 101;
+          z-index: calc(var(--z-drawer) + 1);
           display: flex;
           flex-direction: column;
           box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
@@ -159,6 +162,12 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
         .progress-pill.done {
           background: rgba(6, 214, 160, 0.2);
           color: #06d6a0;
+        }
+
+        .progress-pill.none {
+          background: transparent;
+          font-weight: 500;
+          opacity: 0.7;
         }
 
         .empty-state {

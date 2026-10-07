@@ -1,7 +1,7 @@
 // Equal groups: n boxes, packs or rows with k in each (Γ΄ κεφ. 4–5 «Πολλαπλασιασμός,
 // προπαίδεια»). Sometimes first the story without k: can we answer yet?
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { count, extra, fmt, HowMany, howMany, known, PEOPLE, rng, sought, thing, type Family, type Person, type Rng, type Thing } from '../../lib.ts';
+import { count, extra, fmt, HowMany, howMany, known, PEOPLE, rng, sought, the, thing, type Family, type Person, type Rng, type Thing } from '../../lib.ts';
 
 type Mark = (s: string) => string;
 const id: Mark = s => s;
@@ -90,8 +90,9 @@ export const equalGroups: Family = {
     const steps: ProblemStep[] = [];
     const missing = r.chance(0.35);
     if (missing) {
-      steps.push(b.choice('read', 'Μπορούμε να απαντήσουμε;', `Όχι, δεν ξέρουμε ${howMany(item)} ${item.manyAcc} έχει κάθε ${cont.one}`,
-        [`Ναι, είναι ${count(n, item, true)}`, `Ναι, αρκεί να μετρήσουμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`],
+      steps.push(b.choice('read', 'Μπορούμε να απαντήσουμε;', `Όχι, δεν λέει ${howMany(item)} έχει κάθε ${cont.one}`,
+        [[`Ναι, είναι ${count(n, item)}, όσ${cont.g === 'n' ? 'α' : cont.g === 'f' ? 'ες' : 'οι'} και ${the(cont, false)} ${cont.many}`, `Ναι, είναι ${count(n, item)}`],
+          [`Ναι, αρκεί να μετρήσουμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`, `Ναι, μετράμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`]],
         `Ξέρουμε ${howMany(cont)} ${cont.manyAcc} είναι. Ξέρουμε και τι έχει ${cont.g === 'n' ? 'το καθένα' : 'η καθεμία'};`,
         build(id, id, id, false)));
     }
@@ -104,10 +105,15 @@ export const equalGroups: Family = {
     }
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: r.chance(0.5) ? `${n} × ${k} =` : 'Όλα μαζί', answer: total, unit: item.manyAcc },
-    ], `Μετράμε ανά ${k}: ${Array.from({ length: Math.min(n, 4) }, (_x, i) => fmt((i + 1) * k)).join(', ')}${n > 4 ? ', …' : ''}`));
+      // The count stops before the answer: «Μετράμε ανά 10, 4 φορές: 10, 20, 30, …»
+    ], `Μετράμε ανά ${k}, ${n} φορές: ${Array.from({ length: Math.min(n - 1, 3) }, (_x, i) => fmt((i + 1) * k)).join(', ')}, …`));
+    const sum = (m: number) => `${Array(m).fill(k).join(' + ')} = ${fmt(k * m)}`;
     steps.push(n <= 5
-      ? b.choice('check', 'Πώς ελέγχουμε;', `${Array(n).fill(k).join(' + ')} = ${fmt(total)}`,
-        [`${n} + ${k} = ${n + k}`, `${Array(n).fill(n).join(' + ')} = ${n * n}`].filter(o => !o.startsWith(`${Array(n).fill(k).join(' + ')} =`)),
+      // Every option a sum, as the hint says: a product among sums stands out by its form.
+      // One group too few, or n + k when there are only two; and one group too many or, the other
+      // length (so the right sum isn't always the middle one), two too few (n + k when n is 3)
+      ? b.choice('check', 'Πώς ελέγχουμε;', sum(n),
+        n > 2 ? [sum(n - 1), [sum(n + 1), n > 3 ? sum(n - 2) : `${n} + ${k} = ${n + k}`]] : [`${n} + ${k} = ${n + k}`, sum(n + 1)],
         `Προσθέτουμε ${n} φορές το ${k}.`)
       : b.choice('check', 'Πώς ελέγχουμε;', `${k} × ${n} = ${fmt(total)}`,
         [`${n} + ${k} = ${n + k}`, `${k} × ${n + 1} = ${fmt(k * (n + 1))}`],

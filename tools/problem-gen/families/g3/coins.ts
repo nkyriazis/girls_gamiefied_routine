@@ -17,8 +17,15 @@ function amount(c: number, gen = false): string {
   const cents = l === 1 ? (gen ? '1 λεπτού' : '1 λεπτό') : `${l} ${gen ? 'λεπτών' : 'λεπτά'}`;
   return e === 0 ? cents : l === 0 ? `${e} ευρώ` : `${e} ευρώ και ${cents}`;
 }
-// The coins of an answer, one by one: "50 λεπτά + 20 λεπτά + 2 λεπτά"
-const list = (vs: number[]) => [...vs].sort((x, y) => y - x).map(coin).join(' + ');
+// The coins of an answer, one by one, the unit once: "50 + 20 + 2 λεπτά", "2 + 1 ευρώ", "1 ευρώ + 50 + 5 λεπτά"
+// (a unit after every coin made the wrong answer with one coin more stand out by its length)
+function list(vs: number[]): string {
+  const sorted = [...vs].sort((x, y) => y - x);
+  const euros = sorted.filter(v => v >= 100).map(v => v / 100), cents = sorted.filter(v => v < 100);
+  const e = euros.length ? `${euros.join(' + ')} ευρώ` : '';
+  const c = cents.length ? `${cents.join(' + ')} ${cents.length === 1 && cents[0] === 1 ? 'λεπτό' : 'λεπτά'}` : '';
+  return [e, c].filter(Boolean).join(' + ');
+}
 const key = (vs: number[]) => [...vs].sort((x, y) => y - x).join('+');
 
 // How many ways n coins make the amount (multisets)
@@ -106,8 +113,8 @@ function which(r: Args[0], b: Args[1], p: P) {
   steps.push(b.choice('solve', `Ποια ${W} νομίσματα κάνουν ${amount(total)};`, list(set), wrongs.slice(0, 3).map(list),
     `Προσθέτουμε τα νομίσματα κάθε απάντησης. Πρέπει να κάνουν ${amount(total)} και να είναι ${W}.`));
   if (split && r.chance(0.5)) {
-    steps.push(b.choice('check', `Γιατί δεν είναι σωστό το «${list(split)}»;`, `Γιατί είναι ${WORD[n + 1]} νομίσματα και όχι ${W}`,
-      [`Γιατί δεν κάνουν ${amount(total)}`, 'Γιατί δεν υπάρχουν τέτοια νομίσματα'],
+    steps.push(b.choice('check', `Γιατί δεν είναι σωστό το «${list(split)}»;`, `Γιατί είναι ${WORD[n + 1]} νομίσματα`,
+      [['Γιατί μαζί δεν κάνουν τόσα', 'Γιατί δεν κάνουν τόσα', 'Γιατί όλα μαζί δεν κάνουν τόσα'], ['Γιατί δεν υπάρχουν τέτοια κέρματα', 'Γιατί δεν υπάρχουν τέτοια', 'Δεν υπάρχουν τέτοια κέρματα']],
       'Μετράμε τα νομίσματα και τα προσθέτουμε.'));
   } else {
     steps.push(b.numbers('check', 'Ελέγχουμε: προσθέτουμε τα νομίσματα σε λεπτά.', [
@@ -130,15 +137,25 @@ function handful(r: Args[0], b: Args[1], p: P) {
   const price = buy ? r.step(buy.min, Math.min(buy.max, total - 5), 5) : 0;
   if (buy && (price < buy.min || price >= total)) return null;
   const telling = r.int(0, 2);
-  const has = sought(telling === 2 ? `Πόσα λεπτά ${p.his} έδωσε` : 'Πόσα λεπτά έχει');
-  const ask = buy
-    ? `${has}; Θέλει να αγοράσει ${buy.what} που κοστίζει ${known(`${price} λεπτά`)}. ${sought(`Πόσα λεπτά θα ${p.his} περισσέψουν`)};`
-    : `${has}; ${sought(`Πόσα λεπτά ${p.his} λείπουν για να έχει ένα ευρώ`)};`;
+  // A sibling, a friend or the grandfather in the noise is a second subject: the question then
+  // names her («Πόσα λεπτά έχει η Άννα;»), and so does the sentence after it
+  const ask = (noise: string, giver?: string) => {
+    // (or the one who gave them is of her gender: «Η γιαγιά έδωσε στην Άννα… Πόσα λεπτά της έδωσε;»)
+    const other = /^(?:Ο|Η) (?:αδερφός|αδερφή|φίλος|φίλη|παππούς)/.test(noise) || !!giver?.startsWith(p.female ? 'Η' : 'Ο');
+    const has = sought(telling === 2
+      ? other ? `Πόσα λεπτά έδωσε ${giver!.toLowerCase()} σ${p.acc}` : `Πόσα λεπτά ${p.his} έδωσε`
+      : other ? `Πόσα λεπτά έχει ${p.nom}` : 'Πόσα λεπτά έχει');
+    return buy
+      ? `${has}; ${other ? `${p.Nom} θέλει` : 'Θέλει'} να αγοράσει ${buy.what} που κοστίζει ${known(`${price} λεπτά`)}. ${sought(`Πόσα λεπτά θα ${p.his} περισσέψουν`)};`
+      : `${has}; ${sought(other ? `Πόσα λεπτά λείπουν σ${p.acc} για να έχει ένα ευρώ` : `Πόσα λεπτά ${p.his} λείπουν για να έχει ένα ευρώ`)};`;
+  };
   const story = [
-    () => `${p.Nom} άδειασε τον κουμπαρά ${p.his} και βρήκε ${groupText}. ${noise(r, p.his)} ${ask}`,
-    () => `Στην κασετίνα ${p.gen} υπάρχουν ${groupText}. ${noise(r, p.his)} ${ask}`,
-    () => `${r.pick(['Η γιαγιά', 'Ο παππούς', 'Η θεία', 'Ο νονός'])} έδωσε σ${p.acc} ${groupText}. ${noise(r, p.his)} ${ask}`,
+    () => { const nz = noise(r, p.his); return `${p.Nom} άδειασε τον κουμπαρά ${p.his} και βρήκε ${groupText}. ${nz} ${ask(nz)}`; },
+    () => { const nz = noise(r, p.his); return `Στην κασετίνα ${p.gen} υπάρχουν ${groupText}. ${nz} ${ask(nz)}`; },
+    // (the grandfather who gave them is not the one with the collection: «Ο παππούς … Ο παππούς της …»)
+    () => { const g = r.pick(['Η γιαγιά', 'Ο παππούς', 'Η θεία', 'Ο νονός']); const nz = noise(r, p.his); return nz.startsWith(g) ? '' : `${g} έδωσε σ${p.acc} ${groupText}. ${nz} ${ask(nz, g)}`; },
   ][telling]();
+  if (!story) return null;
 
   const second = buy ? total - price : 100 - total;
   const steps: ProblemStep[] = [

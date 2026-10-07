@@ -4,6 +4,29 @@
 // and POST /api/help/reset, so every screen is new to them.
 import { start, API } from '../kit.mjs';
 
+// The worked lines of a calc step, from what the story gives, in the order they can be
+// made (as backend/test/problems.test.ts solves it): the problem's numbers aren't written here
+const workOut = w => {
+  const value = new Map(w.quantities.map(q => [q.id, q.value]));
+  const have = new Set(w.given), lines = [];
+  const back = { '+': '−', '−': '+', '×': ':', ':': '×' };
+  const apply = (op, x, y) => (op === '+' ? x + y : op === '−' ? x - y : op === '×' ? x * y : x / y);
+  for (let changed = true; changed && !have.has(w.sought);) {
+    changed = false;
+    for (const r of w.relations) {
+      const missing = [r.out, r.a, r.b].filter(id => !have.has(id));
+      if (missing.length !== 1) continue;
+      const [t] = missing;
+      const [op, x, y] = t === r.out ? [r.op, r.a, r.b] : t === r.a ? [back[r.op], r.out, r.b]
+        : r.op === '+' || r.op === '×' ? [r.op === '+' ? '−' : ':', r.out, r.a] : [r.op, r.a, r.out];
+      lines.push({ x: value.get(x), op, y: value.get(y), result: apply(op, value.get(x), value.get(y)) });
+      have.add(t);
+      changed = true;
+    }
+  }
+  return lines;
+};
+
 const scenario = process.env.SCENARIO ?? 'home', portrait = process.env.PORTRAIT;
 const out = `voice-${scenario}${portrait ? '-portrait' : ''}`;
 const { page, caption, tap, pause, listen, open, finish } = await start(out, portrait ? { size: { width: 820, height: 1180 } } : {});
@@ -126,8 +149,7 @@ if (scenario === 'home') {
       await check(2600);
     };
     await caption('She works it out');
-    await line(55, '−', 37, 18);
-    await line(18, ':', 6, 3);
+    for (const l of workOut(ex.steps[1])) await line(l.x, l.op, l.y, l.result);
     await caption('The check step: the owl offers; she knows this one and just answers');
     await pause(3000);
     await tap(page.locator('.choice-btn').nth(ex.steps[2].correctIndex), 700);

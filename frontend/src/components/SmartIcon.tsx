@@ -5,7 +5,7 @@ interface SmartIconProps {
     value: IconValue;
     className?: string;
     style?: React.CSSProperties;
-    size?: number; // Size in pixels (default: 48)
+    size?: number; // Size in pixels (default: 48); `style` may size it instead (width, height, fontSize)
 }
 
 export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style, size = 48 }) => {
@@ -25,7 +25,7 @@ export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style, s
     if (typeof value === 'object' && value !== null) {
         if (value.type === 'emoji') {
             return (
-                <span className={className} style={{ ...baseStyle, fontSize: size * 0.75 }}>
+                <span className={className} style={{ fontSize: size * 0.75, ...baseStyle }}>
                     {value.value}
                 </span>
             );
@@ -82,7 +82,7 @@ export const SmartIcon: React.FC<SmartIconProps> = ({ value, className, style, s
 
         // Default to Emoji/Text
         return (
-            <span className={className} style={{ ...baseStyle, fontSize: size * 0.75 }}>
+            <span className={className} style={{ fontSize: size * 0.75, ...baseStyle }}>
                 {value}
             </span>
         );

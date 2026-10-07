@@ -1,6 +1,6 @@
 // "If Nikos gives her 39, they will have the same": work backwards from the end
 // (Ε΄ Επαναληπτικό 2, 2ο πρόβλημα).
-import { count, extra, fmt, HowMany, known, people, sought, thing, type Family } from '../../lib.ts';
+import { count, extra, fmt, HowMany, known, people, sought, STRATEGY, thing, type Family } from '../../lib.ts';
 
 const COLLECTIONS = [
   { t: thing('γραμματόσημο', 'γραμματόσημα', 'n'), of: 'γραμματοσήμων', noise: (n: number) => `από ${n} χώρες` },
@@ -34,20 +34,26 @@ export const equalize: Family = {
       + `${sought(`${HowMany(t)} ${t.manyAcc} έχει ${other.nom}`)};`;
     const steps = [
       b.tag(undefined, 'Το «θα έχουν τον ίδιο αριθμό» είναι κι αυτό κάτι που ξέρουμε.'),
-      b.choice('plan', 'Ποια στρατηγική ταιριάζει;', 'Εργάζομαι αντίστροφα: από το τέλος (ίδιος αριθμός) πίσω στην αρχή',
-        ['Αναζητώ ένα μοτίβο', `Προσθέτω ${fmt(has)} + ${fmt(give)} και αυτή είναι η απάντηση`],
+      b.choice('plan', 'Ποια στρατηγική ταιριάζει;', STRATEGY.backwards,
+        [STRATEGY.pattern, [`Προσθέτω ${fmt(has)} + ${fmt(give)} και τελειώνω εκεί`, `Προσθέτω ${fmt(has)} + ${fmt(give)}`, `Προσθέτω ${fmt(has)} + ${fmt(give)} και τελειώνω`]],
         'Ξέρουμε τι γίνεται στο τέλος. Από εκεί γυρίζουμε πίσω.'),
       b.numbers('solve', 'Πηγαίνουμε αντίστροφα.', [
         { label: `${a.Nom} μετά`, answer: after },
         { label: `${other.Nom} μετά`, answer: after },
         { label: `${other.Nom} πριν`, answer: otherHas },
       ], toA
-        ? `${fmt(has)} + ${fmt(give)} = ${fmt(after)}. Τότε ${other.nom} έχει κι ${other.female ? 'αυτή' : 'αυτός'} ${fmt(after)}· πριν δώσει είχε ${fmt(give)} περισσότερα.`
-        : `${fmt(has)} − ${fmt(give)} = ${fmt(after)}. Τότε ${other.nom} έχει κι ${other.female ? 'αυτή' : 'αυτός'} ${fmt(after)}· πριν πάρει είχε ${fmt(give)} λιγότερα.`),
+        ? `Μετά ${a.nom} έχει ${fmt(has)} + ${fmt(give)}. Τόσα έχει τότε και ${other.nom}· πριν δώσει, είχε ${fmt(give)} περισσότερα.`
+        : `Μετά ${a.nom} έχει ${fmt(has)} − ${fmt(give)}. Τόσα έχει τότε και ${other.nom}· πριν πάρει, είχε ${fmt(give)} λιγότερα.`),
       b.choice('check', 'Πώς ελέγχουμε;',
         toA ? `${fmt(otherHas)} − ${fmt(give)} = ${fmt(after)} και ${fmt(has)} + ${fmt(give)} = ${fmt(after)}`
           : `${fmt(otherHas)} + ${fmt(give)} = ${fmt(after)} και ${fmt(has)} − ${fmt(give)} = ${fmt(after)}`,
-        [`${fmt(otherHas)} + ${fmt(has)} = ${fmt(otherHas + has)}`, `${fmt(Math.max(otherHas, has))} − ${fmt(Math.min(otherHas, has))} = ${fmt(Math.abs(otherHas - has))}, άρα λάθος`],
+        // the giving the other way round (both sides, as the right one), the two added and their
+        // difference, each with a verdict that doesn't follow
+        // (or, where that would go below zero, added to both)
+        [toA && has > give ? `${fmt(otherHas)} + ${fmt(give)} = ${fmt(otherHas + give)} και ${fmt(has)} − ${fmt(give)} = ${fmt(has - give)}`
+          : !toA && otherHas > give ? `${fmt(otherHas)} − ${fmt(give)} = ${fmt(otherHas - give)} και ${fmt(has)} + ${fmt(give)} = ${fmt(has + give)}`
+            : `${fmt(otherHas)} + ${fmt(give)} = ${fmt(otherHas + give)} και ${fmt(has)} + ${fmt(give)} = ${fmt(has + give)}`,
+        `${fmt(otherHas)} + ${fmt(has)} = ${fmt(otherHas + has)}, άρα σωστό`, `${fmt(Math.max(otherHas, has))} − ${fmt(Math.min(otherHas, has))} = ${fmt(Math.abs(otherHas - has))}, άρα λάθος`],
         'Ξαναπαίζουμε την ιστορία με την απάντησή μας: έχουν στο τέλος τον ίδιο αριθμό;'),
     ];
     return { title: r.pick([`Οι συλλογές`, 'Ίδιος αριθμός', 'Δώσε και πάρε']), story, steps };

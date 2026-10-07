@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../context/GameContext';
-import { api } from '../api';
+import { api, ApiError } from '../api';
 import { AssignmentPlayer } from './AssignmentPlayer';
 import { help } from '../help/anchors';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
-import { sound } from '../sound/sfx';
+import { sfx, sound } from '../sound/sfx';
+import { paysNow } from '@shared/forgiveness';
 
 // One kid's exercises: today's set and «Κι άλλο πρόβλημα» for more stars. On her own
 // screen (the store, from her avatar) and in the exercises drawer. The player opens
@@ -33,6 +34,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [started, setStarted] = useState<ExerciseAssignmentWithExercise | null>(null);
   const [asking, setAsking] = useState(false);
+  const [refusal, setRefusal] = useState<string | null>(null);
   const extraLimit = config.settings.extraProblemsPerDay ?? 10;
 
   const mine = exerciseAssignments.filter(a => a.userId === user.id);
@@ -52,7 +54,15 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
       setStarted(a);
       setPlayingId(a.id);
     } catch (err) {
+      // The server refused: say why, under the button (never a browser alert())
       console.error('Could not start a problem:', err);
+      sfx('nope');
+      const why = err instanceof ApiError ? err.message : '';
+      const text = why.startsWith('No problems for this kid') ? 'Δεν υπάρχουν ακόμα προβλήματα για την τάξη σου.'
+        : why === 'No more extra problems today' ? 'Για σήμερα φτάνει! Αύριο κι άλλα.'
+        : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.';
+      setRefusal(text);
+      setTimeout(() => setRefusal(current => current === text ? null : current), 3500);
     } finally {
       setAsking(false);
     }
@@ -74,6 +84,8 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
           const ex = assignment.exercise;
           if (!ex) return null;
           const isDone = assignment.status === 'completed';
+          // What it pays now (less after mistakes), or what it paid
+          const pays = paysNow(assignment, ex, user);
           return (
             <motion.button
               key={assignment.id}
@@ -89,7 +101,11 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
             >
               <div className="assignment-icon">{CATEGORY_ICONS[ex.category] || '📚'}</div>
               <div className="assignment-info">
-                <h4>{ex.title}</h4>
+                <h4>
+                  {ex.title}
+                  {/* From a lower grade's pool, when hers has nothing in this category (#49) */}
+                  {assignment.revision && <span className="revision-pill" {...help('exercises.revision')}>Επανάληψη</span>}
+                </h4>
                 <span className="assignment-meta">
                   {ex.category} · {TYPE_LABELS[ex.type] || ex.type}
                   {ex.type === 'problem' && !isDone && (assignment.stepIndex ?? 0) > 0 &&
@@ -97,9 +113,10 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
                 </span>
               </div>
               <div className="assignment-status">
+                {/* Done and paid ✓; done and paid nothing (the answer shown): no ✓ */}
                 {isDone
-                  ? <span className="done-badge">✓ ⭐{assignment.starsAwarded ?? ex.stars}</span>
-                  : <span className="star-badge">⭐ {ex.stars}</span>}
+                  ? pays > 0 ? <span className="done-badge">✓ ⭐{pays}</span> : <span className="missed-badge">○ ⭐0</span>
+                  : <span className="star-badge">⭐ {pays}</span>}
               </div>
             </motion.button>
           );
@@ -128,6 +145,14 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
                 ? <>Για σήμερα φτάνει! 🎉</>
                 : <>🧩 Κι άλλο πρόβλημα <span className="extra-count">{extras.length}/{extraLimit}</span></>}
           </motion.button>
+          <AnimatePresence>
+            {refusal && (
+              <motion.div className="ue-refusal" role="alert"
+                initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0, x: [0, -8, 8, -5, 5, 0] }} exit={{ opacity: 0 }}>
+                {refusal}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
@@ -148,6 +173,8 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
           background: rgba(255, 214, 10, 0.08); color: white; font-size: 1.05rem; font-weight: bold; cursor: pointer;
           display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
         .extra-btn:disabled { opacity: 0.55; cursor: default; }
+        .ue-refusal { font-size: 0.95rem; font-weight: 600; text-align: center; color: #ff6b6b;
+          background: rgba(255,107,107,0.12); padding: 0.4rem 0.75rem; border-radius: 0.75rem; }
         .extra-count { font-size: 0.85rem; font-weight: normal; opacity: 0.8; }
         .assignment-card { display: flex; align-items: center; gap: 1rem; background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 0.8rem 1rem; color: white; cursor: pointer;
@@ -158,9 +185,12 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
         .assignment-info { flex: 1; min-width: 0; }
         .assignment-info h4 { margin: 0 0 0.2rem 0; font-size: 1.05rem; }
         .assignment-meta { font-size: 0.8rem; opacity: 0.6; }
+        .revision-pill { display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.55rem; border-radius: 999px; vertical-align: 0.1em;
+          font-size: 0.72rem; font-weight: 600; color: #d9c2ff; background: rgba(155, 93, 229, 0.22); border: 1px solid rgba(155, 93, 229, 0.5); }
         .assignment-status { flex-shrink: 0; font-weight: bold; }
         .star-badge { color: #ffd60a; font-size: 1rem; }
         .done-badge { color: #06d6a0; font-size: 0.95rem; }
+        .missed-badge { color: rgba(255, 255, 255, 0.55); font-size: 0.95rem; }
       `}</style>
     </section>
   );

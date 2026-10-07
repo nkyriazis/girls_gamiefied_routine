@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { FillBlankExercise } from '@shared/types';
 import { help } from '../../help/anchors';
 import { sound } from '../../sound/sfx';
+import { shuffle, useShuffled } from './shuffle';
+import { emptyBlanks, isFull, place, tapGap } from './fillBlank';
 
 interface Props {
   exercise: FillBlankExercise;
@@ -10,56 +12,29 @@ interface Props {
   disabled?: boolean;
 }
 
+// The sentence is checked only on «Έλεγχος Πρότασης», once every gap is filled (#50 part 6): she reads
+// it first, and a word tapped on a full sentence replaces the word in the active gap (fillBlank.ts).
 export const FillBlankRenderer: React.FC<Props> = ({ exercise, onAnswer, disabled }) => {
-  const gapCount = exercise.correctAnswers.length;
-  const [filledGaps, setFilledGaps] = useState<(string | null)[]>(new Array(gapCount).fill(null));
-  const [activeGapIndex, setActiveGapIndex] = useState(0);
+  const [blanks, setBlanks] = useState(() => emptyBlanks(exercise.correctAnswers.length));
+  const { gaps: filledGaps, active: activeGapIndex } = blanks;
+  const full = isFull(blanks);
 
-  // Shuffle options once on mount
-  const shuffledOptions = useMemo(() =>
-    [...(exercise.options || exercise.correctAnswers)].sort(() => Math.random() - 0.5),
-  [exercise.options, exercise.correctAnswers]);
+  // The word bank in an order fixed by the exercise: after a wrong try (a remount) every word is where it was
+  const shuffledOptions = useShuffled(exercise.options || exercise.correctAnswers, exercise.id, xs => shuffle(xs, exercise.id));
 
   // Which options are still available (not yet placed in a gap)
   const usedWords = filledGaps.filter(Boolean) as string[];
 
   const handleWordTap = (word: string) => {
-    if (disabled) return;
-    
-    // Find the next empty gap (starting from activeGapIndex)
-    let targetGap = filledGaps.findIndex((g, i) => i >= activeGapIndex && g === null);
-    if (targetGap === -1) {
-      // All gaps from activeGapIndex are filled, try from start
-      targetGap = filledGaps.findIndex(g => g === null);
-    }
-    if (targetGap === -1) return; // All gaps filled
-
-    const newGaps = [...filledGaps];
-    newGaps[targetGap] = word;
-    setFilledGaps(newGaps);
-
-    // Move active gap to next empty
-    const nextEmpty = newGaps.findIndex((g, i) => i > targetGap && g === null);
-    setActiveGapIndex(nextEmpty !== -1 ? nextEmpty : targetGap);
-
-    // Auto-submit when all gaps filled
-    if (newGaps.every(g => g !== null)) {
-      onAnswer(newGaps as string[]);
-    }
+    if (!disabled) setBlanks(b => place(b, word));
   };
 
   const handleGapTap = (gapIndex: number) => {
-    if (disabled) return;
-    const word = filledGaps[gapIndex];
-    if (word) {
-      // Remove word from gap, make it available again
-      const newGaps = [...filledGaps];
-      newGaps[gapIndex] = null;
-      setFilledGaps(newGaps);
-      setActiveGapIndex(gapIndex);
-    } else {
-      setActiveGapIndex(gapIndex);
-    }
+    if (!disabled) setBlanks(b => tapGap(b, gapIndex));
+  };
+
+  const check = () => {
+    if (!disabled && full) onAnswer(filledGaps as string[]);
   };
 
   // Parse "Το {0} είναι ένα κόκκινο {1}." into segments
@@ -111,6 +86,18 @@ export const FillBlankRenderer: React.FC<Props> = ({ exercise, onAnswer, disable
           );
         })}
       </div>
+
+      {/* Always there, so nothing moves when the sentence fills */}
+      <motion.button
+        className="fb-check"
+        {...help('answer.blank-check')}
+        onClick={check}
+        disabled={disabled || !full}
+        whileHover={!disabled && full ? { scale: 1.05 } : {}}
+        whileTap={!disabled && full ? { scale: 0.95 } : {}}
+      >
+        Έλεγχος Πρότασης
+      </motion.button>
 
       <style>{`
         .fillblank-container {
@@ -191,6 +178,24 @@ export const FillBlankRenderer: React.FC<Props> = ({ exercise, onAnswer, disable
           opacity: 0.25;
           cursor: default;
           transform: scale(0.9);
+        }
+
+        /* The same button as the ordering's «Έλεγχος Σειράς» */
+        .fb-check {
+          background: #a0a0ff;
+          color: #1a1a3a;
+          border: none;
+          padding: 1rem 2.5rem;
+          border-radius: 2rem;
+          font-size: 1.2rem;
+          font-weight: bold;
+          font-family: inherit;
+          cursor: pointer;
+        }
+
+        .fb-check:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
       `}</style>
     </div>

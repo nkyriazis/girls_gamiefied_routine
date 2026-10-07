@@ -1,7 +1,9 @@
 // Checking the two free steps of a problem: painting the story freehand and working
 // it out her own way. The server checks with these; the screen uses the same code to
-// say what she found as she goes. No imports, so the backend (CommonJS), the frontend
-// (Vite) and tools/problem-gen (Node) can all load it.
+// say what she found as she goes. No runtime imports, so the backend (CommonJS), the
+// frontend (Vite) and tools/problem-gen (Node) can all load it.
+
+import type { ProblemExercise, ProblemReading } from './types';
 
 // ---------------------------------------------------------------------------
 // The story as words
@@ -70,17 +72,79 @@ export const PAINT_SLACK = 3;
 /** Words around a phrase that still count as part of it (a stroke is never exact). */
 const MARGIN = 2;
 
+// A word that ends a sentence: its last mark is . ; (Greek or Latin) · ! ? or …, maybe
+// followed by closing » ) ” ’ " '. «9.238» or «3,5» end nothing.
+const SENTENCE_END = /[.;\u037e\u0387\u00b7!?…][»)”’"']*$/;
+// …and a word that ends a clause inside one: «σχολείου,», «χρονιά:».
+const CLAUSE_END = /[,:][»)”’"']*$/;
+
+/** The story's sentences, as the first and last of its words. */
+export function paintSentences(words: string[]): [number, number][] {
+  const out: [number, number][] = [];
+  let from = 0;
+  words.forEach((w, i) => {
+    if (SENTENCE_END.test(w) || i === words.length - 1) { out.push([from, i]); from = i + 1; }
+  });
+  return out;
+}
+
+/** A sentence's clauses, as the first and last of its words. */
+function clauses([a, b]: [number, number], words: string[]): [number, number][] {
+  const out: [number, number][] = [];
+  for (let from = a, i = a; i <= b; i++) if (i === b || CLAUSE_END.test(words[i])) { out.push([from, i]); from = i + 1; }
+  return out;
+}
+
+/**
+ * The painted words that count as too much, each further than MARGIN from a phrase of its
+ * own colour. 🟢 and 🟡 say "needed": too much only around an unneeded fact, so a needed
+ * fact's sentence painted whole, or one that tells what happened without a number, is fine.
+ * Around means in an unneeded fact's own sentence (one with no needed fact or question in
+ * it), or, in a sentence that holds both kinds, in the clause (split at «,» and «:») that
+ * holds the unneeded fact: «Η βιβλιοθήκη του σχολείου, [που έχει 3 ράφια], δάνεισε τον
+ * Οκτώβριο [390 βιβλία].» painted whole but the middle clause is right (#50 part 4; before,
+ * that whole sentence was strict and had to be painted phrase by phrase). ⚪ says "not
+ * needed": fine in an unneeded fact's own sentence, too much anywhere else, so the whole
+ * story ⚪ with the needed phrases painted over it is still too much. The unneeded fact
+ * itself, painted as needed, is its own mistake (checkPaint), not also a stray.
+ */
+export function paintStrays(targets: PaintTarget[], words: string[], value: Painting): number[] {
+  const sentences = paintSentences(words);
+  const holds = ([a, b]: [number, number], needed: boolean) =>
+    targets.some(t => (t.role !== 'extra') === needed && t.span[0] <= b && t.span[1] >= a);
+  // Where ⚪ is forgiven, and where a needed brush is too much
+  const extraOnly = sentences.filter(s => holds(s, false) && !holds(s, true));
+  const mixed = sentences.filter(s => holds(s, false) && holds(s, true));
+  const unneeded = [...extraOnly, ...mixed.flatMap(s => clauses(s, words)).filter(c => holds(c, false))];
+  const within = (w: number, ss: [number, number][]) => ss.some(([a, b]) => w >= a && w <= b);
+  const inExtra = (w: number) => targets.some(t => t.role === 'extra' && w >= t.span[0] && w <= t.span[1]);
+  const near = (w: number, role: PaintTarget['role']) =>
+    targets.some(t => t.role === role && w >= t.span[0] - MARGIN && w <= t.span[1] + MARGIN);
+  const strays = new Set<number>();
+  for (const role of ['known', 'sought', 'extra'] as const) {
+    for (const w of Array.isArray(value?.[role]) ? value[role]! : []) {
+      if (!Number.isInteger(w) || w < 0 || w >= words.length || near(w, role)) continue;
+      if (role === 'extra' ? within(w, extraOnly) : !within(w, unneeded) || inExtra(w)) continue;
+      strays.add(w);
+    }
+  }
+  return [...strays].sort((a, b) => a - b);
+}
+
 /**
  * A painting is right when every needed fact has its core words painted "known", the
- * question its core words painted "sought", nothing unneeded is painted, and not much
- * else. `wrong` lists the targets to look at again; -1 means too much was painted.
+ * question its core words painted "sought", nothing unneeded is painted as needed (on
+ * "paint-all", each is painted ⚪), and no more than PAINT_SLACK words are too much
+ * (paintStrays: a needed fact's whole sentence is fine in 🟢, an unneeded fact's own
+ * sentence in ⚪; 🟢/🟡 around an unneeded fact in its sentence are not, nor ⚪ outside
+ * an unneeded fact's own sentence). `wrong` lists the targets to look at again; -1 means too much.
  */
 export function checkPaint(
-  targets: PaintTarget[], words: number, value: unknown, opts: { unneeded?: boolean } = {}
+  targets: PaintTarget[], words: string[], value: unknown, opts: { unneeded?: boolean } = {}
 ): { correct: boolean; wrong?: number[] } {
   const v = value as Painting;
   if (!v || !Array.isArray(v.known) || !Array.isArray(v.sought)) return { correct: false };
-  const valid = (xs: unknown) => new Set((Array.isArray(xs) ? xs : []).filter(i => Number.isInteger(i) && i >= 0 && i < words) as number[]);
+  const valid = (xs: unknown) => new Set((Array.isArray(xs) ? xs : []).filter(i => Number.isInteger(i) && i >= 0 && i < words.length) as number[]);
   const known = valid(v.known), sought = valid(v.sought), extra = valid(v.extra);
   const wrong: number[] = [];
   targets.forEach((t, i) => {
@@ -93,14 +157,7 @@ export function checkPaint(
       if (t.words.filter(w => brush.has(w)).length < (t.need ?? t.words.length)) wrong.push(i);
     }
   });
-  // Strays: painted words that aren't near a phrase of their colour (an unneeded fact
-  // painted is its own mistake, above, not also "too much")
-  const inExtra = (w: number) => targets.some(t => t.role === 'extra' && w >= t.span[0] && w <= t.span[1]);
-  const near = (w: number, role: PaintTarget['role']) =>
-    inExtra(w) || targets.some(t => t.role === role && w >= t.span[0] - MARGIN && w <= t.span[1] + MARGIN);
-  const strays = [...known].filter(w => !near(w, 'known')).length + [...sought].filter(w => !near(w, 'sought')).length
-    + [...extra].filter(w => !near(w, 'extra')).length;
-  if (strays > PAINT_SLACK) wrong.push(-1);
+  if (paintStrays(targets, words, v).length > PAINT_SLACK) wrong.push(-1);
   return wrong.length ? { correct: false, wrong } : { correct: true };
 }
 
@@ -209,25 +266,139 @@ export function pathToAnswer(w: CalcWorld): Set<string> {
   return path;
 }
 
+/** A subtraction or a division with the smaller number first: 36 − 58, 6 : 18. */
+export const smallerFirst = (op: CalcOp, x: number, y: number) => (op === '−' || op === ':') && x < y;
+
+/**
+ * The same quantity added or taken away again and again (#50): a × relation P = n × m, where
+ * m is the factor with P's unit (stamps in an envelope, euros a week, the stock «διπλάσια»
+ * doubles) and n the other (how many times, a number she has). A run starts from a number B
+ * she has with B ± m (m + B too), when B ± P means something (where it is heading), or with
+ * m + m (heading for P itself). Each next line takes its latest value ± m again. A step can
+ * also be a run m + m + … of her own (58 − 18 with 18 = 9 + 9: two at once). Short of n
+ * times, its value is hers to use; at n times the line means where it was heading; past n,
+ * nothing.
+ */
+export interface CalcRun {
+  /** The × relation, by index */
+  rel: number;
+  m: number;
+  n: number;
+  op: '+' | '−';
+  /** The number it started from; null for m + m + … */
+  base: number | null;
+  /** How many times m so far */
+  k: number;
+  value: number;
+  target: CalcQuantity;
+  /** The line that last moved it */
+  at: number;
+}
+
+/** A run as she wrote it, in m's: «58 − 9 − 9», «9 + 9 + 9». */
+export const runLabel = (r: CalcRun, fmt: (n: number) => string = String) =>
+  [...(r.base === null ? [] : [fmt(r.base)]), ...Array(r.k).fill(fmt(r.m))].join(` ${r.op} `);
+
+/** What one line of hers means: a quantity of the story, a step of a run, or nothing. */
+export type LineReading = { kind: 'quantity'; q: CalcQuantity } | { kind: 'run'; run: CalcRun } | null;
+
+/** The × relations that can be done as runs: one factor with the product's unit. */
+function runnable(w: CalcWorld) {
+  const q = new Map(w.quantities.map(q => [q.id, q]));
+  return w.relations.flatMap((r, i) => {
+    if (r.op !== '×') return [];
+    const P = q.get(r.out)!, [a, b] = [q.get(r.a)!, q.get(r.b)!];
+    const same = [a, b].filter(f => f.unit !== undefined && f.unit === P.unit);
+    if (same.length !== 1) return [];
+    const m = same[0], n = m === a ? b : a;
+    return [{ rel: i, P, m, n }];
+  });
+}
+
+/**
+ * Her calculations, in order, read back: each must use numbers she has (the story's, what
+ * earlier lines found, a run's latest value), be done right, and mean something in the story,
+ * as a quantity (readCalculation, tried first) or as a run step. A line can be both: a run
+ * step that is also a quantity counts as both, so the run goes on from it. `have` is what
+ * she has after the last line (her chips).
+ */
+export function readLines(w: CalcWorld, lines: unknown): { lines: LineReading[]; runs: CalcRun[]; have: Set<number> } {
+  const q = new Map(w.quantities.map(q => [q.id, q]));
+  const rels = runnable(w);
+  const ids = new Set(w.given.filter(id => q.has(id)));
+  let runs: CalcRun[] = [];
+  const have = () => new Set([...[...ids].map(id => q.get(id)!.value), ...runs.map(r => r.value)]);
+  const out: LineReading[] = (Array.isArray(lines) ? lines : []).map((l: CalcLine, at): LineReading => {
+    const nums = have();
+    if (!l || !['+', '−', '×', ':'].includes(l.op) || !nums.has(l.x) || !nums.has(l.y) || applyOp(l.op, l.x, l.y) !== l.result) return null;
+    const found = readCalculation(w, l.x, l.op, l.y);
+    const step = runStep(l, at, nums);
+    if (step) {
+      runs = runs.filter(r => r !== step.from && !(r.rel === step.run.rel && r.op === step.run.op && r.base === step.run.base && r.k === step.run.k));
+      if (step.run.k < step.run.n) runs.push(step.run);
+      else ids.add(step.run.target.id);
+    }
+    if (found) { ids.add(found.id); return { kind: 'quantity', q: found }; }
+    if (!step) return null;
+    return step.run.k < step.run.n ? { kind: 'run', run: step.run } : { kind: 'quantity', q: step.run.target };
+  });
+  return { lines: out, runs, have: have() };
+
+  // The run this line moves or starts, if any
+  function runStep(l: CalcLine, at: number, nums: Set<number>): { run: CalcRun; from?: CalcRun } | null {
+    if (l.op !== '+' && l.op !== '−') return null;
+    const op = l.op;
+    for (const { rel, P, m, n } of rels) {
+      if (!ids.has(m.id) || !ids.has(n.id)) continue;
+      // m once, or a run of m's of her own (m + m + …, short of n) at once
+      const sizes = [{ v: m.value, j: 1 }, ...runs.filter(r => r.rel === rel && r.base === null).map(r => ({ v: r.value, j: r.k }))];
+      const pairs: [number, number][] = op === '+' ? [[l.x, l.y], [l.y, l.x]] : [[l.x, l.y]];
+      const make = (base: number | null, k: number, target: CalcQuantity, from?: CalcRun) =>
+        k <= n.value ? { run: { rel, m: m.value, n: n.value, op, base, k, value: l.result, target, at }, from } : null;
+      // On from her latest value…
+      for (const [cur, other] of pairs) for (const s of sizes) {
+        if (s.v !== other) continue;
+        const moved = runs.find(r => r.rel === rel && r.op === op && r.value === cur)
+          ?? (op === '+' && cur === m.value ? { rel, m: m.value, n: n.value, op, base: null, k: 1, value: m.value, target: P, at } as CalcRun : undefined);
+        const next = moved && make(moved.base, moved.k + s.j, moved.target, moved);
+        if (next) return next;
+      }
+      // …or a new one from a number she has, where B ± P means something
+      for (const [cur, other] of pairs) for (const s of sizes) {
+        if (s.v !== other || !nums.has(cur)) continue;
+        const target = readCalculation(w, cur, op, P.value);
+        const next = target && make(cur, s.j, target);
+        if (next) return next;
+      }
+    }
+    return null;
+  }
+}
+
+/**
+ * What is wrong with the calculation she built after `lines` (her lines so far): the smaller
+ * number first ('order', whatever the result says), a wrong result ('math'), or a right one that
+ * means nothing here ('nothing': readLines can't read it back); null when it reads back. The
+ * screen says each one in the hint slot; the server counts the first two (wrongTryCounts).
+ */
+export type CalcSlip = 'order' | 'math' | 'nothing';
+export function calcSlip(w: CalcWorld, lines: unknown, line: CalcLine): CalcSlip | null {
+  if (smallerFirst(line.op, line.x, line.y)) return 'order';
+  if (applyOp(line.op, line.x, line.y) !== line.result) return 'math';
+  const read = readLines(w, [...(Array.isArray(lines) ? lines : []), line]).lines;
+  return read[read.length - 1] ? null : 'nothing';
+}
+
 /**
  * Her calculations, in order: each uses numbers the story gives or she found before,
- * is done right, and means something in the story; the last finds the answer.
+ * is done right, and means something in the story (readLines); one finds the answer.
  */
 export function checkCalc(w: CalcWorld, lines: unknown): { correct: boolean; wrong?: number[] } {
   if (!Array.isArray(lines) || !lines.length) return { correct: false };
-  const q = new Map(w.quantities.map(q => [q.id, q]));
-  const have = new Set(w.given.map(id => q.get(id)?.value));
-  const wrong: number[] = [];
-  let found = false;
-  (lines as CalcLine[]).forEach((l, i) => {
-    const ok = l && have.has(l.x) && have.has(l.y) && ['+', '−', '×', ':'].includes(l.op) && applyOp(l.op, l.x, l.y) === l.result;
-    const means = ok ? readCalculation(w, l.x, l.op, l.y) : null;
-    if (!means) { wrong.push(i); return; }
-    have.add(means.value);
-    if (means.id === w.sought) found = true;
-  });
+  const read = readLines(w, lines);
+  const wrong = read.lines.flatMap((r, i) => (r ? [] : [i]));
   if (wrong.length) return { correct: false, wrong };
-  return { correct: found };
+  return { correct: read.lines.some(r => r?.kind === 'quantity' && r.q.id === w.sought) };
 }
 
 /** A calculation that gets her closer to the answer from what she has, for when she's stuck. */
@@ -243,4 +414,44 @@ export function nextCalculation(w: CalcWorld, have: Set<number>): { x: number; o
     }
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// A step shown worked («Δείξε μου», #48)
+
+/** The calculations that find the answer from what the story gives, the book's way first. */
+export function workedCalc(w: CalcWorld): CalcLine[] {
+  const have = new Set(w.given.map(id => w.quantities.find(q => q.id === id)!.value));
+  const lines: CalcLine[] = [];
+  for (let n = 0; n < 20; n++) {
+    const next = nextCalculation(w, have);
+    if (!next) break;
+    const line = { ...next, result: applyOp(next.op, next.x, next.y) };
+    lines.push(line);
+    have.add(line.result);
+    if (readCalculation(w, line.x, line.op, line.y)?.id === w.sought) break;
+  }
+  return lines;
+}
+
+/**
+ * The right answer to a step, as her screen sends it, on her rung: what «Δείξε μου» fills
+ * in. The reading step as the marks' roles («marked») or as a painting of the facts' core
+ * words (the unneeded ones too on «paint-all»); a calculation as the lines that find the answer.
+ */
+export function workedAnswer(exercise: ProblemExercise, stepIndex: number, reading: ProblemReading = 'marked'): unknown {
+  const step = exercise.steps[stepIndex];
+  switch (step.kind) {
+    case 'tag':
+    case 'paint': {
+      if (reading === 'marked') return [...exercise.story.matchAll(MARK)].map(m => m[2]);
+      const targets = step.kind === 'paint' ? step.targets : targetsFromMarks(exercise.story);
+      const words = (role: string) => targets.filter(t => t.role === role).flatMap(t => t.words);
+      return { known: words('known'), sought: words('sought'), extra: reading === 'paint-all' ? words('extra') : [] };
+    }
+    case 'choice': return step.correctIndex;
+    case 'numbers': return step.rows.map(r => r.answer);
+    case 'order': return step.items;
+    case 'calc': return { lines: workedCalc(step) };
+  }
 }

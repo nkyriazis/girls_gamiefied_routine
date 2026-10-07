@@ -87,8 +87,10 @@ export const roundEstimate: Family = {
     const question = add ? s.sum : s.diff(p);
     const intro = s.intro(known(s.a1(fmt(a))), known(fmt(c)), p, q);
     const noise = `${extra(s.noise(() => r.int(3, 9)))}.`;
+    // «Ο πατέρας της Σοφίας οδηγεί φορτηγό… Ο Στέλιος στρογγυλοποίησε…»: two subjects, so the claim's question names him
+    const father = /^Ο πατέρας/.test(intro);
     const story = claimTelling
-      ? `${intro} ${noise} ${k.Nom} στρογγυλοποίησε ${place} και ${known(`υπολόγισε ότι ${add ? 'μαζί είναι' : 'η διαφορά είναι'} περίπου ${fmt(claim)}`)}. ${sought('Έχει δίκιο')}; ${sought(add ? 'Ποιο είναι ακριβώς το άθροισμα' : 'Ποια είναι ακριβώς η διαφορά')};`
+      ? `${intro} ${noise} ${k.Nom} στρογγυλοποίησε ${place} και ${known(`υπολόγισε ότι ${add ? 'μαζί είναι' : 'η διαφορά είναι'} περίπου ${fmt(claim)}`)}. ${sought(`Έχει δίκιο${father ? ` ${k.nom}` : ''}`)}; ${sought(add ? 'Ποιο είναι ακριβώς το άθροισμα' : 'Ποια είναι ακριβώς η διαφορά')};`
       : r.chance(0.5)
         ? `${intro} ${noise} ${sought(question)}, αν στρογγυλοποιήσουμε ${place}; ${sought(s.exact)};`
         : `${sought(question)}, αν στρογγυλοποιήσουμε ${place}; ${sought(s.exact)}; ${intro} ${noise}`;
@@ -96,7 +98,8 @@ export const roundEstimate: Family = {
     const rounding = b.numbers('plan', `Στρογγυλοποιούμε ${place}.`, [
       { label: `Το ${fmt(a)}`, answer: ra },
       { label: `Το ${fmt(c)}`, answer: rc },
-      { label: r.chance(0.5) ? `Περίπου: ${fmt(ra)} ${op} ${fmt(rc)} =` : 'Εκτίμηση', answer: est },
+      // (the rounded numbers are the rows above: named, not written)
+      { label: r.chance(0.5) ? `Περίπου: ${op === '+' ? 'το άθροισμά' : 'η διαφορά'} τους` : 'Εκτίμηση', answer: est },
     ], `Κοιτάμε το ψηφίο δεξιά από ${P === 1_000 ? 'τις χιλιάδες (τις εκατοντάδες)' : 'τις δεκάδες χιλιάδες (τις χιλιάδες)'}: αν είναι 5 ή μεγαλύτερο, ανεβαίνουμε.`);
     const exactStep = b.numbers('solve', 'Υπολογίζουμε ακριβώς.', [
       { label: r.chance(0.5) ? `${fmt(a)} ${op} ${fmt(c)} =` : (add ? 'Ακριβώς μαζί' : 'Ακριβώς η διαφορά'), answer: exact, unit: s.unit },
@@ -106,9 +109,9 @@ export const roundEstimate: Family = {
     if (claimTelling) {
       const off = claim + (claim === est ? (r.chance(0.5) ? P : -P) : (claim > est ? P : -P));
       steps.push(claim === est
-        ? b.choice('solve', `Έχει δίκιο ${k.nom};`, 'Ναι', [`Όχι, είναι περίπου ${fmt(off)}`, `Όχι, είναι ακριβώς ${fmt(est)}`],
+        ? b.choice('solve', `Έχει δίκιο ${k.nom};`, 'Ναι, είναι περίπου τόσο', [`Όχι, είναι περίπου ${fmt(off)}`, `Όχι, ακριβώς ${fmt(est)}`],
           `Συγκρίνουμε τη δική μας εκτίμηση με τη δική ${k.his}.`)
-        : b.choice('solve', `Έχει δίκιο ${k.nom};`, `Όχι, είναι περίπου ${fmt(est)}`, ['Ναι', `Όχι, είναι περίπου ${fmt(off)}`],
+        : b.choice('solve', `Έχει δίκιο ${k.nom};`, `Όχι, είναι περίπου ${fmt(est)}`, ['Ναι, είναι περίπου τόσο', `Όχι, είναι περίπου ${fmt(off)}`],
           `Συγκρίνουμε τη δική μας εκτίμηση με τη δική ${k.his}.`));
     }
     steps.push(exactStep);
@@ -119,8 +122,9 @@ export const roundEstimate: Family = {
         { label: exact >= est ? `${fmt(exact)} − ${fmt(est)} =` : `${fmt(est)} − ${fmt(exact)} =`, answer: gap },
       ], 'Από τον μεγαλύτερο αριθμό βγάζουμε τον μικρότερο. Μια μικρή διαφορά δείχνει ότι δεν κάναμε μεγάλο λάθος.')
       : b.choice('check', `Κάποιος βρήκε ακριβώς ${fmt(wrongExact)}. Πώς καταλαβαίνουμε αμέσως ότι έκανε λάθος;`,
-        `Απέχει πολύ από την εκτίμηση, το ${fmt(est)}`,
-        ['Δεν μπορούμε να το καταλάβουμε χωρίς να κάνουμε την πράξη', `Είναι μεγαλύτερο από το ${fmt(Math.min(a, c))}`],
+        `Απέχει πολύ από το ${fmt(est)}`,
+        [['Δεν φαίνεται χωρίς πράξη', 'Δεν φαίνεται αμέσως', 'Δεν φαίνεται χωρίς τις πράξεις'],
+          [`Είναι μεγαλύτερο από το ${fmt(Math.min(a, c))}`, `Είναι πάνω από ${fmt(Math.min(a, c))}`, `Είναι μεγαλύτερο από ${fmt(Math.min(a, c))}`]],
         'Η εκτίμηση μας λέει περίπου πόσο πρέπει να βγει η ακριβής απάντηση.'));
     return { title: s.title, story, steps };
   },

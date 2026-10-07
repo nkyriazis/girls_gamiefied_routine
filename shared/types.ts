@@ -30,12 +30,11 @@ export interface User {
   color: string;
   grade?: SchoolGrade;
   problemReading?: ProblemReading;
+  forgiveness?: Forgiveness;
   stars: number;
+  available: number; // stars minus those promised in pending outgoing gifts: what she can spend, give or lose now
   routines: Routine[];
 }
-
-// The user fields embedded in API responses (config user + live balance).
-export type UserSummary = Pick<User, 'id' | 'name' | 'avatar' | 'color' | 'stars'>;
 
 export type FlowAction = 
   | { type: 'routine'; userId: string; routineId: string }
@@ -69,6 +68,10 @@ export interface FlowRun {
   parentRunId?: string; // set when started by a parallel step of another run
   startedAt: string;
   stepStartedAt?: string; // when it entered the current step (runs started before it was recorded: startedAt)
+  // While it waits at an alarm, the kids the alarm is for: those of the routines its next steps
+  // start, through sub-flows, up to the next alarm, in config order; empty: everyone.
+  // Computed for clients (db.ts flowRunsView), not stored.
+  userIds?: string[];
 }
 
 // A routine on screen for a user (server state), at most one per user.
@@ -82,6 +85,12 @@ export interface RoutineRun {
   flowRunId?: string; // the flow run waiting for this routine
   totalStars?: number; // stars earned so far (from the execution; not stored on the run)
 }
+
+// What starting a routine assignment, a flow or 'alarm' answers (POST /api/hooks/push, «Ξεκίνα τώρα»).
+// A kid already in a routine keeps it: skipped, with the run on screen (runningId, a RoutineRun id).
+export type TriggerResult =
+  | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
+  | { success: true; type: 'assignment' | 'flow'; id: string };
 
 export interface Reward {
   id: string;
@@ -97,8 +106,7 @@ export interface Spending {
   cost: number;
   createdAt: string;
   status: 'pending' | 'done' | 'revoked';
-  user?: UserSummary;
-  reward?: Reward;
+  resolvedAt?: string; // when a parent gave it or revoked it (absent on purchases resolved before #34)
 }
 
 export interface StarTransfer {
@@ -109,8 +117,6 @@ export interface StarTransfer {
   createdAt: string;
   status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   resolvedAt?: string;
-  fromUser?: UserSummary;
-  toUser?: UserSummary;
 }
 
 // Chores and Bonus Activities System
@@ -169,6 +175,7 @@ export interface BaseExercise {
   userIds?: string[]; // If set, only these users can play this exercise
   template?: boolean;
   generatorParams?: any;
+  source?: string; // where in the textbooks it comes from: «Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)»
 }
 
 export interface MultipleChoiceExercise extends BaseExercise {
@@ -260,7 +267,8 @@ export interface ProblemPaintStep extends ProblemStepBase {
 // Work it out her own way: pick two numbers she has, an operation, and the result. The
 // step carries the story's quantities and how they relate (out = a op b), so every
 // calculation can be read back: what it found, or that it means nothing here.
-// Answer: { lines: [{ x, op, y, result }], slips } (slips: the calculations taken back).
+// Answer: { lines: [{ x, op, y, result }] }, the lines that find the answer; or, as it
+// happens, a calculation she got wrong: { lines (hers so far), slip: { x, op, y, result } }.
 export interface ProblemCalcStep extends ProblemStepBase {
   kind: 'calc';
   quantities: { id: string; value: number; label: string; unit?: string }[];
@@ -275,7 +283,6 @@ export interface ProblemExercise extends BaseExercise {
   type: 'problem';
   story: string;
   steps: ProblemStep[];
-  source?: string; // where in the textbooks it comes from
 }
 
 // The answer to one step of a problem assignment.
@@ -324,6 +331,7 @@ export interface ExerciseAssignment {
 // Enriched assignment with the exercise definition for frontend display
 export interface ExerciseAssignmentWithExercise extends ExerciseAssignment {
   exercise?: Exercise;
+  revision?: boolean; // from a lower grade's pool, as revision (#49): her card says «Επανάληψη»
 }
 
 export interface ExerciseSession {
@@ -339,6 +347,7 @@ export interface ExerciseSession {
   startedAt: string;
   completedAt?: string;
   totalStarsEarned: Record<string, number>; // keyed by userId
+  dismissedAt?: string; // a finished game closed with «Επιστροφή»: kept, no longer on the screens
 }
 
 // --- Runtime history (persisted in the backend database) ---
@@ -399,6 +408,10 @@ export type SchoolGrade = 1 | 2 | 3 | 4 | 5 | 6;
 // unneeded facts greyed out for her once she's right; "paint-all" paints those too.
 export type ProblemReading = 'marked' | 'paint' | 'paint-all';
 
+// How much mistakes cost, a ladder too (shared/forgiveness.ts): "forgiving" lets her try
+// again as often as she likes, "unforgiving" gives two tries a step.
+export type Forgiveness = 'forgiving' | 'unforgiving';
+
 export interface ConfigUser {
   id: string;
   name: string;
@@ -406,6 +419,7 @@ export interface ConfigUser {
   color: string;
   grade?: SchoolGrade;
   problemReading?: ProblemReading; // default "marked"
+  forgiveness?: Forgiveness; // default "forgiving"
 }
 
 export interface ConfigTask {
@@ -471,20 +485,55 @@ export interface DataConfig {
 // HEARTBEAT: sent every few seconds so a client can tell a dead link from a
 // quiet one and reconnect.
 
+// Which screen saved a config file, as POST /api/admin/{data,exercises}?source= names it and the action log
+// (CONFIG_SAVED) records it: the Ρυθμίσεις forms, the Advanced JSON editor, that editor fixing a file that
+// doesn't parse; 'api' for anything that names none (scripts, curl).
+export type ConfigSaveSource = 'form' | 'advanced' | 'advanced-fix' | 'api';
+export const CONFIG_SAVE_SOURCES: readonly ConfigSaveSource[] = ['form', 'advanced', 'advanced-fix', 'api'];
+
 export interface AppState {
   config: DataConfig; // the live data.json
+  // The versions of the live data.json (the one in `config`, read with it) and exercises.json: a short hash
+  // of each file's text. A screen that saves a config file sends the version it edited (?version=), and the
+  // server refuses a save over a newer one with a 409 (#33).
+  configVersion: { data: string; exercises: string };
   // data.json or exercises.json is invalid on disk: the last valid version stays live, or, when the file
   // couldn't be read since the start (emptyFallback), an empty one. Saving is off until it is fixed.
   configError: { message: string; errors: unknown[]; file: string; emptyFallback: boolean } | null;
   users: User[]; // config users with their balance and assigned routines
+  // STATE carries the current world, never the archive (#34). Purchases and gifts: every pending one,
+  // whatever its age, those decided in the last HISTORY_DAYS (by resolvedAt, else createdAt), and, for
+  // purchases, each kid's last LAST_REWARDS_GIVEN given whatever their age (her store lists them).
+  // Newest first. They name kids and rewards by id (look them up in `users` and `config.rewards`).
+  // Everything decided, of any age, is read a page at a time from GET /api/history (HistoryPage).
   spendings: Spending[];
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[]; // open ones, plus ones closed in the last 24h
-  exerciseSessions: ExerciseSession[]; // active group games
+  exerciseSessions: ExerciseSession[]; // running group games, then those finished in the last 30 minutes and not closed
   exerciseAssignments: ExerciseAssignmentWithExercise[]; // today's
   flowRuns: FlowRun[];
   routineRuns: RoutineRun[];
   helpSeen: string[]; // help tours already played (see HelpSeen)
+}
+
+// STATE's window for decided purchases and gifts, in days, and how many rewards given per kid it keeps
+// whatever their age. Anything added to AppState is bounded by time or count like this, never by how long
+// the family has used the app (backend/test/stateSize.test.ts holds the budget).
+export const HISTORY_DAYS = 30;
+export const LAST_REWARDS_GIVEN = 10;
+
+// What was decided (Ιστορικό), from GET /api/history?before=<next>&limit=<n>&userId=<kid>: purchases given
+// or revoked, gifts approved, rejected or cancelled, chores confirmed or rejected (the database keeps those
+// for 7 days), newest first by `at`, the time it was decided. `next` is the cursor of the following page,
+// null on the last one.
+export type HistoryEntry = { at: string } & (
+  | { kind: 'spending'; spending: Spending }
+  | { kind: 'transfer'; transfer: StarTransfer }
+  | { kind: 'chore'; instance: ChoreInstance });
+
+export interface HistoryPage {
+  entries: HistoryEntry[];
+  next: string | null;
 }
 
 export interface ChoreEventPayload {

@@ -91,12 +91,16 @@ const MIGRATIONS: string[] = [
   // When a flow run entered its current step (an alarm rings only for so long)
   `
   ALTER TABLE flow_runs ADD COLUMN stepStartedAt TEXT;
+  `,
+  // A finished group game closed with «Επιστροφή»: kept, but no longer on the screens
+  `
+  ALTER TABLE exercise_sessions ADD COLUMN dismissedAt TEXT;
+  `,
+  // When a parent gave or revoked a purchase (STATE keeps the recently decided ones, #34)
+  `
+  ALTER TABLE spendings ADD COLUMN resolvedAt TEXT;
   `
 ];
-
-// Stored shapes of API types that carry response-only enrichments.
-type StoredSpending = Omit<Spending, 'user' | 'reward'>;
-type StoredStarTransfer = Omit<StarTransfer, 'fromUser' | 'toUser'>;
 
 // How a record field maps to its column. Column names equal the field names.
 type Codec = 'text' | 'int' | 'bool' | 'json';
@@ -193,13 +197,13 @@ export class Store {
 
   readonly routineExecutions: Table<RoutineExecution>;
   readonly taskExecutions: Table<TaskExecution>;
-  readonly spendings: Table<StoredSpending>;
-  readonly starTransfers: Table<StoredStarTransfer>;
+  readonly spendings: Table<Spending>;
+  readonly starTransfers: Table<StarTransfer>;
   readonly choreInstances: Table<ChoreInstance>;
   readonly exerciseSessions: Table<ExerciseSession>;
   readonly exerciseAssignments: Table<ExerciseAssignment>;
   readonly logs: Table<ActionLog>;
-  readonly flowRuns: Table<FlowRun>;
+  readonly flowRuns: Table<Omit<FlowRun, 'userIds'>>;
   readonly routineRuns: Table<Omit<RoutineRun, 'totalStars'>>;
   readonly helpSeen: Table<HelpSeen>;
 
@@ -215,10 +219,10 @@ export class Store {
     this.taskExecutions = new Table<TaskExecution>(db, 'task_executions', onChange, {
       id: 'text', executionId: 'text', taskId: 'text', duration: 'int', isOnTime: 'bool', completedAt: 'text'
     });
-    this.spendings = new Table<StoredSpending>(db, 'spendings', onChange, {
-      id: 'text', userId: 'text', rewardId: 'text', cost: 'int', createdAt: 'text', status: 'text'
+    this.spendings = new Table<Spending>(db, 'spendings', onChange, {
+      id: 'text', userId: 'text', rewardId: 'text', cost: 'int', createdAt: 'text', status: 'text', resolvedAt: 'text'
     });
-    this.starTransfers = new Table<StoredStarTransfer>(db, 'star_transfers', onChange, {
+    this.starTransfers = new Table<StarTransfer>(db, 'star_transfers', onChange, {
       id: 'text', fromUserId: 'text', toUserId: 'text', amount: 'int', createdAt: 'text', status: 'text', resolvedAt: 'text'
     });
     this.choreInstances = new Table<ChoreInstance>(db, 'chore_instances', onChange, {
@@ -228,13 +232,13 @@ export class Store {
     this.exerciseSessions = new Table<ExerciseSession>(db, 'exercise_sessions', onChange, {
       id: 'text', playerIds: 'json', categories: 'json', totalRounds: 'int', currentRound: 'int',
       questionsPerRound: 'int', currentQuestionIndex: 'int', exerciseIds: 'json', answers: 'json',
-      startedAt: 'text', completedAt: 'text', totalStarsEarned: 'json'
+      startedAt: 'text', completedAt: 'text', totalStarsEarned: 'json', dismissedAt: 'text'
     });
     this.exerciseAssignments = new Table<ExerciseAssignment>(db, 'exercise_assignments', onChange, {
       id: 'text', userId: 'text', exerciseId: 'text', date: 'text', status: 'text', attempts: 'int',
       assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json', extra: 'bool'
     });
-    this.flowRuns = new Table<FlowRun>(db, 'flow_runs', onChange, {
+    this.flowRuns = new Table<Omit<FlowRun, 'userIds'>>(db, 'flow_runs', onChange, {
       id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text', stepStartedAt: 'text'
     });
     this.routineRuns = new Table<Omit<RoutineRun, 'totalStars'>>(db, 'routine_runs', onChange, {

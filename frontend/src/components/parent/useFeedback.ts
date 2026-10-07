@@ -1,12 +1,13 @@
 import { createContext, useContext } from 'react';
 
 // Toasts for the parent dashboard (FeedbackProvider). run() performs an action
-// and reports how it went; the state change itself arrives over the socket.
+// and reports how it went (done: the text, or made from the action's answer);
+// the state change itself arrives over the socket.
 
 export type Tone = 'ok' | 'error';
 
 export interface Feedback {
-    run: (action: () => Promise<unknown>, done: string) => Promise<boolean>;
+    run: <T>(action: () => Promise<T>, done: string | ((result: T) => string)) => Promise<boolean>;
     notify: (text: string, tone?: Tone) => void;
 }
 

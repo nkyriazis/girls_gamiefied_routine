@@ -1,0 +1,2360 @@
+{
+ "description": "Ε΄ Δημοτικού: μαθηματικά από τις ενότητες 1–2 του βιβλίου, παραγόμενα από το tools/problem-gen/maths (μία οικογένεια ανά είδος άσκησης του τετραδίου εργασιών, με το κεφάλαιο στο source). Μην τα διορθώνετε εδώ: αλλάξτε την οικογένεια και ξανατρέξτε το gen-maths.ts.",
+ "grades": [
+  5
+ ],
+ "exercises": [
+  {
+   "id": "e5-math-words-digits-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «τρία εκατομμύρια εφτακόσιες χιλιάδες ογδόντα»;",
+   "options": [
+    "3.700.800",
+    "3.700.080",
+    "3.070.080",
+    "3.080.700"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-digits-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «εφτά εκατομμύρια εξακόσια»;",
+   "options": [
+    "7.600.000",
+    "7.006.000",
+    "7.000.600",
+    "7.000.060"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-digits-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «έξι εκατομμύρια εβδομήντα χιλιάδες εφτακόσια»;",
+   "options": [
+    "6.070.070",
+    "6.070.700",
+    "6.700.070",
+    "6.700.700"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-digits-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «οχτώ εκατομμύρια σαράντα»;",
+   "options": [
+    "8.000.040",
+    "8.000.400",
+    "8.000.004",
+    "8.040.000"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-digits-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «τρία εκατομμύρια διακόσιες χιλιάδες τριακόσια»;",
+   "options": [
+    "3.020.300",
+    "3.203.000",
+    "3.200.300",
+    "3.200.030"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-digits-006",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «τρία εκατομμύρια πεντακόσιες χιλιάδες ογδόντα»;",
+   "options": [
+    "3.050.080",
+    "3.500.080",
+    "3.500.008",
+    "3.080.500"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-digits",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-places-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «πέντε εκατομμύρια πέντε χιλιάδες»;",
+   "options": [
+    "5.000.000",
+    "500.500",
+    "50.000.000",
+    "5.005.000"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-places-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «τρία εκατομμύρια»;",
+   "options": [
+    "3.003.000",
+    "30.000.000",
+    "300.300",
+    "3.000.000"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-places-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «εξήντα χιλιάδες έξι»;",
+   "options": [
+    "6.060",
+    "60.006",
+    "600.000",
+    "60.000"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-places-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «πεντακόσιες χιλιάδες»;",
+   "options": [
+    "50.000",
+    "50.005",
+    "500.000",
+    "5.000.000"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-places-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «δύο εκατομμύρια δύο χιλιάδες»;",
+   "options": [
+    "2.002.000",
+    "20.000.000",
+    "200.200",
+    "2.000.000"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-words-places-006",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Οι φυσικοί αριθμοί",
+   "question": "Πώς γράφεται με ψηφία ο αριθμός «έξι χιλιάδες»;",
+   "options": [
+    "6.060",
+    "60.000",
+    "6.000"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.4: Οι φυσικοί αριθμοί",
+   "generatorParams": {
+    "family": "words-places",
+    "unit": 1,
+    "skill": "words"
+   }
+  },
+  {
+   "id": "e5-math-digit-value-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αξία θέσης ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 2 στον αριθμό 7.245.916;",
+   "options": [
+    "2.000.000",
+    "2.000",
+    "200.000",
+    "20.000"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 1,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "e5-math-digit-value-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αξία θέσης ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 9 στον αριθμό 6.507.943;",
+   "options": [
+    "9.000",
+    "90",
+    "900",
+    "90.000"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 1,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "e5-math-digit-value-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αξία θέσης ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 2 στον αριθμό 8.235.091;",
+   "options": [
+    "2.000.000",
+    "20.000",
+    "200.000",
+    "2.000"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 1,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "e5-math-digit-value-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αξία θέσης ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 3 στον αριθμό 7.483.659;",
+   "options": [
+    "30",
+    "3.000",
+    "30.000",
+    "300"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 1,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "e5-math-digit-value-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αξία θέσης ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 9 στον αριθμό 4.092.683;",
+   "options": [
+    "900.000",
+    "9.000",
+    "9.000.000",
+    "90.000"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 1,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "e5-math-digit-value-006",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αξία θέσης ψηφίου",
+   "question": "Ποια είναι η αξία του ψηφίου 9 στον αριθμό 3.019.746;",
+   "options": [
+    "9.000",
+    "90",
+    "900",
+    "90.000"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.5: Αξία θέσης ψηφίου στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "digit-value",
+    "unit": 1,
+    "skill": "digit-value"
+   }
+  },
+  {
+   "id": "e5-math-neighbours-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Κύκλωσε τον αμέσως προηγούμενο αριθμό του 800.000.",
+   "options": [
+    "799.900",
+    "799.999",
+    "799.990",
+    "800.001"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 1,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "e5-math-neighbours-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Κύκλωσε τον αμέσως προηγούμενο αριθμό του 2.000.000.",
+   "options": [
+    "1.999.999",
+    "1.999.900",
+    "2.000.001",
+    "1.999.990"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 1,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "e5-math-neighbours-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Κύκλωσε τον αμέσως προηγούμενο αριθμό του 9.000.000.",
+   "options": [
+    "9.000.001",
+    "8.999.900",
+    "8.999.999",
+    "8.999.990"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 1,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "e5-math-neighbours-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Κύκλωσε τον αμέσως προηγούμενο αριθμό του 820.000.",
+   "options": [
+    "820.001",
+    "819.999",
+    "819.900",
+    "819.990"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 1,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "e5-math-neighbours-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Κύκλωσε τον αμέσως επόμενο αριθμό του 509.999.",
+   "options": [
+    "510.009",
+    "510.099",
+    "509.998",
+    "510.000"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 1,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "e5-math-neighbours-006",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Προηγούμενος και επόμενος",
+   "question": "Κύκλωσε τον αμέσως προηγούμενο αριθμό του 3.000.000.",
+   "options": [
+    "2.999.990",
+    "3.000.001",
+    "2.999.900",
+    "2.999.999"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "neighbours",
+    "unit": 1,
+    "skill": "neighbour"
+   }
+  },
+  {
+   "id": "e5-math-compare-001",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Το 7.591.630 είναι μεγαλύτερο από το 7.195.630.",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "compare",
+    "unit": 1,
+    "skill": "compare"
+   }
+  },
+  {
+   "id": "e5-math-compare-002",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Το 4.270.569 είναι μεγαλύτερο από το 6.270.549.",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "compare",
+    "unit": 1,
+    "skill": "compare"
+   }
+  },
+  {
+   "id": "e5-math-compare-003",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Το 8.064.297 είναι μικρότερο από το 8.064.927.",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "compare",
+    "unit": 1,
+    "skill": "compare"
+   }
+  },
+  {
+   "id": "e5-math-largest-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Κύκλωσε τον μεγαλύτερο αριθμό.",
+   "options": [
+    "1.357.689",
+    "8.357.619",
+    "8.397.615",
+    "7.358.619"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "largest",
+    "unit": 1,
+    "skill": "extreme"
+   }
+  },
+  {
+   "id": "e5-math-largest-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Κύκλωσε τον μικρότερο αριθμό.",
+   "options": [
+    "3.207.156",
+    "3.201.756",
+    "1.203.756",
+    "3.205.716"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "largest",
+    "unit": 1,
+    "skill": "extreme"
+   }
+  },
+  {
+   "id": "e5-math-largest-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Κύκλωσε τον μικρότερο αριθμό.",
+   "options": [
+    "3.704.195",
+    "3.794.501",
+    "3.790.145",
+    "3.794.105"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "largest",
+    "unit": 1,
+    "skill": "extreme"
+   }
+  },
+  {
+   "id": "e5-math-largest-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Κύκλωσε τον μικρότερο αριθμό.",
+   "options": [
+    "7.603.842",
+    "7.063.482",
+    "2.063.847",
+    "7.063.842"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "largest",
+    "unit": 1,
+    "skill": "extreme"
+   }
+  },
+  {
+   "id": "e5-math-largest-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Κύκλωσε τον μεγαλύτερο αριθμό.",
+   "options": [
+    "7.156.032",
+    "7.106.532",
+    "7.056.132",
+    "5.176.032"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "largest",
+    "unit": 1,
+    "skill": "extreme"
+   }
+  },
+  {
+   "id": "e5-math-largest-006",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Σύγκριση αριθμών",
+   "question": "Κύκλωσε τον μικρότερο αριθμό.",
+   "options": [
+    "7.436.019",
+    "9.463.017",
+    "7.463.019",
+    "7.413.069"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "largest",
+    "unit": 1,
+    "skill": "extreme"
+   }
+  },
+  {
+   "id": "e5-math-order-001",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μικρότερο στον μεγαλύτερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "156.034"
+    },
+    {
+     "id": "b",
+     "content": "346.015"
+    },
+    {
+     "id": "c",
+     "content": "354.016"
+    },
+    {
+     "id": "d",
+     "content": "356.014"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "order",
+    "unit": 1,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "e5-math-order-002",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μεγαλύτερο στον μικρότερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "7.954.628"
+    },
+    {
+     "id": "b",
+     "content": "5.974.628"
+    },
+    {
+     "id": "c",
+     "content": "5.924.678"
+    },
+    {
+     "id": "d",
+     "content": "5.479.628"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "order",
+    "unit": 1,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "e5-math-order-003",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μεγαλύτερο στον μικρότερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "542.031"
+    },
+    {
+     "id": "b",
+     "content": "540.231"
+    },
+    {
+     "id": "c",
+     "content": "540.213"
+    },
+    {
+     "id": "d",
+     "content": "530.241"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "order",
+    "unit": 1,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "e5-math-order-004",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μεγαλύτερο στον μικρότερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "947.235"
+    },
+    {
+     "id": "b",
+     "content": "749.235"
+    },
+    {
+     "id": "c",
+     "content": "739.245"
+    },
+    {
+     "id": "d",
+     "content": "349.275"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "order",
+    "unit": 1,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "e5-math-order-005",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μεγαλύτερο στον μικρότερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "8.510.467"
+    },
+    {
+     "id": "b",
+     "content": "7.516.408"
+    },
+    {
+     "id": "c",
+     "content": "7.510.468"
+    },
+    {
+     "id": "d",
+     "content": "7.410.568"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "order",
+    "unit": 1,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "e5-math-order-006",
+   "type": "ordering",
+   "category": "Μαθηματικά",
+   "title": "Βάλε τους αριθμούς στη σειρά",
+   "body": "Βάλε τους αριθμούς στη σειρά, από τον μεγαλύτερο στον μικρότερο.",
+   "items": [
+    {
+     "id": "a",
+     "content": "753.102"
+    },
+    {
+     "id": "b",
+     "content": "753.012"
+    },
+    {
+     "id": "c",
+     "content": "752.013"
+    },
+    {
+     "id": "d",
+     "content": "713.052"
+    }
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "order",
+    "unit": 1,
+    "skill": "order"
+   }
+  },
+  {
+   "id": "e5-math-count-by-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμητικά μοτίβα",
+   "question": "Κύκλωσε τον επόμενο αριθμό του μοτίβου: 14.300.000, 14.250.000, 14.200.000, …",
+   "options": [
+    "14.150.000",
+    "14.195.000",
+    "14.100.000"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 1,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "e5-math-count-by-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμητικά μοτίβα",
+   "question": "Κύκλωσε τον επόμενο αριθμό του μοτίβου: 2.840.000, 2.850.000, 2.860.000, …",
+   "options": [
+    "2.870.000",
+    "2.880.000",
+    "2.861.000"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 1,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "e5-math-count-by-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμητικά μοτίβα",
+   "question": "Κύκλωσε τον επόμενο αριθμό του μοτίβου: 5.725, 5.625, 5.525, …",
+   "options": [
+    "5.425",
+    "5.515",
+    "5.325"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 1,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "e5-math-count-by-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμητικά μοτίβα",
+   "question": "Κύκλωσε τον επόμενο αριθμό του μοτίβου: 13.300.000, 13.350.000, 13.400.000, …",
+   "options": [
+    "13.405.000",
+    "13.500.000",
+    "13.450.000"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 1,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "e5-math-count-by-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αριθμητικά μοτίβα",
+   "question": "Κύκλωσε τον επόμενο αριθμό του μοτίβου: 6.800.000, 7.000.000, 7.200.000, …",
+   "options": [
+    "7.600.000",
+    "7.400.000",
+    "7.220.000"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.6: Σύγκριση και διάταξη στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "count-by",
+    "unit": 1,
+    "skill": "count-by"
+   }
+  },
+  {
+   "id": "e5-math-round-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 314.047 στην πλησιέστερη δεκάδα.",
+   "options": [
+    "314.000",
+    "314.050",
+    "314.040"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 1.243.765 στην πλησιέστερη δεκάδα.",
+   "options": [
+    "1.243.770",
+    "1.243.760",
+    "1.243.800"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 4.529.738 στην πλησιέστερη δεκάδα.",
+   "options": [
+    "4.529.730",
+    "4.529.700",
+    "4.529.740"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 6.951.083 στην πλησιέστερη εκατοντάδα χιλιάδων.",
+   "options": [
+    "7.000.000",
+    "6.900.000",
+    "6.950.000"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 971.331 στην πλησιέστερη δεκάδα χιλιάδων.",
+   "options": [
+    "1.000.000",
+    "980.000",
+    "970.000",
+    "971.000"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-small-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 8.134 στην πλησιέστερη δεκάδα.",
+   "correctValue": 8130,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round-small",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-small-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 5.526 στην πλησιέστερη δεκάδα.",
+   "correctValue": 5530,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round-small",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-small-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 5.351 στην πλησιέστερη δεκάδα.",
+   "correctValue": 5350,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round-small",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-small-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 7.574 στην πλησιέστερη δεκάδα.",
+   "correctValue": 7570,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round-small",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-round-small-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Στρογγυλοποίηση",
+   "question": "Στρογγυλοποίησε το 4.490 στην πλησιέστερη εκατοντάδα.",
+   "correctValue": 4500,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 1.7: Στρογγυλοποίηση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "round-small",
+    "unit": 1,
+    "skill": "round"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 8.000 − 1.068;",
+   "correctValue": 6932,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 1.999 + 4.225;",
+   "correctValue": 6224,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 5.000 − 1.346;",
+   "correctValue": 3654,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 2.706 + 1.923;",
+   "correctValue": 4629,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 3.999 + 2.885;",
+   "correctValue": 6884,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-big-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 503.569 + 811.560;",
+   "options": [
+    "1.315.129",
+    "314.029",
+    "1.314.129",
+    "1.315.119"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub-big",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-big-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 570.122 − 225.464;",
+   "options": [
+    "345.658",
+    "355.342",
+    "343.658",
+    "344.658"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub-big",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-big-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 412.207 + 450.165;",
+   "options": [
+    "862.372",
+    "863.372",
+    "862.362",
+    "862.382"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub-big",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-big-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πρόσθεση",
+   "question": "Πόσο κάνει 112.204 + 119.647;",
+   "options": [
+    "232.851",
+    "231.841",
+    "231.851",
+    "230.851"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub-big",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-add-sub-big-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Αφαίρεση",
+   "question": "Πόσο κάνει 308.212 − 169.820;",
+   "options": [
+    "261.612",
+    "138.392",
+    "139.392",
+    "138.402"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.8: Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "add-sub-big",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-10-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 50 × 600;",
+   "options": [
+    "30.000",
+    "300.000",
+    "3.000"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-10",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-10-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 2.052 × 100;",
+   "options": [
+    "205.200",
+    "2.052.000",
+    "20.520"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-10",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-10-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 7.925 × 10;",
+   "options": [
+    "792.500",
+    "7.925",
+    "79.250"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-10",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-10-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 4.180 × 100;",
+   "options": [
+    "4.180.000",
+    "418.000",
+    "41.800"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-10",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-10-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 40 × 500;",
+   "options": [
+    "2.000",
+    "20.000",
+    "200.000"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-10",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-2d-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 52 × 74;",
+   "correctValue": 3848,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-2d",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-2d-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 51 × 38;",
+   "correctValue": 1938,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-2d",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-2d-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 51 × 28;",
+   "correctValue": 1428,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-2d",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-2d-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 94 × 15;",
+   "correctValue": 1410,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-2d",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-2d-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 16 × 84;",
+   "correctValue": 1344,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-2d",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-3x2-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 808 × 31;",
+   "options": [
+    "24.240",
+    "3.232",
+    "25.048",
+    "33.128"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-3x2",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-3x2-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 911 × 66;",
+   "options": [
+    "59.215",
+    "10.932",
+    "60.126",
+    "69.236"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-3x2",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-3x2-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 833 × 94;",
+   "options": [
+    "77.469",
+    "78.302",
+    "10.829",
+    "86.632"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-3x2",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-3x2-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 929 × 35;",
+   "options": [
+    "7.432",
+    "31.586",
+    "32.515",
+    "41.805"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-3x2",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-times-3x2-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλασιασμός",
+   "question": "Πόσο κάνει 267 × 79;",
+   "options": [
+    "23.763",
+    "20.826",
+    "4.272",
+    "21.093"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.9: Ο πολλαπλασιασμός στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "times-3x2",
+    "unit": 2,
+    "skill": "calc"
+   }
+  },
+  {
+   "id": "e5-math-multiples-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Διαιρέτες",
+   "question": "Κύκλωσε τον αριθμό που είναι διαιρέτης του 24.",
+   "options": [
+    "5",
+    "7",
+    "4",
+    "9"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "multiples",
+    "unit": 2,
+    "skill": "multiple"
+   }
+  },
+  {
+   "id": "e5-math-multiples-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Διαιρέτες",
+   "question": "Κύκλωσε τον αριθμό που είναι διαιρέτης του 56.",
+   "options": [
+    "19",
+    "14",
+    "16",
+    "18"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "multiples",
+    "unit": 2,
+    "skill": "multiple"
+   }
+  },
+  {
+   "id": "e5-math-multiples-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλάσια",
+   "question": "Κύκλωσε τον αριθμό που είναι πολλαπλάσιο του 5.",
+   "options": [
+    "25",
+    "27",
+    "23",
+    "26"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "multiples",
+    "unit": 2,
+    "skill": "multiple"
+   }
+  },
+  {
+   "id": "e5-math-multiples-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλάσια",
+   "question": "Κύκλωσε τον αριθμό που είναι πολλαπλάσιο του 3.",
+   "options": [
+    "37",
+    "34",
+    "38",
+    "36"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "multiples",
+    "unit": 2,
+    "skill": "multiple"
+   }
+  },
+  {
+   "id": "e5-math-multiples-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Πολλαπλάσια",
+   "question": "Κύκλωσε τον αριθμό που είναι πολλαπλάσιο του 6.",
+   "options": [
+    "50",
+    "51",
+    "47",
+    "48"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "multiples",
+    "unit": 2,
+    "skill": "multiple"
+   }
+  },
+  {
+   "id": "e5-math-lcm-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ε.Κ.Π.",
+   "question": "Βρες το Ε.Κ.Π. των 9 και 10.",
+   "correctValue": 90,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "lcm",
+    "unit": 2,
+    "skill": "lcm"
+   }
+  },
+  {
+   "id": "e5-math-lcm-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ε.Κ.Π.",
+   "question": "Βρες το Ε.Κ.Π. των 5 και 9.",
+   "correctValue": 45,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "lcm",
+    "unit": 2,
+    "skill": "lcm"
+   }
+  },
+  {
+   "id": "e5-math-lcm-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ε.Κ.Π.",
+   "question": "Βρες το Ε.Κ.Π. των 5 και 10.",
+   "correctValue": 10,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "lcm",
+    "unit": 2,
+    "skill": "lcm"
+   }
+  },
+  {
+   "id": "e5-math-lcm-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ε.Κ.Π.",
+   "question": "Βρες το Ε.Κ.Π. των 3 και 5.",
+   "correctValue": 15,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "lcm",
+    "unit": 2,
+    "skill": "lcm"
+   }
+  },
+  {
+   "id": "e5-math-lcm-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ε.Κ.Π.",
+   "question": "Βρες το Ε.Κ.Π. των 12 και 15.",
+   "correctValue": 60,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.10: Πολλαπλάσια και διαιρέτες",
+   "generatorParams": {
+    "family": "lcm",
+    "unit": 2,
+    "skill": "lcm"
+   }
+  },
+  {
+   "id": "e5-math-divisible-001",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Κριτήρια διαιρετότητας",
+   "question": "Το 75.875 διαιρείται με το 10.",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας",
+   "generatorParams": {
+    "family": "divisible",
+    "unit": 2,
+    "skill": "divisible"
+   }
+  },
+  {
+   "id": "e5-math-divisible-002",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Κριτήρια διαιρετότητας",
+   "question": "Το 42.470 διαιρείται με το 5.",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας",
+   "generatorParams": {
+    "family": "divisible",
+    "unit": 2,
+    "skill": "divisible"
+   }
+  },
+  {
+   "id": "e5-math-divisible-003",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Κριτήρια διαιρετότητας",
+   "question": "Το 26.976 διαιρείται με το 9.",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας",
+   "generatorParams": {
+    "family": "divisible",
+    "unit": 2,
+    "skill": "divisible"
+   }
+  },
+  {
+   "id": "e5-math-divisible-choice-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Κριτήρια διαιρετότητας",
+   "question": "Κύκλωσε τον αριθμό που διαιρείται με το 9.",
+   "options": [
+    "5.208",
+    "1.410",
+    "6.552",
+    "7.113"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας",
+   "generatorParams": {
+    "family": "divisible-choice",
+    "unit": 2,
+    "skill": "divisible"
+   }
+  },
+  {
+   "id": "e5-math-divisible-choice-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Κριτήρια διαιρετότητας",
+   "question": "Κύκλωσε τον αριθμό που διαιρείται με το 3.",
+   "options": [
+    "9.802",
+    "4.953",
+    "7.129",
+    "9.754"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας",
+   "generatorParams": {
+    "family": "divisible-choice",
+    "unit": 2,
+    "skill": "divisible"
+   }
+  },
+  {
+   "id": "e5-math-divisible-choice-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Κριτήρια διαιρετότητας",
+   "question": "Κύκλωσε τον αριθμό που διαιρείται με το 9.",
+   "options": [
+    "6.225",
+    "1.695",
+    "2.568",
+    "2.556"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας",
+   "generatorParams": {
+    "family": "divisible-choice",
+    "unit": 2,
+    "skill": "divisible"
+   }
+  },
+  {
+   "id": "e5-math-divisible-choice-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Κριτήρια διαιρετότητας",
+   "question": "Κύκλωσε τον αριθμό που διαιρείται με το 3.",
+   "options": [
+    "9.478",
+    "7.547",
+    "1.389",
+    "5.383"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας",
+   "generatorParams": {
+    "family": "divisible-choice",
+    "unit": 2,
+    "skill": "divisible"
+   }
+  },
+  {
+   "id": "e5-math-divisible-choice-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Κριτήρια διαιρετότητας",
+   "question": "Κύκλωσε τον αριθμό που διαιρείται με το 9.",
+   "options": [
+    "5.550",
+    "6.969",
+    "2.718",
+    "6.018"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.11: Κριτήρια διαιρετότητας",
+   "generatorParams": {
+    "family": "divisible-choice",
+    "unit": 2,
+    "skill": "divisible"
+   }
+  },
+  {
+   "id": "e5-math-division-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η διαίρεση",
+   "question": "Βρες το πηλίκο της διαίρεσης 1.584 : 9.",
+   "correctValue": 176,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "division",
+    "unit": 2,
+    "skill": "division-part"
+   }
+  },
+  {
+   "id": "e5-math-division-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η διαίρεση",
+   "question": "Βρες το πηλίκο της διαίρεσης 3.210 : 6.",
+   "correctValue": 535,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "division",
+    "unit": 2,
+    "skill": "division-part"
+   }
+  },
+  {
+   "id": "e5-math-division-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η διαίρεση",
+   "question": "Βρες το πηλίκο της διαίρεσης 1.192 : 5.",
+   "correctValue": 238,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "division",
+    "unit": 2,
+    "skill": "division-part"
+   }
+  },
+  {
+   "id": "e5-math-division-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η διαίρεση",
+   "question": "Βρες το υπόλοιπο της διαίρεσης 4.573 : 35.",
+   "correctValue": 23,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "division",
+    "unit": 2,
+    "skill": "division-part"
+   }
+  },
+  {
+   "id": "e5-math-division-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Η διαίρεση",
+   "question": "Βρες το πηλίκο της διαίρεσης 4.424 : 8.",
+   "correctValue": 553,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "division",
+    "unit": 2,
+    "skill": "division-part"
+   }
+  },
+  {
+   "id": "e5-math-dividend-001",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "question": "Σε μια διαίρεση ο διαιρέτης είναι 33, το πηλίκο 36 και το υπόλοιπο 11. Βρες τον διαιρετέο.",
+   "correctValue": 1199,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "dividend",
+    "unit": 2,
+    "skill": "dividend"
+   }
+  },
+  {
+   "id": "e5-math-dividend-002",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "question": "Σε μια διαίρεση ο διαιρέτης είναι 20, το πηλίκο 24 και το υπόλοιπο 11. Βρες τον διαιρετέο.",
+   "correctValue": 491,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "dividend",
+    "unit": 2,
+    "skill": "dividend"
+   }
+  },
+  {
+   "id": "e5-math-dividend-003",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "question": "Σε μια διαίρεση ο διαιρέτης είναι 38, το πηλίκο 13 και το υπόλοιπο 17. Βρες τον διαιρετέο.",
+   "correctValue": 511,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "dividend",
+    "unit": 2,
+    "skill": "dividend"
+   }
+  },
+  {
+   "id": "e5-math-dividend-004",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "question": "Σε μια διαίρεση ο διαιρέτης είναι 48, το πηλίκο 5 και το υπόλοιπο 6. Βρες τον διαιρετέο.",
+   "correctValue": 246,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "dividend",
+    "unit": 2,
+    "skill": "dividend"
+   }
+  },
+  {
+   "id": "e5-math-dividend-005",
+   "type": "number-input",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "question": "Σε μια διαίρεση ο διαιρέτης είναι 34, το πηλίκο 32 και το υπόλοιπο 1. Βρες τον διαιρετέο.",
+   "correctValue": 1089,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "dividend",
+    "unit": 2,
+    "skill": "dividend"
+   }
+  },
+  {
+   "id": "e5-math-euclid-gap-001",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "2.279 = 25 × {0} + 4",
+   "options": [
+    "19",
+    "90",
+    "92",
+    "91"
+   ],
+   "correctAnswers": [
+    "91"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "euclid-gap",
+    "unit": 2,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "e5-math-euclid-gap-002",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "774 = 23 × 33 + {0}",
+   "options": [
+    "38",
+    "15",
+    "14",
+    "16"
+   ],
+   "correctAnswers": [
+    "15"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "euclid-gap",
+    "unit": 2,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "e5-math-euclid-gap-003",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "827 = 12 × {0} + 11",
+   "options": [
+    "67",
+    "68",
+    "86",
+    "69"
+   ],
+   "correctAnswers": [
+    "68"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "euclid-gap",
+    "unit": 2,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "e5-math-euclid-gap-004",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "526 = 8 × 65 + {0}",
+   "options": [
+    "14",
+    "7",
+    "6",
+    "5"
+   ],
+   "correctAnswers": [
+    "6"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "euclid-gap",
+    "unit": 2,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "e5-math-euclid-gap-005",
+   "type": "fill-blank",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "body": "Συμπλήρωσε τον αριθμό που λείπει.",
+   "textWithGaps": "{0} = 17 × 72 + 10",
+   "options": [
+    "1.251",
+    "1.224",
+    "1.234",
+    "1.235"
+   ],
+   "correctAnswers": [
+    "1.234"
+   ],
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "euclid-gap",
+    "unit": 2,
+    "skill": "equation"
+   }
+  },
+  {
+   "id": "e5-math-bad-remainder-001",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Το υπόλοιπο της διαίρεσης",
+   "question": "Μια διαίρεση έχει διαιρέτη 11. Κύκλωσε τον αριθμό που δεν μπορεί να είναι το υπόλοιπό της.",
+   "options": [
+    "0",
+    "10",
+    "1",
+    "13"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "bad-remainder",
+    "unit": 2,
+    "skill": "bad-remainder"
+   }
+  },
+  {
+   "id": "e5-math-bad-remainder-002",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Το υπόλοιπο της διαίρεσης",
+   "question": "Μια διαίρεση έχει διαιρέτη 8. Κύκλωσε τον αριθμό που δεν μπορεί να είναι το υπόλοιπό της.",
+   "options": [
+    "8",
+    "2",
+    "7",
+    "4"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "bad-remainder",
+    "unit": 2,
+    "skill": "bad-remainder"
+   }
+  },
+  {
+   "id": "e5-math-bad-remainder-003",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Το υπόλοιπο της διαίρεσης",
+   "question": "Μια διαίρεση έχει διαιρέτη 12. Κύκλωσε τον αριθμό που δεν μπορεί να είναι το υπόλοιπό της.",
+   "options": [
+    "13",
+    "5",
+    "4",
+    "11"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "bad-remainder",
+    "unit": 2,
+    "skill": "bad-remainder"
+   }
+  },
+  {
+   "id": "e5-math-bad-remainder-004",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Το υπόλοιπο της διαίρεσης",
+   "question": "Μια διαίρεση έχει διαιρέτη 8. Κύκλωσε τον αριθμό που δεν μπορεί να είναι το υπόλοιπό της.",
+   "options": [
+    "5",
+    "9",
+    "7",
+    "2"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "bad-remainder",
+    "unit": 2,
+    "skill": "bad-remainder"
+   }
+  },
+  {
+   "id": "e5-math-bad-remainder-005",
+   "type": "multiple-choice",
+   "category": "Μαθηματικά",
+   "title": "Το υπόλοιπο της διαίρεσης",
+   "question": "Μια διαίρεση έχει διαιρέτη 7. Κύκλωσε τον αριθμό που δεν μπορεί να είναι το υπόλοιπό της.",
+   "options": [
+    "3",
+    "4",
+    "9",
+    "6"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "bad-remainder",
+    "unit": 2,
+    "skill": "bad-remainder"
+   }
+  },
+  {
+   "id": "e5-math-division-check-001",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "question": "Στη διαίρεση 155 : 10 το πηλίκο είναι 15 και το υπόλοιπο 5.",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "division-check",
+    "unit": 2,
+    "skill": "div-check"
+   }
+  },
+  {
+   "id": "e5-math-division-check-002",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "question": "Στη διαίρεση 194 : 6 το πηλίκο είναι 32 και το υπόλοιπο 3.",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "division-check",
+    "unit": 2,
+    "skill": "div-check"
+   }
+  },
+  {
+   "id": "e5-math-division-check-003",
+   "type": "true-false",
+   "category": "Μαθηματικά",
+   "title": "Ευκλείδεια διαίρεση",
+   "question": "Στη διαίρεση 266 : 12 το πηλίκο είναι 22 και το υπόλοιπο 2.",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Μαθηματικά Ε΄, κεφ. 2.12: Η διαίρεση στους φυσικούς αριθμούς",
+   "generatorParams": {
+    "family": "division-check",
+    "unit": 2,
+    "skill": "div-check"
+   }
+  }
+ ]
+}

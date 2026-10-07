@@ -6,18 +6,26 @@
 //   const { page, caption, tap, pause, listen, finish } = await start('before-calc');
 //   ...
 //   await finish();
-import { chromium } from 'playwright';
+import { chromium, webkit, devices } from 'playwright';
 import fs from 'fs';
 
 export const pause = ms => new Promise(r => setTimeout(r, ms));
 export const APP = process.env.APP ?? 'http://localhost:5173';
 export const API = process.env.API ?? 'http://localhost:3000';
 
-// out: the file name without extension; size: the kiosk (1280×800) unless the change affects another
-export async function start(out, { size = { width: 1280, height: 800 }, touch = true, video = true } = {}) {
+// out: the file name without extension; size: the kiosk (1280×800) unless the change affects another.
+// browser: 'chromium' (the kiosk's) or 'webkit' (Safari's engine, as on an iPhone); device: a
+// Playwright device name ('iPhone 13') for its user agent, mobile viewport and touch, at scale 1.
+// Linux WebKit only approximates iOS Safari: a real phone is still the last word.
+export async function start(out, { size, touch = true, video = true, browser: engine = 'chromium', device } = {}) {
   const log = (...a) => console.log(`[${out}]`, ...a);
-  const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+  const like = device ? devices[device] : undefined;
+  if (device && !like) throw new Error(`no Playwright device «${device}»`);
+  size ??= like?.viewport ?? { width: 1280, height: 800 };
+  const browser = engine === 'webkit' ? await webkit.launch()
+    : await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
   const context = await browser.newContext({
+    ...(like ? { userAgent: like.userAgent, isMobile: like.isMobile } : {}),
     viewport: size, deviceScaleFactor: 1, hasTouch: touch, timezoneId: 'Europe/Athens', locale: 'el-GR',
     ...(video ? { recordVideo: { dir: `video-${out}`, size } } : {}),
   });
@@ -38,6 +46,22 @@ export async function start(out, { size = { width: 1280, height: 800 }, touch = 
     };
     // The screens' sounds (sound/sfx.ts tells what it plays)
     addEventListener('sfx', e => log('heard', { src: `${location.origin}/sfx/${e.detail.name}.wav`, at: Date.now() + e.detail.delay, ev: 'play', sfx: true }));
+    // Web Audio tones (the alarm's built-in melody, the time-up beeps) have no file: each one
+    // that sounds is logged with its wave, pitch and length (at its stop()), and mix.sh makes it again
+    const toneStart = OscillatorNode.prototype.start, toneStop = OscillatorNode.prototype.stop;
+    OscillatorNode.prototype.start = function (when = 0) {
+      const now = this.context.currentTime;
+      this.__tone = { from: Math.max(when, now), at: Date.now() + Math.max(0, when - now) * 1000, freq: this.frequency.value, type: this.type };
+      return toneStart.apply(this, arguments);
+    };
+    OscillatorNode.prototype.stop = function (when = 0) {
+      const t = this.__tone;
+      if (t && this.context.state === 'running') {
+        const secs = Math.max(0.05, Math.max(when, this.context.currentTime) - t.from);
+        log('heard', { src: `${location.origin}/tone/${t.type}/${Math.round(t.freq)}`, at: t.at, ev: 'play', sfx: true, tone: { secs } });
+      }
+      return toneStop.apply(this, arguments);
+    };
     // The video's own clock, for mix.sh: the square shows the page clock's second (white when odd),
     // so it keeps its phase across navigations. It goes in as soon as the document has a root, before
     // the first paint, and every colour it shows is logged.
@@ -89,7 +113,7 @@ export async function start(out, { size = { width: 1280, height: 800 }, touch = 
     }
     await pause(extra);
   };
-  // Opens the kids' screen past "Click to Start"
+  // Opens the kids' screen past the start overlay («Πάτα για να ξεκινήσουμε!»)
   const open = async (path = '/') => {
     await page.goto(APP + path);
     await pause(1500);

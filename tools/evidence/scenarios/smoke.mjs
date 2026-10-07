@@ -1,4 +1,4 @@
-// The smallest scenario: the kids' screen past "Click to Start", a screenshot and a few seconds of video.
+// The smallest scenario: the kids' screen past the start overlay, a screenshot and a few seconds of video.
 //   tools/evidence/record.sh tools/evidence/scenarios/smoke.mjs .evidence/smoke
 import { start } from '../kit.mjs';
 

@@ -1,15 +1,20 @@
 import { promises as fs } from 'fs';
+import path from 'path';
 import { randomUUID } from 'crypto';
 import {
-  AppState, Chore, ChoreInstance, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
-  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ProblemExercise, ProblemReading, ProblemStepAnswer, Spending,
-  StarTransfer, StateSnapshot, ActionLog, User
+  AppState, Chore, ChoreInstance, ConfigSaveSource, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
+  ProblemExercise, ProblemReading, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
-import { exercisePoolProvider, exercisesPerDay, storyMarks } from './exercisePool';
-import { checkCalc, checkPaint, storyWords, targetsFromMarks } from '../../shared/problems';
-import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
+import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
+import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
+import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
+import { cronMatchesAt } from './cron';
+import { changedKeys, config, ConfigFile, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
-import { Store } from './store';
+import { summarize } from './schemas';
+import { Store, Table } from './store';
 import { Sync } from './sync';
 
 // ============================================================================
@@ -42,16 +47,20 @@ export function logAction(type: string, details: unknown) {
 
 // Everything clients render (see AppState in shared/types.ts).
 export async function appState(): Promise<AppState> {
+  // The config and its version from one read, before any await: a STATE never pairs a config with
+  // the version of another save (a writer sends back the version it edited, #33).
+  const data = dataConfig.current();
   return {
-    config: config(),
+    config: data.value,
+    configVersion: { data: data.version, exercises: exercisesConfig.version() },
     configError: configError(),
     users: usersView(),
-    spendings: getEnrichedSpendings(),
-    starTransfers: getEnrichedTransfers(),
+    spendings: recentSpendings(),
+    starTransfers: recentTransfers(),
     choreInstances: getChoresWithInstances().instances,
-    exerciseSessions: activeExerciseSessions(),
+    exerciseSessions: exerciseSessionsOnScreen(),
     exerciseAssignments: await todaysAssignments(),
-    flowRuns: store.flowRuns.all(),
+    flowRuns: flowRunsView(),
     routineRuns: routineRunsView(),
     helpSeen: store.helpSeen.all().map(h => h.id)
   };
@@ -112,12 +121,13 @@ function assignmentTasks(assignmentId: string): (ConfigTask & { durationSeconds:
     });
 }
 
-/** Config users with their balance and assigned routines, as clients render them. */
+/** Config users with their balance, what of it is available, and their assigned routines, as clients render them. */
 export function usersView(): User[] {
   const { routineAssignments, routines } = config();
 
   return usersWithStars().map(user => ({
     ...user,
+    available: getAvailableBalance(user.id),
     routines: routineAssignments
       .filter(a => a.userId === user.id)
       .flatMap(assignment => {
@@ -147,24 +157,51 @@ export function readRawConfig(): DataConfig {
   return dataConfig.raw();
 }
 
+/** A config save that names a version older than the live one (another screen saved, or the file changed on disk). */
+export class ConfigConflict extends Error {}
+
+/** How a screen saves a config file: what it edited and who it is (see ConfigFile.save, ConfigSaveSource). */
+export interface ConfigSave {
+  replace?: boolean; // only the Advanced JSON editor: may replace an invalid file (#45)
+  version?: string; // the version it edited; none: not checked
+  source?: ConfigSaveSource;
+  route?: string; // for the log: 'POST /api/admin/data'
+}
+
 /**
- * Validate and save data.json. Throws when invalid, or when the file on disk
- * is invalid (see ConfigFile.save): only the Advanced editor passes `replace`.
+ * Validate and save a config file; returns the new version. Throws ConfigConflict when `version` is
+ * older than the live one, and an Error when the data is invalid or the file on disk is (see
+ * ConfigFile.save). Every save is logged as CONFIG_SAVED with the top-level keys it changed, and every
+ * refused stale one as CONFIG_SAVE_STALE.
  */
-export function writeRawConfig(data: unknown, options: { replace?: boolean } = {}): void {
-  const error = dataConfig.save(data, options);
-  if (error) throw new Error(error.errors.length ? `Validation failed: ${JSON.stringify(error.errors)}` : error.message);
+function saveConfigFile<T extends object>(file: ConfigFile<T>, data: unknown, options: ConfigSave, invalid: string): string {
+  const { source = 'api', route, version } = options;
+  const name = path.basename(file.file);
+  const before = file.get();
+  const current = file.version();
+  const error = file.save(data, options);
+  if (error?.conflict) {
+    logAction('CONFIG_SAVE_STALE', { file: name, source, route, version, current });
+    throw new ConfigConflict(error.message);
+  }
+  if (error) throw new Error(error.errors.length ? `${invalid}: ${summarize(error.errors)}` : error.message);
+  logAction('CONFIG_SAVED', { file: name, source, route, changed: changedKeys(before, file.get()) });
   sync.changed();
+  return file.version();
+}
+
+/** Validate and save data.json (see saveConfigFile); returns its new version. */
+export function writeRawConfig(data: unknown, options: ConfigSave = {}): string {
+  return saveConfigFile(dataConfig, data, options, 'Validation failed');
 }
 
 export function readRawExercises(): ExercisesConfig {
   return exercisesConfig.raw();
 }
 
-export function writeRawExercises(data: unknown, options: { replace?: boolean } = {}): void {
-  const error = exercisesConfig.save(data, options);
-  if (error) throw new Error(error.errors.length ? `Exercises validation failed: ${JSON.stringify(error.errors)}` : error.message);
-  sync.changed();
+/** Validate and save exercises.json (see saveConfigFile); returns its new version. */
+export function writeRawExercises(data: unknown, options: ConfigSave = {}): string {
+  return saveConfigFile(exercisesConfig, data, options, 'Exercises validation failed');
 }
 
 // ============================================
@@ -176,14 +213,10 @@ export function writeRawExercises(data: unknown, options: { replace?: boolean } 
 // sub-flows (it waits until they have all closed). After the last step the run
 // ends and, if a parallel step of another run started it, that run moves on.
 
-export type TriggerResult =
-  | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
-  | { success: true; type: 'assignment' | 'flow'; id: string };
-
 const ALARM_ONLY: FlowStep[] = [{ type: 'alarm', props: { sound: 'melody' } }];
 
 /**
- * Start a routine assignment or a flow (schedule, push hook, MCP); 'alarm' shows
+ * Start a routine assignment or a flow (schedule, push hook); 'alarm' shows
  * a plain alarm. A user already in a routine keeps it; a running flow restarts.
  */
 export function triggerAction(id: string, source: string = 'unknown'): TriggerResult | null {
@@ -345,6 +378,40 @@ export function closeStaleRoutines(userId?: string): number {
   });
 }
 
+/** Flow runs as clients render them: a run waiting at an alarm says whom the alarm is for. */
+function flowRunsView(): FlowRun[] {
+  return store.flowRuns.all().map(run =>
+    run.steps[run.stepIndex]?.type === 'alarm' ? { ...run, userIds: alarmUserIds(run.steps, run.stepIndex + 1) } : run);
+}
+
+/**
+ * The kids an alarm is for: those of the routines the steps after it start, through
+ * sub-flows, up to the next alarm (it has its own), in config order. Empty: everyone.
+ */
+function alarmUserIds(steps: readonly FlowStep[], from: number): string[] {
+  const { users, routineAssignments, flows } = config();
+  const kids = new Set<string>();
+  const seen = new Set<string>(); // sub-flows walked, so a flow that starts itself ends
+  const walk = (steps: readonly FlowStep[], from: number): void => {
+    for (const step of steps.slice(from)) {
+      if (step.type === 'alarm') return;
+      const actions = step.type === 'routine' ? [{ type: 'routine' as const, routineId: step.routineId }] : step.actions;
+      for (const action of actions) {
+        if (action.type === 'routine') {
+          const userId = routineAssignments.find(a => a.id === action.routineId)?.userId;
+          if (userId) kids.add(userId);
+        } else if (!seen.has(action.flowId)) {
+          seen.add(action.flowId);
+          const flow = flows.find(f => f.id === action.flowId);
+          if (flow) walk(flow.steps, 0);
+        }
+      }
+    }
+  };
+  walk(steps, from);
+  return users.map(u => u.id).filter(id => kids.has(id));
+}
+
 /** Routine runs as clients render them, with the stars earned so far. */
 function routineRunsView(): RoutineRun[] {
   return store.routineRuns.all().map(run => ({ ...run, totalStars: store.routineExecutions.get(run.id)?.totalStars ?? 0 }));
@@ -380,7 +447,7 @@ export function completeTask(runId: string, taskId: string): TaskCompletion {
     store.routineRuns.put(last
       ? { ...run, finishedAt: now.toISOString() }
       : { ...run, taskIndex: run.taskIndex + 1, taskStartedAt: now.toISOString() });
-    if (stars !== 0) awardStars(execution.userId, stars);
+    if (stars > 0) awardStars(execution.userId, stars);
     logAction('TASK_COMPLETE', { executionId: runId, taskId, starsAwarded: stars, userId: execution.userId, duration, isOnTime });
     return { success: true, starsAwarded: stars };
   });
@@ -394,77 +461,206 @@ function byNewest(a: { createdAt: string }, b: { createdAt: string }) {
   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 }
 
-export function getEnrichedSpendings(): Spending[] {
-  const users = usersWithStars();
-  const { rewards } = config();
-  return store.spendings.all().map(s => ({
-    ...s,
-    user: users.find(u => u.id === s.userId),
-    reward: rewards.find(r => r.id === s.rewardId)
-  })).sort(byNewest);
+// STATE carries the current world, never the archive (see AppState): what is pending whatever its age,
+// what was decided in the last HISTORY_DAYS, and each kid's last rewards given. Records name kids and
+// rewards by id. Both read their whole table (no index on the time): fine at a family's rate.
+const historyCutoff = () => new Date(Date.now() - HISTORY_DAYS * 864e5).toISOString();
+
+export function recentSpendings(): Spending[] {
+  return store.spendings.all(`status = 'pending' OR COALESCE(resolvedAt, createdAt) > ? OR id IN (
+      SELECT id FROM (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY userId ORDER BY COALESCE(resolvedAt, createdAt) DESC, id DESC) AS n
+        FROM spendings WHERE status = 'done'
+      ) WHERE n <= ?)`, historyCutoff(), LAST_REWARDS_GIVEN).sort(byNewest);
 }
 
-export function getEnrichedTransfers(): StarTransfer[] {
-  const users = usersWithStars();
-  return store.starTransfers.all().map(t => ({
-    ...t,
-    fromUser: users.find(u => u.id === t.fromUserId),
-    toUser: users.find(u => u.id === t.toUserId)
-  })).sort(byNewest);
+export function recentTransfers(): StarTransfer[] {
+  return store.starTransfers.all(`status = 'pending' OR COALESCE(resolvedAt, createdAt) > ?`, historyCutoff()).sort(byNewest);
 }
 
-// Available balance: total minus stars locked in pending outgoing transfers
-export function getAvailableBalance(userId: string): number {
-  const pendingOutgoing = store.starTransfers
-    .all("fromUserId = ? AND status = 'pending'", userId)
-    .reduce((sum, t) => sum + t.amount, 0);
-  return store.getStars(userId) - pendingOutgoing;
+export const HISTORY_PAGE = 30;
+
+// The cursor of a page: the last entry's time and id ("<at>|<id>"); the next page starts below it.
+const cursorOf = (e: HistoryEntry) => `${e.at}|${entryId(e)}`;
+const entryId = (e: HistoryEntry) => (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.instance).id;
+const newestFirst = (a: HistoryEntry, b: HistoryEntry) =>
+  a.at !== b.at ? (a.at < b.at ? 1 : -1) : entryId(a) < entryId(b) ? 1 : entryId(a) > entryId(b) ? -1 : 0;
+
+/**
+ * What was decided, newest first, a page at a time (Ιστορικό, GET /api/history): purchases given or
+ * revoked, gifts approved, rejected or cancelled, and chores confirmed or rejected, each at the time it
+ * was decided. `before` is the previous page's `next`; `userId` keeps what names that kid.
+ */
+export function history({ before, limit = HISTORY_PAGE, userId }: { before?: string; limit?: number; userId?: string } = {}): HistoryPage {
+  const [at, id] = before ? before.split('|') : [];
+  // Each table's newest `limit + 1` below the cursor (`kid` takes the one parameter userId); the page is
+  // the newest `limit` of them all
+  const page = <T extends { id: string }>(table: Table<T>, decided: string, time: string, kid: string): T[] => {
+    const where = [decided, ...(before ? [`(${time}, id) < (?, ?)`] : []), ...(userId ? [kid] : [])].join(' AND ');
+    const params = [...(before ? [at, id] : []), ...(userId ? [userId] : []), limit + 1];
+    return table.all(`id IN (SELECT id FROM ${table.name} WHERE ${where} ORDER BY ${time} DESC, id DESC LIMIT ?)`, ...params);
+  };
+  const entries: HistoryEntry[] = [
+    ...page(store.spendings, "status != 'pending'", 'COALESCE(resolvedAt, createdAt)', 'userId = ?')
+      .map(spending => ({ kind: 'spending' as const, at: spending.resolvedAt ?? spending.createdAt, spending })),
+    ...page(store.starTransfers, "status != 'pending'", 'COALESCE(resolvedAt, createdAt)', '? IN (fromUserId, toUserId)')
+      .map(transfer => ({ kind: 'transfer' as const, at: transfer.resolvedAt ?? transfer.createdAt, transfer })),
+    ...page(store.choreInstances, "status IN ('confirmed', 'rejected')", 'COALESCE(confirmedAt, rejectedAt, availableAt)', 'claimedBy = ?')
+      .map(instance => ({ kind: 'chore' as const, at: instance.confirmedAt ?? instance.rejectedAt ?? instance.availableAt, instance })),
+  ].sort(newestFirst);
+  const shown = entries.slice(0, limit);
+  return { entries: shown, next: entries.length > limit ? cursorOf(shown[shown.length - 1]) : null };
 }
 
 export function readLastLogs(limit: number): ActionLog[] {
   return store.recentLogs(limit);
 }
 
-function commitUserStars(userId: string, newTotal: number): number {
-  store.setStars(userId, newTotal);
-  return newTotal;
+// The stars invariant: a kid's available stars are her balance minus the stars
+// promised in her pending outgoing gifts (getAvailableBalance), and no balance
+// goes below zero. Every star change goes through the functions below, each in
+// one transaction: buying a reward, a parent's take-away and a new gift check
+// the available stars; approving a gift re-checks the sender's balance. Stars
+// are added only by awardStars (positive amounts), a refund and an approved
+// gift. Only the whole-state writers set balances directly: replaceState (the
+// admin state editor) and the one-time legacy import (migrate.ts).
+
+/** A refused star operation: the routes send `status` with `message` (shown to the parent as a toast). */
+export class StarsError extends Error {
+  constructor(public status: 400 | 404, message: string) { super(message); }
 }
 
-// Adjust a user's star balance by a delta. All star-mutating code paths go
-// through this, trySpendStars or setUserStars.
-export function adjustUserStars(userId: string, delta: number): number {
-  return store.transaction(() => commitUserStars(userId, store.getStars(userId) + delta));
+function promisedStars(userId: string): number {
+  return store.starTransfers
+    .all("fromUserId = ? AND status = 'pending'", userId)
+    .reduce((sum, t) => sum + t.amount, 0);
 }
 
-// Spend stars: balance check and deduction happen in one transaction, so
-// concurrent spends can never overdraw. Returns the new total, or null if the
-// balance is insufficient (nothing is deducted).
-export function trySpendStars(userId: string, cost: number): number | null {
-  return store.transaction(() => {
-    const balance = store.getStars(userId);
-    return balance < cost ? null : commitUserStars(userId, balance - cost);
-  });
+/** Stars a kid can spend or give now: her balance minus what pending gifts promise. */
+export function getAvailableBalance(userId: string): number {
+  return store.getStars(userId) - promisedStars(userId);
 }
 
-// Award stars to a user
+function knownUser(userId: string): UserWithStars {
+  const user = findUser(userId);
+  if (!user) throw new StarsError(404, 'User not found');
+  return user;
+}
+
+// Takes `amount` from the kid's available stars, or refuses with the reason.
+// Call it inside the transaction that records what the stars paid for.
+function spendAvailable(user: UserWithStars, amount: number): number {
+  const available = getAvailableBalance(user.id);
+  if (available < amount) {
+    const promised = promisedStars(user.id);
+    throw new StarsError(400, promised > 0
+      ? `${user.name}: διαθέσιμα ⭐ ${available} · ⭐ ${promised} περιμένουν σε δώρο. Απορρίψτε πρώτα το δώρο.`
+      : `${user.name}: διαθέσιμα ⭐ ${available}, χρειάζονται ⭐ ${amount}`);
+  }
+  return addStars(user.id, -amount);
+}
+
+function addStars(userId: string, delta: number): number {
+  const total = store.getStars(userId) + delta;
+  store.setStars(userId, total);
+  return total;
+}
+
+/** Stars earned or given by a parent (a positive whole number). */
 export function awardStars(userId: string, amount: number): { success: boolean; newTotal: number } {
-  if (!findUser(userId)) throw new Error(`User not found: ${userId}`);
-
-  const newTotal = adjustUserStars(userId, amount);
+  if (!Number.isInteger(amount) || amount <= 0) throw new StarsError(400, 'amount must be a positive integer');
+  knownUser(userId);
+  const newTotal = store.transaction(() => addStars(userId, amount));
   logAction('AWARD_STARS', { userId, amount, newBalance: newTotal });
-
   return { success: true, newTotal };
 }
 
-// Set stars for a user (absolute value)
-export function setUserStars(userId: string, amount: number): { success: boolean; newTotal: number } {
-  if (!findUser(userId)) throw new Error(`User not found: ${userId}`);
+/** A parent takes stars away: only what isn't promised in a gift. Logged as an award of −amount, as before. */
+export function takeStars(userId: string, amount: number): { success: boolean; newTotal: number } {
+  if (!Number.isInteger(amount) || amount <= 0) throw new StarsError(400, 'amount must be a positive integer');
+  const user = knownUser(userId);
+  const newTotal = store.transaction(() => spendAvailable(user, amount));
+  logAction('AWARD_STARS', { userId, amount: -amount, newBalance: newTotal });
+  return { success: true, newTotal };
+}
 
-  const oldStars = store.getStars(userId);
-  commitUserStars(userId, amount);
-  logAction('SET_STARS', { userId, oldBalance: oldStars, newBalance: amount });
+/** A kid buys a reward: it waits for a parent (pending) and is paid now from her available stars. */
+export function buyReward(userId: string, rewardId: string): Spending {
+  const user = findUser(userId);
+  const reward = config().rewards.find(r => r.id === rewardId);
+  if (!user || !reward) throw new StarsError(404, 'User or Reward not found');
+  const spending: Spending = {
+    id: randomUUID(), userId, rewardId, cost: reward.cost, createdAt: new Date().toISOString(), status: 'pending'
+  };
+  const newBalance = store.transaction(() => {
+    const balance = spendAvailable(user, reward.cost);
+    store.spendings.put(spending);
+    return balance;
+  });
+  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance });
+  return spending;
+}
 
-  return { success: true, newTotal: amount };
+/** A parent marks a reward given (done) or revokes it, which refunds its stars. */
+export function resolveSpending(id: string, status: Spending['status']): Spending {
+  const spending = store.spendings.get(id);
+  if (!spending) throw new StarsError(404, 'Spending not found');
+  if (status !== 'done' && status !== 'revoked') throw new StarsError(400, 'Invalid status');
+  if (spending.status === 'revoked') throw new StarsError(400, 'Spending is already revoked');
+  const updated: Spending = { ...spending, status, resolvedAt: new Date().toISOString() };
+  store.transaction(() => {
+    if (status === 'revoked' && findUser(spending.userId)) addStars(spending.userId, spending.cost);
+    store.spendings.put(updated);
+  });
+  logAction(`SPENDING_${status.toUpperCase()}`, { spendingId: id, userId: spending.userId, rewardId: spending.rewardId, cost: spending.cost });
+  return updated;
+}
+
+/** A kid gives stars to another: they stay hers, promised, until a parent approves or rejects. */
+export function createGift(fromUserId: string, toUserId: string, amount: number): StarTransfer {
+  const from = findUser(fromUserId);
+  if (!from || !findUser(toUserId)) throw new StarsError(404, 'User not found');
+  if (fromUserId === toUserId) throw new StarsError(400, 'Cannot transfer stars to yourself');
+  if (!Number.isInteger(amount) || amount <= 0) throw new StarsError(400, 'Amount must be positive');
+  const transfer: StarTransfer = {
+    id: randomUUID(), fromUserId, toUserId, amount, createdAt: new Date().toISOString(), status: 'pending'
+  };
+  store.transaction(() => {
+    const available = getAvailableBalance(fromUserId);
+    if (available < amount) throw new StarsError(400, `${from.name}: διαθέσιμα ⭐ ${available}, χρειάζονται ⭐ ${amount}`);
+    store.starTransfers.put(transfer);
+  });
+  logAction('TRANSFER_REQUEST', { fromUserId, toUserId, amount, transferId: transfer.id });
+  return transfer;
+}
+
+/** A parent approves or rejects a gift, or the kid cancels it. Approving moves the stars, if the sender still has them. */
+export function resolveGift(id: string, action: 'approve' | 'reject' | 'cancel'): StarTransfer {
+  const transfer = store.starTransfers.get(id);
+  if (!transfer) throw new StarsError(404, 'Transfer not found');
+  if (transfer.status !== 'pending') throw new StarsError(400, 'Transfer is already resolved');
+  const outcomes = { approve: 'approved', reject: 'rejected', cancel: 'cancelled' } as const;
+  const status = outcomes[action];
+  if (!status) throw new StarsError(400, 'Invalid action');
+  // Approving moves the stars, so both kids must still be in the config. Cancelling or rejecting
+  // moves none and only releases the promise: it works for a kid who has left the config too (#47).
+  const from = findUser(transfer.fromUserId);
+  if (status === 'approved' && (!from || !findUser(transfer.toUserId))) throw new StarsError(404, 'User not found');
+
+  const resolved: StarTransfer = { ...transfer, status, resolvedAt: new Date().toISOString() };
+  store.transaction(() => {
+    if (status === 'approved' && from) {
+      // The promise was checked when the gift was made; only a whole-state write can have broken it since.
+      if (store.getStars(from.id) < transfer.amount) {
+        throw new StarsError(400, `${from.name}: δεν υπάρχουν πια ⭐ ${transfer.amount} για αυτό το δώρο`);
+      }
+      addStars(transfer.fromUserId, -transfer.amount);
+      addStars(transfer.toUserId, transfer.amount);
+    }
+    store.starTransfers.put(resolved);
+  });
+  logAction(`TRANSFER_${status.toUpperCase()}`, { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
+  return resolved;
 }
 
 // ============================================
@@ -485,61 +681,36 @@ export function replaceState(state: StateSnapshot): void {
 // CHORES SYSTEM
 // ============================================
 
-// Helper to parse cron expression and check if it matches current time
-function cronMatches(cronExpr: string, date: Date): boolean {
-  const parts = cronExpr.split(' ');
-  if (parts.length !== 5) return false;
-  
-  const [minuteExpr, hourExpr, dayOfMonthExpr, monthExpr, dayOfWeekExpr] = parts;
-  
-  const minute = date.getMinutes();
-  const hour = date.getHours();
-  const dayOfMonth = date.getDate();
-  const month = date.getMonth() + 1;
-  const dayOfWeek = date.getDay(); // 0 = Sunday
-  
-  const matchField = (expr: string, value: number, _max: number): boolean => {
-    if (expr === '*') return true;
-    
-    // Handle ranges (e.g., 1-5)
-    if (expr.includes('-')) {
-      const [start, end] = expr.split('-').map(Number);
-      return value >= start && value <= end;
+// A chore whose cron can't be read is logged once (per chore and cron, until it changes or the server
+// restarts), not every minute: the action log isn't pruned.
+const choreCronErrors = new Map<string, string>();
+
+function choreDue(chore: Chore, now: Date, timezone: string): boolean {
+  try {
+    const due = cronMatchesAt(chore.availabilityCron, now, timezone);
+    choreCronErrors.delete(chore.id);
+    return due;
+  } catch (err) {
+    const error = (err as Error).message;
+    const key = `${chore.availabilityCron}\n${error}`;
+    if (choreCronErrors.get(chore.id) !== key) {
+      choreCronErrors.set(chore.id, key);
+      logAction('CHORE_CRON_ERROR', { choreId: chore.id, cron: chore.availabilityCron, error });
     }
-    
-    // Handle lists (e.g., 1,3,5)
-    if (expr.includes(',')) {
-      return expr.split(',').map(Number).includes(value);
-    }
-    
-    // Handle step values (e.g., */5)
-    if (expr.includes('/')) {
-      const [range, step] = expr.split('/');
-      const stepNum = parseInt(step, 10);
-      if (range === '*') return value % stepNum === 0;
-      return false;
-    }
-    
-    return parseInt(expr, 10) === value;
-  };
-  
-  return (
-    matchField(minuteExpr, minute, 59) &&
-    matchField(hourExpr, hour, 23) &&
-    matchField(dayOfMonthExpr, dayOfMonth, 31) &&
-    matchField(monthExpr, month, 12) &&
-    matchField(dayOfWeekExpr, dayOfWeek, 6)
-  );
+    return false;
+  }
 }
 
-// Generate chore instances when cron matches
+// Generate chore instances when their cron names this minute (cron.ts, settings.timezone). Always the real
+// clock: /api/debug/time doesn't make chores.
 export function generateChoreInstances(): ChoreInstance[] {
-  const chores = config().chores ?? [];
+  const { chores = [], settings } = config();
+  const timezone = settings?.timezone || 'Europe/Athens';
   const now = new Date();
   const newInstances: ChoreInstance[] = [];
 
   for (const chore of chores) {
-    if (!cronMatches(chore.availabilityCron, now)) continue;
+    if (!choreDue(chore, now, timezone)) continue;
 
     // Any instance of this chore still within its window (regardless of status)
     // prevents respawning after claim/reject/confirm/expire.
@@ -638,6 +809,7 @@ function getChoreInstance(instanceId: string): ChoreInstance {
 // Claim a chore instance
 export function claimChore(instanceId: string, userId: string): ChoreInstance {
   const instance = getChoreInstance(instanceId);
+  if (!findUser(userId)) throw new Error(`User not found: ${userId}`);
 
   if (instance.status !== 'available') {
     throw new Error(`Chore is not available (status: ${instance.status})`);
@@ -679,6 +851,10 @@ export function attemptChore(instanceId: string): ChoreInstance {
 
 // Confirm chore completion (parent approves)
 export function confirmChore(instanceId: string, starsOverride?: number): ChoreInstance {
+  // What it pays is stored as starsAwarded, so a parent's override is a whole number, 0 or more (state.schema.json)
+  if (starsOverride !== undefined && !(Number.isInteger(starsOverride) && starsOverride >= 0)) {
+    throw new StarsError(400, 'stars must be a whole number, 0 or more');
+  }
   const instance = getChoreInstance(instanceId);
 
   if (instance.status !== 'attempted') {
@@ -804,7 +980,7 @@ export function checkProblemStep(
     case 'paint':
       if (Array.isArray(value)) return compare(storyMarks(exercise.story).map(m => m.role));
       return checkPaint(step.kind === 'paint' ? step.targets : targetsFromMarks(exercise.story),
-        storyWords(exercise.story).length, value, { unneeded: reading === 'paint-all' });
+        storyWords(exercise.story), value, { unneeded: reading === 'paint-all' });
     case 'choice':
       return { correct: value === step.correctIndex };
     case 'numbers':
@@ -816,13 +992,38 @@ export function checkProblemStep(
   }
 }
 
-export function activeExerciseSessions(): ExerciseSession[] {
-  return store.exerciseSessions.all('completedAt IS NULL');
+/** How long a finished group game stays on the screens with its results, unless «Επιστροφή» closes it first. */
+export const GAME_RESULTS_MINUTES = 30;
+const resultsSince = (now: Date) => new Date(now.getTime() - GAME_RESULTS_MINUTES * 60_000).toISOString();
+
+/**
+ * The group games on screen: the running ones, then those finished in the last GAME_RESULTS_MINUTES
+ * and not closed, newest first. Older finished games are kept but never shown again.
+ */
+export function exerciseSessionsOnScreen(now = new Date()): ExerciseSession[] {
+  const finished = store.exerciseSessions.all('completedAt > ? AND dismissedAt IS NULL', resultsSince(now));
+  return [
+    ...store.exerciseSessions.all('completedAt IS NULL'),
+    ...finished.sort((a, b) => b.completedAt!.localeCompare(a.completedAt!))
+  ];
+}
+
+/**
+ * The finished games whose results window ended in (since, now]: the minute check sends a STATE
+ * when there are any, so the results leave the screens on time.
+ */
+export function gameResultsLeaving(since: Date, now: Date): ExerciseSession[] {
+  return store.exerciseSessions.all('completedAt > ? AND completedAt <= ? AND dismissedAt IS NULL',
+    resultsSince(since), resultsSince(now));
 }
 
 export function getExerciseSession(sessionId: string): ExerciseSession | undefined {
   return store.exerciseSessions.get(sessionId);
 }
+
+/** A group game's size: what the setup screen offers (ExerciseSetup), and the route's schema (bodies.ts). */
+export const GAME_LIMITS = { players: 10, rounds: 5, questionsPerRound: 10 } as const;
+const oneTo = (n: number, max: number) => Number.isInteger(n) && n >= 1 && n <= max;
 
 export function startExerciseSession(
   playerIds: string[],
@@ -830,6 +1031,13 @@ export function startExerciseSession(
   totalRounds: number,
   questionsPerRound: number
 ): ExerciseSession {
+  const { players, rounds, questionsPerRound: perRound } = GAME_LIMITS;
+  if (!oneTo(playerIds.length, players) || !oneTo(totalRounds, rounds) || !oneTo(questionsPerRound, perRound)) {
+    throw new Error(`A game is 1-${players} players, 1-${rounds} rounds of 1-${perRound} questions`);
+  }
+  const unknown = playerIds.find(id => !findUser(id));
+  if (unknown) throw new Error(`Unknown player: ${unknown}`);
+
   // Filter exercises by categories
   let availableExercises = readExercises();
   // Problems are solved alone, step by step, not raced in a group game
@@ -877,8 +1085,15 @@ export function startExerciseSession(
   return session;
 }
 
-export function cancelExerciseSession(sessionId: string): void {
-  store.exerciseSessions.deleteWhere('id = ?', sessionId);
+/**
+ * «Έξοδος» / «Επιστροφή στο Ταμπλό»: a running game is cancelled (deleted); a finished one is only
+ * taken off the screens (dismissedAt), so its record stays.
+ */
+export function closeExerciseSession(sessionId: string): void {
+  const session = store.exerciseSessions.get(sessionId);
+  if (!session) return;
+  if (!session.completedAt) store.exerciseSessions.deleteWhere('id = ?', sessionId);
+  else if (!session.dismissedAt) store.exerciseSessions.put({ ...session, dismissedAt: new Date().toISOString() });
 }
 
 export function submitExerciseAnswer(
@@ -896,8 +1111,13 @@ export function submitExerciseAnswer(
   const exercise = readExercises().find(e => e.id === exerciseId);
   if (!exercise) throw new Error('Exercise not found');
 
-  // Absolute question index (answers accumulate across rounds)
-  const overallQuestionIndex = (session.currentRound - 1) * session.questionsPerRound + session.currentQuestionIndex;
+  // An answer counts once, for the question on screen, from the player on turn. Anything else (the
+  // same answer again from a second screen or a repeated request) is refused: nothing paid or stored.
+  const overallQuestionIndex = currentQuestion(session);
+  const existingUserIds = config().users.map(u => u.id);
+  const relevantPlayerIds = session.playerIds.filter(pid => existingUserIds.includes(pid));
+  if (exerciseId !== session.exerciseIds[overallQuestionIndex]) throw new Error('Not the current question');
+  if (userId !== playerOnTurn(session, relevantPlayerIds)) throw new Error("Not this player's turn");
 
   const isCorrect = checkExerciseAnswer(exercise, answer);
   const earnedStars = isCorrect ? exercise.stars : 0;
@@ -917,9 +1137,6 @@ export function submitExerciseAnswer(
   }
 
   // Advance question index if all players answered this overall question
-  const existingUserIds = config().users.map(u => u.id);
-  const relevantPlayerIds = session.playerIds.filter(pid => existingUserIds.includes(pid));
-
   const allAnsweredCurrent = relevantPlayerIds.every(pid =>
     session.answers[pid] && session.answers[pid].length > overallQuestionIndex
   );
@@ -968,39 +1185,13 @@ function lastSeen(userId: string): Map<string, string> {
   return seen;
 }
 
-// Never-seen exercises first, in random order; then the ones seen longest ago.
-// Returned so that pop() takes the freshest.
-function freshLast(list: Exercise[], seen: Map<string, string>): Exercise[] {
-  const unseen = list.filter(e => !seen.has(e.id)).sort(() => Math.random() - 0.5);
-  const old = list.filter(e => seen.has(e.id)).sort((a, b) => seen.get(a.id)!.localeCompare(seen.get(b.id)!));
-  return [...unseen, ...old].reverse();
-}
-
-// Draw `count` exercises from a pool, balancing across categories
-// (round-robin over per-category buckets), freshest first within each.
-function drawBalanced(pool: Exercise[], count: number, seen: Map<string, string>): Exercise[] {
-  const byCategory = new Map<string, Exercise[]>();
-  for (const ex of pool) {
-    if (!byCategory.has(ex.category)) byCategory.set(ex.category, []);
-    byCategory.get(ex.category)!.push(ex);
-  }
-  const buckets = [...byCategory.values()].map(b => freshLast(b, seen));
-  // Shuffle bucket order too, so the first category varies day to day
-  buckets.sort(() => Math.random() - 0.5);
-
-  const drawn: Exercise[] = [];
-  let i = 0;
-  while (drawn.length < count && buckets.some(b => b.length > 0)) {
-    const bucket = buckets[i % buckets.length];
-    const ex = bucket.pop();
-    if (ex) drawn.push(ex);
-    i++;
-  }
-  return drawn;
-}
-
 // The daily set, as opposed to the extra problems a kid asks for.
 const DAILY = '(extra IS NULL OR extra = 0)';
+
+/** How many daily sets a kid has had: where her round of the mix starts when she has no problems (drawDailySet). */
+function dailySetsSoFar(userId: string): number {
+  return new Set(store.exerciseAssignments.all(`userId = ? AND ${DAILY}`, userId).map(a => a.date)).size;
+}
 
 // How many extra problems a kid may ask for in a day unless settings.extraProblemsPerDay says otherwise.
 export const DEFAULT_EXTRA_PROBLEMS_PER_DAY = 10;
@@ -1021,7 +1212,8 @@ export function extraProblemsToday(userId: string): { used: number; limit: numbe
 // new one, so tapping twice doesn't hand out two; the day's limit caps the rest.
 export async function startExtraProblem(userId: string): Promise<ExerciseAssignmentWithExercise> {
   if (!config().users.some(u => u.id === userId)) throw new Error('Unknown user');
-  const problems = (await exercisePoolProvider.getPoolForUser(userId)).filter(e => e.type === 'problem');
+  // Problems of her own grade (revision pools hold none)
+  const problems = (await exercisePoolProvider.getPoolsForUser(userId)).own.filter(e => e.type === 'problem');
   if (problems.length === 0) throw new Error('No problems for this kid (is their class set?)');
 
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
@@ -1041,10 +1233,13 @@ export async function startExtraProblem(userId: string): Promise<ExerciseAssignm
     logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit });
     return created;
   });
-  return { ...assignment, exercise: await exercisePoolProvider.getExerciseById(assignment.exerciseId) };
+  const exercise = await exercisePoolProvider.getExerciseById(assignment.exerciseId);
+  return { ...fitProgress(assignment, exercise), exercise };
 }
 
-// Make sure every user has today's assignments drawn from their pool.
+// Make sure every user has today's assignments drawn from their pool, in the
+// daily mix (drawDailySet, exercisePool.ts). They are stored in that order, and
+// read back in it (rowid), so the problem comes first on her screens.
 // Lazy generation: called whenever assignments are fetched.
 export async function ensureDailyAssignments(): Promise<boolean> {
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
@@ -1054,10 +1249,10 @@ export async function ensureDailyAssignments(): Promise<boolean> {
     const hasToday = store.exerciseAssignments.all(`userId = ? AND date = ? AND ${DAILY}`, user.id, today).length > 0;
     if (hasToday) continue;
 
-    const pool = await exercisePoolProvider.getPoolForUser(user.id);
-    if (pool.length === 0) continue;
+    const pools = await exercisePoolProvider.getPoolsForUser(user.id);
+    const { drawn, revision } = drawDailySet(pools, exercisesPerDay(), lastSeen(user.id), dailySetsSoFar(user.id));
+    if (drawn.length === 0) continue;
 
-    const drawn = drawBalanced(pool, exercisesPerDay(), lastSeen(user.id));
     // Re-check after the await: a concurrent request may have drawn already.
     store.transaction(() => {
       if (store.exerciseAssignments.all(`userId = ? AND date = ? AND ${DAILY}`, user.id, today).length > 0) return;
@@ -1073,7 +1268,9 @@ export async function ensureDailyAssignments(): Promise<boolean> {
         });
       }
       created = true;
-      logAction('EXERCISE_ASSIGNMENTS_CREATED', { userId: user.id, date: today, exerciseIds: drawn.map(e => e.id) });
+      logAction('EXERCISE_ASSIGNMENTS_CREATED', {
+        userId: user.id, date: today, exerciseIds: drawn.map(e => e.id), ...(revision.length ? { revision } : {})
+      });
     });
   }
 
@@ -1093,14 +1290,44 @@ async function todaysAssignments(userId?: string): Promise<ExerciseAssignmentWit
     ? store.exerciseAssignments.all('date = ? AND userId = ?', today, userId)
     : store.exerciseAssignments.all('date = ?', today);
 
+  // Revision items (from a lower grade's pool) are marked on her card
+  const revisionOf = new Map<string, Set<string>>();
+  const isRevision = async (a: ExerciseAssignment) => {
+    if (!revisionOf.has(a.userId)) {
+      const { own, revision } = await exercisePoolProvider.getPoolsForUser(a.userId);
+      const ownIds = new Set(own.map(e => e.id));
+      revisionOf.set(a.userId, new Set(revision.map(e => e.id).filter(id => !ownIds.has(id))));
+    }
+    return revisionOf.get(a.userId)!.has(a.exerciseId);
+  };
   const enriched: ExerciseAssignmentWithExercise[] = [];
   for (const a of assignments) {
-    enriched.push({ ...a, exercise: await exercisePoolProvider.getExerciseById(a.exerciseId) });
+    const exercise = await exercisePoolProvider.getExerciseById(a.exerciseId);
+    enriched.push({ ...fitProgress(a, exercise), exercise, ...(await isRevision(a) ? { revision: true } : {}) });
   }
   return enriched;
 }
 
-// Answer a daily assignment. Correct -> completed + stars. Wrong -> retry allowed.
+/**
+ * A problem's progress, if it still fits the problem. The pools are regenerated under the
+ * same ids (#50), so an open assignment may hold a step or mistakes of an older version:
+ * a step past the last one, or mistakes counted for another number of steps. Such progress
+ * starts again at step 0 (shown so, and stored so on her next answer).
+ */
+export function fitProgress<A extends ExerciseAssignment>(a: A, exercise: Exercise | undefined): A {
+  if (exercise?.type !== 'problem' || a.status === 'completed') return a;
+  const step = a.stepIndex ?? 0;
+  if (step < exercise.steps.length && (!a.mistakes || a.mistakes.length === exercise.steps.length)) return a;
+  const { stepIndex: _step, mistakes: _mistakes, ...rest } = a;
+  return { ...rest, stepIndex: 0 } as A;
+}
+
+// The kid's rung on the forgiveness ladder (shared/forgiveness.ts)
+const forgivenessOf = (userId: string) => config().users.find(u => u.id === userId)?.forgiveness ?? DEFAULT_FORGIVENESS;
+
+// Answer a daily assignment. Correct -> completed, paying its stars less one per wrong
+// try before it (shared/forgiveness.ts). Wrong -> another try, unless the kid is on the
+// unforgiving rung and has used her tries: then it is closed, paying nothing.
 // A problem is answered one step at a time ({ step, value }): a correct step moves
 // on to the next, the last one completes it; a wrong one counts in `mistakes`.
 export async function answerExerciseAssignment(
@@ -1124,8 +1351,8 @@ export async function answerExerciseAssignment(
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
     const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1 };
     let stars = 0;
-    if (isCorrect) {
-      stars = exercise.stars;
+    if (isCorrect || updated.attempts >= plainTries(forgivenessOf(current.userId), exercise.type)) {
+      stars = isCorrect ? plainStars(exercise.stars, current.attempts) : 0;
       updated.status = 'completed';
       updated.completedAt = new Date().toISOString();
       updated.starsAwarded = stars;
@@ -1136,11 +1363,31 @@ export async function answerExerciseAssignment(
   });
 
   logAction('EXERCISE_ASSIGNMENT_ANSWER', {
-    assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId,
-    correct: isCorrect, attempts: assignment.attempts, starsAwarded
+    assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId, forgiveness: forgivenessOf(assignment.userId),
+    correct: isCorrect, attempts: assignment.attempts, starsAwarded, completed: assignment.status === 'completed'
   });
 
   return { correct: isCorrect, starsAwarded, assignment };
+}
+
+// «Δείξε μου» on a plain exercise, on the forgiving rung: after a wrong try (so it pays
+// nothing already), she may see the right answer. That closes it, paying nothing.
+export async function revealExerciseAssignment(assignmentId: string): Promise<ExerciseAssignment> {
+  const found = store.exerciseAssignments.get(assignmentId);
+  if (!found) throw new Error('Assignment not found');
+  const exercise = await exercisePoolProvider.getExerciseById(found.exerciseId);
+  if (!exercise) throw new Error('Exercise not found in pool');
+  if (exercise.type === 'problem') throw new Error('A problem is shown step by step');
+  const assignment = store.transaction(() => {
+    const current = store.exerciseAssignments.get(assignmentId);
+    if (!current || current.status === 'completed') throw new Error('Assignment already completed');
+    if (current.attempts < 1) throw new Error('The answer is shown after a wrong try first');
+    const updated: ExerciseAssignment = { ...current, status: 'completed', completedAt: new Date().toISOString(), starsAwarded: 0 };
+    store.exerciseAssignments.put(updated);
+    return updated;
+  });
+  logAction('EXERCISE_ASSIGNMENT_REVEAL', { assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId, attempts: assignment.attempts });
+  return assignment;
 }
 
 function answerProblemStep(
@@ -1149,28 +1396,41 @@ function answerProblemStep(
   answer: ProblemStepAnswer
 ): { correct: boolean; starsAwarded: number; assignment: ExerciseAssignment; wrong?: number[] } {
   const result = store.transaction(() => {
-    const current = store.exerciseAssignments.get(assignmentId);
-    if (!current || current.status === 'completed') throw new Error('Assignment already completed');
+    const stored = store.exerciseAssignments.get(assignmentId);
+    if (!stored || stored.status === 'completed') throw new Error('Assignment already completed');
+    const current = fitProgress(stored, exercise);
+    if (current !== stored) logAction('EXERCISE_PROBLEM_RESTARTED', { assignmentId, exerciseId: exercise.id, stepIndex: stored.stepIndex, mistakes: stored.mistakes, steps: exercise.steps.length });
     const stepIndex = current.stepIndex ?? 0;
+    const rung = forgivenessOf(current.userId);
     // An answer to a step already solved (a second device, a double tap) changes nothing.
-    if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true };
+    if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true, rung };
 
-    const reading = config().users.find(u => u.id === current.userId)?.problemReading;
-    const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
     const mistakes = exercise.steps.map((_, i) => current.mistakes?.[i] ?? 0);
     const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
-    let stars = 0;
-    // Working it out, the screen reads each calculation back as she goes: the ones she
-    // took back count as mistakes of the step
+    // Working it out, the screen reads each calculation back as she goes and sends the one she
+    // got wrong as it happens: a mistake of the step if it is one that counts (a wrong result,
+    // the smaller number first), read back here. It is not an answer: the step stays hers.
     const step = exercise.steps[stepIndex];
-    const slips = (answer.value as { slips?: unknown } | null)?.slips;
-    if (step.kind === 'calc' && typeof slips === 'number' && Number.isInteger(slips)) mistakes[stepIndex] += Math.max(0, Math.min(99, slips));
+    const value = answer.value as { lines?: unknown; slip?: unknown } | null;
+    if (step.kind === 'calc' && value && typeof value === 'object' && 'slip' in value) {
+      const line = value.slip as CalcLine;
+      const slip = line && ['+', '−', '×', ':'].includes(line.op) && [line.x, line.y, line.result].every(Number.isFinite)
+        ? calcSlip(step, value.lines, line) : null;
+      if (slip && wrongTryCounts(step, slip)) mistakes[stepIndex]++;
+      store.exerciseAssignments.put(updated);
+      return { correct: false, starsAwarded: 0, assignment: updated, stale: false, rung, slip: slip ?? 'none' };
+    }
+    const reading = config().users.find(u => u.id === current.userId)?.problemReading;
+    const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
+    let stars = 0;
     if (!correct) {
-      mistakes[stepIndex]++;
+      // The same rule as the slips above decides whether this wrong try costs (shared/forgiveness.ts)
+      if (wrongTryCounts(step)) mistakes[stepIndex]++;
     } else if (stepIndex + 1 < exercise.steps.length) {
       updated.stepIndex = stepIndex + 1;
     } else {
-      stars = exercise.stars;
+      // A star less for each step gone wrong (the worked steps too: they had their wrong tries)
+      stars = problemStars(exercise, mistakes, rung);
       updated.stepIndex = exercise.steps.length;
       updated.status = 'completed';
       updated.completedAt = new Date().toISOString();
@@ -1178,14 +1438,14 @@ function answerProblemStep(
     }
     store.exerciseAssignments.put(updated);
     if (stars > 0) awardStars(updated.userId, stars);
-    return { correct, wrong, starsAwarded: stars, assignment: updated, stale: false };
+    return { correct, wrong, starsAwarded: stars, assignment: updated, stale: false, rung };
   });
 
-  const { stale, ...reply } = result;
+  const { stale, rung, slip, ...reply } = result as typeof result & { slip?: string };
   if (!stale) {
     logAction('EXERCISE_PROBLEM_STEP', {
-      assignmentId, userId: reply.assignment.userId, exerciseId: exercise.id, step: answer.step,
-      kind: exercise.steps[answer.step]?.kind, correct: reply.correct, wrong: reply.wrong,
+      assignmentId, userId: reply.assignment.userId, exerciseId: exercise.id, step: answer.step, forgiveness: rung,
+      kind: exercise.steps[answer.step]?.kind, correct: reply.correct, wrong: reply.wrong, ...(slip ? { slip, mistakes: reply.assignment.mistakes } : {}),
       completed: reply.assignment.status === 'completed', starsAwarded: reply.starsAwarded
     });
   }

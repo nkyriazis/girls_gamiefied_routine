@@ -54,20 +54,23 @@ export const buyAndChange: Family = {
       `Το σπίτι ${p.his} είναι ${extra(`${r.int(2, 6)} στενά`)} πιο κάτω.`,
       `Η αδερφή ${p.his} είναι ${extra(`${r.int(4, 12)} χρονών`)}.`,
     ]);
+    // The sister is a second subject: the question names whom it means («Πόσα ρέστα θα πάρει ο Φώτης;»)
+    const sister = noise.startsWith('Η αδερφή');
+    const who = sister ? ` ${p.nom}` : '';
     const paper = known(r.pick([`ένα χαρτονόμισμα των ${note} ευρώ`, `${note} ευρώ`]));
     const each = `${a(t)} ${t.one}`;
-    const who = p.female ? `τις ${friends} φίλες της` : `τους ${friends} φίλους του`;
+    const friendsText = p.female ? `τις ${friends} φίλες της` : `τους ${friends} φίλους του`;
     const story = trap
       ? r.pick([
-        () => `${p.Nom} πηγαίνει ${item.go} με ${known(who)} και πληρώνει από ${each} για όλα τα παιδιά. `
-          + `${cap(each)} κοστίζει ${known(`${price} ευρώ`)}. ${noise} Δίνει ${paper}. ${sought('Πόσα ρέστα θα πάρει')};`,
-        ...(item.treat ? [() => `${cap(item.shop)}, ${each} κοστίζει ${known(`${price} ευρώ`)}. ${p.Nom} κερνάει ${known(who)} από ${each} και παίρνει άλλο ένα για τον εαυτό ${p.his}. `
-          + `${noise} Πληρώνει με ${paper}. ${sought('Πόσα ευρώ θα πάρει πίσω')};`] : []),
+        () => `${p.Nom} πηγαίνει ${item.go} με ${known(friendsText)} και πληρώνει από ${each} για όλα τα παιδιά. `
+          + `${cap(each)} κοστίζει ${known(`${price} ευρώ`)}. ${noise} Δίνει ${paper}. ${sought(`Πόσα ρέστα θα πάρει${who}`)};`,
+        ...(item.treat ? [() => `${cap(item.shop)}, ${each} κοστίζει ${known(`${price} ευρώ`)}. ${p.Nom} κερνάει ${known(friendsText)} από ${each} και παίρνει άλλο ένα για τον εαυτό ${p.his}. `
+          + `${noise} Πληρώνει με ${paper}. ${sought(`Πόσα ευρώ θα πάρει πίσω${who}`)};`] : []),
       ])()
       : r.pick([
-        () => `${p.Nom} αγοράζει ${item.shop} ${known(count(n, t, true))}. Κάθε ${t.one} κοστίζει ${known(`${price} ευρώ`)}. ${noise} Πληρώνει με ${paper}. ${sought('Πόσα ρέστα θα πάρει')};`,
-        () => `${cap(item.shop)}, ${each} κοστίζει ${known(`${price} ευρώ`)}. ${p.Nom} παίρνει ${known(count(n, t, true))} και δίνει ${paper}. ${noise} ${sought('Πόσα ευρώ θα πάρει πίσω')};`,
-        () => `${p.Nom} έχει στο πορτοφόλι ${p.his} ${paper}. ${cap(item.shop)} αγοράζει ${known(count(n, t, true))}, που κοστίζουν ${known(`${price} ευρώ`)} ${t.g === 'n' ? 'το καθένα' : t.g === 'f' ? 'η καθεμία' : 'ο καθένας'}. ${noise} ${sought(`Πόσα ευρώ θα ${p.his} μείνουν`)};`,
+        () => `${p.Nom} αγοράζει ${item.shop} ${known(count(n, t, true))}. Κάθε ${t.one} κοστίζει ${known(`${price} ευρώ`)}. ${noise} Πληρώνει με ${paper}. ${sought(`Πόσα ρέστα θα πάρει${who}`)};`,
+        () => `${cap(item.shop)}, ${each} κοστίζει ${known(`${price} ευρώ`)}. ${p.Nom} παίρνει ${known(count(n, t, true))} και δίνει ${paper}. ${noise} ${sought(`Πόσα ευρώ θα πάρει πίσω${who}`)};`,
+        () => `${p.Nom} έχει στο πορτοφόλι ${p.his} ${paper}. ${cap(item.shop)} αγοράζει ${known(count(n, t, true))}, που κοστίζουν ${known(`${price} ευρώ`)} ${t.g === 'n' ? 'το καθένα' : t.g === 'f' ? 'η καθεμία' : 'ο καθένας'}. ${noise} ${sought(sister ? `Πόσα ευρώ θα μείνουν σ${p.acc}` : `Πόσα ευρώ θα ${p.his} μείνουν`)};`,
       ])();
 
     const steps: ProblemStep[] = [
@@ -84,14 +87,15 @@ export const buyAndChange: Family = {
     const ops = r.chance(0.5);
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: ops ? `${n} × ${price} =` : 'Κοστίζουν όλα μαζί', answer: cost, unit: 'ευρώ' },
-      { label: ops ? `${note} − ${cost} =` : 'Ρέστα', answer: change, unit: 'ευρώ' },
+      { label: ops ? `${note} − όσα κοστίζουν =` : 'Ρέστα', answer: change, unit: 'ευρώ' },
     ], `Πρώτα βρίσκουμε το κόστος: ${n} φορές από ${price} ευρώ. Μετά βγάζουμε το κόστος από τα ${note} ευρώ.`));
     steps.push(r.chance(0.5)
       ? b.choice('check', 'Πώς ελέγχουμε;', `${cost} + ${change} = ${note}`,
         [`${note} + ${change} = ${note + change}`, `${n} × ${change} = ${n * change}`],
         'Όσα κόστισαν μαζί με τα ρέστα πρέπει να κάνουν όσα έδωσε.')
-      : b.choice('check', 'Είναι λογική η απάντηση;', `Ναι, γιατί τα ρέστα είναι λιγότερα από τα ${note} ευρώ που έδωσε`,
-        [`Όχι, τα ρέστα πρέπει να είναι ${note - price} ευρώ`, `Όχι, τα ρέστα πρέπει να είναι περισσότερα από ${note} ευρώ`],
+      : b.choice('check', 'Είναι λογική η απάντηση;', `Ναι, είναι λιγότερα από τα ${note} ευρώ`,
+        [[`Όχι, πρέπει να είναι ${note - price} ευρώ`, `Όχι, πρέπει να βγει ${note - price} ευρώ`, `Όχι, πρέπει να είναι ακριβώς ${note - price} ευρώ`],
+          [`Όχι, πρέπει να είναι πάνω από ${note} ευρώ`, `Όχι, θα είναι πάνω από ${note} ευρώ`, `Όχι, πάνω από ${note} ευρώ`]],
         `Αν αγόραζε μόνο ${t.g === 'm' ? `έναν ${t.one.replace(/ος$/, 'ο')}` : each}, θα έπαιρνε ${note - price} ευρώ ρέστα. Αγοράζει όμως ${n}.`));
     return { title: r.pick(['Τα ρέστα', 'Ψώνια', 'Στο ταμείο', trap ? 'Για όλη την παρέα' : 'Στο μαγαζί']), story, steps };
   },

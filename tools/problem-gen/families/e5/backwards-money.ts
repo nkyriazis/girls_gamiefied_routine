@@ -1,13 +1,13 @@
 // Working backwards: spent some, then half of what was left, ... and ended with c: how
 // much at first? (Ε΄ κεφ. 1.3, στρατηγική «Εργάζομαι αντίστροφα»; Επαναληπτικό 2, 2ο πρόβλημα).
-import { extra, fmt, known, people, sought, type Family, type Person } from '../../lib.ts';
+import { extra, fmt, known, NO_MISTAKE, people, sought, STRATEGY, type Family, type Person } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 type Kind = 'minus' | 'plus' | 'half';
 interface Op { kind: Kind; n: number; before: string }
 
 /** One thing that happens: the phrase (with its number) and the name of the moment before it. */
-interface Event { say: (n: string, p: Person) => string; before: string }
+interface Event { say: (n: string, p: Person) => string; before: string; /** the most it costs, when less than any amount */ max?: number }
 
 interface Setting {
   title: string;
@@ -33,7 +33,7 @@ const SETTINGS: Setting[] = [
     minus: [
       { say: n => `αγόρασε ένα βιβλίο των ${n} €`, before: 'Πριν από το βιβλίο' },
       { say: n => `έδωσε ${n} € για ένα βραχιόλι`, before: 'Πριν από το βραχιόλι' },
-      { say: n => `πλήρωσε ${n} € για λουκουμάδες`, before: 'Πριν από τους λουκουμάδες' },
+      { say: n => `πλήρωσε ${n} € για λουκουμάδες`, before: 'Πριν από τους λουκουμάδες', max: 15 },
     ],
     plus: { say: (n, p) => `πήρε ${n} € από τη γιαγιά ${p.his}`, before: 'Πριν από τα χρήματα της γιαγιάς' },
     half: [p => `ξόδεψε τα μισά χρήματά ${p.his} σε παιχνίδια`, p => `ξόδεψε σε παιχνίδια τα μισά από όσα ${p.his} είχαν μείνει`, () => 'ξόδεψε σε παιχνίδια τα μισά από όσα είχε τότε'],
@@ -65,7 +65,7 @@ const SETTINGS: Setting[] = [
     minus: [
       { say: n => `ξόδεψε ${n} € για φρούτα`, before: 'Πριν από τα φρούτα' },
       { say: n => `πλήρωσε ${n} € για λουλούδια`, before: 'Πριν από τα λουλούδια' },
-      { say: n => `έδωσε ${n} € για αυγά`, before: 'Πριν από τα αυγά' },
+      { say: n => `έδωσε ${n} € για αυγά`, before: 'Πριν από τα αυγά', max: 10 },
     ],
     plus: { say: n => `πήρε πίσω ${n} € από μια φίλη της που της χρωστούσε`, before: 'Πριν πάρει πίσω τα χρήματα' },
     half: [() => 'έδωσε τα μισά χρήματά της για ψάρια', () => 'έδωσε για ψάρια τα μισά από όσα της είχαν μείνει', () => 'έδωσε για ψάρια τα μισά από όσα είχε τότε'],
@@ -121,7 +121,7 @@ export const backwardsMoney: Family = {
       } else {
         const n = r.int(3, s.step === 5 ? 14 : 25) * s.step;
         const ev = k === 'plus' ? s.plus : minus.pop()!;
-        if (k === 'minus') { if (n >= x) return null; x -= n; } else x += n;
+        if (k === 'minus') { if (n >= x || n > (ev.max ?? n)) return null; x -= n; } else x += n;
         ops.push({ kind: k, n, before: ev.before });
         phrases.push(ev.say(fmt(n), p));
       }
@@ -146,8 +146,9 @@ export const backwardsMoney: Family = {
     const back = [];
     for (let i = ops.length - 1; i >= 0; i--) {
       const op = ops[i];
-      const after = values[i + 1];
-      const how = op.kind === 'half' ? `${fmt(after)} × 2` : op.kind === 'minus' ? `${fmt(after)} + ${fmt(op.n)}` : `${fmt(after)} − ${fmt(op.n)}`;
+      // The row above is «ό,τι βρήκαμε», never its number; the end is the story's
+      const after = i === ops.length - 1 ? fmt(values[i + 1]) : 'ό,τι βρήκαμε';
+      const how = op.kind === 'half' ? `${after} × 2` : op.kind === 'minus' ? `${after} + ${fmt(op.n)}` : `${after} − ${fmt(op.n)}`;
       const name = i === 0 ? 'Στην αρχή' : op.before;
       back.push({ label: show ? `${name}: ${how} =` : name, answer: values[i], unit: s.unit });
     }
@@ -156,8 +157,10 @@ export const backwardsMoney: Family = {
     const halfBack = ops.reduceRight((acc, op) => op.kind === 'half' ? acc / 2 : op.kind === 'minus' ? acc + op.n : acc - op.n, c);
     const steps: ProblemStep[] = [b.tag(undefined, 'Ξέρουμε το τέλος και όλα όσα έγιναν. Ό,τι δεν αλλάζει τους αριθμούς το αφήνουμε.')];
     if (r.chance(0.6)) {
-      steps.push(b.choice('plan', 'Ποια στρατηγική ταιριάζει;', 'Εργάζομαι αντίστροφα: ξεκινώ από το τέλος και γυρίζω πίσω',
-        ['Αναζητώ ένα μοτίβο', naive > 0 && naive !== start ? `Προσθέτω και αφαιρώ μόνο τους αριθμούς της ιστορίας: βγαίνει ${fmt(naive)}` : 'Προσθέτω όλους τους αριθμούς της ιστορίας'],
+      steps.push(b.choice('plan', 'Ποια στρατηγική ταιριάζει;', STRATEGY.backwards,
+        // (never the number the naive sum gives: it is the first step's answer)
+        [STRATEGY.pattern, naive > 0 && naive !== start ? ['Κάνω με τη σειρά τις πράξεις της ιστορίας', 'Κάνω τις πράξεις με τη σειρά']
+          : ['Προσθέτω όλους τους αριθμούς της ιστορίας', 'Προσθέτω τους αριθμούς']],
         'Ξέρουμε μόνο πόσα έμειναν στο τέλος. Από εκεί γυρίζουμε πίσω, κάνοντας κάθε φορά το αντίθετο.'));
     }
     steps.push(b.numbers('solve', 'Πηγαίνουμε αντίστροφα, από το τέλος προς την αρχή.', back,
@@ -170,7 +173,7 @@ export const backwardsMoney: Family = {
       ? b.numbers('check', `Πώς ελέγχουμε; Ξαναπαίζουμε την ιστορία από την αρχή, με ${fmt(start)}.`, fwd,
         `Στο τέλος πρέπει να βρούμε ${fmt(c)}.`)
       : b.choice('check', `Κάποιος απάντησε «${fmt(halfBack)}». Τι έκανε λάθος;`, s.wrongHalf,
-        ['Τίποτα, είναι σωστό', 'Ξεκίνησε από την αρχή αντί από το τέλος'],
+        [['Κανένα λάθος, η απάντηση είναι σωστή', ...NO_MISTAKE], ['Ξεκίνησε από την αρχή αντί από το τέλος', 'Ξεκίνησε από την αρχή']],
         'Όταν πηγαίνουμε πίσω, κάνουμε το αντίθετο κάθε βήματος.'));
     return { title: s.title, story, steps };
   },

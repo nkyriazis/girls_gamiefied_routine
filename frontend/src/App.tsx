@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Dashboard } from './components/Dashboard';
 import { ParentDashboard } from './components/parent/ParentDashboard';
-import { GameProvider } from './context/GameContext';
+import { GameProvider } from './context/GameProvider';
 import { HelpProvider } from './help/HelpProvider';
 import { SoundProvider } from './sound/SoundProvider';
 

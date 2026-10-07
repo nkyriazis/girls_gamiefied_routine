@@ -40,7 +40,7 @@ export const share: Family = {
       : `${grown} ${maker} ${known(count(total, t, true))} και ${the(t)} μοιράζει εξίσου σε ${who}. ${noise} ${sought(`${HowMany(t)} ${t.many} θα πάρει κάθε παιδί`)};`;
 
     const steps = [
-      b.tag(undefined, 'Χρειαζόμαστε πόσα είναι όλα και σε πόσα παιδιά μοιράζονται. Το υπόλοιπο μπορεί να μη χρειάζεται.'),
+      b.tag(undefined, 'Χρειαζόμαστε πόσα είναι όλα και σε πόσα παιδιά μοιράζονται. Ό,τι άλλο λέει η ιστορία δεν χρειάζεται.'),
       ...(trap ? [b.choice('plan', 'Σε πόσα παιδιά μοιράζονται;', String(kids), [String(friends), String(total)],
         `Μη ξεχάσεις και ${kid.female ? 'την ίδια' : 'τον ίδιο'} ${kid.acc}!`)] : []),
       b.choice('plan', 'Ποια πράξη μας βοηθά;', `${fmt(total)} : ${kids}`,

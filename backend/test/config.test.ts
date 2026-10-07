@@ -143,7 +143,7 @@ test('after a start with an unreadable file, a plain save is refused and the fil
   assert.equal(cfg.reload(), 'invalid');
   assert.equal(cfg.problem()?.emptyFallback, true);
 
-  // What the forms, MCP and the old Advanced editor did: save the live (empty) config back
+  // What the forms and the old Advanced editor did: save the live (empty) config back
   const refused = cfg.save(cfg.raw());
   assert.ok(refused);
   assert.match(refused!.message, /never loaded/);
@@ -255,4 +255,65 @@ test('a file that is itself the empty config can be saved as the empty config', 
   assert.equal(cfg.save(EXERCISES), null);
   assert.equal(cfg.save(MATH), null);
   assert.ok(cfg.save(EXERCISES), 'not once it has content');
+});
+
+// ---------------------------------------------------------------------------
+// A save names the version it edited; a stale one is refused (issue #33)
+// ---------------------------------------------------------------------------
+
+test('the version follows the live text: it changes on a save and on a valid reload from disk', () => {
+  const { file, cfg } = setup();
+  cfg.reload();
+  const v1 = cfg.version();
+  assert.match(v1, /^[0-9a-f]{12}$/);
+  assert.equal(cfg.reload(), 'unchanged');
+  assert.equal(cfg.version(), v1);
+
+  assert.equal(cfg.save(valid('Bob'), { version: v1 }), null);
+  const v2 = cfg.version();
+  assert.notEqual(v2, v1);
+
+  writeFileSync(file, JSON.stringify(valid('Carol')));
+  assert.equal(cfg.reload(), 'updated');
+  assert.notEqual(cfg.version(), v2);
+
+  // An invalid file on disk keeps the live version (and the live config)
+  const v3 = cfg.version();
+  writeFileSync(file, '{ not json');
+  assert.equal(cfg.reload(), 'invalid');
+  assert.equal(cfg.version(), v3);
+});
+
+test('the value and its version are read together', () => {
+  const { cfg } = setup();
+  cfg.reload();
+  const { value, version } = cfg.current();
+  assert.equal(value, cfg.get());
+  assert.equal(version, cfg.version());
+});
+
+test('a save that names an older version is refused as a conflict and writes nothing', () => {
+  const { file, cfg } = setup();
+  cfg.reload();
+  const opened = cfg.version();
+  assert.equal(cfg.save(valid('Bob'), { version: opened }), null); // another screen's save
+  const text = readFileSync(file, 'utf-8');
+
+  const refused = cfg.save(valid('Alice again'), { version: opened });
+  assert.ok(refused);
+  assert.equal(refused.conflict, true);
+  assert.equal(readFileSync(file, 'utf-8'), text);
+  assert.equal(cfg.get().users[0].name, 'Bob');
+
+  // ...with replace too: replace overrides an invalid file, never a newer version
+  assert.equal(cfg.save(valid('Alice again'), { version: opened, replace: true })?.conflict, true);
+  assert.equal(readFileSync(file, 'utf-8'), text);
+});
+
+test('a save with no version is not checked (scripts, the fix-a-broken-file editor)', () => {
+  const { file, cfg } = setup();
+  cfg.reload();
+  assert.equal(cfg.save(valid('Bob')), null);
+  assert.equal(cfg.save(valid('Carol')), null);
+  assert.equal(JSON.parse(readFileSync(file, 'utf-8')).users[0].name, 'Carol');
 });

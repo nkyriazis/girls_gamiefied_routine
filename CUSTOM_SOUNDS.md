@@ -1,34 +1,35 @@
 # Custom Alarm Sounds
 
-You can now use custom uploaded MP3 files for alarm sounds!
+A flow's alarm step can ring an audio file you upload instead of the built-in melody, for example a favourite song
+for each child.
 
-## How to Use
+## 1. Upload the file
 
-### 1. Upload Your Sound File
+On the parents' page (`/parent`): **Προχωρημένα → Αρχεία → «Ανέβασμα εικόνας ή ήχου»**, and pick the file. The server
+saves it under a new name, the time in milliseconds in front of yours (`1764012149103-rooster.mp3`), and the list
+under the button shows every uploaded file by that full name. Tap the file to copy its name («Αντιγράφηκε: …») and
+paste it in step 2. This works on the Pi's plain `http://<pi>/` too. If the browser refuses to copy, the message says
+so and shows the name to type: «Δεν αντιγράφηκε. Το όνομα: …».
 
-**Option A: Via Parent Dashboard (Easiest)**
+The file may be up to 10 MB (the line under the button says so; see «The file» below). A bigger one is refused, on
+the Pi and on the dev stack alike, and nothing of it is kept: «<file>: πάνω από 10 MB, δεν ανέβηκε. Μίκρυνέ το (για
+ήχο: λιγότερα δευτερόλεπτα ή 128 kbps) και ξαναδοκίμασε.»
 
-1. Navigate to the Parent Dashboard (append `?parent=true` to your URL)
-2. Go to the "Dashboard" tab
-3. Find the "Uploads" section
-4. Click the file input and select your MP3 file
-5. After upload, the filename will be automatically copied to your clipboard
-6. Use this filename in step 2 below
-
-**Option B: Via Command Line**
+From a shell, the same upload (dev stack shown; on the Pi use `http://<pi>/api/admin/upload`):
 
 ```bash
-curl -X POST http://localhost:3000/api/admin/upload \
-  -F "file=@your-alarm.mp3"
+curl -F "file=@your-alarm.mp3" http://localhost:3000/api/admin/upload
+# {"success":true,"url":"http://localhost/uploads/1791407741143-your-alarm.mp3","filename":"1791407741143-your-alarm.mp3"}
 ```
 
-The response will include the filename (e.g., `1734567890-your-alarm.mp3`).
+Over 10 MiB (10485760 bytes, `ls -l your-alarm.mp3`) the backend answers `413` with the same message as JSON
+(`{"error":"…"}`), and for a file over 11 MB the Pi's nginx answers `413 Request Entity Too Large` before the backend
+sees it. Either way nothing is stored.
 
-### 2. Update Your Flow Configuration
+## 2. Put it in the flow's alarm step
 
-In `backend/data.json`, update the alarm step in your flow:
-
-#### Option A: Built-in Sounds (Default)
+Flows have no form: edit them in **Προχωρημένα → Ρυθμίσεις (JSON)**, then Αποθήκευση. The editor checks the
+change against the schema before it saves (see VALIDATION.md). Set `props.sound` of the alarm step:
 
 ```json
 {
@@ -37,114 +38,41 @@ In `backend/data.json`, update the alarm step in your flow:
     {
       "type": "alarm",
       "props": {
-        "sound": "melody"
+        "sound": { "type": "upload", "value": "1764012149103-your-alarm.mp3" },
+        "title": "Ώρα για ξύπνημα!"
       }
-    }
-  ]
-}
-```
-
-Built-in options:
-- `"melody"` - Pleasant wake-up tune (default)
-- `"beep"` - Simple alarm beep
-
-#### Option B: Custom Uploaded MP3
-
-```json
-{
-  "id": "u1-morning-flow",
-  "steps": [
-    {
-      "type": "alarm",
-      "props": {
-        "sound": {
-          "type": "upload",
-          "value": "1234567890-your-alarm.mp3"
-        }
-      }
-    }
-  ]
-}
-```
-
-### 3. Example: Different Sounds for Each Child
-
-```json
-{
-  "flows": [
-    {
-      "id": "u1-morning-flow",
-      "steps": [
-        {
-          "type": "alarm",
-          "props": {
-            "sound": {
-              "type": "upload",
-              "value": "electra-favorite-song.mp3"
-            }
-          }
-        },
-        {
-          "type": "parallel",
-          "actions": [
-            {
-              "type": "routine",
-              "userId": "u1",
-              "routineId": "u1-assign-morning"
-            }
-          ]
-        }
-      ]
     },
     {
-      "id": "u2-morning-flow",
-      "steps": [
-        {
-          "type": "alarm",
-          "props": {
-            "sound": {
-              "type": "upload",
-              "value": "ifigenia-favorite-song.mp3"
-            }
-          }
-        },
-        {
-          "type": "parallel",
-          "actions": [
-            {
-              "type": "routine",
-              "userId": "u2",
-              "routineId": "u2-assign-morning"
-            }
-          ]
-        }
-      ]
+      "type": "parallel",
+      "actions": [{ "type": "routine", "userId": "u1", "routineId": "u1-assign-morning" }]
     }
   ]
 }
 ```
 
-## Recommended Audio Format
+`sound` can also be `"melody"`, the built-in wake-up tune, which is what plays when `sound` is left out. `"beep"` is
+still accepted but plays the melody too.
 
-- **Format**: MP3
-- **Bitrate**: 128-192 kbps (balance between quality and file size)
-- **Length**: 30-60 seconds (it will loop automatically)
-- **Volume**: Normalize your audio to avoid too loud/quiet alarms
+A different sound for each child: give each child's flow its own file. When both alarms ring on the same screen at
+once (a flow that starts both children's flows, `{"type": "flow", "flowId": "u1-morning-flow"}` in a `parallel` step),
+the screen plays one sound, the first alarm card's; when that alarm is dismissed, the next card's sound plays.
 
-## Tips
+## 3. Test it
 
-1. **Test your sound first**: Upload and trigger manually using the "Trigger Actions" section in Parent Dashboard
-2. **Keep files small**: Large files may take longer to load (aim for under 5MB)
-3. **Use appropriate content**: Choose pleasant wake-up music for the children
-4. **Fallback**: If the file fails to load, the alarm will be silent (always test before scheduling!)
-5. **File naming**: The system automatically prefixes filenames with a timestamp to prevent conflicts
+**Ρυθμίσεις → Ξεκίνα τώρα → ▶ u1-morning-flow** starts the flow now, on every screen. On the kids' screen the alarm
+rings with your file, looping until someone dismisses it (or for `settings.alarmMinutes`, 60 by default). A screen
+that was just opened plays nothing until someone taps it («Πάτα για να ξεκινήσουμε!»): browsers allow sound only
+after a touch.
 
-## Testing Your Alarm Sound
+If the file can't play (deleted, misspelled in the flow, or a format the browser can't decode), the alarm rings the
+built-in melody instead, so a morning is never silent. A melody where you expected your file means the name in the
+flow doesn't match a file in Αρχεία.
 
-After uploading and configuring:
+## The file
 
-1. Go to Parent Dashboard → "Trigger Actions (Test)" section
-2. Find your flow (e.g., "🔄 u1-morning-flow")
-3. Click to trigger it immediately
-4. The alarm will play with your custom sound
-5. Dismiss it to confirm everything works
+- Any audio the kiosk's browser plays: MP3 is the safe choice.
+- Up to 10 MB: that is the upload limit, for every upload (`shared/uploads.ts`). That is about 10 minutes at
+  128 kbps, so a whole song fits. 30 to 60 seconds is still enough, since it loops, and a smaller file is less on the
+  SD card and in each daily backup (BACKUP.md). A bigger file has to be shortened or re-encoded first, for example
+  `ffmpeg -i song.mp3 -t 45 -b:a 128k alarm.mp3`.
+- It plays at 70% volume: normalise it so it is neither too loud nor too quiet.

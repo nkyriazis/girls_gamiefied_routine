@@ -1,28 +1,25 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
 import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { randomUUID } from 'crypto';
 import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
-import { Spending, StarTransfer, StateSnapshot } from '../../shared/types';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { StreamableHTTPServerTransport } = require('./sdk-proxy');
+import { CONFIG_SAVE_SOURCES, StateSnapshot } from '../../shared/types';
+import { UPLOAD_MAX_BYTES, uploadBroke, uploadNoFile, uploadTooBig } from '../../shared/uploads';
 
 // Import shared database layer
 import {
-  store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, expireAlarms, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
-  readLastLogs, MAX_LOGS, adjustUserStars, awardStars, trySpendStars, UPLOADS_DIR, getChoresWithInstances, claimChore,
-  attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
-  writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
-  cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
-  logAction, getAvailableBalance, getExerciseAssignments, answerExerciseAssignment, startExtraProblem, usersView,
+  store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, expireAlarms, dismissAlarm, history,
+  readLastLogs, MAX_LOGS, awardStars, takeStars, buyReward, resolveSpending, createGift, resolveGift, StarsError, UPLOADS_DIR, getChoresWithInstances, claimChore,
+  attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories,
+  writeRawExercises, writeRawConfig, ConfigConflict, type ConfigSave, startExerciseSession, submitExerciseAnswer,
+  closeExerciseSession, gameResultsLeaving, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
+  logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
   stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
 } from './db';
 import { config, configError, dataConfig, exercisesConfig, reloadConfig, seedConfig, watchConfig } from './config';
@@ -31,28 +28,31 @@ import { HEARTBEAT_MS } from './sync';
 import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
 import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
-
-// Import MCP server
-import { mcpServer } from './mcp';
+import { cronMatchesAt, nextCronRun } from './cron';
+import {
+  answerBody, AnswerBody, claimBody, ClaimBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
+  helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, spendingBody, SpendingBody, spendingStatusBody,
+  SpendingStatusBody, starsBody, StarsBody, timeBody, TimeBody, transferActionBody, TransferActionBody, transferBody, TransferBody,
+  userBody, UserBody
+} from './bodies';
 
 const pump = util.promisify(pipeline);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const cronParser = require('cron-parser');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { DateTime } = require('luxon');
 
-const server = Fastify({ logger: true });
+// Request bodies are checked against their schema (bodies.ts) with strict types: "5" is not taken for 5
+// (Fastify's default would coerce it). Only bodies have schemas, so params and query strings are untouched.
+const server = Fastify({ logger: true, ajv: { customOptions: { coerceTypes: false } } });
 
-// Initialize MCP Transport (Singleton)
-const mcpTransport = new StreamableHTTPServerTransport({
-  sessionIdGenerator: undefined, // Stateless mode for now, or use randomUUID for stateful
-  enableJsonResponse: true
-});
+type Id = { id: string };
+type InstanceId = { instanceId: string };
 
-// Connect MCP server to transport once
-mcpServer.connect(mcpTransport).catch((err: any) => {
-  console.error('Failed to connect MCP server to transport:', err);
+// A body that doesn't match its schema is a 400 { error: 'body/amount must be integer' } (the shape api.ts
+// reads), before the handler runs, so it changes nothing. Every other error goes on to Fastify's own handler.
+server.setErrorHandler((error, request, reply) => {
+  if ((error as { validation?: unknown }).validation) return reply.code(400).send({ error: (error as Error).message });
+  throw error;
 });
 
 // Scheduler Logic
@@ -66,16 +66,7 @@ async function checkSchedules(date: Date) {
   // Check regular schedules (flows, routines)
   for (const schedule of schedules) {
     try {
-      const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
-        currentDate: new Date(date.getTime() - 1000),
-        tz: timezone
-      });
-      
-      const next = interval.next().toDate();
-      const diff = Math.abs(next.getTime() - date.getTime());
-      const isMatch = diff < 60000 && next.getMinutes() === date.getMinutes();
-
-      if (isMatch) {
+      if (cronMatchesAt(schedule.cron, date, timezone)) {
         console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
         logAction('SCHEDULE_MATCH', { scheduleId: schedule.id, targetId: schedule.targetId, cron: schedule.cron, time: localTime });
         triggerAction(schedule.targetId, `schedule:${schedule.id}`);
@@ -146,11 +137,13 @@ server.register(cors, {
   origin: true,
 });
 
-// Enable WebSocket
-server.register(websocket);
+// Enable WebSocket. STATE is the whole world as JSON, sent to every screen on every change: deflated
+// (permessage-deflate, when the browser offers it; Vite's proxy and nginx pass it through) it is a fifth.
+server.register(websocket, { options: { perMessageDeflate: true } });
 
-// Enable Multipart
-server.register(multipart);
+// Multipart, for /api/admin/upload: a file stops at UPLOAD_MAX_BYTES (shared/uploads.ts, #107). Left unset it
+// would stop at Fastify's bodyLimit (1 MiB), and the route would keep the cut file as if it were whole.
+server.register(multipart, { limits: { fileSize: UPLOAD_MAX_BYTES } });
 
 // Enable Static for Uploads
 server.register(fastifyStatic, {
@@ -166,15 +159,22 @@ server.get('/health', async () => {
 // User routes: users with their star balance and their assigned routines
 server.get('/api/users', async () => usersView());
 
-// Parent: add (or, with a negative amount, take away) stars
-server.post('/api/users/:id/stars', async (request, reply) => {
-  const { id } = request.params as { id: string };
-  const { amount } = (request.body ?? {}) as { amount?: unknown };
-  if (typeof amount !== 'number' || !Number.isInteger(amount) || amount === 0) {
-    return reply.code(400).send({ error: 'amount must be a non-zero integer' });
+// Star operations refused with a reason (StarsError) answer with its status and text; the parent's toasts show it.
+async function refusable<T>(reply: FastifyReply, operation: () => T) {
+  try {
+    return operation();
+  } catch (err) {
+    if (err instanceof StarsError) return reply.code(err.status).send({ error: err.message });
+    throw err;
   }
-  if (!config().users.some(u => u.id === id)) return reply.code(404).send({ error: 'User not found' });
-  return awardStars(id, amount);
+}
+
+// Parent: add (or, with a negative amount, take away) stars
+server.post<{ Params: Id; Body: StarsBody }>('/api/users/:id/stars', { schema: { body: starsBody } }, async (request, reply) => {
+  const { id } = request.params;
+  const { amount } = request.body;
+  if (amount === 0) return reply.code(400).send({ error: 'amount must be a non-zero integer' });
+  return refusable(reply, () => amount > 0 ? awardStars(id, amount) : takeStars(id, -amount));
 });
 
 // Flow routes
@@ -209,15 +209,11 @@ server.get('/api/chores', async (request, reply) => {
   }
 });
 
-server.post('/api/chores/:instanceId/claim', async (request, reply) => {
+server.post<{ Params: InstanceId; Body: ClaimBody }>('/api/chores/:instanceId/claim', { schema: { body: claimBody } }, async (request, reply) => {
   try {
-    const { instanceId } = request.params as { instanceId: string };
-    const { userId } = request.body as { userId: string };
-    
-    if (!userId) {
-      return reply.code(400).send({ error: 'userId is required' });
-    }
-    
+    const { instanceId } = request.params;
+    const { userId } = request.body;
+
     const instance = claimChore(instanceId, userId);
     return instance;
   } catch (error) {
@@ -252,15 +248,16 @@ server.post('/api/chores/:instanceId/attempt', async (request, reply) => {
   }
 });
 
-server.post('/api/chores/:instanceId/confirm', async (request, reply) => {
+server.post<{ Params: InstanceId; Body: ConfirmBody }>('/api/chores/:instanceId/confirm', { schema: { body: confirmBody } }, async (request, reply) => {
   try {
-    const { instanceId } = request.params as { instanceId: string };
-    const { stars } = request.body as { stars?: number };
-    
+    const { instanceId } = request.params;
+    const { stars } = request.body;
+
     const instance = confirmChore(instanceId, stars);
     return instance;
   } catch (error) {
     request.log.error(error);
+    if (error instanceof StarsError) return reply.code(error.status).send({ error: error.message });
     const message = (error as Error).message;
     if (message.includes('not found')) {
       return reply.code(404).send({ error: message });
@@ -291,181 +288,61 @@ server.post('/api/chores/:instanceId/reject', async (request, reply) => {
   }
 });
 
+// What was decided, a page at a time, newest first (Ιστορικό): ?before=<the previous page's next>&limit=&userId=
+server.get('/api/history', async (request, reply) => {
+  const { before, limit, userId } = request.query as { before?: string; limit?: string; userId?: string };
+  const n = limit === undefined ? undefined : Number(limit);
+  if (n !== undefined && !(Number.isInteger(n) && n >= 1 && n <= 100)) return reply.code(400).send({ error: 'limit must be 1-100' });
+  if (before !== undefined && !/^[^|]+\|[^|]+$/.test(before)) return reply.code(400).send({ error: 'before must be a page\'s next' });
+  return history({ before, limit: n, userId: userId || undefined });
+});
+
 // Spendings routes
-server.get('/api/spendings', async (request, reply) => {
-  try {
-    return getEnrichedSpendings();
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
-  }
+server.post<{ Body: SpendingBody }>('/api/spendings', { schema: { body: spendingBody } }, async (request, reply) => {
+  const { userId, rewardId } = request.body;
+  return refusable(reply, () => buyReward(userId, rewardId));
 });
 
-server.post('/api/spendings', async (request, reply) => {
-  const { userId, rewardId } = request.body as { userId: string, rewardId: string };
-  
-  const user = config().users.find(u => u.id === userId);
-  const reward = config().rewards.find(r => r.id === rewardId);
-
-  if (!user || !reward) {
-    return reply.code(404).send({ error: 'User or Reward not found' });
-  }
-
-  const spending: Spending = {
-    id: randomUUID(),
-    userId,
-    rewardId,
-    cost: reward.cost,
-    createdAt: new Date().toISOString(),
-    status: 'pending'
-  };
-
-  // Deduction and record are one transaction: stars can't vanish without a spending.
-  const newBalance = store.transaction(() => {
-    const balance = trySpendStars(userId, reward.cost);
-    if (balance !== null) store.spendings.put(spending);
-    return balance;
-  });
-  if (newBalance === null) {
-    return reply.code(400).send({ error: 'Not enough stars' });
-  }
-  logAction('SPEND_STARS', { userId, rewardId, cost: reward.cost, newBalance });
-
-  return spending;
-});
-
-server.put('/api/spendings/:id', async (request, reply) => {
-  const { id } = request.params as { id: string };
-  const { status } = request.body as { status: Spending['status'] };
-
-  const spending = store.spendings.get(id);
-
-  if (!spending) {
-    return reply.code(404).send({ error: 'Spending not found' });
-  }
-
-  if (status !== 'done' && status !== 'revoked') {
-    return reply.code(400).send({ error: 'Invalid status' });
-  }
-  if (spending.status === 'revoked') {
-    return reply.code(400).send({ error: 'Spending is already revoked' });
-  }
-
-  const updated = { ...spending, status };
-  store.transaction(() => {
-    // Revoking refunds the stars
-    if (status === 'revoked' && spending.status !== 'revoked' && config().users.some(u => u.id === spending.userId)) {
-      adjustUserStars(spending.userId, spending.cost);
-    }
-    store.spendings.put(updated);
-  });
-  logAction(`SPENDING_${status.toUpperCase()}`, { spendingId: id, userId: spending.userId, rewardId: spending.rewardId, cost: spending.cost });
-
-  return updated;
+server.put<{ Params: Id; Body: SpendingStatusBody }>('/api/spendings/:id', { schema: { body: spendingStatusBody } }, async (request, reply) => {
+  const { id } = request.params;
+  const { status } = request.body;
+  return refusable(reply, () => resolveSpending(id, status));
 });
 
 // Star Transfers routes
-server.get('/api/transfers', async (request, reply) => {
-  try {
-    return getEnrichedTransfers();
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
-  }
+server.post<{ Body: TransferBody }>('/api/transfers', { schema: { body: transferBody } }, async (request, reply) => {
+  const { fromUserId, toUserId, amount } = request.body;
+  return refusable(reply, () => createGift(fromUserId, toUserId, amount));
 });
 
-server.post('/api/transfers', async (request, reply) => {
-  const { fromUserId, toUserId, amount } = request.body as { fromUserId: string, toUserId: string, amount: number };
-  
-  const fromUser = config().users.find(u => u.id === fromUserId);
-  const toUser = config().users.find(u => u.id === toUserId);
-
-  if (!fromUser || !toUser) {
-    return reply.code(404).send({ error: 'User not found' });
-  }
-
-  if (fromUserId === toUserId) {
-    return reply.code(400).send({ error: 'Cannot transfer stars to yourself' });
-  }
-
-  if (amount <= 0) {
-    return reply.code(400).send({ error: 'Amount must be positive' });
-  }
-
-  // Check available balance (total - pending outgoing transfers)
-  const availableBalance = getAvailableBalance(fromUserId);
-  if (availableBalance < amount) {
-    return reply.code(400).send({ error: 'Not enough available stars', availableBalance });
-  }
-
-  const transfer: StarTransfer = {
-    id: randomUUID(),
-    fromUserId,
-    toUserId,
-    amount,
-    createdAt: new Date().toISOString(),
-    status: 'pending'
-  };
-
-  store.starTransfers.put(transfer);
-
-  logAction('TRANSFER_REQUEST', { fromUserId, toUserId, amount, transferId: transfer.id });
-
-  return transfer;
+server.put<{ Params: Id; Body: TransferActionBody }>('/api/transfers/:id', { schema: { body: transferActionBody } }, async (request, reply) => {
+  const { id } = request.params;
+  const { action } = request.body;
+  return refusable(reply, () => resolveGift(id, action));
 });
 
-server.put('/api/transfers/:id', async (request, reply) => {
-  const { id } = request.params as { id: string };
-  const { action } = request.body as { action: 'approve' | 'reject' | 'cancel' };
-
-  const transfer = store.starTransfers.get(id);
-
-  if (!transfer) {
-    return reply.code(404).send({ error: 'Transfer not found' });
-  }
-
-  if (transfer.status !== 'pending') {
-    return reply.code(400).send({ error: 'Transfer is already resolved' });
-  }
-
-  const users = config().users;
-  if (!users.some(u => u.id === transfer.fromUserId) || !users.some(u => u.id === transfer.toUserId)) {
-    return reply.code(404).send({ error: 'User not found' });
-  }
-
-  // Reject/cancel: stars stay with the sender (they were locked, now unlocked)
-  const outcomes = { approve: 'approved', reject: 'rejected', cancel: 'cancelled' } as const;
-  const status = outcomes[action];
-  if (!status) {
-    return reply.code(400).send({ error: 'Invalid action' });
-  }
-
-  const resolved: StarTransfer = { ...transfer, status, resolvedAt: new Date().toISOString() };
-  store.transaction(() => {
-    if (status === 'approved') {
-      // Deduct from sender and add to receiver
-      adjustUserStars(transfer.fromUserId, -transfer.amount);
-      adjustUserStars(transfer.toUserId, transfer.amount);
-    }
-    store.starTransfers.put(resolved);
-  });
-  logAction(`TRANSFER_${status.toUpperCase()}`, { transferId: id, fromUserId: transfer.fromUserId, toUserId: transfer.toUserId, amount: transfer.amount });
-
-  return resolved;
-});
-
-// Admin: Upload file
+// Admin: Upload file. Every answer but the 200 is { error } in Greek, naming the file (shared/uploads.ts),
+// and a file that didn't arrive whole is never kept (#107).
 server.post('/api/admin/upload', async (request, reply) => {
+  let name: string | undefined;
+  let filepath: string | undefined;
   try {
     const data = await request.file();
     if (!data) {
-      return reply.code(400).send({ error: 'No file uploaded' });
+      return reply.code(400).send({ error: uploadNoFile });
     }
+    name = data.filename;
 
     const filename = `${Date.now()}-${data.filename}`;
-    const filepath = path.join(UPLOADS_DIR, filename);
-    
+    filepath = path.join(UPLOADS_DIR, filename);
+
     await pump(data.file, createWriteStream(filepath));
+    // Over the limit, busboy stops the stream there and marks it truncated: what was written is a cut
+    // file (a song that stops short), so it goes, and the page shows why.
+    if (data.file.truncated) {
+      await fs.unlink(filepath).catch(() => {});
+      return reply.code(413).send({ error: uploadTooBig(data.filename) });
+    }
 
     const protocol = request.protocol;
     const host = request.hostname;
@@ -473,51 +350,20 @@ server.post('/api/admin/upload', async (request, reply) => {
 
     return reply.code(200).send({ success: true, url, filename });
   } catch (error) {
+    // The body stopped mid-file (connection dropped) or the write failed (disk full): what was written is cut
     request.log.error(error);
-    return reply.code(500).send({ error: 'Upload failed' });
+    if (filepath) await fs.unlink(filepath).catch(() => {});
+    return reply.code(500).send({ error: uploadBroke(name) });
   }
 });
 
-// Push hook endpoint
-server.post('/api/hooks/push', async (request, reply) => {
-  try {
-    const { id } = request.body as { id: string };
-
-    if (!id) {
-      return reply.code(400).send({ error: 'Missing id' });
-    }
-
-    logAction('PUSH_HOOK', { id });
-
-    const { schedules, settings } = config();
-
-    const schedule = schedules.find(s => s.targetId === id);
-
-    if (schedule) {
-      const timezone = settings?.timezone || 'Europe/Athens';
-      const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
-        tz: timezone
-      });
-      const nextTime = interval.next().toDate();
-      
-      request.log.info(`[Hook] Found schedule for ${id}: ${schedule.cron}. Simulating time: ${nextTime.toISOString()}`);
-      
-      await checkSchedules(nextTime);
-      
-      return { success: true, type: 'schedule_simulation', simulatedTime: nextTime, targetId: id };
-    }
-
-    const result = triggerAction(id, 'push_hook');
-
-    if (result) {
-      return result;
-    }
-
-    return reply.code(404).send({ error: 'Entity not found' });
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
-  }
+// Push hook («Ξεκίνα τώρα», /?push=<id>): start exactly this routine assignment, flow or 'alarm', now.
+// It answers triggerAction's result ({ skipped, runningId } when the kid is already in a routine).
+// Simulating a minute, every schedule due in it, is POST /api/debug/time.
+server.post<{ Body: PushBody }>('/api/hooks/push', { schema: { body: pushBody } }, async (request, reply) => {
+  const { id } = request.body;
+  logAction('PUSH_HOOK', { id });
+  return triggerAction(id, 'push_hook') ?? reply.code(404).send({ error: 'Entity not found' });
 });
 
 // What kids do on a running routine or flow (see "ROUTINES AND FLOWS ON SCREEN" in db.ts).
@@ -546,9 +392,8 @@ server.post('/api/debug/backup', async (request, reply) => {
   return { started: backups.run('debug') };
 });
 
-server.post('/api/debug/time', async (request, reply) => {
-  const { time } = request.body as { time: string };
-  if (!time) return reply.code(400).send({ error: 'Missing time (ISO string or HH:mm)' });
+server.post<{ Body: TimeBody }>('/api/debug/time', { schema: { body: timeBody } }, async (request, reply) => {
+  const { time } = request.body;
 
   const timezone = config().settings?.timezone || 'Europe/Athens';
 
@@ -578,11 +423,7 @@ server.get('/api/debug/schedule', async (request, reply) => {
   
   const schedules = configuredSchedules.map(s => {
     try {
-      const interval = cronParser.CronExpressionParser.parse(s.cron, {
-        currentDate: now,
-        tz: timezone
-      });
-      const next = interval.next().toDate();
+      const next = nextCronRun(s.cron, timezone, now);
       const nextLocal = DateTime.fromJSDate(next).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
       
       return {
@@ -610,8 +451,10 @@ server.get('/api/debug/schedule', async (request, reply) => {
 });
 
 // Admin: Get raw data.json
-server.get('/api/admin/data', async () => {
-  return readRawConfig();
+server.get('/api/admin/data', async (request, reply) => {
+  const { value, version } = dataConfig.current();
+  reply.header('X-Config-Version', version);
+  return value;
 });
 
 // Admin: Validate config against schema
@@ -636,9 +479,39 @@ server.post('/api/admin/validate-state', async (request, reply) => {
   }
 });
 
+// Admin: Validate exercises.json against schema
+server.post('/api/admin/validate-exercises', async (request, reply) => {
+  try {
+    const error = check(exercisesSchema, request.body, 'Invalid exercises');
+    return error ? { valid: false, errors: error.errors } : { valid: true };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
+  }
+});
+
+// How a screen saves a config file (ConfigSave in db.ts):
 // `?replace=1`: replace the file even though it is invalid on disk (the Advanced
 // JSON editor only; the invalid file is kept beside). See ConfigFile.save.
-const replacing = (request: { query: unknown }) => (request.query as { replace?: string }).replace === '1';
+// `?version=`: the version it edited (AppState.configVersion, or the GET's
+// X-Config-Version); a newer live one makes it a 409 that writes nothing (#33).
+// `?source=`: which screen (form, advanced, advanced-fix), for the log; else 'api'.
+function configSave(request: { query: unknown }, route: string): ConfigSave {
+  const { replace, version, source } = request.query as { replace?: string; version?: string; source?: string };
+  return {
+    replace: replace === '1',
+    version: version || undefined,
+    source: CONFIG_SAVE_SOURCES.find(s => s === source) ?? 'api',
+    route,
+  };
+}
+
+/** A refused config save: 409 { error, conflict } when another save came first, else 400 { error }. */
+function refusedSave(reply: FastifyReply, error: unknown) {
+  return error instanceof ConfigConflict
+    ? reply.code(409).send({ error: error.message, conflict: true })
+    : reply.code(400).send({ error: (error as Error).message });
+}
 
 // Admin: data.json's text as it is on disk, to fix a file the server couldn't read
 server.get('/api/admin/data/text', async (request, reply) => {
@@ -653,12 +526,12 @@ server.post('/api/admin/data', async (request, reply) => {
     return reply.code(400).send({ error: error.message, errors: error.errors });
   }
   try {
-    writeRawConfig(request.body, { replace: replacing(request) });
-    return { success: true };
+    return { success: true, version: writeRawConfig(request.body, configSave(request, 'POST /api/admin/data')) };
   } catch (error) {
-    // Refused while data.json on disk is invalid (or the write failed)
-    request.log.error(error);
-    return reply.code(400).send({ error: (error as Error).message });
+    // Stale (another save came first: logged as CONFIG_SAVE_STALE), refused while data.json on disk
+    // is invalid, or the write failed
+    if (!(error instanceof ConfigConflict)) request.log.error(error);
+    return refusedSave(reply, error);
   }
 });
 
@@ -716,8 +589,11 @@ server.get('/api/exercises/schema', async (request, reply) => {
 });
 
 // Admin: Raw exercises CRUD
+// The document and, in X-Config-Version, the version it is: the one to send back with ?version=
 server.get('/api/admin/exercises', async (request, reply) => {
-  return readRawExercises();
+  const { value, version } = exercisesConfig.current();
+  reply.header('X-Config-Version', version);
+  return value;
 });
 
 server.get('/api/admin/exercises/text', async (request, reply) => {
@@ -727,16 +603,15 @@ server.get('/api/admin/exercises/text', async (request, reply) => {
 
 server.post('/api/admin/exercises', async (request, reply) => {
   try {
-    writeRawExercises(request.body, { replace: replacing(request) });
-    return { success: true };
+    return { success: true, version: writeRawExercises(request.body, configSave(request, 'POST /api/admin/exercises')) };
   } catch (error) {
-    return reply.code(400).send({ error: (error as Error).message });
+    return refusedSave(reply, error);
   }
 });
 
-server.post('/api/exercises/sessions', async (request, reply) => {
+server.post<{ Body: GameBody }>('/api/exercises/sessions', { schema: { body: gameBody } }, async (request, reply) => {
   try {
-    const { playerIds, categories, totalRounds, questionsPerRound } = request.body as any;
+    const { playerIds, categories, totalRounds, questionsPerRound } = request.body;
     const session = startExerciseSession(playerIds, categories, totalRounds, questionsPerRound);
     return session;
   } catch (error) {
@@ -751,10 +626,10 @@ server.get('/api/exercises/sessions/:id', async (request, reply) => {
   return session;
 });
 
-server.post('/api/exercises/sessions/:id/answer', async (request, reply) => {
+server.post<{ Params: Id; Body: GameAnswerBody }>('/api/exercises/sessions/:id/answer', { schema: { body: gameAnswerBody } }, async (request, reply) => {
   try {
-    const { id } = request.params as { id: string };
-    const { userId, exerciseId, answer } = request.body as any;
+    const { id } = request.params;
+    const { userId, exerciseId, answer } = request.body;
     const result = submitExerciseAnswer(id, userId, exerciseId, answer);
     return result;
   } catch (error) {
@@ -765,7 +640,7 @@ server.post('/api/exercises/sessions/:id/answer', async (request, reply) => {
 server.delete('/api/exercises/sessions/:id', async (request, reply) => {
   try {
     const { id } = request.params as { id: string };
-    cancelExerciseSession(id);
+    closeExerciseSession(id);
     return { success: true };
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -787,9 +662,9 @@ server.get('/api/exercise-assignments', async (request, reply) => {
 });
 
 // A kid asks for one more problem (see startExtraProblem)
-server.post('/api/exercise-assignments/extra', async (request, reply) => {
+server.post<{ Body: UserBody }>('/api/exercise-assignments/extra', { schema: { body: userBody } }, async (request, reply) => {
   try {
-    const { userId } = request.body as { userId: string };
+    const { userId } = request.body;
     return await startExtraProblem(userId);
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -797,10 +672,10 @@ server.post('/api/exercise-assignments/extra', async (request, reply) => {
 });
 
 // Answer an assignment
-server.post('/api/exercise-assignments/:id/answer', async (request, reply) => {
+server.post<{ Params: Id; Body: AnswerBody }>('/api/exercise-assignments/:id/answer', { schema: { body: answerBody } }, async (request, reply) => {
   try {
-    const { id } = request.params as { id: string };
-    const { answer } = request.body as any;
+    const { id } = request.params;
+    const { answer } = request.body;
     const result = await answerExerciseAssignment(id, answer);
     return result;
   } catch (error) {
@@ -808,18 +683,31 @@ server.post('/api/exercise-assignments/:id/answer', async (request, reply) => {
   }
 });
 
-// Help tours played on the kids' screens (the owl stops offering them), and a reset
-server.post('/api/help/seen', async (request, reply) => {
+// «Δείξε μου» on a plain exercise after a wrong try: closes it, paying nothing (see revealExerciseAssignment)
+server.post('/api/exercise-assignments/:id/reveal', async (request, reply) => {
   try {
-    markHelpSeen((request.body as { tourIds?: unknown })?.tourIds);
+    const { id } = request.params as { id: string };
+    return await revealExerciseAssignment(id);
+  } catch (error) {
+    return reply.code(400).send({ error: (error as Error).message });
+  }
+});
+
+// Help tours played on the kids' screens (the owl stops offering them), and a reset
+server.post<{ Body: HelpSeenBody }>('/api/help/seen', { schema: { body: helpSeenBody } }, async (request, reply) => {
+  try {
+    markHelpSeen(request.body.tourIds);
     return { ok: true };
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
   }
 });
 
-server.post('/api/help/reset', async (request) => {
-  const { userId } = (request.body ?? {}) as { userId?: string };
+server.post<{ Body: HelpResetBody }>('/api/help/reset', {
+  schema: { body: helpResetBody },
+  preValidation: async (request) => { request.body ??= {}; }, // no body at all: every tour, as before
+}, async (request) => {
+  const { userId } = request.body;
   return { reset: resetHelp(userId || undefined) };
 });
 
@@ -843,53 +731,6 @@ server.post('/api/admin/state', async (request, reply) => {
   }
 });
 
-// ============================================================================
-// MCP Endpoint - Streamable HTTP Transport
-// ============================================================================
-const handleMcpRequest = async (request: any, reply: any) => {
-  // Authentication disabled as requested
-  /*
-  const apiKey = process.env.MCP_API_KEY;
-  if (apiKey) {
-    // ... auth logic removed ...
-  }
-  */
-
-  try {
-    // Adapt Fastify request/reply to the transport's expected interface
-    // We need to strip the /mcp prefix so the transport sees /sse or /messages
-    // if the transport relies on path checking.
-    // However, StreamableHTTPServerTransport usually just handles the request based on method/headers.
-    
-    // Note: If using /mcp/sse, we might need to ensure the transport knows how to handle it.
-    // But typically, for a single endpoint setup, we just point to it.
-    
-    await mcpTransport.handleRequest(
-      request.raw as any,
-      reply.raw as any,
-      request.body as any
-    );
-
-    // Don't send a response - the transport handles it
-    return reply;
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({
-      jsonrpc: '2.0',
-      error: {
-        code: -32603,
-        message: 'Internal server error'
-      },
-      id: null
-    });
-  }
-};
-
-// Fastify treats wildcard routes differently depending on placement, so register
-// both the root and nested paths to ensure /mcp and /mcp/* (e.g. /mcp/sse) work.
-server.all('/mcp', handleMcpRequest);
-server.all('/mcp/*', handleMcpRequest);
-
 // WebSocket for real-time events
 server.register(async (fastify) => {
   fastify.get('/ws', { websocket: true }, async (connection) => {
@@ -902,17 +743,6 @@ server.register(async (fastify) => {
     });
   });
 });
-
-// Graceful shutdown (SIGTERM from `docker stop`, SIGINT from Ctrl-C). Every
-// change is already committed; closing checkpoints the WAL into routine.db.
-for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.on(signal, async () => {
-    console.log(`${signal}: stopping server...`);
-    await server.close();
-    store.close();
-    process.exit(0);
-  });
-}
 
 const start = async () => {
   try {
@@ -948,13 +778,17 @@ const start = async () => {
     setInterval(() => sync.heartbeat(), HEARTBEAT_MS);
 
     // Start the real scheduler (checks every minute)
+    let gamesCheckedAt = new Date();
     cron.schedule('* * * * *', () => {
-      checkSchedules(new Date());
+      const now = new Date();
+      checkSchedules(now);
+      // A finished game's results leave the screens when their window ends: nothing is written, so say so
+      if (gameResultsLeaving(gamesCheckedAt, now).length > 0) sync.changed();
+      gamesCheckedAt = now;
     });
     console.log('Scheduler started');
     // The daily backup, in a child process (backupSchedule.ts)
     backups = scheduleBackups({ cron: BACKUP_CRON, dir: BACKUP_DIR, dbFile: DB_FILE, timeoutMs: BACKUP_TIMEOUT_MS, log: logAction });
-    console.log('MCP endpoint available at POST /mcp');
 
     await server.listen({ port: 3000, host: '0.0.0.0' });
   } catch (err) {
@@ -963,4 +797,20 @@ const start = async () => {
   }
 };
 
-start();
+// The routes are importable (the tests call them with server.inject against their own data); only
+// running this file (nodemon in dev, `node dist/backend/src/server.js` in the image) starts the server.
+export { server };
+
+if (require.main === module) {
+  // Graceful shutdown (SIGTERM from `docker stop`, SIGINT from Ctrl-C). Every
+  // change is already committed; closing checkpoints the WAL into routine.db.
+  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+    process.on(signal, async () => {
+      console.log(`${signal}: stopping server...`);
+      await server.close();
+      store.close();
+      process.exit(0);
+    });
+  }
+  start();
+}

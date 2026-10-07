@@ -12,10 +12,12 @@ interface InlineRoutinePlayerProps {
   user: User;
   routine: Routine;
   run: RoutineRun; // server state: current task, when it started, whether all are done
-  onClose: () => void; // reward shown, or the kid pressed ✕
+  onClose: () => void; // reward shown, or the kid pressed ✕ and said «Ναι»
 }
 
 const REWARD_MS = 5000;
+// An icon the CSS sizes: its box is --icon (an emoji is 3/4 of it)
+const ICON_BOX: React.CSSProperties = { width: 'var(--icon)', height: 'var(--icon)', fontSize: 'calc(var(--icon) * 0.75)' };
 
 export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   user,
@@ -26,6 +28,9 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
   const { playComplete, playAlarm } = useAppSounds();
   const [justEarnedStars, setJustEarnedStars] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  // ✕ asks first: closing ends the routine for good (the flow waiting on it moves on).
+  // The question stays until it is answered; it is this screen's own, not the server's.
+  const [asking, setAsking] = useState(false);
 
   const currentTaskIndex = run.taskIndex;
   const currentTask = routine?.tasks[currentTaskIndex];
@@ -80,14 +85,15 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  if (!user || !routine) return <div>Error loading routine</div>;
+  // The dashboard draws no run whose kid or routine left the config (#59): nothing to show
+  if (!user || !routine) return null;
 
   return (
     <div className="inline-player" style={{ '--theme-color': routine.themeColor } as React.CSSProperties}>
       <AnimatePresence>
         {isCompleted && (
           <RewardOverlay
-            starsEarned={50}
+            starsEarned={run.totalStars ?? 0}
             onClose={onClose}
           />
         )}
@@ -109,7 +115,7 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
 
       <div className="player-header">
         <div className="user-badge" style={{ background: user.color }}>
-          <SmartIcon value={user.avatar} />
+          <SmartIcon value={user.avatar} style={ICON_BOX} />
         </div>
         <div className="user-name-header">
           {user.name}
@@ -123,8 +129,27 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
             />
           </div>
         </div>
-        <button className="btn-exit" {...help('routine.exit')} {...sound('close')} onClick={onClose}>✕</button>
+        <button className="btn-exit" aria-label="Κλείσιμο" {...help('routine.exit')} {...sound('open')} onClick={() => setAsking(true)}>✕</button>
       </div>
+
+      <AnimatePresence>
+        {asking && !isCompleted && (
+          <motion.div
+            className="exit-ask"
+            role="dialog"
+            aria-label="Να κλείσει η ρουτίνα;"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <p className="exit-ask-text">Να κλείσει η ρουτίνα;</p>
+            <div className="exit-ask-buttons">
+              <button className="btn-ask btn-ask-yes" {...sound('close')} onClick={onClose}>Ναι</button>
+              <button className="btn-ask btn-ask-no" {...sound('unselect')} onClick={() => setAsking(false)}>Όχι</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="player-body">
         {/* Timeline (Compact) */}
@@ -149,12 +174,17 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
               transition={{ type: "spring", bounce: 0.3 }}
             >
               <div className="task-icon">
-                {currentTask && <SmartIcon value={currentTask.icon} />}
+                {currentTask && <SmartIcon value={currentTask.icon} style={ICON_BOX} />}
               </div>
               <h2 className="task-name">{currentTask?.title}</h2>
-              <div className={`timer ${timeLeft < 10 ? 'warning' : ''}`}>
-                {formatTime(timeLeft)}
-              </div>
+              {/* Time up: said in words, calmly (a late task still counts: it gets its lateStars) */}
+              {timeUp ? (
+                <p className="late-note"><span>Πέρασε η ώρα!</span> Τελείωσέ το και πάτα «Έτοιμο!»</p>
+              ) : (
+                <div className={`timer ${timeLeft < 10 ? 'warning' : ''}`}>
+                  {formatTime(timeLeft)}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -167,6 +197,10 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
       </div>
 
       <style>{`
+        /* Sized to its cell (the .routine-slot is a size container): clamp(least, cqmin,
+           full size). From a cell of about 590 px up (one or two items at 1280x800 and
+           bigger) every size is at its full value; below, it shrinks with the cell, down to
+           an 800x480 screen with three items (224x416) or a phone row (358x260). */
         .inline-player {
           height: 100%;
           display: flex;
@@ -181,29 +215,35 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         .player-header {
           display: flex;
           align-items: center;
-          padding: 1.5rem;
-          gap: 1.5rem;
+          padding: clamp(0.5rem, 4.1cqmin, 1.5rem);
+          gap: clamp(0.5rem, 4.1cqmin, 1.5rem);
           background: rgba(0,0,0,0.3);
         }
 
         .user-badge {
-          width: 60px;
-          height: 60px;
+          width: clamp(32px, 10.2cqmin, 60px);
+          height: clamp(32px, 10.2cqmin, 60px);
+          flex-shrink: 0;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 2.5rem;
+          --icon: clamp(26px, 8.2cqmin, 48px);
           box-shadow: 0 0 15px rgba(0,0,0,0.3);
         }
 
         .user-name-header {
-          font-size: 2rem;
+          font-size: clamp(1rem, 5.5cqmin, 2rem);
           font-weight: 900;
           color: white;
-          margin-right: 1rem;
+          margin-right: clamp(0rem, 2.8cqmin, 1rem);
           letter-spacing: 1px;
           text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          min-width: 0;
         }
 
         .progress-container {
@@ -223,10 +263,65 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
         }
 
         .btn-exit {
+          flex-shrink: 0;
           background: transparent;
           color: white;
           font-size: 1.2rem;
           opacity: 0.5;
+        }
+
+        /* The ✕'s question covers the card (under the reward, which never shows with it) */
+        .exit-ask {
+          position: absolute;
+          inset: 0;
+          z-index: 15;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: clamp(0.75rem, 5.5cqmin, 2rem);
+          padding: 1rem;
+          background: rgba(10, 8, 30, 0.94);
+          backdrop-filter: blur(6px);
+          border-radius: 2rem;
+          text-align: center;
+        }
+
+        .exit-ask-text {
+          margin: 0;
+          font-size: clamp(1.25rem, 6.8cqmin, 2.5rem);
+          font-weight: 900;
+          color: white;
+          text-wrap: balance;
+        }
+
+        .exit-ask-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: clamp(0.75rem, 4.1cqmin, 1.5rem);
+        }
+
+        .btn-ask {
+          font-size: clamp(1.1rem, 5.5cqmin, 2rem);
+          font-weight: 900;
+          min-height: 48px;
+          min-width: clamp(80px, 24cqmin, 160px);
+          padding: clamp(0.5rem, 2.2cqmin, 0.8rem) clamp(1rem, 5.5cqmin, 2rem);
+          border-radius: 1.5rem;
+        }
+
+        /* «Όχι» keeps the routine going: the bright one */
+        .btn-ask-no {
+          background: var(--theme-color);
+          color: #000;
+          box-shadow: 0 0 20px var(--theme-color);
+        }
+
+        .btn-ask-yes {
+          background: transparent;
+          color: white;
+          border: 2px solid rgba(255, 255, 255, 0.7);
         }
 
         .player-body {
@@ -275,25 +370,30 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           display: flex;
           flex-direction: column;
           align-items: center;
+          max-width: 100%;
+          padding: 0 1rem; /* a long title wraps clear of the timeline's dots */
         }
 
         .task-icon {
-          font-size: 5rem; /* Scaled down slightly for split view */
-          margin-bottom: 0.5rem;
+          font-size: clamp(2rem, 13.6cqmin, 5rem);
+          --icon: clamp(28px, 8.2cqmin, 48px);
+          margin-bottom: clamp(0.25rem, 1.4cqmin, 0.5rem);
           animation: bounce 2s infinite;
         }
 
         .task-name {
-          font-size: 2rem;
-          margin-bottom: 1rem;
-          white-space: nowrap;
+          font-size: clamp(1rem, 5.5cqmin, 2rem);
+          margin-bottom: clamp(0.25rem, 2.8cqmin, 1rem);
+          /* A long title wraps in a narrow card, never past its edges */
+          text-wrap: balance;
+          overflow-wrap: break-word;
         }
 
         .timer {
-          font-size: 4rem;
+          font-size: clamp(1.75rem, 10.9cqmin, 4rem);
           font-weight: 800;
           font-variant-numeric: tabular-nums;
-          margin-bottom: 2rem;
+          margin-bottom: clamp(0.5rem, 5.5cqmin, 2rem);
         }
 
         .timer.warning {
@@ -301,25 +401,29 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           animation: pulse 1s infinite;
         }
 
+        .late-note {
+          margin: 0 0 clamp(0.5rem, 5.5cqmin, 2rem);
+          font-size: clamp(1rem, 5cqmin, 1.75rem);
+          font-weight: 800;
+          line-height: 1.3;
+          color: #ffc94d;
+          text-wrap: balance;
+          overflow-wrap: break-word;
+        }
+
+        .late-note span {
+          display: block;
+        }
+
         .btn-done {
           background: var(--theme-color);
           color: #000;
-          font-size: 1.5rem;
-          padding: 0.8rem 3rem;
+          font-size: clamp(1rem, 4.1cqmin, 1.5rem);
+          padding: clamp(0.5rem, 2.2cqmin, 0.8rem) clamp(1rem, 8.2cqmin, 3rem);
+          min-height: 44px; /* big enough for a finger in the smallest card */
           border-radius: 1.5rem;
           font-weight: 800;
           box-shadow: 0 0 20px var(--theme-color);
-        }
-
-        /* Responsive adjustments for grid */
-        @media (max-width: 800px) {
-          .task-icon { font-size: 3rem; }
-          .timer { font-size: 3rem; }
-          .user-name-header { font-size: 1.2rem; }
-          .user-badge { width: 40px; height: 40px; font-size: 1.5rem; }
-          .player-header { padding: 0.8rem; gap: 0.8rem; }
-          .task-name { font-size: 1.5rem; }
-          .btn-done { font-size: 1.2rem; padding: 0.6rem 2rem; }
         }
 
         .floating-stars {
@@ -327,11 +431,11 @@ export const InlineRoutinePlayer: React.FC<InlineRoutinePlayerProps> = ({
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          font-size: 5rem;
+          font-size: clamp(2.5rem, 13.6cqmin, 5rem);
           font-weight: 900;
           color: #FFD700;
           text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-          z-index: 100;
+          z-index: 20;
           pointer-events: none;
         }
       `}</style>

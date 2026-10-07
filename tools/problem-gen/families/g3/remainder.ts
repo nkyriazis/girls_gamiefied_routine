@@ -7,6 +7,8 @@ const BUYS = [
   thing('λουλούδι', 'λουλούδια', 'n'), thing('μαρκαδόρος', 'μαρκαδόροι', 'm', 'μαρκαδόρους'), thing('φακός', 'φακοί', 'm', 'φακούς'),
   thing('κορδέλα', 'κορδέλες', 'f'),
 ];
+// The most one costs in a shop (the audit's story-check holds wider ranges); a flashlight up to 9 €
+const MAX_PRICE: Record<string, number> = { μπαλόνι: 5, σοκολάτα: 4, τετράδιο: 4, λουλούδι: 5, μαρκαδόρος: 3, φακός: 9, κορδέλα: 5 };
 
 const RIDES = [
   { vehicle: thing('αυτοκίνητο', 'αυτοκίνητα', 'n'), seats: [3, 4, 5], who: 'παιδιά', Who: 'Παιδιά', trip: 'πηγαίνουν εκδρομή στο δάσος', goal: 'για να πάνε όλα' },
@@ -26,6 +28,7 @@ export const remainder: Family = {
       const p = r.pick(PEOPLE);
       const t = r.pick(BUYS);
       const price = r.int(2, 9);
+      if (price > MAX_PRICE[t.one]) return null;
       const n = r.int(3, 10);
       const rest = r.int(1, price - 1);
       const money = price * n + rest;
@@ -36,7 +39,7 @@ export const remainder: Family = {
         + `${sought(`${HowMany(t)} ${t.manyAcc} μπορεί να αγοράσει`)}; ${sought('Θα περισσέψουν χρήματα')};`;
       const steps = [
         b.tag(undefined, 'Όσα έχει το μαγαζί στο ράφι αλλάζουν όσα μπορεί να αγοράσει;'),
-        b.choice('plan', 'Ποια πράξη μας βοηθά;', `Πόσες φορές χωράει το ${price} στο ${fmt(money)} (${fmt(money)} : ${price})`,
+        b.choice('plan', 'Ποια πράξη μας βοηθά;', `${fmt(money)} : ${price}`,
           [`${fmt(money)} + ${price}`, `${fmt(money)} − ${price}`, `${fmt(money)} × ${price}`].slice(0, r.int(2, 3)),
           `Κάθε ${t.one} «τρώει» ${price} ευρώ από τα ${fmt(money)}. Πόσες φορές γίνεται αυτό;`),
         b.numbers('solve', 'Λύνουμε.', [
@@ -44,7 +47,7 @@ export const remainder: Family = {
           { label: 'Ευρώ που περισσεύουν', answer: rest },
         ], `${price} × ${n} = ${fmt(price * n)}. Πόσο μένει ως το ${fmt(money)};`),
         b.choice('check', 'Πώς ελέγχουμε ότι βρήκαμε σωστά;', `${n} × ${price} + ${rest} = ${fmt(money)}`,
-          [`${n} + ${price} + ${rest} = ${n + price + rest}`, `${fmt(money)} − ${n} = ${fmt(money - n)}`],
+          [`${n} + ${price} + ${rest} = ${n + price + rest}`, `${n} × ${price} − ${rest} = ${fmt(n * price - rest)}`],
           'Όσα αγόρασε επί την τιμή τους, μαζί με τα ρέστα, πρέπει να κάνουν όσα είχε.'),
       ];
       return { title: r.pick([`${cap(the(t, false))} ${t.many}`, 'Πόσα μπορώ να πάρω;', 'Στο μαγαζί']), story, steps };
@@ -57,6 +60,7 @@ export const remainder: Family = {
     const left = r.int(1, seats - 1);
     const people = seats * full + left;
     const v = ride.vehicle;
+    const kids = ride.who === 'παιδιά';
     const story = `${known(`${fmt(people)} ${ride.who}`)} ${ride.trip}. Σε κάθε ${v.one} χωράνε ${known(`${seats} ${ride.who}`)}. `
       + `Είναι ${extra(`${r.int(8, 11)} η ώρα`)} το πρωί. ${sought(`${HowMany(v, false)} ${v.many} χρειάζονται`)}, ${ride.goal};`;
     const steps = [
@@ -65,8 +69,9 @@ export const remainder: Family = {
         { label: `Γεμάτα ${v.many}`, answer: full },
         { label: `${ride.Who} που περισσεύουν`, answer: left },
       ], `${seats} × ${full} = ${fmt(seats * full)}. Πόσοι μένουν ως το ${fmt(people)};`),
-      b.choice('check', `${HowMany(v, false)} ${v.many} χρειάζονται λοιπόν;`, `${full + 1}, γιατί κι όσοι περισσεύουν πρέπει να πάνε`,
-        [`${full}, γιατί τόσα γεμίζουν`, `${left}, γιατί τόσοι περισσεύουν`],
+      b.choice('check', `${HowMany(v, false)} ${v.many} χρειάζονται λοιπόν;`, `${full + 1}, ${v.g === 'f' ? 'μία' : 'ένα'} ακόμα για ${kids ? 'όσα' : 'όσους'} περισσεύουν`,
+        [[`${full}, ${v.g === 'f' ? 'όσες' : 'όσα'} γεμίζουν· ${kids ? 'τα άλλα' : 'οι άλλοι'} περιμένουν`, `${full}, μόνο ${v.g === 'f' ? 'όσες' : 'όσα'} γεμίζουν`],
+          [`${left}, το υπόλοιπο της διαίρεσης`, `${left}, όσο το υπόλοιπο`, `${left}, όσο είναι το υπόλοιπο της διαίρεσης`]],
         left === 1 ? 'Και ένας που περισσεύει δεν μπορεί να μείνει πίσω.' : `Οι ${left} που περισσεύουν δεν μπορούν να μείνουν πίσω.`),
     ];
     return { title: r.pick(['Όλοι μαζί', 'Φτάνουν οι θέσεις;', `${cap(the(v, false))} ${v.many}`]), story, steps };

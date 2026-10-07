@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { chownSync, constants, copyFileSync, existsSync, readFileSync, renameSync, statSync, unwatchFile, watchFile, writeFileSync } from 'fs';
 import path from 'path';
 import { isDeepStrictEqual } from 'util';
@@ -8,14 +9,14 @@ import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 // ============================================================================
 // Config (data.json + exercises.json), cached in memory.
 //
-// Files are read at startup, after an edit through the admin API/MCP, and when
+// Files are read at startup, after an edit through the admin API, and when
 // they change on disk — never per request. An invalid file on disk never
 // replaces the cached config: the last valid version stays live and the error
 // is reported, so a bad edit can't take the app (or its state) down.
 //
 // Saving never writes over a file the server couldn't load (issue #45). While
 // the file on disk is invalid, save() refuses, so no read-modify-write editor
-// (the forms, MCP) can put the live copy over the file being fixed. The one
+// (the forms) can put the live copy over the file being fixed. The one
 // override is `replace`, sent only by the Advanced JSON editor: it replaces the
 // invalid file deliberately, keeping it beside as <file>.invalid-<stamp>. Even
 // then the empty fallback (live when the file was unreadable at startup) is
@@ -24,6 +25,13 @@ import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 // history) a lost data.json or exercises.json is not created from the example
 // (seedConfig below), so it is never loaded and saving is refused the same
 // way. A file seeded from its example on a new install is loaded like any other.
+//
+// Nor does a save go over a version its writer never saw (issue #33). The
+// version is a short hash of the live file's text: it moves on every save and
+// every valid reload from disk. A writer sends the version it edited, and a
+// save naming an older one is refused as a conflict (the route's 409), so the
+// last save no longer silently wins. A save that names no version is not
+// checked (scripts, and the editor fixing a file that doesn't parse).
 // ============================================================================
 
 /** exercises.json, as described by exercises.schema.json. */
@@ -39,6 +47,14 @@ const EMPTY_DATA: DataConfig = {
 const EMPTY_EXERCISES: ExercisesConfig = { categories: [], exercises: [] };
 
 const refusal = (message: string): ValidationError => ({ message, errors: [] });
+
+/** Why save() wrote nothing. `conflict`: the writer edited an older version than the live one. */
+export interface SaveRefusal extends ValidationError {
+  conflict?: boolean;
+}
+
+/** The version of a file's text: the first 12 hex characters of its sha256. */
+const versionOf = (text: string | null): string => createHash('sha256').update(text ?? '').digest('hex').slice(0, 12);
 
 /** YYYY-MM-DD_HHMMSS in the process's time zone, like the backups' folders. */
 function localStamp(d: Date): string {
@@ -81,6 +97,16 @@ export class ConfigFile<T> {
 
   get(): T {
     return this.value;
+  }
+
+  /** The live version: it changes whenever the live text does (a save, a valid reload from disk). */
+  version(): string {
+    return versionOf(this.liveText);
+  }
+
+  /** The live value and its version, read together, so they always belong to each other. */
+  current(): { value: T; version: string } {
+    return { value: this.value, version: this.version() };
   }
 
   /** A mutable deep copy of the cached value. */
@@ -145,12 +171,16 @@ export class ConfigFile<T> {
    * (nothing written) while the file on disk is invalid, unless `replace`
    * asks to replace it; and never with the empty fallback over a file that
    * was never loaded, nor over a live config that has content. A replaced
-   * invalid file is kept as <file>.invalid-<stamp>.
+   * invalid file is kept as <file>.invalid-<stamp>. When `version` is given
+   * and the live version has moved past it, refused as a conflict.
    */
-  save(value: unknown, { replace = false }: { replace?: boolean } = {}): ValidationError | null {
+  save(value: unknown, { replace = false, version }: { replace?: boolean; version?: string } = {}): SaveRefusal | null {
     const name = path.basename(this.file);
     const error = check(this.schema, value, `${name} failed schema validation`);
     if (error) return error;
+    if (version !== undefined && version !== this.version()) {
+      return { ...refusal(`Το ${name} άλλαξε στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.`), conflict: true };
+    }
     if (!this.loaded && (!replace || isDeepStrictEqual(value, this.fallback))) {
       return refusal(`${name} was never loaded (it was missing or could not be read at startup), so saving would replace it ` +
         `with ${replace ? 'the empty config' : 'what is live, the empty config'}. Fix the file itself ` +
@@ -179,6 +209,12 @@ export class ConfigFile<T> {
     this.error = null;
     return null;
   }
+}
+
+/** The top-level keys whose values differ between two versions of a config file, for the action log. */
+export function changedKeys(before: object, after: object): string[] {
+  const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])];
+  return keys.filter(k => !isDeepStrictEqual((before as Record<string, unknown>)[k], (after as Record<string, unknown>)[k]));
 }
 
 // Both files are required: a missing one is an error the parents see, never a silent empty config.

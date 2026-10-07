@@ -120,7 +120,7 @@
 /* The finger that shows how */
 .help-finger {
   position: fixed;
-  z-index: 999999;
+  z-index: var(--z-tour);
   font-size: 2.8rem;
   line-height: 1;
   pointer-events: none;

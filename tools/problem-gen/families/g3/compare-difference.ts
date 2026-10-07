@@ -88,7 +88,7 @@ export const compareDifference: Family = {
     const steps: ProblemStep[] = [b.tag(undefined, `Χρειαζόμαστε μόνο πόσ${t.g === 'n' ? 'α' : t.g === 'f' ? 'ες' : 'ους'} ${t.manyAcc} ${s.sg} ο καθένας.`)];
     const style = r.int(0, 2);
     if (style === 0) {
-      steps.push(b.choice('plan', `Ποιος ${s.sg} ${more(t)} ${t.manyAcc};`, p.Nom, [q.Nom, 'Το ίδιο και οι δύο'],
+      steps.push(b.choice('plan', `Ποιος ${s.sg} ${more(t)} ${t.manyAcc};`, p.Nom, [q.Nom, 'Ακριβώς ίσα'],
         `Συγκρίνουμε: ${fmt(big)} και ${fmt(small)}.`));
     }
     if (style !== 2) {

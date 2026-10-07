@@ -79,8 +79,8 @@ export const busesNeeded: Family = {
     const travel = `${s.goes} ${who.length > 1 ? `${who[0]} και ${who[1]}` : who[0]}.`;
     const bus = `Κάθε λεωφορείο έχει ${known(`${seats} θέσεις`)} για επιβάτες.`;
     const costLine = ask === 'cost'
-      ? ` Το καθένα κοστίζει ${known(`${fmt(price)} €`)}.`
-      : r.chance(0.3) ? ` Το καθένα κοστίζει ${extra(`${fmt(price)} €`)}.` : '';
+      ? ` Η ενοικίαση ενός λεωφορείου κοστίζει ${known(`${fmt(price)} €`)}.`
+      : r.chance(0.3) ? ` Η ενοικίαση ενός λεωφορείου κοστίζει ${extra(`${fmt(price)} €`)}.` : '';
     const noise = costLine && ask !== 'cost' && r.chance(0.5) ? '' : ` ${s.noise(r)}`;
     const question = ask === 'buses'
       ? sought('Πόσα λεωφορεία χρειάζονται, για να πάνε όλοι')
@@ -96,19 +96,20 @@ export const busesNeeded: Family = {
       b.tag(undefined, counts.length > 1 ? `Στο λεωφορείο κάθονται και ${s.groups[1].many === 'παιδιά' ? 'τα' : 'οι'} ${s.groups[1].many}.` : 'Τι αλλάζει τον αριθμό των λεωφορείων;'),
     ];
     if (r.chance(0.6)) {
-      steps.push(b.choice('plan', 'Η διαίρεση θα αφήσει υπόλοιπο. Τι κάνουμε με αυτό;', 'Χρειάζεται ένα λεωφορείο ακόμα για όσους περισσεύουν',
+      steps.push(b.choice('plan', 'Η διαίρεση θα αφήσει υπόλοιπο. Τι κάνουμε με αυτό;', "Παίρνουμε ένα λεωφορείο ακόμα γι' αυτούς",
         ['Το αφήνουμε: είναι λίγοι και δεν μετράνε', 'Πηγαίνουν όρθιοι στα άλλα λεωφορεία', 'Προσθέτουμε το υπόλοιπο στα λεωφορεία'],
         'Πρέπει να πάνε όλοι, και καθένας θέλει μια θέση.'));
     }
     const showOps = r.chance(0.5);
     const rows: { label: string; answer: number; unit?: string }[] = [];
     if (counts.length > 1) rows.push({ label: showOps ? `Επιβάτες: ${fmt(counts[0])} + ${fmt(counts[1])} =` : 'Επιβάτες όλοι μαζί', answer: total });
-    rows.push({ label: showOps ? `Γεμάτα λεωφορεία (${fmt(total)} : ${seats}, το πηλίκο)` : 'Γεμάτα λεωφορεία', answer: q });
+    // A row names a number a row above asks for («όλοι μαζί», «όσοι περισσεύουν»), never writes it
+    rows.push({ label: showOps ? `Γεμάτα λεωφορεία (${counts.length > 1 ? 'επιβάτες' : fmt(total)} : ${seats}, το πηλίκο)` : 'Γεμάτα λεωφορεία', answer: q });
     rows.push({ label: 'Επιβάτες που περισσεύουν', answer: rest });
     rows.push({ label: 'Λεωφορεία που χρειάζονται', answer: need });
-    if (ask === 'empty') rows.push({ label: showOps ? `Άδειες θέσεις στο τελευταίο: ${seats} − ${rest} =` : 'Άδειες θέσεις στο τελευταίο', answer: empty });
-    if (ask === 'cost') rows.push({ label: showOps ? `Κόστος: ${need} × ${fmt(price)} =` : 'Κόστος', answer: need * price, unit: '€' });
-    const hint = `${counts.length > 1 ? `${fmt(counts[0])} + ${fmt(counts[1])} = ${fmt(total)}. ` : ''}${seats} × ${q} = ${fmt(seats * q)}, άρα ${rest === 1 ? 'περισσεύει 1' : `περισσεύουν ${rest}`}.`;
+    if (ask === 'empty') rows.push({ label: showOps ? `Άδειες θέσεις στο τελευταίο: ${seats} − όσοι περισσεύουν =` : 'Άδειες θέσεις στο τελευταίο', answer: empty });
+    if (ask === 'cost') rows.push({ label: showOps ? `Κόστος: τα λεωφορεία × ${fmt(price)} =` : 'Κόστος', answer: need * price, unit: '€' });
+    const hint = `${counts.length > 1 ? `Πρώτα ${s.groups[0].many} και ${s.groups[1].many} μαζί: ${fmt(counts[0])} + ${fmt(counts[1])}. Μετά: π` : 'Π'}όσα λεωφορεία των ${seats} γεμίζουν, και πόσοι μένουν;`;
     if (rows.length > 4 && r.chance(0.5)) {
       // Split into two steps: the division, then the answer
       const cut = rows.findIndex(x => x.label === 'Λεωφορεία που χρειάζονται');
@@ -119,10 +120,10 @@ export const busesNeeded: Family = {
     }
 
     if (steps.length < 5 && r.chance(0.5)) {
-      const wrong = [`${fmt(total)} : ${seats} = ${q}, άρα ${q} λεωφορεία`, `${need} + ${seats} = ${fmt(need + seats)}`];
-      if (withoutSmall && withoutSmall !== need) wrong.push(`${fmt(counts[0])} ${s.groups[0].many} χωράνε σε ${withoutSmall} λεωφορεία`);
+      const wrong = [`${fmt(total)} : ${seats} = ${q}, άρα ${q} λεωφορεία`, `Ναι: ${need} + ${seats} = ${fmt(need + seats)} θέσεις`];
+      if (withoutSmall && withoutSmall !== need) wrong.push(`Οι ${fmt(counts[0])} χωράνε σε ${withoutSmall} λεωφορεία`);
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: φτάνουν τα λεωφορεία;',
-        `Ναι: ${need} × ${seats} = ${fmt(need * seats)} θέσεις, και οι επιβάτες είναι ${fmt(total)}`, wrong,
+        `Ναι: ${need} × ${seats} = ${fmt(need * seats)} θέσεις`, wrong,
         'Πόσες θέσεις έχουν όλα τα λεωφορεία μαζί;'));
     } else if (steps.length < 5) {
       steps.push(b.numbers('check', 'Αναστοχαζόμαστε: βγαίνουν πάλι όλοι οι επιβάτες;', [{ label: `${seats} × ${q} + ${rest} =`, answer: total }],

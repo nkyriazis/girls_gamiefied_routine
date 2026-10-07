@@ -1,6 +1,6 @@
 // What 2 or 3 things cost together, and sometimes: is the money enough, and how much is
 // left or missing (Γ΄ κεφ. 2 «Προσθέσεις διψήφιων και τριψήφιων αριθμών»).
-import { extra, fmt, known, PEOPLE, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, PEOPLE, sought, workHint, type Family, type Person, type Rng } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 // nom: "η κασετίνα" (subject of κοστίζει), acc: "μια κασετίνα" (what one buys)
@@ -104,15 +104,19 @@ export const totalCost: Family = {
     const noiseShort = r.chance(0.5) ? s.noise(r, p) : age();
     const moneyFull = mode === 'total' ? '' : ` ${p.Nom} έχει ${r.pick(['μαζί', 'στο πορτοφόλι'])} ${p.his} ${known(`${fmt(money)} ευρώ`)}.`;
     const moneyShort = mode === 'total' ? '' : ` Έχει ${r.pick(['μαζί', 'στο πορτοφόλι'])} ${p.his} ${known(`${fmt(money)} ευρώ`)}.`;
-    const ask = mode === 'total'
-      ? r.pick([`${sought('Πόσα ευρώ θα πληρώσει')};`, `${sought('Πόσο κοστίζουν όλα μαζί')};`, `${sought('Πόσα ευρώ θα δώσει στο ταμείο')};`])
-      : `${sought(`Φτάνουν τα χρήματά ${p.his}`)}; ${sought('Πόσα ευρώ θα περισσέψουν ή πόσα θα λείπουν')};`;
+    const asks = [
+      (who: string) => `${sought(`Πόσα ευρώ θα πληρώσει${who}`)};`, () => `${sought('Πόσο κοστίζουν όλα μαζί')};`,
+      (who: string) => `${sought(`Πόσα ευρώ θα δώσει${who} στο ταμείο`)};`,
+    ];
+    const asking = mode === 'total' ? r.pick(asks) : () => `${sought(`Φτάνουν τα χρήματά ${p.his}`)}; ${sought('Πόσα ευρώ θα περισσέψουν ή πόσα θα λείπουν')};`;
+    // A friend in the noise is a second subject: the question then names whom it means
+    const ask = (noise: string) => asking(/^(?:Η φίλη|Ο φίλος)/.test(noise) ? ` ${p.nom}` : '');
     const lower = (x: string) => x[0].toLowerCase() + x.slice(1);
 
     const story = r.pick([
-      () => `${p.Nom} θέλει να αγοράσει ${why} ${listed}. ${noiseShort} ${priceLines}${moneyFull} ${ask}`,
-      () => `${Cap(s.place)}, ${p.nom} διαλέγει ${listed} ${why}.${moneyShort} ${priceLines} ${s.noise(r, p)} ${ask}`,
-      () => `${Cap(s.place)} της γειτονιάς ${lower(priceLines)} ${p.Nom} θέλει να αγοράσει ${n === 3 ? 'και τα τρία' : 'και τα δύο'} ${why}.${moneyShort} ${s.noise(r, p)} ${ask}`,
+      () => `${p.Nom} θέλει να αγοράσει ${why} ${listed}. ${noiseShort} ${priceLines}${moneyFull} ${ask(noiseShort)}`,
+      () => { const noise = s.noise(r, p); return `${Cap(s.place)}, ${p.nom} διαλέγει ${listed} ${why}.${moneyShort} ${priceLines} ${noise} ${ask(noise)}`; },
+      () => { const noise = s.noise(r, p); return `${Cap(s.place)} της γειτονιάς ${lower(priceLines)} ${p.Nom} θέλει να αγοράσει ${n === 3 ? 'και τα τρία' : 'και τα δύο'} ${why}.${moneyShort} ${noise} ${ask(noise)}`; },
     ])();
 
     const sum = prices.map(x => String(x)).join(' + ');
@@ -120,25 +124,35 @@ export const totalCost: Family = {
       ? 'Χρειαζόμαστε τις τιμές όσων αγοράζει.'
       : 'Χρειαζόμαστε τις τιμές και πόσα χρήματα έχει.')];
     const forgot = prices[0] + prices[1];
+    const [hi, lo] = prices[0] >= prices[1] ? [prices[0], prices[1]] : [prices[1], prices[0]];
     if (r.chance(0.5)) {
+      // As many terms as the right one: an item forgotten, × for +, or straight to the change
+      // (the money less the prices, never less the total: that is the next step's answer)
       steps.push(b.choice('plan', 'Ποια πράξη μας δίνει το κόστος;', sum,
-        [n === 3 ? `${prices[0]} + ${prices[1]}` : `${prices[0]} − ${prices[1]}`, `${prices[0]} × ${prices[1]}`,
-          ...(mode === 'total' ? [] : [`${fmt(money)} + ${sum}`])],
+        n === 3
+          ? [`${prices[0]} + ${prices[1]}`, `${prices[0]} × ${prices[1]} + ${prices[2]}`, ...(mode === 'total' || money <= forgot ? [] : [`${fmt(money)} − ${prices[0]} − ${prices[1]}`])]
+          : [...(hi > lo ? [`${hi} − ${lo}`] : []), `${prices[0]} × ${prices[1]}`, ...(mode === 'total' || money <= prices[0] ? [] : [`${fmt(money)} − ${prices[0]}`])],
         'Όταν αγοράζουμε πολλά πράγματα, πληρώνουμε όλες τις τιμές μαζί.'));
     }
+    // The hint follows the digits: two one-digit prices make ten first, a one-digit one is added
+    // to the units of the other, two two-digit ones split one of them (lib.ts, workHint)
     const hint = n === 3
       ? `Προσθέτουμε πρώτα δύο τιμές: ${prices[0]} + ${prices[1]} = ${forgot}. Μετά βάζουμε και την τρίτη.`
-      : `Προσθέτουμε πρώτα τις δεκάδες και μετά τις μονάδες.`;
+      : workHint(`${prices[0]} + ${prices[1]}`)!;
     if (mode === 'total') {
       steps.push(b.numbers('solve', 'Λύνουμε.', [
         { label: r.chance(0.5) ? `${sum} =` : 'Όλα μαζί κοστίζουν', answer: total, unit: 'ευρώ' },
       ], hint));
       steps.push(r.chance(0.5)
         ? b.choice('check', 'Πώς ελέγχουμε;', `${[...prices].reverse().join(' + ')} = ${total}`,
-          [n === 3 ? `${prices[0]} + ${prices[1]} = ${forgot}` : `${prices[0]} − ${prices[1]} = ${Math.abs(prices[0] - prices[1])}`, `${total} + ${prices[0]} = ${total + prices[0]}`],
+          n === 3
+            // An item forgotten, or a price counted twice in place of another: one of the two is as long as the right one
+            ? [`${prices[0]} + ${prices[1]} = ${forgot}`, `${prices[2]} + ${prices[1]} + ${prices[1]} = ${prices[2] + 2 * prices[1]}`,
+              `${prices[2]} + ${prices[0]} + ${prices[0]} = ${prices[2] + 2 * prices[0]}`].filter(o => !o.startsWith(`${[...prices].reverse().join(' + ')} =`))
+            : [`${hi} − ${lo} = ${hi - lo}`, `${total} + ${prices[0]} = ${total + prices[0]}`],
           'Προσθέτουμε τις τιμές με άλλη σειρά. Πρέπει να βρούμε το ίδιο.')
-        : b.choice('check', 'Είναι λογική η απάντηση;', `Ναι, γιατί όλα μαζί κοστίζουν περισσότερο από το καθένα`,
-          [`Όχι, πρέπει να κοστίζουν ${Math.max(...prices)} ευρώ`, `Όχι, πρέπει να κοστίζουν λιγότερο από ${Math.max(...prices)} ευρώ`],
+        : b.choice('check', 'Είναι λογική η απάντηση;', 'Ναι, είναι περισσότερα από κάθε τιμή',
+          [`Όχι, πρέπει να κοστίζουν ${Math.max(...prices)} ευρώ`, `Όχι, πρέπει να είναι κάτω από ${Math.max(...prices)} ευρώ`],
           'Αν πληρώνουμε πολλά πράγματα, το ποσό μεγαλώνει.'));
     } else {
       const diff = Math.abs(money - total);
@@ -146,8 +160,9 @@ export const totalCost: Family = {
         { label: r.chance(0.5) ? `${sum} =` : 'Όλα μαζί κοστίζουν', answer: total, unit: 'ευρώ' },
       ], hint));
       steps.push(b.choice('solve', `Φτάνουν τα ${fmt(money)} ευρώ;`,
-        mode === 'enough' ? `Ναι, και θα περισσέψουν χρήματα` : `Όχι, θα λείπουν χρήματα`,
-        [mode === 'enough' ? `Όχι, θα λείπουν χρήματα` : `Ναι, και θα περισσέψουν χρήματα`, 'Ναι, ακριβώς όσα χρειάζονται'],
+        mode === 'enough' ? 'Ναι, και θα περισσέψουν' : 'Όχι, θα λείπουν χρήματα',
+        [mode === 'enough' ? ['Όχι, θα λείπουν χρήματα', 'Όχι, θα λείπουν', 'Όχι, θα λείπουν μερικά ευρώ'] : ['Ναι, και θα περισσέψουν', 'Ναι, θα περισσέψουν', 'Ναι, και θα περισσέψουν κιόλας'],
+          ['Ναι, ακριβώς όσα χρειάζονται', 'Ναι, ακριβώς τόσα', 'Ναι, ίσα ίσα']],
         `Συγκρίνουμε τα ${fmt(money)} ευρώ με τα ${total} ευρώ που κοστίζουν όλα.`));
       steps.push(b.numbers('solve', mode === 'enough' ? 'Πόσα ευρώ θα περισσέψουν;' : 'Πόσα ευρώ λείπουν;', [
         mode === 'enough'

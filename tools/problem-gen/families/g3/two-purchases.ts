@@ -106,7 +106,7 @@ export const twoPurchases: Family = {
       // Subtract one purchase after the other
       steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
         { label: `Μετά την πρώτη αγορά: ${fmt(have)} − ${a} =`, answer: mid, unit: 'ευρώ' },
-        { label: `Μετά τη δεύτερη αγορά: ${fmt(mid)} − ${c} =`, answer: left, unit: 'ευρώ' },
+        { label: `Μετά τη δεύτερη αγορά: ό,τι έμεινε − ${c} =`, answer: left, unit: 'ευρώ' },
       ], `Από τα ${fmt(have)} ευρώ βγάζουμε πρώτα τα ${a} ευρώ και από ό,τι μείνει βγάζουμε τα ${c}.`));
     } else if (route === 1) {
       steps.push(b.choice('plan', 'Ποια πράξη μας δίνει την απάντηση;', `${fmt(have)} − ${a} − ${c}`,
@@ -125,15 +125,16 @@ export const twoPurchases: Family = {
       ], 'Δεν μπορούμε να αφαιρέσουμε κάτι που δεν έχουμε βρει ακόμα.'));
       steps.push(b.numbers('solve', 'Λύνουμε.', [
         { label: `Ξόδεψε: ${a} + ${c} =`, answer: spent, unit: 'ευρώ' },
-        { label: `Έμειναν: ${fmt(have)} − ${spent} =`, answer: left, unit: 'ευρώ' },
+        { label: `Έμειναν: ${fmt(have)} − όσα ξόδεψε =`, answer: left, unit: 'ευρώ' },
       ], `Πρώτα προσθέτουμε τις δύο τιμές, μετά αφαιρούμε από τα ${fmt(have)}.`));
     }
     steps.push(r.chance(0.6)
-      ? b.choice('check', 'Πώς ελέγχουμε;', `${a} + ${c} + ${left} = ${fmt(have)}`,
-        [`${fmt(have)} + ${left} = ${fmt(have + left)}`, `${fmt(have)} − ${a} = ${fmt(mid)}`],
+      ? b.choice('check', 'Πώς ελέγχουμε;', `${spent} + ${left} = ${fmt(have)}`,
+        [`${fmt(have)} + ${left} = ${fmt(have + left)}`, `${left} + ${a} = ${fmt(left + a)}`],
         'Όσα ξόδεψε μαζί με όσα έμειναν πρέπει να κάνουν όσα είχε στην αρχή.')
-      : b.choice('check', 'Είναι λογική η απάντηση;', `Ναι, γιατί τα ${left} ευρώ είναι λιγότερα από τα ${fmt(have)} που είχε στην αρχή`,
-        [`Όχι, πρέπει να είναι περισσότερα από ${fmt(have)} ευρώ`, `Όχι, πρέπει να είναι ${fmt(have + spent)} ευρώ`],
+      : b.choice('check', 'Είναι λογική η απάντηση;', `Ναι, είναι λιγότερα από τα ${fmt(have)} ευρώ`,
+        [[`Όχι, πρέπει να είναι πάνω από ${fmt(have)} ευρώ`, `Όχι, θα είναι πάνω από ${fmt(have)} ευρώ`, `Όχι, πάνω από ${fmt(have)} ευρώ`],
+          [`Όχι, πρέπει να είναι ${fmt(have + spent)}: όλα μαζί`, `Όχι, πρέπει να είναι ${fmt(have + spent)} ευρώ`, `Όχι, πρέπει να βγει ${fmt(have + spent)} ευρώ: όλα μαζί`]],
         'Με κάθε αγορά τα χρήματα λιγοστεύουν.'));
     return { title: r.pick(['Δύο αγορές', 'Ψώνια', 'Τι έμεινε;', 'Βόλτα στα μαγαζιά']), story, steps };
   },

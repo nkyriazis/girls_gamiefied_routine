@@ -111,6 +111,14 @@ button.p-row:active { background: var(--p-raised); }
   color: var(--color-text-main); font-size: 0.95rem; font-weight: 600;
 }
 .p-chip.on { background: var(--color-primary); color: var(--p-ink); border-color: transparent; }
+/* A kid's colour: a dot of it, and a white ring on the chosen one (a cyan fill would hide the cyan dot) */
+.p-swatch { display: inline-flex; align-items: center; gap: 8px; padding-left: 10px; }
+.p-swatch.on { background: var(--p-raised); color: var(--color-text-main); border: 2px solid var(--color-text-main); }
+.p-swatch-dot {
+  display: inline-block; width: 18px; height: 18px; flex: none; border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--p-line); vertical-align: -3px; margin-right: 6px;
+}
+.p-swatch .p-swatch-dot { margin-right: 0; }
 
 /* Today: kids */
 .p-kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
@@ -176,6 +184,25 @@ select.p-input { appearance: auto; }
 .p-icon-field .p-input { flex: 1; min-width: 0; }
 .p-icon-preview { width: 48px; height: 48px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 0.9rem; background: var(--p-raised); }
 .p-when { display: flex; flex-direction: column; gap: 8px; }
+.p-field > .p-label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted); }
+.p-chip:disabled { opacity: 0.6; }
+
+/* A routine's tasks, in order: icon, name, minutes, ↑ ↓ ✕ */
+.p-steps { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.p-step {
+  display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 10px;
+  background: var(--p-card); border: 1px solid var(--p-line); border-radius: 0.9rem;
+}
+.p-step.missing { border-color: var(--color-warning); }
+.p-step-title { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; line-height: 1.2; }
+.p-minutes { display: inline-flex; align-items: center; gap: 2px; flex: none; color: var(--color-text-muted); }
+.p-minutes .p-input { width: 3.6em; min-height: 40px; padding: 0 8px; text-align: right; }
+.p-minutes .p-input[aria-invalid] { border-color: var(--color-danger); }
+.p-step-btn {
+  width: 34px; height: 34px; flex: none; border-radius: 50%;
+  background: var(--glass-bg); color: inherit; font-size: 0.95rem;
+}
+.p-step-btn:disabled { opacity: 0.3; }
 
 /* Advanced */
 @media (max-width: 599px) {
@@ -184,6 +211,8 @@ select.p-input { appearance: auto; }
 }
 .p-json { display: flex; flex-direction: column; gap: 10px; }
 .p-json-editor { height: min(62vh, 640px); border: 1px solid var(--p-line); border-radius: 1rem; overflow: hidden; }
+.p-stale { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; padding: 10px 14px; border-radius: 0.9rem; background: rgba(255, 170, 0, 0.14); border: 1px solid var(--color-warning); color: var(--color-warning); font-size: 0.9rem; }
+.p-stale .p-btn { flex: none; }
 .p-errors { padding: 10px 14px 10px 30px; border-radius: 0.9rem; background: rgba(255, 0, 80, 0.12); color: #ff8fb0; font-size: 0.9rem; max-height: 160px; overflow-y: auto; }
 .p-uploads { display: flex; flex-direction: column; gap: 12px; }
 .p-uploads img { border-radius: 8px; object-fit: cover; }
@@ -206,5 +235,9 @@ select.p-input { appearance: auto; }
 
 /* Toasts */
 .p-toasts { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 8px; width: min(92vw, 420px); pointer-events: none; }
-.p-toast { padding: 12px 16px; border-radius: 1rem; background: #2a2a4a; border: 1px solid var(--color-success); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); font-weight: 600; }
+/* A toast never covers the screen and never loses its text: past six lines (the longest refusal, on a phone,
+   is five) it scrolls, and it takes touches (scroll, tap to close) while the column between toasts doesn't.
+   Its life grows with its length (feedback.tsx). A list of errors belongs under the editor that caused it. */
+.p-toast { padding: 12px 16px; border-radius: 1rem; background: #2a2a4a; border: 1px solid var(--color-success); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); font-weight: 600; pointer-events: auto; cursor: pointer; }
+.p-toast-text { display: block; line-height: 1.5; max-height: 9em; overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; }
 .p-toast.error { border-color: var(--color-danger); }

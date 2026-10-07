@@ -122,8 +122,9 @@ export const estimateFirst: Family = {
       steps.push(b.numbers('plan', `Υπολογίζουμε πρώτα περίπου: στρογγυλοποιούμε στην πιο κοντινή ${place}.`, [
         { label: `Το ${fmt(a)} είναι περίπου`, answer: ra },
         { label: `Το ${fmt(c)} είναι περίπου`, answer: rc },
-        { label: `${opText(ra, rc)} =`, answer: est, unit: s.unit },
-      ], `Το ${fmt(a)} είναι ανάμεσα στο ${fmt(Math.floor(a / to) * to)} και στο ${fmt(Math.floor(a / to) * to + to)}. Σε ποιο είναι πιο κοντά;`));
+        // (the rounded numbers are the rows above: this one names them, and the hint gives the rule, not the two candidates)
+        { label: `Περίπου: ${s.op === '+' ? 'το άθροισμά' : 'η διαφορά'} τους`, answer: est, unit: s.unit },
+      ], `Κοιτάμε το ψηφίο των ${to === 100 ? 'δεκάδων' : 'μονάδων'} του ${fmt(a)}: από 5 και πάνω, πάμε στην επόμενη ${place}.`));
     } else {
       // Wrong estimates: both rounded down, both rounded up, only one rounded
       const fa = Math.floor(a / to) * to, fc = Math.floor(c / to) * to;
@@ -134,7 +135,8 @@ export const estimateFirst: Family = {
         .filter(([v]) => v !== est).map(([, t]) => t).slice(0, 2);
       if (wrongs.length < 2) return null;
       steps.push(b.choice('plan', `Πόσο είναι περίπου; Στρογγυλοποιούμε στην πιο κοντινή ${place}.`, `${opText(ra, rc)} = ${fmt(est)}`, wrongs,
-        `Το ${fmt(a)} γίνεται ${fmt(ra)} και το ${fmt(c)} γίνεται ${fmt(rc)}.`));
+        // The rule, not the rounded numbers: they are the right option's (owner decision 3, #50 part 5d)
+        `Κοιτάμε το ψηφίο των ${to === 100 ? 'δεκάδων' : 'μονάδων'} του ${fmt(a)} και του ${fmt(c)}: από 5 και πάνω, πάμε στην επόμενη ${place}, αλλιώς μένουμε στην ίδια.`));
     }
     steps.push(b.numbers('solve', 'Τώρα υπολογίζουμε κανονικά.', [{ label: `${opText(a, c)} =`, answer: exact, unit: s.unit }],
       s.op === '+' ? 'Προσθέτουμε μονάδες, δεκάδες, εκατοντάδες. Μην ξεχάσεις τα κρατούμενα!' : 'Αφαιρούμε μονάδες, δεκάδες, εκατοντάδες. Όταν δεν φτάνουν, δανειζόμαστε μία δεκάδα ή μία εκατοντάδα.'));
@@ -145,8 +147,9 @@ export const estimateFirst: Family = {
     const kind = r.int(0, 2);
     if (kind === 0 && bad !== exact && far) {
       steps.push(b.choice('check', `${who.Nom} βρήκε ${fmt(bad)}. Πώς καταλαβαίνουμε ότι έκανε λάθος;`,
-        `Το ${fmt(bad)} απέχει πολύ από το ${fmt(est)} που βρήκαμε περίπου`,
-        ['Δεν έκανε λάθος, είναι σωστό', `Γιατί το ${fmt(bad)} είναι ${bad % 2 ? 'μονός' : 'ζυγός'} αριθμός`],
+        'Απέχει πολύ από την εκτίμηση',
+        [['Δεν έκανε κανένα λάθος', 'Κανένα λάθος', 'Δεν έκανε κανένα λάθος, είναι σωστό'],
+          [`Γιατί το ${fmt(bad)} είναι ${bad % 2 ? 'μονός' : 'ζυγός'} αριθμός`, `Γιατί είναι ${bad % 2 ? 'μονός' : 'ζυγός'} αριθμός`, `Γιατί το ${fmt(bad)} είναι ${bad % 2 ? 'μονός' : 'ζυγός'}`]],
         s.op === '+' ? 'Θυμήσου την εκτίμηση. Μήπως ξέχασε ένα κρατούμενο;' : 'Θυμήσου την εκτίμηση. Μήπως αφαίρεσε το μικρό ψηφίο από το μεγάλο;'));
     } else if (kind === 1) {
       const [hi, lo] = exact > est ? [exact, est] : [est, exact];
@@ -154,8 +157,8 @@ export const estimateFirst: Family = {
         { label: `${fmt(hi)} − ${fmt(lo)} =`, answer: hi - lo, unit: s.unit },
       ], 'Από τον μεγαλύτερο αριθμό βγάζουμε τον μικρότερο.'));
     } else {
-      steps.push(b.choice('check', 'Είναι λογικό το αποτέλεσμα;', `Ναι, γιατί το ${fmt(exact)} είναι κοντά στο ${fmt(est)}`,
-        [`Όχι, έπρεπε να βγει ακριβώς ${fmt(est)}`, `Όχι, έπρεπε να βγει περίπου ${fmt(est + 3 * to)}`],
+      steps.push(b.choice('check', 'Είναι λογικό το αποτέλεσμα;', `Ναι, είναι αρκετά κοντά στο ${fmt(est)}`,
+        [[`Όχι, έπρεπε να είναι ${fmt(est)}`, `Όχι, έπρεπε να είναι ακριβώς ${fmt(est)}`], [`Όχι, έπρεπε να βγει περίπου ${fmt(est + 3 * to)}`, `Όχι, περίπου ${fmt(est + 3 * to)}`]],
         'Η εκτίμηση δεν είναι ακριβώς το αποτέλεσμα, αλλά πρέπει να είναι κοντά του.'));
     }
     return { title: r.pick([s.title, 'Πρώτα περίπου', 'Υπολογίζω περίπου']), story, steps };

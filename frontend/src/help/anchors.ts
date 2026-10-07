@@ -14,18 +14,18 @@ export const ANCHORS = [
   'store.balance', 'store.earn', 'store.rewards', 'store.give', 'store.activity', 'store.close',
   'activity.list', 'transfer.to', 'transfer.amount', 'transfer.send',
   // Exercises of the day (her screen and the drawer)
-  'exercises.kid', 'exercises.card', 'exercises.more',
+  'exercises.kid', 'exercises.card', 'exercises.revision', 'exercises.more',
   // Chores and bonus activities
   'chores.card', 'chores.claim', 'chores.done', 'chores.waiting', 'chores.empty',
   // One exercise, and the ways to answer one
-  'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit',
+  'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit', 'exercise.show',
   'answer.options', 'answer.truefalse', 'answer.match-left', 'answer.match-right', 'answer.order', 'answer.order-submit',
-  'answer.blank', 'answer.words', 'answer.number', 'answer.numpad',
+  'answer.blank', 'answer.words', 'answer.blank-check', 'answer.number', 'answer.numpad',
   // The group game
   'game.players', 'game.subjects', 'game.length', 'game.start',
   'game.turn', 'game.progress', 'game.question', 'game.answer', 'game.exit', 'game.scores', 'game.finish',
   // A word problem, step by step
-  'problem.phases', 'problem.story', 'problem.prompt', 'problem.hint', 'problem.check',
+  'problem.phases', 'problem.story', 'problem.prompt', 'problem.hint', 'problem.check', 'problem.show',
   'problem.brushes', 'problem.phrase', 'problem.paint', 'problem.brush-extra',
   'problem.choices', 'problem.numbers', 'problem.keypad', 'problem.order',
   'calc.chips', 'calc.pad', 'calc.build', 'calc.lines',

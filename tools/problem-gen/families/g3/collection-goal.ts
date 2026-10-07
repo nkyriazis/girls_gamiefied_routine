@@ -47,7 +47,7 @@ export const collectionGoal: Family = {
     // At least one regrouping in the sum
     if ((a % 10) + (bb % 10) < 10 && (a % 100) + (bb % 100) < 100) return null;
 
-    const P = t.g === 'n' ? { Many: 'Πόσα', more: 'περισσότερα', the: 'τα' } : { Many: 'Πόσες', more: 'περισσότερες', the: 'οι' };
+    const P = t.g === 'n' ? { Many: 'Πόσα', more: 'περισσότερα', the: 'τα', asMany: 'όσα' } : { Many: 'Πόσες', more: 'περισσότερες', the: 'οι', asMany: 'όσες' };
     const noise = r.pick([
       `Στο σχολείο υπάρχουν ${extra(`${r.int(3, 8)} κάδοι`)} για τη συλλογή.`,
       `Η ${c1} τάξη έχει ${extra(`${r.int(18, 25)} μαθητές`)}.`,
@@ -69,27 +69,30 @@ export const collectionGoal: Family = {
     const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε όσα μάζεψε κάθε τάξη και τον στόχο.')];
     if (more) {
       steps.push(b.choice('plan', 'Τι βρίσκουμε πρώτα;', `${P.Many} ${t.short} μάζεψε η ${c2} τάξη`,
-        [`${P.Many} ${t.short} λείπουν για τον στόχο`, `${P.Many} ${t.short} μάζεψαν μαζί`],
+        [[`${P.Many} ${t.short} λείπουν για τον στόχο`, `${P.Many} ${t.short} λείπουν`], [`${P.Many} ${t.short} μάζεψαν μαζί`, `${P.Many} ${t.short} μάζεψαν μαζί οι δύο τάξεις`]],
         `Για να βρούμε όσα μάζεψαν μαζί, πρέπει να ξέρουμε πόσα μάζεψε κάθε τάξη.`));
     } else if (r.chance(0.4)) {
       steps.push(b.choice('plan', 'Ποιες πράξεις μας βοηθούν;', 'Πρώτα πρόσθεση, μετά αφαίρεση',
-        ['Μόνο πρόσθεση', 'Πρώτα αφαίρεση, μετά πρόσθεση', 'Μόνο αφαίρεση'].slice(0, r.int(2, 3)),
+        ['Μόνο πρόσθεση, όλα μαζί', 'Πρώτα αφαίρεση, μετά πρόσθεση', 'Μόνο αφαίρεση από τον στόχο'].slice(0, r.int(2, 3)),
         'Βρίσκουμε όσα μάζεψαν μαζί και μετά πόσα απέχουν από τον στόχο.'));
     }
     const ops = r.chance(0.6);
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       ...(more ? [{ label: ops ? `${fmt(a)} + ${d} =` : `Μάζεψε η ${c2}`, answer: bb, unit: t.short }] : []),
-      { label: ops ? `${fmt(a)} + ${fmt(bb)} =` : 'Μάζεψαν μαζί', answer: sum, unit: t.short },
-      { label: ops ? `${fmt(goal)} − ${fmt(sum)} =` : 'Λείπουν ακόμη', answer: missing, unit: t.short },
+      // A row names the number a row above asks for by what it is («όσα μάζεψαν μαζί»)
+      { label: ops ? `${fmt(a)} + ${more ? `${P.asMany} μάζεψε η ${c2}` : fmt(bb)} =` : 'Μάζεψαν μαζί', answer: sum, unit: t.short },
+      { label: ops ? `${fmt(goal)} − ${P.asMany} μάζεψαν μαζί =` : 'Λείπουν ακόμη', answer: missing, unit: t.short },
     ], 'Στην πρόσθεση και στην αφαίρεση προσέχουμε τα κρατούμενα.'));
-    steps.push(r.chance(0.5)
+    // Exactly half missing is neither «κάτω» nor «πάνω από τα μισά»: then the check by the sum
+    steps.push(r.chance(0.5) || 2 * sum === goal
       ? b.choice('check', 'Πώς ελέγχουμε;', `${fmt(sum)} + ${fmt(missing)} = ${fmt(goal)}`,
         [`${fmt(goal)} + ${fmt(sum)} = ${fmt(goal + sum)}`, `${fmt(goal)} − ${fmt(a)} = ${fmt(goal - a)}`],
         'Όσα μάζεψαν μαζί με όσα λείπουν πρέπει να κάνουν τον στόχο.')
       : b.choice('check', 'Είναι λογική η απάντηση;', 2 * sum > goal
-          ? 'Ναι, γιατί μάζεψαν ήδη περισσότερα από τα μισά, άρα λείπουν λιγότερα από τα μισά'
-          : 'Ναι, γιατί μάζεψαν λιγότερα από τα μισά, άρα λείπουν περισσότερα από τα μισά',
-        [`Όχι, πρέπει να λείπουν ${fmt(goal - a)} ${t.short}`, `Όχι, πρέπει να λείπουν ${fmt(goal + sum)} ${t.short}`],
+          ? 'Ναι, λείπουν κάτω από τα μισά'
+          : 'Ναι, λείπουν πάνω από τα μισά',
+        // The halves misjudged (as long as the right one), or the goal and the sum added
+        [2 * sum > goal ? 'Όχι, λείπουν πάνω από τα μισά' : 'Όχι, λείπουν κάτω από τα μισά', `Όχι, λείπουν ${fmt(goal + sum)} ${t.short}`],
         `Τα μισά του στόχου είναι ${fmt(goal / 2)}. Μάζεψαν ${fmt(sum)}.`));
     return { title: r.pick(['Ο στόχος', 'Μαζεύουμε όλοι', 'Η συλλογή', t.why === 'για την ανακύκλωση' ? 'Ανακύκλωση' : 'Για καλό σκοπό']), story, steps };
   },

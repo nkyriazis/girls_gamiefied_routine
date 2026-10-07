@@ -2,21 +2,15 @@
 // Every child uses these screens, so what they read and hear (the text, the owl's lines, a
 // step's own `say`) says the same to all: «Τελείωσες;», not «Έτοιμη;»; «Σε ποιο παιδί;»,
 // not «Σε ποια;». The words below are gendered and almost always mean a person; rephrase
-// around them (a verb, the neuter «παιδί/παιδιά», a plural of things: «όλα έτοιμα»).
+// around them (a verb, the neuter «παιδί/παιδιά», a plural of things: «όλα έτοιμα»). The list is in
+// gendered.mjs, shared with the maths audit (tools/problem-gen/maths/check.ts).
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import { genderedWords } from './gendered.mjs';
 
 const SRC = path.resolve(import.meta.dirname, '../src');
 const SKIP = [/^components\/parent\//];
-const GENDERED = [
-  'έτοιμη', 'έτοιμος', 'έτοιμες', 'έτοιμοι', 'σίγουρη', 'σίγουρος', 'μόνη', 'μόνος', 'κουρασμένη', 'κουρασμένος',
-  'αδερφή', 'αδερφός', 'αδερφές', 'αδελφή', 'αδελφός', 'κορίτσι', 'κορίτσια', 'αγόρι', 'αγόρια',
-  'καθεμιά', 'καθεμία', 'καθένας', 'όποια', 'όποιος', 'ποιος', 'όλες', 'όλοι', 'όλους', 'νικήτρια', 'νικητής', 'φίλη', 'φίλος',
-];
-const accentless = s => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
-const WORD = new RegExp(`(?<!\\p{L})(${GENDERED.map(accentless).join('|')})(?!\\p{L})`, 'gu');
-
 const files = [];
 (function walk(dir) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -36,9 +30,9 @@ for (const f of files) {
   const look = (node, text) => {
     if (!/[Ͱ-Ͽἀ-῿]/.test(text)) return;
     checked++;
-    for (const m of accentless(text).matchAll(WORD)) {
+    for (const word of genderedWords(text)) {
       const line = src.getLineAndCharacterOfPosition(node.getStart(src)).line + 1;
-      problems.push(`${r}:${line} «${text.trim().slice(0, 70)}» says «${m[1]}»: say it the same way to every child`);
+      problems.push(`${r}:${line} «${text.trim().slice(0, 70)}» says «${word}»: say it the same way to every child`);
     }
   };
   const visit = node => {

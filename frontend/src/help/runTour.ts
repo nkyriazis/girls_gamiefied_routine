@@ -45,17 +45,23 @@ function hideFinger() {
   finger = null;
 }
 
-let active: Driver | null = null;
+let active: { driver: Driver; stop: () => void } | null = null;
+
+/** Stops the tour on screen, if one plays, as not played: its screen went under another. */
+export function stopTour() {
+  active?.stop();
+}
 
 /**
  * Plays the tour. `onEnd` gets the ids to remember as played (the tour, and its intro if
- * it was said), however it ends: finished or closed.
+ * it was said), however she ends it: finished or closed. Stopped (stopTour), none.
  */
 export function playTour(tour: Tour, { seen, onEnd }: { seen: (id: string) => boolean; onEnd: (played: string[]) => void }) {
   const steps = stepsNow(tour, seen);
   if (!steps.length) return false;
   const introSaid = !!tour.intro && !seen(seenId(tour.intro.id, tour.user));
-  active?.destroy();
+  let stopped = false;
+  active?.driver.destroy();
   preload(steps);
   const total = steps.length;
   const d = driver({
@@ -126,11 +132,11 @@ export function playTour(tour: Tour, { seen, onEnd }: { seen: (id: string) => bo
     onDestroyed: () => {
       hideFinger();
       hush();
-      if (active === d) active = null;
-      onEnd([seenId(tour.id, tour.user), ...(introSaid && tour.intro ? [seenId(tour.intro.id, tour.user)] : [])]);
+      if (active?.driver === d) active = null;
+      onEnd(stopped ? [] : [seenId(tour.id, tour.user), ...(introSaid && tour.intro ? [seenId(tour.intro.id, tour.user)] : [])]);
     },
   });
-  active = d;
+  active = { driver: d, stop: () => { stopped = true; d.destroy(); } };
   d.drive();
   return true;
 }

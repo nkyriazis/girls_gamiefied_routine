@@ -105,6 +105,8 @@ export const divisionCheck: Family = {
       divisor: { right: `${fmt(D)} = ; × ${q} + ${u}`, wrong: [`; = ${fmt(D)} × ${q} + ${u}`, `${fmt(D)} = ${q} × ${u} + ;`, `; = ${fmt(D)} + ${q} + ${u}`] },
     }[find];
     const Q = (x: string) => x.replace(/;/g, '□');
+    // A row names the one above by what it is, never its number
+    const shared = `${s.th.g === 'f' ? 'όσες' : s.th.g === 'm' ? 'όσοι' : 'όσα'} μοιράστηκαν`;
 
     const steps: ProblemStep[] = [
       b.tag(undefined, find === 'qr' ? 'Ότι κάτι περίσσεψε το ξέρουμε· πόσο ακριβώς, το ψάχνουμε.' : 'Το υπόλοιπο μετράει κι αυτό.'),
@@ -113,13 +115,14 @@ export const divisionCheck: Family = {
     ];
     if (find === 'qr') {
       steps.push(b.numbers('solve', `Κάνουμε τη διαίρεση ${fmt(D)} : ${d}.`, [
-        { label: `${s.eachLabel} (πηλίκο)`, answer: q },
+        // rowsHint, from the division: a trial below the quotient («Δοκιμάζουμε 22 × 30 = 660»)
+        { label: `${s.eachLabel} (πηλίκο)`, answer: q, eq: `${fmt(D)} : ${d}` },
         { label: `${cap(s.th.many)} που περίσσεψαν (υπόλοιπο)`, answer: u },
-      ], `${d} × ${q} = ${fmt(d * q)} και ${d} × ${q + 1} = ${fmt(d * (q + 1))}, που είναι μεγαλύτερο από το ${fmt(D)}.`));
+      ]));
       if (q > 1 && r.chance(0.6)) {
         steps.push(b.choice('check', `Κάποιος βρήκε πηλίκο ${q - 1} και υπόλοιπο ${u + d}. Τι λάθος έκανε;`,
-          `Το υπόλοιπο ${u + d} είναι μεγαλύτερο από τον διαιρέτη ${d}: μπορεί να δοθεί ακόμα ένα σε καθένα`,
-          ['Κανένα: είναι κι αυτό σωστό', `Έπρεπε να προσθέσει ${fmt(D)} + ${d}`, 'Το υπόλοιπο πρέπει να είναι μηδέν'],
+          `Το υπόλοιπο ${u + d} είναι πολύ μεγάλο`,
+          [['Κανένα: είναι κι αυτό σωστό', 'Κανένα λάθος', 'Κανένα: και αυτό είναι σωστό'], `Έπρεπε να προσθέσει ${fmt(D)} + ${d}`, ['Το υπόλοιπο πρέπει να είναι μηδέν', 'Το υπόλοιπο πρέπει να είναι 0']],
           'Το υπόλοιπο είναι πάντα μικρότερο από τον διαιρέτη.'));
       } else {
         steps.push(b.numbers('check', 'Αναστοχαζόμαστε: επαληθεύουμε τη διαίρεση.', [{ label: `${d} × ${q} + ${u} =`, answer: D }],
@@ -128,10 +131,10 @@ export const divisionCheck: Family = {
     } else if (find === 'dividend') {
       const ops = r.chance(0.5);
       steps.push(b.numbers('solve', 'Λύνουμε.', [
-        { label: ops ? `${cap(s.th.many)} που μοιράστηκαν: ${d} × ${q} =` : `${cap(s.th.many)} που μοιράστηκαν`, answer: d * q },
-        { label: ops ? `Μαζί με το υπόλοιπο: ${fmt(d * q)} + ${u} =` : 'Μαζί με το υπόλοιπο', answer: D, unit: s.th.many },
-      ], `${d} × ${q} = ${fmt(d * q)}.`));
-      steps.push(b.numbers('check', `Αναστοχαζόμαστε: αν μοιράσουμε ${fmt(D)} σε ${d}, βγαίνει πηλίκο ${q} και υπόλοιπο ${u};`, [
+        { label: ops ? `${cap(s.th.many)} που μοιράστηκαν: ${d} × ${q} =` : `${cap(s.th.many)} που μοιράστηκαν`, answer: d * q, eq: `${d} × ${q}` },
+        { label: ops ? `Μαζί με το υπόλοιπο: ${shared} + ${u} =` : 'Μαζί με το υπόλοιπο', answer: D, unit: s.th.many },
+      ]));
+      steps.push(b.numbers('check', `Αναστοχαζόμαστε: κάνουμε τη διαίρεση ${fmt(D)} : ${d}. Βγαίνουν τα ίδια;`, [
         { label: `Πηλίκο της διαίρεσης ${fmt(D)} : ${d}`, answer: q },
         { label: 'Υπόλοιπο', answer: u },
       ]));
@@ -139,13 +142,17 @@ export const divisionCheck: Family = {
       const ops = r.chance(0.5);
       steps.push(b.numbers('solve', 'Λύνουμε: αφαιρούμε πρώτα το υπόλοιπο.', [
         { label: ops ? `${cap(s.th.many)} που μοιράστηκαν: ${fmt(D)} − ${u} =` : `${cap(s.th.many)} που μοιράστηκαν`, answer: d * q },
-        { label: ops ? `${s.toLabel}: ${fmt(d * q)} : ${q} =` : s.toLabel, answer: d },
-      ], `${fmt(D)} − ${u} = ${fmt(d * q)}. Πόσες φορές χωράει το ${q} στο ${fmt(d * q)};`));
+        { label: ops ? `${s.toLabel}: ${shared} : ${q} =` : s.toLabel, answer: d },
+      ], `Πρώτα βγάζουμε το υπόλοιπο από το ${fmt(D)}. Μετά: πόσες φορές χωράει το ${q} σε ό,τι μένει;`));
       if (r.chance(0.5)) {
         steps.push(b.numbers('check', 'Αναστοχαζόμαστε: επαληθεύουμε.', [{ label: `${d} × ${q} + ${u} =`, answer: D }], 'Δ = δ × π + υ'));
       } else {
         steps.push(b.choice('check', 'Αναστοχαζόμαστε: τι πρέπει να ισχύει ακόμα;', `Το υπόλοιπο ${u} είναι μικρότερο από τον διαιρέτη ${d}`,
-          [`Το υπόλοιπο ${u} είναι μεγαλύτερο από το πηλίκο ${q}`, ...(d % 2 ? [`Ο διαιρέτης ${d} είναι άρτιος`] : []), `${fmt(D)} + ${u} = ${fmt(D + u)}`].filter(o => !(o.includes('μεγαλύτερο') && u > q)),
+                    // a false comparison with the quotient (judging it is the skill), whichever way it is false
+          // and the right one turned round (ίσο, or μεγαλύτερο when the other is missing)
+          [[`Το υπόλοιπο ${u} είναι ίσο με τον διαιρέτη ${d}`, `Το υπόλοιπο ${u} είναι ακριβώς ίσο με τον διαιρέτη ${d}`],
+            u !== q ? [`Το υπόλοιπο ${u} είναι ${u > q ? 'μικρότερο' : 'μεγαλύτερο'} από το πηλίκο, το ${q}`, `Το υπόλοιπο ${u} είναι ${u > q ? 'μικρότερο' : 'μεγαλύτερο'} από το πηλίκο`]
+              : `Το υπόλοιπο ${u} είναι μεγαλύτερο από τον διαιρέτη ${d}`],
           `Αν το υπόλοιπο ήταν ${d} ή μεγαλύτερο, η μοιρασιά θα συνεχιζόταν.`));
       }
     }

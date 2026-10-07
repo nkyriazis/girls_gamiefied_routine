@@ -11,8 +11,9 @@ interface Setting {
   range: [number, number];
   entries: (r: Rng) => Entry[];
   intro: string;
-  /** The table as sentences: the first row with its verb, the rest after commas. */
-  rows: (es: Entry[], vs: string[]) => string;
+  /** The table's rows, to be told in one sentence: the first with its verb, the rest after commas.
+   * Each row is marked whole, its name too, so a sentence painted whole but the unneeded rows is right (#50). */
+  rows: (es: Entry[], vs: string[]) => string[];
   unit: string;            // for the number rows: ψήφους, παιδιά, πόντους, βιβλία
   diff: (a: Entry, b: Entry) => string;  // the question, without ";"
   sum: (a: Entry, b: Entry) => string;
@@ -25,11 +26,12 @@ const list = (xs: string[]) => xs.length === 1 ? xs[0] : `${xs.slice(0, -1).join
 const Cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 const TEAMS: Entry[] = [
-  { nom: 'οι Αετοί', acc: 'τους Αετούς', name: 'Οι Αετοί' },
+  // Names of one length, so the winner's doesn't stand out among the options
+  { nom: 'οι Πελαργοί', acc: 'τους Πελαργούς', name: 'Οι Πελαργοί' },
   { nom: 'τα Δελφίνια', acc: 'τα Δελφίνια', name: 'Τα Δελφίνια' },
-  { nom: 'οι Γλάροι', acc: 'τους Γλάρους', name: 'Οι Γλάροι' },
-  { nom: 'τα Λιοντάρια', acc: 'τα Λιοντάρια', name: 'Τα Λιοντάρια' },
-  { nom: 'οι Κένταυροι', acc: 'τους Κενταύρους', name: 'Οι Κένταυροι' },
+  { nom: 'οι Αρκούδες', acc: 'τις Αρκούδες', name: 'Οι Αρκούδες' },
+  { nom: 'οι Πειρατές', acc: 'τους Πειρατές', name: 'Οι Πειρατές' },
+  { nom: 'οι Φάλαινες', acc: 'τις Φάλαινες', name: 'Οι Φάλαινες' },
 ];
 const CLASSES: Entry[] = [
   { nom: 'η Α΄ τάξη', acc: 'την Α΄ τάξη', name: 'Η Α΄ τάξη' },
@@ -41,17 +43,17 @@ const CLASSES: Entry[] = [
 ];
 const PARTIES: Entry[] = [
   { nom: 'η «Αναγέννηση»', acc: 'την «Αναγέννηση»', name: 'Η «Αναγέννηση»' },
-  { nom: 'το «Πράσινο περιβάλλον»', acc: 'το «Πράσινο περιβάλλον»', name: 'Το «Πράσινο περιβάλλον»' },
-  { nom: 'η «Αλλαγή στην κοινότητα»', acc: 'την «Αλλαγή στην κοινότητα»', name: 'Η «Αλλαγή στην κοινότητα»' },
-  { nom: 'η «Νέα πνοή»', acc: 'τη «Νέα πνοή»', name: 'Η «Νέα πνοή»' },
+  { nom: 'η «Πράσινη γη»', acc: 'την «Πράσινη γη»', name: 'Η «Πράσινη γη»' },
+  { nom: 'η «Συνεργασία»', acc: 'τη «Συνεργασία»', name: 'Η «Συνεργασία»' },
+  { nom: 'η «Νέα ελπίδα»', acc: 'τη «Νέα ελπίδα»', name: 'Η «Νέα ελπίδα»' },
 ];
 // For the trip vote, nom/acc are the "για ..." phrase and name is where they go
 const PLACES: Entry[] = [
   { nom: 'για τη θάλασσα', acc: 'για τη θάλασσα', name: 'Στη θάλασσα' },
-  { nom: 'για το βουνό', acc: 'για το βουνό', name: 'Στο βουνό' },
+  { nom: 'για τον Όλυμπο', acc: 'για τον Όλυμπο', name: 'Στον Όλυμπο' },
   { nom: 'για το μουσείο', acc: 'για το μουσείο', name: 'Στο μουσείο' },
-  { nom: 'για τον ζωολογικό κήπο', acc: 'για τον ζωολογικό κήπο', name: 'Στον ζωολογικό κήπο' },
-  { nom: 'για το πλανητάριο', acc: 'για το πλανητάριο', name: 'Στο πλανητάριο' },
+  { nom: 'για το φαράγγι', acc: 'για το φαράγγι', name: 'Στο φαράγγι' },
+  { nom: 'για τη Βεργίνα', acc: 'για τη Βεργίνα', name: 'Στη Βεργίνα' },
 ];
 
 const SETTINGS: Setting[] = [
@@ -59,7 +61,7 @@ const SETTINGS: Setting[] = [
     title: 'Οι μαθητικές εκλογές', range: [25, 160],
     entries: r => people(r, 4).map(p => ({ nom: p.nom, acc: p.acc, name: p.Nom })),
     intro: 'Στις εκλογές για το μαθητικό συμβούλιο ψήφισαν όλα τα παιδιά του σχολείου.',
-    rows: (es, vs) => `${Cap(es[0].nom)} πήρε ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} πήρε ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'ψήφους',
     diff: (a, b) => `Πόσες περισσότερες ψήφους πήρε ${a.nom} από ${b.acc}`,
     sum: (a, b) => `Πόσες ψήφους πήραν μαζί ${a.nom} και ${b.nom}`,
@@ -71,7 +73,7 @@ const SETTINGS: Setting[] = [
     title: 'Πού θα πάμε εκδρομή;', range: [12, 95],
     entries: () => PLACES,
     intro: 'Τα παιδιά του σχολείου ψήφισαν πού θα πάνε εκδρομή.',
-    rows: (es, vs) => `${Cap(es[0].nom)} ψήφισαν ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} ψήφισαν ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'παιδιά',
     diff: (a, b) => `Πόσα περισσότερα παιδιά ψήφισαν ${a.nom} από ό,τι ${b.nom}`,
     sum: (a, b) => `Πόσα παιδιά ψήφισαν ${a.nom} ή ${b.nom}`,
@@ -83,7 +85,7 @@ const SETTINGS: Setting[] = [
     title: 'Το τουρνουά μπάσκετ', range: [80, 320],
     entries: () => TEAMS,
     intro: 'Στο σχολικό τουρνουά μπάσκετ μετρήσαμε τους πόντους κάθε ομάδας.',
-    rows: (es, vs) => `${Cap(es[0].nom)} έβαλαν ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} έβαλαν ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'πόντους',
     diff: (a, b) => `Πόσους περισσότερους πόντους έβαλαν ${a.nom} από ${b.acc}`,
     sum: (a, b) => `Πόσους πόντους έβαλαν μαζί ${a.nom} και ${b.nom}`,
@@ -95,7 +97,7 @@ const SETTINGS: Setting[] = [
     title: 'Ο διαγωνισμός ανάγνωσης', range: [20, 160],
     entries: () => CLASSES,
     intro: 'Στον διαγωνισμό ανάγνωσης του σχολείου μετρήσαμε τα βιβλία που διάβασε κάθε τάξη.',
-    rows: (es, vs) => `${Cap(es[0].nom)} διάβασε ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} διάβασε ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'βιβλία',
     diff: (a, b) => `Πόσα περισσότερα βιβλία διάβασε ${a.nom} από ${b.acc}`,
     sum: (a, b) => `Πόσα βιβλία διάβασαν μαζί ${a.nom} και ${b.nom}`,
@@ -107,7 +109,7 @@ const SETTINGS: Setting[] = [
     title: 'Δημοτικές εκλογές', range: [50, 380],
     entries: () => PARTIES,
     intro: 'Αυτά είναι τα αποτελέσματα των δημοτικών εκλογών στο εκλογικό τμήμα του χωριού.',
-    rows: (es, vs) => `${Cap(es[0].nom)} πήρε ${vs[0]}, ${list(es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`))}.`,
+    rows: (es, vs) => [`${Cap(es[0].nom)} πήρε ${vs[0]}`, ...es.slice(1).map((e, i) => `${e.nom} ${vs[i + 1]}`)],
     unit: 'ψήφους',
     diff: (a, b) => `Πόσες περισσότερες ψήφους πήρε ${a.nom} από ${b.acc}`,
     sum: (a, b) => `Πόσες ψήφους πήραν μαζί ${a.nom} και ${b.nom}`,
@@ -144,14 +146,14 @@ export const tableReading: Family = {
     if (kind === 'diff' && A - B < 3) return null;
     if (kind === 'two' && A + B - C < 3) return null;
     const used = kind === 'two' ? [ia, ib, ic] : [ia, ib];
-    const marked = vs.map((v, i) => (used.includes(i) ? known(unitOf(v)) : extra(unitOf(v))));
+    const rows = s.rows(es, vs.map(unitOf)).map((row, i) => (used.includes(i) ? known(row) : extra(row)));
     const question = kind === 'diff'
       ? `${sought(s.diff(a, bb))};`
       : kind === 'sum'
         ? `${sought(s.sum(a, bb))};`
         : `${sought(s.sum(a, bb))}; ${sought(s.more(c))};`;
     const noise = s.noise(r, extra);
-    const table = s.rows(es, marked);
+    const table = `${list(rows)}.`;
     const story = r.pick([
       () => `${s.intro} ${table} ${noise} ${question}`,
       () => `${s.intro} ${noise} ${table} ${question}`,
@@ -168,7 +170,8 @@ export const tableReading: Family = {
       const others = es.map((_e, i) => i).filter(i => !used.includes(i));
       const wrongPair = [...used.slice(0, -1), others[0]].map(i => fmt(vs[i]));
       steps.push(b.choice('plan', 'Ποιους αριθμούς χρειαζόμαστε;', list(pick),
-        [list(vs.map(fmt)), list(wrongPair)].filter(o => o !== list(pick)),
+        // the two and one more (not every number: that would stand out by its length)
+        [list([...pick, fmt(vs[others[others.length - 1]])]), list(wrongPair)].filter(o => o !== list(pick)),
         'Κοιτάμε ποιους ονομάζει η ερώτηση.'));
     }
     if (kind === 'diff') {
@@ -177,17 +180,17 @@ export const tableReading: Family = {
         [`${fmt(A)} + ${fmt(B)} = ${fmt(A + B)}`, `${fmt(A)} + ${fmt(A - B)} = ${fmt(A + A - B)}`],
         'Στον μικρότερο αριθμό προσθέτουμε τη διαφορά. Πρέπει να βρούμε τον μεγαλύτερο.'));
     } else if (kind === 'sum') {
-      steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: r.chance(0.5) ? `${fmt(A)} + ${fmt(B)} =` : 'Μαζί', answer: A + B, unit: s.unit }]));
+      steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: r.chance(0.5) ? `${fmt(A)} + ${fmt(B)} =` : 'Μαζί', answer: A + B, unit: s.unit, eq: `${fmt(A)} + ${fmt(B)}` }]));
       steps.push(b.choice('check', 'Πώς ελέγχουμε;', `${fmt(A + B)} − ${fmt(B)} = ${fmt(A)}`,
         [`${fmt(A)} − ${fmt(B)} = ${fmt(A - B)}`, `${fmt(A + B)} + ${fmt(B)} = ${fmt(A + 2 * B)}`],
         'Αν από το άθροισμα βγάλουμε τον έναν αριθμό, μένει ο άλλος.'));
     } else {
       steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
         { label: `Μαζί: ${fmt(A)} + ${fmt(B)} =`, answer: A + B, unit: s.unit },
-        { label: `Διαφορά: ${fmt(A + B)} − ${fmt(C)} =`, answer: A + B - C, unit: s.unit },
+        { label: `Διαφορά: το άθροισμα − ${fmt(C)} =`, answer: A + B - C, unit: s.unit },
       ], 'Πρώτα βρίσκουμε το άθροισμα και μετά το συγκρίνουμε με τον τρίτο αριθμό.'));
       steps.push(b.choice('check', 'Πώς ελέγχουμε τη δεύτερη απάντηση;', `${fmt(C)} + ${fmt(A + B - C)} = ${fmt(A + B)}`,
-        [`${fmt(A)} + ${fmt(B)} + ${fmt(C)} = ${fmt(A + B + C)}`, `${fmt(A + B)} + ${fmt(C)} = ${fmt(A + B + C)}`],
+        [`${fmt(A)} + ${fmt(A + B - C)} = ${fmt(A + A + B - C)}`, `${fmt(A + B)} + ${fmt(C)} = ${fmt(A + B + C)}`],
         'Στον τρίτο αριθμό προσθέτουμε τη διαφορά. Πρέπει να βρούμε το άθροισμα.'));
     }
     return { title: s.title, story, steps };

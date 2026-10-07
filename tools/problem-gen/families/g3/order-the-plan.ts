@@ -8,6 +8,7 @@ interface Chain {
   story: string;
   title: string;
   plan: string[];
+  // op: the row's calculation; a number a row above asks for is named («${note} − το κόστος =»), never written
   rows: { op: string; name: string; answer: number; unit?: string }[];
   check: { right: string; wrong: string[]; hint: string };
 }
@@ -43,8 +44,8 @@ function tickets(r: Rng, p: Person): Chain | null {
     plan: ['Βρίσκουμε πόσα είναι όλα τα παιδιά.', 'Βρίσκουμε πόσο πληρώνουν όλα τα παιδιά.', 'Βρίσκουμε πόσα ρέστα θα πάρει.'],
     rows: [
       { op: `${friends} + 1 =`, name: 'Παιδιά', answer: n, unit: 'παιδιά' },
-      { op: `${n} × ${price} =`, name: 'Πληρώνουν', answer: cost, unit: 'ευρώ' },
-      { op: `${note} − ${cost} =`, name: 'Ρέστα', answer: change, unit: 'ευρώ' },
+      { op: `Τα παιδιά × ${price} =`, name: 'Πληρώνουν', answer: cost, unit: 'ευρώ' },
+      { op: `${note} − το κόστος =`, name: 'Ρέστα', answer: change, unit: 'ευρώ' },
     ],
     check: {
       right: `${cost} + ${change} = ${note}`,
@@ -87,12 +88,13 @@ function market(r: Rng): Chain | null {
     plan: [`Βρίσκουμε πόσο κόστισαν ${fruit.the}.`, 'Βρίσκουμε πόσο κόστισαν όλα τα ψώνια.', 'Βρίσκουμε πόσα ευρώ έμειναν.'],
     rows: [
       { op: `${kg} × ${pp} =`, name: `Κόστισαν ${fruit.the}`, answer: c1, unit: 'ευρώ' },
-      { op: `${c1} + ${po} =`, name: 'Κόστισαν όλα', answer: tot, unit: 'ευρώ' },
-      { op: `${have} − ${tot} =`, name: 'Έμειναν', answer: left, unit: 'ευρώ' },
+      { op: `Όσα κόστισαν ${fruit.the} + ${po} =`, name: 'Κόστισαν όλα', answer: tot, unit: 'ευρώ' },
+      { op: `${have} − όσα κόστισαν όλα =`, name: 'Έμειναν', answer: left, unit: 'ευρώ' },
     ],
     check: {
       right: `${tot} + ${left} = ${have}`,
-      wrong: [`${have} − ${kg} − ${pp} − ${po} = ${have - kg - pp - po}`, `${have} + ${left} = ${have + left}`],
+      // the price of a kilo taken for the cost of the fruit
+      wrong: [`${have} − ${pp} − ${po} = ${have - pp - po}`, `${have} + ${left} = ${have + left}`],
       hint: `Όσα ξόδεψε μαζί με όσα έμειναν πρέπει να κάνουν ${have} ευρώ.`,
     },
   };
@@ -117,12 +119,13 @@ function pages(r: Rng, p: Person): Chain | null {
     plan: [`Βρίσκουμε πόσες σελίδες διάβασε τις ${d} μέρες.`, 'Βρίσκουμε πόσες σελίδες διάβασε συνολικά.', 'Βρίσκουμε πόσες σελίδες μένουν.'],
     rows: [
       { op: `${k} × ${d} =`, name: `Σελίδες στις ${d} μέρες`, answer: r1, unit: 'σελίδες' },
-      { op: `${r1} + ${x} =`, name: 'Σελίδες συνολικά', answer: read, unit: 'σελίδες' },
-      { op: `${total} − ${read} =`, name: 'Σελίδες που μένουν', answer: total - read, unit: 'σελίδες' },
+      { op: `Όσες διάβασε τις ${d} μέρες + ${x} =`, name: 'Σελίδες συνολικά', answer: read, unit: 'σελίδες' },
+      { op: `${total} − όσες διάβασε =`, name: 'Σελίδες που μένουν', answer: total - read, unit: 'σελίδες' },
     ],
     check: {
       right: `${read} + ${total - read} = ${total}`,
-      wrong: [`${total} − ${k} − ${d} − ${x} = ${total - k - d - x}`, `${total} + ${read} = ${total + read}`],
+      // one day's pages taken for the pages of every day
+      wrong: [`${total} − ${k} − ${x} = ${total - k - x}`, `${total} + ${read} = ${total + read}`],
       hint: 'Όσες διάβασε μαζί με όσες μένουν πρέπει να κάνουν όλο το βιβλίο.',
     },
   };
@@ -157,8 +160,8 @@ function outing(r: Rng): Chain | null {
     plan: ['Βρίσκουμε πόσα πληρώνει για ένα παιδί.', 'Βρίσκουμε πόσα πληρώνει για όλα τα παιδιά.', 'Βρίσκουμε τα ρέστα.'],
     rows: [
       { op: `${ap} + ${bp} =`, name: 'Για ένα παιδί', answer: per, unit: 'ευρώ' },
-      { op: `${n} × ${per} =`, name: 'Για όλα τα παιδιά', answer: tot, unit: 'ευρώ' },
-      { op: `${note} − ${tot} =`, name: 'Ρέστα', answer: note - tot, unit: 'ευρώ' },
+      { op: `${n} × όσα για ένα παιδί =`, name: 'Για όλα τα παιδιά', answer: tot, unit: 'ευρώ' },
+      { op: `${note} − το κόστος =`, name: 'Ρέστα', answer: note - tot, unit: 'ευρώ' },
     ],
     check: {
       right: `${tot} + ${note - tot} = ${note}`,
@@ -188,12 +191,12 @@ function savings(r: Rng, p: Person): Chain | null {
   return {
     title: r.pick(['Ο κουμπαράς', 'Οικονομίες', 'Πόσα λείπουν;']),
     story: `${p.Nom} έβαζε ${known(`${w} ευρώ`)} στον κουμπαρά κάθε εβδομάδα, για ${known(`${d} εβδομάδες`)}. Για τα γενέθλιά ${p.his} πήρε και από ${giver} ${p.his} ${known(`${g} ευρώ`)}. `
-      + `Θέλει να αγοράσει ${item.what} που κοστίζει ${known(`${price} ευρώ`)}. ${noise} ${sought(`Πόσα ευρώ ${p.his} λείπουν ακόμη`)};`,
+      + `Θέλει να αγοράσει ${item.what} που κοστίζει ${known(`${price} ευρώ`)}. ${noise} ${sought(giver.startsWith(p.female ? 'τη ' : 'τον ') ? `Πόσα ευρώ λείπουν ακόμη σ${p.acc}` : `Πόσα ευρώ ${p.his} λείπουν ακόμη`)};`,
     plan: [`Βρίσκουμε πόσα έβαλε στον κουμπαρά τις ${d} εβδομάδες.`, 'Βρίσκουμε πόσα έχει όλα μαζί.', 'Βρίσκουμε πόσα ευρώ λείπουν.'],
     rows: [
       { op: `${w} × ${d} =`, name: `Σε ${d} εβδομάδες`, answer: s1, unit: 'ευρώ' },
-      { op: `${s1} + ${g} =`, name: 'Όλα μαζί', answer: tot, unit: 'ευρώ' },
-      { op: `${price} − ${tot} =`, name: 'Λείπουν', answer: price - tot, unit: 'ευρώ' },
+      { op: `Όσα έβαλε + ${g} =`, name: 'Όλα μαζί', answer: tot, unit: 'ευρώ' },
+      { op: `${price} − όσα έχει =`, name: 'Λείπουν', answer: price - tot, unit: 'ευρώ' },
     ],
     check: {
       right: `${tot} + ${price - tot} = ${price}`,
