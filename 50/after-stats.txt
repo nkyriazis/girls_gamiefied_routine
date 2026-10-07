@@ -1,0 +1,19 @@
+World stories (200):
+  cliticGift             7  g3-world-026 g3-world-050 g3-world-072 g3-world-155 g3-world-158 g3-world-160 g3-world-168
+  cliticBeforeNamed      0  
+  nameRepeated           0  
+  changeAfterNow         0  
+  friendNowStale         0  
+  questionNoSubject      0  
+  twoOptionChecks        0  
+
+change-left (20): toy over 60 € in 0; pays with an amount no notes make in 0; big items (three-digit) in 8
+  big:  g3-gen-change-left-002 (κιθάρα 190 €)
+  big:  g3-gen-change-left-004 (ποδήλατο 274 €)
+  big:  g3-gen-change-left-007 (πιάνο 159 €)
+  big:  g3-gen-change-left-008 (κιθάρα 176 €, πληρώνει με 200)
+  big:  g3-gen-change-left-009 (κιθάρα 209 €, πληρώνει με 300)
+  big:  g3-gen-change-left-013 (κιθάρα 241 €)
+  big:  g3-gen-change-left-015 (ποδήλατο 306 €)
+  big:  g3-gen-change-left-020 (πιάνο 349 €, πληρώνει με 350)
+  pays with: 18 → 100, 13 → 100, 25 → 50, 176 → 200, 209 → 300, 42 → 60, 30 → 50, 11 → 15, 29 → 100, 349 → 350

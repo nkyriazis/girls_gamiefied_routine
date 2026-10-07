@@ -1,0 +1,238 @@
+
+Grade 3: 708 problems in 27 families
+  change-left                               20 problems,  18 story shapes, 3.5 steps
+  share-equally                             20 problems,  20 story shapes, 4.7 steps
+  division-remainder                        20 problems,  13 story shapes, 3.5 steps
+  two-purchases                             20 problems,  20 story shapes, 3.7 steps
+  total-cost                                20 problems,  20 story shapes, 4.2 steps
+  compare-difference                        20 problems,  20 story shapes, 3.8 steps
+  start-unknown                             20 problems,  17 story shapes, 4.7 steps
+  bus-stops                                 20 problems,  20 story shapes, 3.4 steps
+  equal-groups                              20 problems,  16 story shapes, 4.2 steps
+  two-digit-times                           20 problems,  15 story shapes, 4.0 steps
+  table-reading                             20 problems,  20 story shapes, 3.8 steps
+  length-cm                                 20 problems,  19 story shapes, 3.6 steps
+  numberless                                20 problems,  19 story shapes, 4.5 steps
+  double-half                               20 problems,  19 story shapes, 3.8 steps
+  pages-per-day                             20 problems,  20 story shapes, 3.9 steps
+  buy-and-change                            20 problems,  20 story shapes, 3.3 steps
+  ages                                      20 problems,  20 story shapes, 3.6 steps
+  coins                                     20 problems,  19 story shapes, 3.5 steps
+  estimate-first                            20 problems,  14 story shapes, 4.0 steps
+  collection-goal                           20 problems,  20 story shapes, 3.5 steps
+  order-the-plan                            20 problems,  19 story shapes, 3.7 steps
+  missing-info                              20 problems,  18 story shapes, 3.5 steps
+  cheaper-option                            20 problems,  18 story shapes, 4.6 steps
+  days-to-goal                              20 problems,  10 story shapes, 4.6 steps
+  exchange-rate                             20 problems,  19 story shapes, 3.5 steps
+  (curated g-dimotikou-problems.json)        8 problems,   8 story shapes, 4.0 steps
+  (curated g-dimotikou-world.json)         200 problems, 200 story shapes, 3.0 steps
+
+Grade 5: 508 problems in 26 families
+  parts-ratio                               20 problems,  15 story shapes, 4.0 steps
+  unit-rate                                 20 problems,  10 story shapes, 3.7 steps
+  equalize-by-giving                        20 problems,  18 story shapes, 4.0 steps
+  big-table                                 20 problems,  20 story shapes, 3.7 steps
+  round-estimate                            20 problems,  17 story shapes, 4.3 steps
+  pattern-sum                               20 problems,  16 story shapes, 3.8 steps
+  round-table                               20 problems,  15 story shapes, 4.0 steps
+  coins-notes                               20 problems,  20 story shapes, 4.0 steps
+  growth-chain                              20 problems,  20 story shapes, 3.5 steps
+  budget                                    20 problems,  20 story shapes, 5.0 steps
+  place-value                               20 problems,  14 story shapes, 4.1 steps
+  backwards-money                           20 problems,  19 story shapes, 3.6 steps
+  sum-difference                            20 problems,  16 story shapes, 3.6 steps
+  missing-info                              20 problems,  11 story shapes, 4.0 steps
+  together-again                            20 problems,  18 story shapes, 4.0 steps
+  pack-round-up                             20 problems,  16 story shapes, 4.0 steps
+  buses-needed                              20 problems,  18 story shapes, 3.9 steps
+  arrange-rows                              20 problems,  14 story shapes, 4.3 steps
+  production                                20 problems,  18 story shapes, 3.4 steps
+  trip-costs                                20 problems,  18 story shapes, 3.5 steps
+  division-check                            20 problems,  12 story shapes, 4.0 steps
+  distance-time                             20 problems,  19 story shapes, 3.6 steps
+  compare-offers                            20 problems,  20 story shapes, 4.5 steps
+  divisibility                              20 problems,  14 story shapes, 4.4 steps
+  group-tickets                             20 problems,  18 story shapes, 4.0 steps
+  (curated e-dimotikou-problems.json)        8 problems,   8 story shapes, 4.3 steps
+
+Steps by kind: tag 1016, choice 1665, numbers 1445, order 58, paint 200, calc 200
+
+Grade 3 maths: 120 items in 26 families; multiple-choice 27, number-input 70, match-pairs 10, fill-blank 5, true-false 4, ordering 4; true-false «Σωστό» 2/4
+  words-places             5 items  κεφ. 1     multiple-choice
+  tens-in                  5 items  κεφ. 1     number-input
+  add-mental               5 items  κεφ. 2     number-input
+  money                    5 items  κεφ. 2     number-input
+  tables-match-a           5 items  κεφ. 4     match-pairs
+  tables-match-b           5 items  κεφ. 5     match-pairs
+  table-gap                5 items  κεφ. 6     fill-blank
+  divide                   5 items  κεφ. 6     number-input
+  fact-family              5 items  κεφ. 6     multiple-choice
+  length                   5 items  κεφ. 8     number-input
+  subtract                 5 items  κεφ. 10    number-input
+  times-2x1                5 items  κεφ. 11    number-input
+  table-11                 5 items  κεφ. 11    number-input
+  words-digits             5 items  κεφ. 14    multiple-choice
+  neighbours               5 items  κεφ. 14    number-input
+  hundreds-in              5 items  κεφ. 14    number-input
+  digit-value              4 items  κεφ. 14    number-input
+  digits-extreme           4 items  κεφ. 14    number-input
+  compare                  4 items  κεφ. 14    true-false
+  order                    4 items  κεφ. 14    ordering
+  expanded                 4 items  κεφ. 14    number-input
+  count-by                 4 items  κεφ. 14    number-input
+  add-sub-choice           4 items  κεφ. 15    multiple-choice
+  add                      4 items  κεφ. 15    number-input
+  times-choice             4 items  κεφ. 17    multiple-choice
+  divide-remainder         4 items  κεφ. 18    multiple-choice
+
+Grade 5 maths: 120 items in 24 families; multiple-choice 70, true-false 9, ordering 6, number-input 30, fill-blank 5; true-false «Σωστό» 5/9
+  words-digits             6 items  κεφ. 1.4   multiple-choice
+  words-places             6 items  κεφ. 1.4   multiple-choice
+  digit-value              6 items  κεφ. 1.5   multiple-choice
+  neighbours               6 items  κεφ. 1.6   multiple-choice
+  compare                  3 items  κεφ. 1.6   true-false
+  largest                  6 items  κεφ. 1.6   multiple-choice
+  order                    6 items  κεφ. 1.6   ordering
+  count-by                 5 items  κεφ. 1.6   multiple-choice
+  round                    5 items  κεφ. 1.7   multiple-choice
+  round-small              5 items  κεφ. 1.7   number-input
+  add-sub                  5 items  κεφ. 2.8   number-input
+  add-sub-big              5 items  κεφ. 2.8   multiple-choice
+  times-10                 5 items  κεφ. 2.9   multiple-choice
+  times-2d                 5 items  κεφ. 2.9   number-input
+  times-3x2                5 items  κεφ. 2.9   multiple-choice
+  multiples                5 items  κεφ. 2.10  multiple-choice
+  lcm                      5 items  κεφ. 2.10  number-input
+  divisible                3 items  κεφ. 2.11  true-false
+  divisible-choice         5 items  κεφ. 2.11  multiple-choice
+  division                 5 items  κεφ. 2.12  number-input
+  dividend                 5 items  κεφ. 2.12  number-input
+  euclid-gap               5 items  κεφ. 2.12  fill-blank
+  bad-remainder            5 items  κεφ. 2.12  multiple-choice
+  division-check           3 items  κεφ. 2.12  true-false
+
+Grade 3 language: 80 items in 22 families; multiple-choice 41, true-false 7, ordering 5, fill-blank 27; true-false «Σωστό» 3/7
+  rimata-ousiastika        5 items  pos       unit 1        multiple-choice, true-false
+  genos                    3 items  gender    unit 1        multiple-choice
+  arithmos                 3 items  agree     unit 1        multiple-choice
+  alfavitiki               4 items  alpha     unit 1, 3     ordering
+  evdomada                 1 items  week      unit 2        ordering
+  kyria-onomata            6 items  capital   unit 2        fill-blank, true-false
+  eimai                    3 items  person    unit 2        fill-blank
+  rimata-o-mai             4 items  person    unit 2        fill-blank
+  antitheta                3 items  opposite  unit 2        multiple-choice
+  fraseis                  5 items  meaning   unit 2, 3     true-false, multiple-choice
+  geniki                   3 items  agree     unit 2        fill-blank
+  epitheta                 3 items  agree     unit 2        multiple-choice
+  geitonia                 2 items  agree     unit 2        fill-blank
+  oikogeneies              3 items  family    unit 1, 2, 3  multiple-choice
+  aitiatiki                2 items  agree     unit 3        multiple-choice
+  aoristo-arthro           2 items  agree     unit 3        multiple-choice
+  tis-tis                  6 items  agree     unit 3        fill-blank
+  stixi                    5 items  punct     unit 1, 3     fill-blank
+  paromoiosis              6 items  saying    unit 1, 3     multiple-choice
+  san                      2 items  san       unit 3        multiple-choice
+  synonyma                 3 items  synonym   unit 3        multiple-choice
+  orthografia              6 items  spell     unit 1, 2     multiple-choice
+
+Grade 5 language: 68 items in 15 families; multiple-choice 49, fill-blank 19; true-false «Σωστό» 0/0
+  xronoi                   6 items  tense     unit 1        multiple-choice
+  allagi-xronou            5 items  retense   unit 1        multiple-choice
+  xronos                   6 items  time      unit 1        multiple-choice
+  tai-te                   4 items  person    unit 1        fill-blank
+  syntheta                 5 items  compound  unit 1, 2     multiple-choice
+  paroimies                3 items  saying    unit 1        multiple-choice
+  arnisi                   5 items  negation  unit 1, 2     fill-blank
+  egkliseis                4 items  mood      unit 2        multiple-choice
+  prostaktiki              3 items  spell     unit 2        multiple-choice
+  thilyka-os               5 items  agree     unit 2        fill-blank
+  epitheta-is-es           5 items  agree     unit 2        fill-blank
+  arithmitika              5 items  numeral   unit 2        multiple-choice
+  epirrimata               4 items  adverb    unit 2        multiple-choice
+  oikogeneies              3 items  family    unit 1, 2     multiple-choice
+  orismoi                  5 items  define    unit 1, 2     multiple-choice
+
+128 errors, 0 warnings
+  ✘ g3-gen-change-left-001: 292 € for σακίδιο (10–60 €): «Η Ζωή είχε 515 ευρώ και ξόδεψε 292 ευρώ για ένα σακίδιο για το σχολείο.»
+  ✘ g3-gen-change-left-002: pays 73 € for 15 €: not notes she would hand over
+  ✘ g3-gen-change-left-003: 348 € for κούκλα (8–45 €): «Στο μαγαζί της γειτονιάς, μια κούκλα κοστίζει 348 ευρώ.»
+  ✘ g3-gen-change-left-004: 490 € for βιβλίο (4–25 €): «Αγοράζει ένα βιβλίο με παραμύθια που κοστίζει 490 ευρώ.»
+  ✘ g3-gen-change-left-005: 81 € for παζλ (5–40 €): «Στο μαγαζί της γειτονιάς, ένα παζλ κοστίζει 81 ευρώ.»
+  ✘ g3-gen-change-left-005: pays 97 € for 81 €: not notes she would hand over
+  ✘ g3-gen-change-left-008: 295 € for αυτοκίνητο ράλι (10–60 €): «Αγοράζει ένα αυτοκίνητο ράλι που κοστίζει 295 ευρώ.»
+  ✘ g3-gen-change-left-010: 47 € for παζλ (5–40 €): «Η Ελένη είχε 81 ευρώ και ξόδεψε 47 ευρώ για ένα παζλ.»
+  ✘ g3-gen-change-left-011: pays 61 € for 26 €: not notes she would hand over
+  ✘ g3-gen-change-left-012: 104 € for παζλ (5–40 €): «Αγοράζει ένα παζλ που κοστίζει 104 ευρώ.»
+  ✘ g3-gen-change-left-013: 71 € for επιτραπέζιο (10–50 €): «Αγοράζει ένα επιτραπέζιο παιχνίδι που κοστίζει 71 ευρώ.»
+  ✘ g3-gen-change-left-015: 559 € for επιτραπέζιο (10–50 €): «Στο μαγαζί της γειτονιάς, ένα επιτραπέζιο παιχνίδι κοστίζει 559 ευρώ.»
+  ✘ g3-gen-change-left-017: pays 47 € for 17 €: not notes she would hand over
+  ✘ g3-gen-change-left-018: 172 € for παζλ (5–40 €): «Στο μαγαζί της γειτονιάς, ένα παζλ κοστίζει 172 ευρώ.»
+  ✘ g3-gen-change-left-019: pays 98 € for 19 €: not notes she would hand over
+  ✘ g3-gen-change-left-020: 47 € for μπάλα (5–35 €): «Αγοράζει μια μπάλα ποδοσφαίρου που κοστίζει 47 ευρώ.»
+  ✘ g3-world-002: step 2 (check): 2 options
+  ✘ g3-world-003: the question names no one, and ο Πυθαγόρας, ο Νίκος are subjects: «Πόσες κάρτες είχε στην αρχή;»
+  ✘ g3-world-003: step 2 (check): 2 options
+  ✘ g3-world-007: step 2 (check): 2 options
+  ✘ g3-world-009: the question names no one, and ο Γιώργος, η Σοφία are subjects: «Πόσους βόλους είχε στην αρχή;»
+  ✘ g3-world-009: step 2 (check): 2 options
+  ✘ g3-world-010: the question names no one, and η Κατερίνα, ο Αντρέι are subjects: «Να βρεις πόσα ευρώ είχε στην αρχή.»
+  ✘ g3-world-013: «της χάρισε» before anyone it could mean is named: «Ο Αλέξης της χάρισε 12 αυτοκόλλητα.»
+  ✘ g3-world-014: the question names no one, and η Κατερίνα, ο Μιχάλης, η Μυρτώ are subjects: «Πόσα αυτοκόλλητα έχασε;»
+  ✘ g3-world-014: step 2 (check): 2 options
+  ✘ g3-world-019: step 2 (check): 2 options
+  ✘ g3-world-021: step 2 (check): 2 options
+  ✘ g3-world-022: calc: «Ο Μιχάλης της χάρισε μερικά γραμματόσημα.» changes what ο Μιχάλης has, but «Γραμματόσημα του Μιχάλη τώρα» doesn't count it
+  ✘ g3-world-023: «της χάρισε» could mean more than one person: «Να βρεις πόσα αυτοκόλλητα της χάρισε ο Στέλιος.»
+  ✘ g3-world-025: two sentences in a row open with «Η Υπατία»: «Η Υπατία είχε 21 γραμματόσημα. Η Υπατία της χάρισε μερικά γραμματόσημα.»
+  ✘ g3-world-027: the question names no one, and ο Πέτρος, ο Μιχάλης are subjects: «Θέλουμε να βρούμε πόσες κάρτες είχε κάθε πακέτο.»
+  ✘ g3-world-029: step 2 (check): 2 options
+  ✘ g3-world-035: step 2 (check): 2 options
+  ✘ g3-world-036: step 2 (check): 2 options
+  ✘ g3-world-036: 56 € for κασετίνα (3–20 €): «Ο Αλέξης αγόρασε μια κασετίνα που κόστιζε 56 ευρώ.»
+  ✘ g3-world-037: the question names no one, and η Αγγελική, η Μαρίνα are subjects: «Να βρεις πόσο κόστιζε η κούκλα.»
+  ✘ g3-world-037: step 2 (check): 2 options
+  ✘ g3-world-041: «του χάρισε» could mean more than one person: «Ο Αλέξης του χάρισε 17 κάρτες.»
+  ✘ g3-world-041: a change after «Τώρα ο Αλέξης έχει 105 κάρτες.»: «Ο Αλέξης του χάρισε 17 κάρτες.»
+  ✘ g3-world-043: 27 € for αυτοκινητάκι (3–25 €): «Ο Πέτρος αγόρασε ένα αυτοκινητάκι που κόστιζε 27 ευρώ.»
+  ✘ g3-world-044: two sentences in a row open with «Η Κατερίνα»: «Η Κατερίνα είχε 56 γραμματόσημα. Η Κατερίνα της χάρισε μερικά γραμματόσημα.»
+  ✘ g3-world-044: calc: «Η Δανάη χάρισε 8 γραμματόσημα στην Κατερίνα.» changes what η Κατερίνα has, but «Γραμματόσημα της Κατερίνας τώρα» doesn't count it
+  ✘ g3-world-047: step 2 (check): 2 options
+  ✘ g3-world-048: step 2 (check): 2 options
+  ✘ g3-world-049: the question names no one, and ο Μάρκος, η Σοφία are subjects: «Να βρεις πόσα γραμματόσημα ήταν στους φακέλους που αγόρασε.»
+  ✘ g3-world-049: step 2 (check): 2 options
+  ✘ g3-world-057: the question names no one, and η Δανάη, ο Στέλιος are subjects: «Πόσα ευρώ της έδωσε η γιαγιά της;»
+  ✘ g3-world-058: calc: «Η Μαρίνα του χάρισε 6 βόλους.» changes what η Μαρίνα has, but «Βόλοι της Μαρίνας τώρα» doesn't count it
+  ✘ g3-world-066: 59 € for κασετίνα (3–20 €): «Αγόρασε μια κασετίνα που κόστιζε 59 ευρώ.»
+  ✘ g3-world-069: the question names no one, and η Κατερίνα, ο Πέτρος are subjects: «Πόσους βόλους είχε στην αρχή;»
+  ✘ g3-world-070: the question names no one, and ο Πυθαγόρας, ο Μάρκος are subjects: «Πόσα ευρώ έβαλε κάθε εβδομάδα;»
+  ✘ g3-world-071: the question names no one, and ο Φώτης, η Κατερίνα, η Αγγελική are subjects: «Να βρεις πόσα γραμματόσημα έχασε.»
+  ✘ g3-world-072: the question names no one, and η Υπατία, ο Πέτρος are subjects: «Για πόσες εβδομάδες έβαλε χρήματα;»
+  ✘ g3-world-072: step 2 (check): 2 options
+  ✘ g3-world-073: the question names no one, and η Σοφία, η Μαρίνα are subjects: «Για πόσες εβδομάδες έβαλε χρήματα;»
+  ✘ g3-world-075: 47 € for μπάλα (5–35 €): «Ο Μιχάλης αγόρασε μια μπάλα που κόστιζε 47 ευρώ.»
+  ✘ g3-world-077: step 2 (check): 2 options
+  ✘ g3-world-079: the question names no one, and ο Θοδωρής, ο Μάρκος are subjects: «Πόσα γραμματόσημα είχε κάθε φάκελος;»
+  ✘ g3-world-080: the question names no one, and ο Πέτρος, η Κατερίνα are subjects: «Πόσες χάντρες είχε κάθε σακουλάκι;»
+  ✘ g3-world-081: step 2 (check): 2 options
+  ✘ g3-world-084: two sentences in a row open with «Η Αγγελική»: «Η Αγγελική είχε 50 αυτοκόλλητα. Η Αγγελική του χάρισε 12 αυτοκόλλητα.»
+  ✘ g3-world-085: «του χάρισε» before anyone it could mean is named: «Ο Θοδωρής του χάρισε 23 κάρτες.»
+  ✘ g3-world-085: two sentences in a row open with «Ο Θοδωρής»: «Ο Θοδωρής είχε 30 κάρτες. Ο Θοδωρής του χάρισε 23 κάρτες.»
+  ✘ g3-world-085: the question names no one, and ο Θοδωρής, η Χαρά, ο Μάρκος are subjects: «Πόσες κάρτες είχε στην αρχή;»
+  ✘ g3-world-087: step 2 (check): 2 options
+  ✘ g3-world-088: step 2 (check): 2 options
+  ✘ g3-world-089: the question names no one, and η Δανάη, ο Γιώργος are subjects: «Πόσους βόλους έχει τώρα;»
+  ✘ g3-world-089: step 2 (check): 2 options
+  ✘ g3-world-093: step 2 (check): 2 options
+  ✘ g3-world-093: 54 € for αυτοκινητάκι (3–25 €): «Αγόρασε ένα αυτοκινητάκι που κόστιζε 54 ευρώ.»
+  ✘ g3-world-094: step 2 (check): 2 options
+  ✘ g3-world-095: the question names no one, and η Άννα, ο Γιώργος are subjects: «Να βρεις πόσα ευρώ είχε στην αρχή.»
+  ✘ g3-world-096: the question names no one, and ο Μάρκος, η Κατερίνα, ο Άρης are subjects: «Να βρεις πόσα ευρώ της έδωσε η γιαγιά της.»
+  ✘ g3-world-099: the question names no one, and η Κορίνα, η Μυρτώ are subjects: «Πόσα γραμματόσημα έχασε;»
+  ✘ g3-world-099: step 2 (check): 2 options
+  ✘ g3-world-100: step 2 (check): 2 options
+  ✘ g3-world-102: the question names no one, and ο Στέλιος, ο Νίκος are subjects: «Πόσα αυτοκόλλητα ήταν στα φακελάκια που αγόρασε;»
+  ✘ g3-world-102: step 2 (check): 2 options
+  ✘ g3-world-103: step 2 (check): 2 options
+  … and 48 more
+exit 1

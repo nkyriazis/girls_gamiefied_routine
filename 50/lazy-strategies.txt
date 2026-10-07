@@ -1,0 +1,33 @@
+# world/run.ts on master
+== lazy strategies (share of the problems with an unneeded fact that they tag perfectly)
+  numbers known, last sentence sought       0%      0%      0%
+  numbers known, number-less sought        0%      0%      0%
+  … and ages, times, pages extra          32%     14%      6%
+  questions sought, rest known             0%      0%      0%
+  … and ages, times, pages extra          33%     15%     16%
+  question last                          100%     91%     70%
+  ends with ;                            100%     91%     47%
+  knowns without digits                    3%     14%     13%
+  no extra at all                          0%      0%     18%
+                                       Γ΄ now  Ε΄ now   world
+  world: an unneeded fact of the same kind as the answer (ευρώ with ευρώ…): 62%
+  world: kinds of fact that are needed in some problems and not in others: s# e# d e#n e#m g# (of s# e# d z e#n e#m x g# f)
+
+  phrase shapes that are needed in some problems and extra in others: 22 of 400
+
+# world/run.ts on this branch
+== lazy strategies (share of the problems with an unneeded fact that they tag perfectly)
+  numbers known, last sentence sought       0%      0%      0%
+  numbers known, number-less sought        0%      0%      0%
+  … and ages, times, pages extra          32%     14%      5%
+  questions sought, rest known             0%      0%      0%
+  … and ages, times, pages extra          33%     15%     11%
+  question last                          100%     91%     67%
+  ends with ;                            100%     91%     46%
+  knowns without digits                    3%     14%     13%
+  no extra at all                          0%      0%     23%
+                                       Γ΄ now  Ε΄ now   world
+  world: an unneeded fact of the same kind as the answer (ευρώ with ευρώ…): 61%
+  world: kinds of fact that are needed in some problems and not in others: e# s# g# d e#n e#m (of e# z s# g# x d e#n e#m f)
+
+  phrase shapes that are needed in some problems and extra in others: 16 of 460
