@@ -1,0 +1,27 @@
+✔ refused δε(ν)/μη(ν) before a present form: «Δεν/Μην ακούτε» are both right
+    «ακούτε» could follow δε(ν) or μη(ν): only after «να», before «θα» or before a past tense is it one
+✔ refused the masculine genitive of an -ης adjective, with the everyday -ή offered as wrong
+    asks the masculine genitive of an -ης adjective, whose everyday form (-ή, γ104) is right too
+✔ refused two close definitions in one item (αφετηρία, σταθμός)
+    «αφετηρία» and «σταθμός» are too close to pit against each other
+✔ refused an adverb that can tell two things, asked bare (αργά)
+    «αργά» can tell χρόνο or τρόπο: never asked bare
+✔ refused a mood item on a form that is two moods with no «να»/«μη» (ακούτε: indicative and imperative)
+    «ακούτε» with no «να»/«μη» reads as οριστική ενεστώτα, εξακολουθητική προστακτική
+✔ refused a tense asked on part of a compound form («πλησιάσει» in «θα έχει πλησιάσει»)
+    «έχει πλησιάσει» is part of «θα έχει πλησιάσει» in the sentence: ask the whole form
+✔ refused a proverb with a word of check-gender's list («Όποιος …»)
+    question: «Όποιος αέρας κι αν φυσά, ο μύλος πάντα …» says «οποιος»: say it the same way to every child
+    «Όποιος αέρας κι αν φυσά, ο μύλος πάντα …» is not a saying of the lexicon
+✔ refused an item citing the grammar book (items cite only β/τ lesson pages)
+    source «Γλώσσα Ε΄, ενότητα 2: Η ζωή στην πόλη, μάθημα 3: Διαδρομές στην πόλη (γραμματική, σ. 80)» is not a lesson page of the Ε΄ book (curriculum.ts)
+✔ refused a fill-blank sentence longer than a line (FILL_LINE_MAX)
+    the sentence has 66 characters besides its gap: over 43, it breaks at the gap
+    «Δείξε μου» would show 74 characters («Η ορχήστρα θα παίξει στην πολυτελή αίθουσα συναυλιών του Μεγάρου Μουσικής.»): keep it to 60 at most
+✔ refused the grammar book's «προθετική φράση» on her screen (her books say «φράση με πρόθεση», β9/τ8)
+    «προθετική φράση» is not one of επίρρημα, φράση με πρόθεση, φράση σε αιτιατική, χρονική πρόταση
+    0 options the rule accepts (none)
+✔ refused xronos-005 without «φράση σε αιτιατική»: «φράση με πρόθεση» would be the only longest option
+    the right option «φράση με πρόθεση» is the only longest: it gives itself away
+
+11 of 11 crafted items refused

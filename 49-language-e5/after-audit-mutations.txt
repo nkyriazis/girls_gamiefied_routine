@@ -1,0 +1,182 @@
+audit of the pool as written: 0 errors
+  ✔ e5-lang-xronoi-001 key → «υπερσυντέλικος»: the right option «υπερσυντέλικος» is the only longest: it gives itself away
+  ✔ e5-lang-xronoi-001 key → «ενεστώτας»: the key is «ενεστώτας», the rule's answer «παρατατικός»
+  ✔ e5-lang-xronoi-001 key → «αόριστος»: the key is «αόριστος», the rule's answer «παρατατικός»
+  ✔ e5-lang-xronoi-002 key → «παρατατικός»: the key is «παρατατικός», the rule's answer «ενεστώτας»
+  ✔ e5-lang-xronoi-002 key → «παρακείμενος»: the right option «παρακείμενος» is the only longest: it gives itself away
+  ✔ e5-lang-xronoi-002 key → «αόριστος»: the key is «αόριστος», the rule's answer «ενεστώτας»
+  ✔ e5-lang-xronoi-003 key → «ενεστώτας»: the key is «ενεστώτας», the rule's answer «αόριστος»
+  ✔ e5-lang-xronoi-003 key → «παρακείμενος»: the right option «παρακείμενος» is the only longest: it gives itself away
+  ✔ e5-lang-xronoi-003 key → «παρατατικός»: the key is «παρατατικός», the rule's answer «αόριστος»
+  ✔ e5-lang-xronoi-004 key → «αόριστος»: the key is «αόριστος», the rule's answer «παρακείμενος»
+  ✔ e5-lang-xronoi-004 key → «υπερσυντέλικος»: the right option «υπερσυντέλικος» is the only longest: it gives itself away
+  ✔ e5-lang-xronoi-004 key → «ενεστώτας»: the key is «ενεστώτας», the rule's answer «παρακείμενος»
+  ✔ e5-lang-xronoi-005 key → «αόριστος»: the key is «αόριστος», the rule's answer «υπερσυντέλικος»
+  ✔ e5-lang-xronoi-005 key → «παρακείμενος»: the key is «παρακείμενος», the rule's answer «υπερσυντέλικος»
+  ✔ e5-lang-xronoi-005 key → «συνοπτικός μέλλοντας»: the right option «συνοπτικός μέλλοντας» is the only longest: it gives itself away
+  ✔ e5-lang-xronoi-006 key → «συνοπτικός μέλλοντας»: the key is «συνοπτικός μέλλοντας», the rule's answer «συντελεσμένος μέλλοντας»
+  ✔ e5-lang-xronoi-006 key → «παρακείμενος»: the key is «παρακείμενος», the rule's answer «συντελεσμένος μέλλοντας»
+  ✔ e5-lang-xronoi-006 key → «εξακολουθητικός μέλλοντας»: the right option «εξακολουθητικός μέλλοντας» is the only longest: it gives itself away
+  ✔ e5-lang-allagi-xronou-001 key → «πλησίαζε»: the key is «πλησίαζε», the rule's answer «πλησίασε»
+  ✔ e5-lang-allagi-xronou-001 key → «έχει πλησιάσει»: the right option «έχει πλησιάσει» is the only longest: it gives itself away
+  ✔ e5-lang-allagi-xronou-001 key → «θα πλησιάσει»: the key is «θα πλησιάσει», the rule's answer «πλησίασε»
+  ✔ e5-lang-allagi-xronou-002 key → «είχε πλησιάσει»: the right option «είχε πλησιάσει» is the only longest: it gives itself away
+  ✔ e5-lang-allagi-xronou-002 key → «πλησίασε»: the key is «πλησίασε», the rule's answer «πλησίαζε»
+  ✔ e5-lang-allagi-xronou-002 key → «θα πλησιάζει»: the key is «θα πλησιάζει», the rule's answer «πλησίαζε»
+  ✔ e5-lang-allagi-xronou-003 key → «έγραψα»: the key is «έγραψα», the rule's answer «έχω γράψει»
+  ✔ e5-lang-allagi-xronou-003 key → «είχα γράψει»: the key is «είχα γράψει», the rule's answer «έχω γράψει»
+  ✔ e5-lang-allagi-xronou-003 key → «θα έχω γράψει»: the right option «θα έχω γράψει» is the only longest: it gives itself away
+  ✔ e5-lang-allagi-xronou-004 key → «έγραψα»: the key is «έγραψα», the rule's answer «θα γράψω»
+  ✔ e5-lang-allagi-xronou-004 key → «θα γράφω»: the key is «θα γράφω», the rule's answer «θα γράψω»
+  ✔ e5-lang-allagi-xronou-004 key → «θα έχω γράψει»: the right option «θα έχω γράψει» is the only longest: it gives itself away
+  ✔ e5-lang-allagi-xronou-005 key → «είχε χαθεί»: the right option «είχε χαθεί» is the only longest: it gives itself away
+  ✔ e5-lang-allagi-xronou-005 key → «χάνεται»: the key is «χάνεται», the rule's answer «χάθηκε»
+  ✔ e5-lang-allagi-xronou-005 key → «θα χαθεί»: the key is «θα χαθεί», the rule's answer «χάθηκε»
+  ✔ e5-lang-xronos-001 key → «στο δέλτα του Έβρου»: the right option «στο δέλτα του Έβρου» is the only longest: it gives itself away
+  ✔ e5-lang-xronos-001 key → «ένα μεζεδάκι»: the key is «ένα μεζεδάκι», the rule's answer «πρώτα»
+  ✔ e5-lang-xronos-002 key → «στη σκιά του ανεμόμυλου»: the right option «στη σκιά του ανεμόμυλου» is the only longest: it gives itself away
+  ✔ e5-lang-xronos-002 key → «οι κοπέλες»: the key is «οι κοπέλες», the rule's answer «το απόγευμα»
+  ✔ e5-lang-xronos-003 key → «στη λιμνοθάλασσα»: the right option «στη λιμνοθάλασσα» is the only longest: it gives itself away
+  ✔ e5-lang-xronos-003 key → «ο καλαμοκανάς»: the key is «ο καλαμοκανάς», the rule's answer «μετά από λίγο»
+  ✔ e5-lang-xronos-004 key → «φράση σε αιτιατική»: the right option «φράση σε αιτιατική» is the only longest: it gives itself away
+  ✔ e5-lang-xronos-004 key → «επίρρημα»: the key is «επίρρημα», the rule's answer «χρονική πρόταση»
+  ✔ e5-lang-xronos-004 key → «φράση με πρόθεση»: the key is «φράση με πρόθεση», the rule's answer «χρονική πρόταση»
+  ✔ e5-lang-xronos-005 key → «επίρρημα»: the key is «επίρρημα», the rule's answer «φράση με πρόθεση»
+  ✔ e5-lang-xronos-005 key → «φράση σε αιτιατική»: the right option «φράση σε αιτιατική» is the only longest: it gives itself away
+  ✔ e5-lang-xronos-005 key → «χρονική πρόταση»: the key is «χρονική πρόταση», the rule's answer «φράση με πρόθεση»
+  ✔ e5-lang-xronos-006 key → «φράση σε αιτιατική»: the right option «φράση σε αιτιατική» is the only longest: it gives itself away
+  ✔ e5-lang-xronos-006 key → «φράση με πρόθεση»: the key is «φράση με πρόθεση», the rule's answer «επίρρημα»
+  ✔ e5-lang-xronos-006 key → «χρονική πρόταση»: the key is «χρονική πρόταση», the rule's answer «επίρρημα»
+  ✔ e5-lang-tai-te-001 key → «βρίσκετε»: the key is «βρίσκετε», the rule's answer «βρίσκεται»
+  ✔ e5-lang-tai-te-001 key → «βρίσκονται»: the key is «βρίσκονται», the rule's answer «βρίσκεται»
+  ✔ e5-lang-tai-te-001 key → «βρισκόμαστε»: the right option «βρισκόμαστε» is the only longest: it gives itself away
+  ✔ e5-lang-tai-te-002 key → «μετακινούντε»: the key is «μετακινούντε», the rule's answer «μετακινούνται»
+  ✔ e5-lang-tai-te-002 key → «μετακινούμασται»: the right option «μετακινούμασται» is the only longest: it gives itself away
+  ✔ e5-lang-tai-te-002 key → «μετακινούμαστε»: the key is «μετακινούμαστε», the rule's answer «μετακινούνται»
+  ✔ e5-lang-tai-te-003 key → «ενθαρίνει»: the key is «ενθαρίνει», the rule's answer «ενθαρρύνει»
+  ✔ e5-lang-tai-te-003 key → «ενθαρρίνει»: the key is «ενθαρρίνει», the rule's answer «ενθαρρύνει»
+  ✔ e5-lang-tai-te-003 key → «ενθαρύνει»: the key is «ενθαρύνει», the rule's answer «ενθαρρύνει»
+  ✔ e5-lang-tai-te-004 key → «ρυπαίνεται»: the right option «ρυπαίνεται» is the only longest: it gives itself away
+  ✔ e5-lang-tai-te-004 key → «ρυπαίνουν»: the key is «ρυπαίνουν», the rule's answer «ρυπαίνετε»
+  ✔ e5-lang-tai-te-004 key → «ρυπένετε»: the key is «ρυπένετε», the rule's answer «ρυπαίνετε»
+  ✔ e5-lang-syntheta-001 key → «οικόσημο»: the key is «οικόσημο», the rule's answer «οικόπεδο»
+  ✔ e5-lang-syntheta-001 key → «οικογένεια»: the right option «οικογένεια» is the only longest: it gives itself away
+  ✔ e5-lang-syntheta-002 key → «οικοτροφείο»: the right option «οικοτροφείο» is the only longest: it gives itself away
+  ✔ e5-lang-syntheta-002 key → «οικοδόμος»: the key is «οικοδόμος», the rule's answer «οικοτεχνία»
+  ✔ e5-lang-syntheta-003 key → «οικοτροφείο»: the key is «οικοτροφείο», the rule's answer «οικοσύστημα»
+  ✔ e5-lang-syntheta-003 key → «οικόσημο»: the key is «οικόσημο», the rule's answer «οικοσύστημα»
+  ✔ e5-lang-syntheta-004 key → «άνοδος»: the key is «άνοδος», the rule's answer «οδοποιία»
+  ✔ e5-lang-syntheta-004 key → «έξοδος»: the key is «έξοδος», the rule's answer «οδοποιία»
+  ✔ e5-lang-syntheta-004 key → «αδιέξοδο»: the key is «αδιέξοδο», the rule's answer «οδοποιία»
+  ✔ e5-lang-syntheta-005 key → «οδηγός»: the key is «οδηγός», the rule's answer «έξοδος»
+  ✔ e5-lang-syntheta-005 key → «οδοποιία»: the right option «οδοποιία» is the only longest: it gives itself away
+  ✔ e5-lang-paroimies-001 key → «μαύρο»: the right option «μαύρο» is the only longest: it gives itself away
+  ✔ e5-lang-paroimies-001 key → «πολύ»: the key is «πολύ», the rule's answer «λίγο»
+  ✔ e5-lang-paroimies-002 key → «σιτάρι»: the key is «σιτάρι», the rule's answer «αλεύρι»
+  ✔ e5-lang-paroimies-002 key → «προζύμι»: the right option «προζύμι» is the only longest: it gives itself away
+  ✔ e5-lang-paroimies-003 key → «φτερωτές»: the key is «φτερωτές», the rule's answer «μυλόπετρες»
+  ✔ e5-lang-paroimies-003 key → «χειρολαβές»: the key is «χειρολαβές», the rule's answer «μυλόπετρες»
+  ✔ e5-lang-arnisi-001 key → «δεν»: the key is «δεν», the rule's answer «δε»
+  ✔ e5-lang-arnisi-001 key → «μην»: the key is «μην», the rule's answer «δε»
+  ✔ e5-lang-arnisi-001 key → «μη»: the key is «μη», the rule's answer «δε»
+  ✔ e5-lang-arnisi-002 key → «δε»: the key is «δε», the rule's answer «μη»
+  ✔ e5-lang-arnisi-002 key → «μην»: the key is «μην», the rule's answer «μη»
+  ✔ e5-lang-arnisi-002 key → «δεν»: the key is «δεν», the rule's answer «μη»
+  ✔ e5-lang-arnisi-003 key → «μη»: the key is «μη», the rule's answer «μην»
+  ✔ e5-lang-arnisi-003 key → «δε»: the key is «δε», the rule's answer «μην»
+  ✔ e5-lang-arnisi-003 key → «δεν»: the key is «δεν», the rule's answer «μην»
+  ✔ e5-lang-arnisi-004 key → «μη»: the key is «μη», the rule's answer «δεν»
+  ✔ e5-lang-arnisi-004 key → «δε»: the key is «δε», the rule's answer «δεν»
+  ✔ e5-lang-arnisi-004 key → «μην»: the key is «μην», the rule's answer «δεν»
+  ✔ e5-lang-arnisi-005 key → «δεν»: the key is «δεν», the rule's answer «μην»
+  ✔ e5-lang-arnisi-005 key → «δε»: the key is «δε», the rule's answer «μην»
+  ✔ e5-lang-arnisi-005 key → «μη»: the key is «μη», the rule's answer «μην»
+  ✔ e5-lang-egkliseis-001 key → «οριστική ενεστώτα»: the key is «οριστική ενεστώτα», the rule's answer «συνοπτική προστακτική»
+  ✔ e5-lang-egkliseis-001 key → «εξακολουθητική υποτακτική»: the right option «εξακολουθητική υποτακτική» is the only longest: it gives itself away
+  ✔ e5-lang-egkliseis-001 key → «συνοπτική υποτακτική»: the key is «συνοπτική υποτακτική», the rule's answer «συνοπτική προστακτική»
+  ✔ e5-lang-egkliseis-002 key → «συνοπτική προστακτική»: the right option «συνοπτική προστακτική» is the only longest: it gives itself away
+  ✔ e5-lang-egkliseis-002 key → «οριστική ενεστώτα»: the key is «οριστική ενεστώτα», the rule's answer «συνοπτική υποτακτική»
+  ✔ e5-lang-egkliseis-003 key → «συνοπτική υποτακτική»: the key is «συνοπτική υποτακτική», the rule's answer «οριστική ενεστώτα»
+  ✔ e5-lang-egkliseis-003 key → «συνοπτική προστακτική»: the right option «συνοπτική προστακτική» is the only longest: it gives itself away
+  ✔ e5-lang-egkliseis-004 key → «εξακολουθητική προστακτική»: the right option «εξακολουθητική προστακτική» is the only longest: it gives itself away
+  ✔ e5-lang-egkliseis-004 key → «οριστική ενεστώτα»: the key is «οριστική ενεστώτα», the rule's answer «εξακολουθητική υποτακτική»
+  ✔ e5-lang-prostaktiki-001 key → «στρώσται»: the key is «στρώσται», the rule's answer «στρώστε»
+  ✔ e5-lang-prostaktiki-001 key → «στρόστε»: the key is «στρόστε», the rule's answer «στρώστε»
+  ✔ e5-lang-prostaktiki-001 key → «στρόσται»: the key is «στρόσται», the rule's answer «στρώστε»
+  ✔ e5-lang-prostaktiki-002 key → «πλουτίσται»: the key is «πλουτίσται», the rule's answer «πλουτίστε»
+  ✔ e5-lang-prostaktiki-002 key → «πλουτήσται»: the key is «πλουτήσται», the rule's answer «πλουτίστε»
+  ✔ e5-lang-prostaktiki-002 key → «πλουτήστε»: the key is «πλουτήστε», the rule's answer «πλουτίστε»
+  ✔ e5-lang-prostaktiki-003 key → «συμπληρόστε»: the key is «συμπληρόστε», the rule's answer «συμπληρώστε»
+  ✔ e5-lang-prostaktiki-003 key → «συμπληρώσται»: the key is «συμπληρώσται», the rule's answer «συμπληρώστε»
+  ✔ e5-lang-prostaktiki-003 key → «συμπληρόσται»: the key is «συμπληρόσται», the rule's answer «συμπληρώστε»
+  ✔ e5-lang-thilyka-os-001 key → «οδός»: the key is «οδός», the rule's answer «οδό»
+  ✔ e5-lang-thilyka-os-001 key → «οδούς»: the right option «οδούς» is the only longest: it gives itself away
+  ✔ e5-lang-thilyka-os-001 key → «οδού»: the key is «οδού», the rule's answer «οδό»
+  ✔ e5-lang-thilyka-os-002 key → «οδού»: the key is «οδού», the rule's answer «οδών»
+  ✔ e5-lang-thilyka-os-002 key → «οδούς»: the right option «οδούς» is the only longest: it gives itself away
+  ✔ e5-lang-thilyka-os-002 key → «οδοί»: the key is «οδοί», the rule's answer «οδών»
+  ✔ e5-lang-thilyka-os-003 key → «οδό»: the key is «οδό», the rule's answer «οδός»
+  ✔ e5-lang-thilyka-os-003 key → «οδού»: the key is «οδού», the rule's answer «οδός»
+  ✔ e5-lang-thilyka-os-003 key → «οδοί»: the key is «οδοί», the rule's answer «οδός»
+  ✔ e5-lang-thilyka-os-004 key → «οδός»: the key is «οδός», the rule's answer «οδοί»
+  ✔ e5-lang-thilyka-os-004 key → «οδούς»: the right option «οδούς» is the only longest: it gives itself away
+  ✔ e5-lang-thilyka-os-004 key → «οδό»: the key is «οδό», the rule's answer «οδοί»
+  ✔ e5-lang-thilyka-os-005 key → «λεωφόρου»: the key is «λεωφόρου», the rule's answer «λεωφόρο»
+  ✔ e5-lang-thilyka-os-005 key → «λεωφόρους»: the right option «λεωφόρους» is the only longest: it gives itself away
+  ✔ e5-lang-thilyka-os-005 key → «λεωφόρος»: the key is «λεωφόρος», the rule's answer «λεωφόρο»
+  ✔ e5-lang-epitheta-is-es-001 key → «διεθνή»: the key is «διεθνή», the rule's answer «διεθνείς»
+  ✔ e5-lang-epitheta-is-es-001 key → «διεθνής»: the key is «διεθνής», the rule's answer «διεθνείς»
+  ✔ e5-lang-epitheta-is-es-001 key → «διεθνούς»: the key is «διεθνούς», the rule's answer «διεθνείς»
+  ✔ e5-lang-epitheta-is-es-002 key → «πολυτελές»: the key is «πολυτελές», the rule's answer «πολυτελή»
+  ✔ e5-lang-epitheta-is-es-002 key → «πολυτελείς»: the right option «πολυτελείς» is the only longest: it gives itself away
+  ✔ e5-lang-epitheta-is-es-002 key → «πολυτελής»: the key is «πολυτελής», the rule's answer «πολυτελή»
+  ✔ e5-lang-epitheta-is-es-003 key → «εμφανείς»: the right option «εμφανείς» is the only longest: it gives itself away
+  ✔ e5-lang-epitheta-is-es-003 key → «εμφανές»: the key is «εμφανές», the rule's answer «εμφανής»
+  ✔ e5-lang-epitheta-is-es-003 key → «εμφανή»: the key is «εμφανή», the rule's answer «εμφανής»
+  ✔ e5-lang-epitheta-is-es-004 key → «ειλικρινείς»: the right option «ειλικρινείς» is the only longest: it gives itself away
+  ✔ e5-lang-epitheta-is-es-004 key → «ειλικρινής»: the key is «ειλικρινής», the rule's answer «ειλικρινές»
+  ✔ e5-lang-epitheta-is-es-004 key → «ειλικρινή»: the key is «ειλικρινή», the rule's answer «ειλικρινές»
+  ✔ e5-lang-epitheta-is-es-005 key → «ευγενές»: the key is «ευγενές», the rule's answer «ευγενή»
+  ✔ e5-lang-epitheta-is-es-005 key → «ευγενείς»: the right option «ευγενείς» is the only longest: it gives itself away
+  ✔ e5-lang-epitheta-is-es-005 key → «ευγενής»: the key is «ευγενής», the rule's answer «ευγενή»
+  ✔ e5-lang-arithmitika-001 key → «εβδομήντα»: the right option «εβδομήντα» is the only longest: it gives itself away
+  ✔ e5-lang-arithmitika-001 key → «ένατος»: the key is «ένατος», the rule's answer «έβδομος»
+  ✔ e5-lang-arithmitika-001 key → «εφτά»: the key is «εφτά», the rule's answer «έβδομος»
+  ✔ e5-lang-arithmitika-002 key → «έβδομος»: the key is «έβδομος», the rule's answer «ένατος»
+  ✔ e5-lang-arithmitika-002 key → «εννιά»: the key is «εννιά», the rule's answer «ένατος»
+  ✔ e5-lang-arithmitika-002 key → «ενενήντα»: the right option «ενενήντα» is the only longest: it gives itself away
+  ✔ e5-lang-arithmitika-003 key → «είκοσι»: the key is «είκοσι», the rule's answer «εικοστός»
+  ✔ e5-lang-arithmitika-003 key → «δέκατος»: the key is «δέκατος», the rule's answer «εικοστός»
+  ✔ e5-lang-arithmitika-003 key → «εικοσάδα»: the key is «εικοσάδα», the rule's answer «εικοστός»
+  ✔ e5-lang-arithmitika-004 key → «τριπλάσιος»: the right option «τριπλάσιος» is the only longest: it gives itself away
+  ✔ e5-lang-arithmitika-004 key → «τρίτος»: the key is «τρίτος», the rule's answer «τριπλός»
+  ✔ e5-lang-arithmitika-004 key → «τρία»: the key is «τρία», the rule's answer «τριπλός»
+  ✔ e5-lang-arithmitika-005 key → «τετραπλός»: the key is «τετραπλός», the rule's answer «διπλάσιος»
+  ✔ e5-lang-arithmitika-005 key → «πέντε»: the key is «πέντε», the rule's answer «διπλάσιος»
+  ✔ e5-lang-arithmitika-005 key → «δεύτερος»: the key is «δεύτερος», the rule's answer «διπλάσιος»
+  ✔ e5-lang-epirrimata-001 key → «τρόπο»: the key is «τρόπο», the rule's answer «τόπο»
+  ✔ e5-lang-epirrimata-001 key → «χρόνο»: the key is «χρόνο», the rule's answer «τόπο»
+  ✔ e5-lang-epirrimata-002 key → «τόπο»: the key is «τόπο», the rule's answer «χρόνο»
+  ✔ e5-lang-epirrimata-002 key → «τρόπο»: the key is «τρόπο», the rule's answer «χρόνο»
+  ✔ e5-lang-epirrimata-003 key → «τόπο»: the key is «τόπο», the rule's answer «τρόπο»
+  ✔ e5-lang-epirrimata-003 key → «χρόνο»: the key is «χρόνο», the rule's answer «τρόπο»
+  ✔ e5-lang-epirrimata-004 key → «χρόνο»: the key is «χρόνο», the rule's answer «τόπο»
+  ✔ e5-lang-epirrimata-004 key → «τρόπο»: the key is «τρόπο», the rule's answer «τόπο»
+  ✔ e5-lang-oikogeneies-001 key → «πολυτελής»: the key is «πολυτελής», the rule's answer «πολίτης»
+  ✔ e5-lang-oikogeneies-001 key → «πολύχρωμο»: the key is «πολύχρωμο», the rule's answer «πολίτης»
+  ✔ e5-lang-oikogeneies-002 key → «οικόπεδο»: the key is «οικόπεδο», the rule's answer «αδιέξοδο»
+  ✔ e5-lang-oikogeneies-002 key → «διάμετρος»: the right option «διάμετρος» is the only longest: it gives itself away
+  ✔ e5-lang-oikogeneies-003 key → «περιοχή»: the key is «περιοχή», the rule's answer «βάλλω»
+  ✔ e5-lang-oikogeneies-003 key → «περίπατο»: the right option «περίπατο» is the only longest: it gives itself away
+  ✔ e5-lang-orismoi-001 key → «γραμμή»: the key is «γραμμή», the rule's answer «αστικός»
+  ✔ e5-lang-orismoi-001 key → «αφετηρία»: the right option «αφετηρία» is the only longest: it gives itself away
+  ✔ e5-lang-orismoi-002 key → «σταθμός»: the key is «σταθμός», the rule's answer «γραμμή»
+  ✔ e5-lang-orismoi-002 key → «αστικός»: the key is «αστικός», the rule's answer «γραμμή»
+  ✔ e5-lang-orismoi-003 key → «γραμμή»: the key is «γραμμή», the rule's answer «τέρμα»
+  ✔ e5-lang-orismoi-003 key → «αστικός»: the right option «αστικός» is the only longest: it gives itself away
+  ✔ e5-lang-orismoi-004 key → «λαθροθηρία»: the key is «λαθροθηρία», the rule's answer «ηχορύπανση»
+  ✔ e5-lang-orismoi-004 key → «οικολογία»: the key is «οικολογία», the rule's answer «ηχορύπανση»
+  ✔ e5-lang-orismoi-005 key → «ηχορύπανση»: the key is «ηχορύπανση», the rule's answer «λαθροθηρία»
+  ✔ e5-lang-orismoi-005 key → «οικολογία»: the key is «οικολογία», the rule's answer «λαθροθηρία»
+
+68 items, 179 moved keys: 179 caught, 0 missed; 68 of 68 items have every move caught

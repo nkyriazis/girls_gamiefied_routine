@@ -1,0 +1,246 @@
+
+> app@1.0.0 test
+> node --require ts-node/register --test test/*.test.ts
+
+✔ a backup holds a consistent copy of the database, the config files and uploads (52.447475ms)
+✔ SHA256SUMS lists every file in sha256sum -c format, and verifies (47.806622ms)
+✔ rotation keeps the newest N complete backups and leaves anything else alone (71.743807ms)
+✔ a backup that never completed is not counted as the newest (43.884992ms)
+✔ a backup on the same filesystem as the database says so (38.346109ms)
+✔ a missing database fails the backup and leaves nothing half-made (30.379207ms)
+✔ a backup that runs past its deadline is killed, logged as failed, and the next run can start (815.266098ms)
+✔ a backup that ends in time is logged from its output, and its deadline is cleared (448.779238ms)
+✔ loads, caches, and reports unchanged files (3.899197ms)
+✔ an invalid file on disk keeps the last valid config live (0.795777ms)
+✔ an invalid file at startup yields the empty fallback, not a crash (0.777253ms)
+✔ save validates, writes, and updates the cache; the cache is frozen (0.957803ms)
+✔ after a start with an unreadable file, a plain save is refused and the file stays as it is (0.635806ms)
+✔ even the deliberate replace never writes the empty fallback over a file it never loaded (0.592995ms)
+✔ the broken text can be fixed and saved with replace; the broken file is kept beside (1.411857ms)
+✔ over an invalid file with the last valid config live: refused, unless replace asks (0.749972ms)
+✔ a missing optional file counts as loaded and can be created (0.52611ms)
+✔ a missing required file is never loaded: saving is refused (0.544655ms)
+✔ the empty config never goes over a loaded file that has content, with or without replace (0.594549ms)
+✔ a file that is itself the empty config can be saved as the empty config (0.448934ms)
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"g3","date":"2026-10-07","exerciseIds":["P4","M1","rL3"],"revision":["rL3"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"g4","date":"2026-10-07","exerciseIds":["dM4","dL3","dM3"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"g3","date":"2026-10-08","exerciseIds":["P2","M2","rL2"],"revision":["rL2"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"g4","date":"2026-10-08","exerciseIds":["dL1","dM1","dL2"]}
+daily set: 3 a day, plus up to 10 extra problems; under 30 days fails for grades 3, 5, warns for the rest
+grade  category     own  rev  slots/day  days to repeat
+1      (no pools)
+2      Προβλήματα     0    0          0  -
+2      Μαθηματικά     9    0        1.5  6
+2      Γλώσσα         9    0        1.5  6
+3      Προβλήματα   708    0         11  64
+3      Μαθηματικά   120    9          1  120
+3      Γλώσσα        80    9          1  80
+4      Προβλήματα     0    0          0  -
+4      Μαθηματικά     9    0        1.5  6
+4      Γλώσσα         9    0        1.5  6
+5      Προβλήματα   508    0         11  46
+5      Μαθηματικά   120    9          1  120
+5      Γλώσσα        68    9          1  68
+6      (no pools)
+✔ a pool is written for its grades and serves its revision grades apart (2.724056ms)
+✔ a pool may not list a grade both as written for and as revision (1.420853ms)
+✔ the set follows the mix: problem, then maths, then language (2.19473ms)
+✔ own items before revision; revision only for a category the grade lacks (17.203544ms)
+✔ more slots cycle through the mix; at 1 always a problem, at 2 no language (0.747757ms)
+✔ a category a grade lacks passes its slot on, rotating through the mix (0.380385ms)
+✔ with no problems the round starts one further each day; with problems the problem stays first (1.003197ms)
+✔ a grade with no pools gets nothing (0.387098ms)
+✔ with k items in a category and one slot a day, an item comes back after k days (5.37809ms)
+✔ the daily set is stored in mix order, revision items marked, and the draw logged (30.971312ms)
+✔ the next day the Δ΄ kid starts one further round the mix, the Γ΄ kid with the problem again (11.166984ms)
+✔ shipped pools: days before a daily item comes back, per grade and category (47.732853ms)
+ℹ warning: grade 1: no pools, no daily exercises
+ℹ warning: grade 2 Προβλήματα: none, its slot passes on
+ℹ warning: grade 2 Μαθηματικά: an item comes back after 6 days
+ℹ warning: grade 2 Γλώσσα: an item comes back after 6 days
+ℹ warning: grade 4 Προβλήματα: none, its slot passes on
+ℹ warning: grade 4 Μαθηματικά: an item comes back after 6 days
+ℹ warning: grade 4 Γλώσσα: an item comes back after 6 days
+ℹ warning: grade 6: no pools, no daily exercises
+✔ a problem pays one star less for each step with a counted wrong try, however many tries (0.748419ms)
+✔ until #50, wrong paintings and calc slips cost nothing (they still get hints) (0.215606ms)
+✔ a plain exercise loses its star at the first wrong try, on both rungs (0.136497ms)
+✔ what a step shows after wrong tries, on each rung (0.847905ms)
+✔ what an exercise pays now: what it paid once done, else what it pays if the rest goes right (0.20201ms)
+✔ imports every record, balance and log line, and verifies clean (37.548108ms)
+✔ is idempotent: a second run imports nothing and never overwrites newer state (33.316084ms)
+✔ lines without an id get a stable id, so re-reading them is a no-op (57.503098ms)
+✔ an invalid state.json aborts the import without writing anything (27.20832ms)
+✔ verification flags missing and altered records and balances (36.110693ms)
+✔ a fresh install without legacy files starts empty (23.822509ms)
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u1","date":"2026-10-07","exerciseIds":["e-balloons","e-1"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u2","date":"2026-10-07","exerciseIds":["p-two","p-three"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u4","date":"2026-10-07","exerciseIds":["p-three","p-two"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u5","date":"2026-10-07","exerciseIds":["e-balloons","e-tf"]}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"ba601d10-99bc-44f9-bf17-451869166017","userId":"u2","exerciseId":"p-two","step":0,"forgiveness":"forgiving","kind":"tag","correct":false,"wrong":[2],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"ba601d10-99bc-44f9-bf17-451869166017","userId":"u2","exerciseId":"p-two","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"ba601d10-99bc-44f9-bf17-451869166017","userId":"u2","exerciseId":"p-two","step":1,"forgiveness":"forgiving","kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"ba601d10-99bc-44f9-bf17-451869166017","userId":"u2","exerciseId":"p-two","step":1,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"ba601d10-99bc-44f9-bf17-451869166017","userId":"u2","exerciseId":"p-two","step":2,"forgiveness":"forgiving","kind":"numbers","correct":false,"wrong":[1],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"ba601d10-99bc-44f9-bf17-451869166017","userId":"u2","exerciseId":"p-two","step":2,"forgiveness":"forgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":1,"newBalance":1}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"ba601d10-99bc-44f9-bf17-451869166017","userId":"u2","exerciseId":"p-two","step":3,"forgiveness":"forgiving","kind":"order","correct":true,"completed":true,"starsAwarded":1}
+[ACTION:EXERCISE_EXTRA_PROBLEM] {"userId":"u2","exerciseId":"p-balloons","number":1,"limit":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"771d9f28-75cc-45a7-bf97-b717db98e727","userId":"u2","exerciseId":"p-balloons","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"771d9f28-75cc-45a7-bf97-b717db98e727","userId":"u2","exerciseId":"p-balloons","step":1,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"771d9f28-75cc-45a7-bf97-b717db98e727","userId":"u2","exerciseId":"p-balloons","step":2,"forgiveness":"forgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":4}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"771d9f28-75cc-45a7-bf97-b717db98e727","userId":"u2","exerciseId":"p-balloons","step":3,"forgiveness":"forgiving","kind":"order","correct":true,"completed":true,"starsAwarded":3}
+[ACTION:EXERCISE_EXTRA_PROBLEM] {"userId":"u2","exerciseId":"p-two","number":2,"limit":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"dd774786-df41-41cd-beb9-dcd6ebe2335e","userId":"u2","exerciseId":"p-two","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"dd774786-df41-41cd-beb9-dcd6ebe2335e","userId":"u2","exerciseId":"p-two","step":1,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"dd774786-df41-41cd-beb9-dcd6ebe2335e","userId":"u2","exerciseId":"p-two","step":2,"forgiveness":"forgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":7}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"dd774786-df41-41cd-beb9-dcd6ebe2335e","userId":"u2","exerciseId":"p-two","step":3,"forgiveness":"forgiving","kind":"order","correct":true,"completed":true,"starsAwarded":3}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":false,"wrong":[2],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":false,"wrong":[2],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":2,"forgiveness":"unforgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":2,"forgiveness":"unforgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":2,"forgiveness":"unforgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.9983170742175099","userId":"u4","exerciseId":"p-balloons","step":3,"forgiveness":"unforgiving","kind":"order","correct":true,"completed":true,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.41534244215242666","userId":"u5","exerciseId":"e-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":false,"wrong":[0,1,3],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.41534244215242666","userId":"u5","exerciseId":"e-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.41534244215242666","userId":"u5","exerciseId":"e-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.41534244215242666","userId":"u5","exerciseId":"e-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.41534244215242666","userId":"u5","exerciseId":"e-balloons","step":2,"forgiveness":"unforgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u5","amount":2,"newBalance":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.41534244215242666","userId":"u5","exerciseId":"e-balloons","step":3,"forgiveness":"unforgiving","kind":"order","correct":true,"completed":true,"starsAwarded":2}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-2-0.9693089043262176","userId":"u1","exerciseId":"e-2","forgiveness":"forgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-2-0.9693089043262176","userId":"u1","exerciseId":"e-2","forgiveness":"forgiving","correct":false,"attempts":2,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-2-0.9693089043262176","userId":"u1","exerciseId":"e-2","forgiveness":"forgiving","correct":true,"attempts":3,"starsAwarded":0,"completed":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":1,"newBalance":1}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-3-0.8362025341017907","userId":"u1","exerciseId":"e-3","forgiveness":"forgiving","correct":true,"attempts":1,"starsAwarded":1,"completed":true}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-tf-0.8346742371083773","userId":"u5","exerciseId":"e-tf","forgiveness":"unforgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":true}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-1-0.5109426385921095","userId":"u5","exerciseId":"e-1","forgiveness":"unforgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-1-0.5109426385921095","userId":"u5","exerciseId":"e-1","forgiveness":"unforgiving","correct":true,"attempts":2,"starsAwarded":0,"completed":true}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-2-0.9557469653880739","userId":"u5","exerciseId":"e-2","forgiveness":"unforgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-2-0.9557469653880739","userId":"u5","exerciseId":"e-2","forgiveness":"unforgiving","correct":false,"attempts":2,"starsAwarded":0,"completed":true}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-1-0.23030117739797484","userId":"u1","exerciseId":"e-1","forgiveness":"forgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_REVEAL] {"assignmentId":"u1-e-1-0.23030117739797484","userId":"u1","exerciseId":"e-1","attempts":1}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-balloons-0.9172902277446063","userId":"u2","exerciseId":"p-balloons","step":0,"forgiveness":"forgiving","kind":"tag","correct":false,"completed":false,"starsAwarded":0}
+✔ every shipped pool is valid, and every problem can be solved step by step (367.227614ms)
+✔ every shipped plain exercise: the server takes its own key and refuses a wrong answer (34.963595ms)
+✔ «Δείξε μου»: every step of every shipped problem, shown worked, passes its check on every rung (111.08024ms)
+✔ a broken pool file is refused (4.575561ms)
+✔ a plain pool exercise names its textbook chapter, as a problem does (0.64326ms)
+✔ each kid draws exercisesPerDay from the pools of their grade; no grade, no exercises (19.389317ms)
+✔ a problem is answered step by step: wrong tries count, the last step pays a star less per step gone wrong (21.002062ms)
+✔ extra problems: fresh ones first, one open at a time, up to the day's limit (38.000099ms)
+✔ unforgiving: a problem can pay nothing, and a painted reading step costs nothing (46.589582ms)
+✔ a plain exercise: a wrong first try loses the star; unforgiving closes it after its tries (31.899629ms)
+✔ «Δείξε μου» on a plain exercise: only after a wrong try, and it closes it paying nothing (11.32419ms)
+✔ painting freehand forgives a sloppy stroke, not a wrong fact (0.453373ms)
+✔ working it out: each calculation is read back, the answer ends it (0.263596ms)
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"96a50777-e95a-406a-964f-07c915ee43d7"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"7bab2565-5268-42c8-8dcc-6f288bfde727"}
+[ACTION:ALARM_DISMISSED] {"runId":"e0c40ae9-3e85-4e86-bd14-027a19a89c9f","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":10}
+[ACTION:TASK_COMPLETE] {"executionId":"869ef02a-4b25-49a7-aab4-a3eea871f0f5","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":15}
+[ACTION:TASK_COMPLETE] {"executionId":"869ef02a-4b25-49a7-aab4-a3eea871f0f5","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"869ef02a-4b25-49a7-aab4-a3eea871f0f5","userId":"u1","finished":true}
+[ACTION:ALARM_DISMISSED] {"runId":"fc87cea9-d95d-4bd2-a652-8c7d065f8597","flowId":"f2","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"40a38097-7038-450f-b559-258f1236dc40","userId":"u2","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"f9f6ea7b-b551-47e5-beb4-ce6ae6c4dbc1"}
+[ACTION:TRIGGER_ROUTINE_SKIPPED] {"id":"a1","source":"unknown","runId":"f9f6ea7b-b551-47e5-beb4-ce6ae6c4dbc1"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":1,"newBalance":16}
+[ACTION:TASK_COMPLETE] {"executionId":"f9f6ea7b-b551-47e5-beb4-ce6ae6c4dbc1","taskId":"t1","starsAwarded":1,"userId":"u1","duration":120,"isOnTime":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"30245765-e392-4535-a86f-1c78d5df9fe6"}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"b9153f74-64a8-4931-a062-a87bec047f3a"}
+[ACTION:ALARM_DISMISSED] {"runId":"b9153f74-64a8-4931-a062-a87bec047f3a","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"31bc27b2-7265-4179-b4d1-b725c63e0610"}
+[ACTION:ALARM_DISMISSED] {"runId":"31bc27b2-7265-4179-b4d1-b725c63e0610","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"85450a19-3821-4792-9376-9ae72d9fe50a"}
+[ACTION:ALARM_DISMISSED] {"runId":"2303f719-ed98-4fae-a411-1a48cb37306d","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":26}
+[ACTION:TASK_COMPLETE] {"executionId":"52881d3b-75a9-4ea4-a0e5-5cf2664e89f3","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"cb8f84fe-2f7f-4f35-988c-8ae88ec69c9a"}
+[ACTION:ALARM_DISMISSED] {"runId":"cb8f84fe-2f7f-4f35-988c-8ae88ec69c9a","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"1d474d8f-9b5f-4bb6-b4d2-99fe07adecaf","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"7e3f1ff2-356b-4a20-841c-f648bcfc6a89"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"unknown","runId":"08f45b76-5d60-406c-b026-ce87e429e593"}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"7e3f1ff2-356b-4a20-841c-f648bcfc6a89","userId":"u1","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"1569f811-b160-450a-b485-b90e09c841c1"}
+[ACTION:ALARM_DISMISSED] {"runId":"cabc8d33-3a9a-4dea-9dc0-87c8ff22e1da","flowId":"f2","stepIndex":0}
+[ACTION:ALARM_EXPIRED] {"runId":"ce629f87-64fd-40c7-8b75-e09ed2e8fc2c","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"1e9a6876-c0b1-4adc-a431-fd5d5c430eff","userId":"u2","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"de0a748a-66c5-4ff3-be3c-4f75536e6ac4"}
+[ACTION:ALARM_EXPIRED] {"runId":"de0a748a-66c5-4ff3-be3c-4f75536e6ac4","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"together","source":"unknown","runId":"3d2ef85a-2ad1-46c5-8f9b-6003adc7ce39"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"db7a38db-61ba-442c-8158-888b901d5251"}
+[ACTION:TRIGGER_FLOW] {"id":"wake","source":"unknown","runId":"d4ab8266-8fee-4ec8-a914-c8c65f729367"}
+[ACTION:TRIGGER_FLOW] {"id":"cycle","source":"unknown","runId":"f8fbf5eb-f5cb-47ab-940d-dba4a5d1d1f5"}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"a80fc31c-0080-4740-8d56-8e05e604ff19"}
+[ACTION:TRIGGER_FLOW] {"id":"twice","source":"unknown","runId":"67cbd710-7980-4e43-8724-bf8d47cc24d8"}
+[ACTION:ALARM_DISMISSED] {"runId":"67cbd710-7980-4e43-8724-bf8d47cc24d8","flowId":"twice","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"c390987d-1fd8-44cf-9b64-a9a57486cf46","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"00b79cba-4400-4b70-824e-a980f4ca24c2"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":36}
+[ACTION:TASK_COMPLETE] {"executionId":"00b79cba-4400-4b70-824e-a980f4ca24c2","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"0a298aeb-a969-40fa-89de-8f0bd85a2f94"}
+[ACTION:ALARM_DISMISSED] {"runId":"0a298aeb-a969-40fa-89de-8f0bd85a2f94","flowId":"f1","stepIndex":0}
+✔ a flow runs on the server: alarms, parallel routines, sub-flows, then it ends (88.001831ms)
+✔ a user has one routine at a time; a late task earns lateStars (21.568207ms)
+✔ a flow whose routines are all busy moves on at once (20.979789ms)
+✔ push "alarm" shows a plain alarm until dismissed (9.67718ms)
+✔ runs are in the client state and in the database (a restart resumes them) (42.458047ms)
+✔ a routine left open on an earlier day is closed: on the next trigger and by the minute cron (38.164968ms)
+✔ an alarm nobody dismissed stops after settings.alarmMinutes, with the rest of its flow (23.381599ms)
+✔ the server says whom an alarm is for: the kids of the routines after it (40.233942ms)
+✔ she is in her routine and dismisses her alarm: her routine goes on, nothing new starts (11.113293ms)
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"def1aaed-54d1-4885-ab73-8a6856cc2a74"}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"506792c0-8a4c-4df7-bcb3-9681b4842132"}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"c1b0be3b-d367-4812-915e-61d8fb4a570f"}
+[ACTION:TRANSFER_APPROVED] {"transferId":"c1b0be3b-d367-4812-915e-61d8fb4a570f","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"c0a8e571-9ddd-4377-9405-0ca1e92eeccb"}
+[ACTION:TRANSFER_APPROVED] {"transferId":"c0a8e571-9ddd-4377-9405-0ca1e92eeccb","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"9468b040-96c5-4be3-9d1e-1ae31f91ee65"}
+[ACTION:TRANSFER_REJECTED] {"transferId":"9468b040-96c5-4be3-9d1e-1ae31f91ee65","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":40,"transferId":"5fbefa88-80e1-48ac-81d3-db9fce8635d4"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":-10,"newBalance":90}
+[ACTION:SPEND_STARS] {"userId":"u1","rewardId":"tv","cost":50,"newBalance":40}
+[ACTION:TRANSFER_APPROVED] {"transferId":"5fbefa88-80e1-48ac-81d3-db9fce8635d4","fromUserId":"u1","toUserId":"u2","amount":40}
+[ACTION:SPENDING_REVOKED] {"spendingId":"79903657-81d1-4cd6-90a7-739636c25dab","userId":"u1","rewardId":"tv","cost":50}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":55}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":-10,"newBalance":0}
+[ACTION:TRANSFER_CANCELLED] {"transferId":"to-gone","fromUserId":"u1","toUserId":"u-gone","amount":5}
+[ACTION:TRANSFER_REJECTED] {"transferId":"to-gone-2","fromUserId":"u1","toUserId":"u-gone","amount":5}
+[ACTION:TRANSFER_REJECTED] {"transferId":"from-gone","fromUserId":"u-gone","toUserId":"u2","amount":5}
+✔ a purchase cannot spend stars promised in a pending gift, and nothing changes (28.654111ms)
+✔ a parent cannot take away stars promised in a pending gift, and nothing changes (17.378532ms)
+✔ the issue: gift, then a take-away or a purchase, then approve: nobody goes below zero (41.4131ms)
+✔ approving a gift the sender no longer has stars for is refused, and the gift stays pending (34.214184ms)
+✔ within the available stars everything still works (47.167028ms)
+✔ awardStars only adds; taking away is takeStars (15.919888ms)
+✔ a gift to (or from) a kid no longer in the config can be cancelled or rejected, not approved (39.196109ms)
+✔ records round-trip exactly, including optional, boolean and JSON fields (55.772662ms)
+✔ put replaces, insertNew never overwrites (22.903169ms)
+✔ enrichment fields are not stored (31.255427ms)
+✔ transactions roll back on error and nest into the outer one (23.845663ms)
+✔ data persists across reopening the file (33.047258ms)
+✔ recentLogs returns the newest entries first (41.273227ms)
+✔ replaceState swaps all runtime state but keeps the log (37.559649ms)
+✔ constraint violations other than a duplicate id are errors, not silently dropped (30.289489ms)
+✔ help tours played are remembered once, and survive a state replace (42.402042ms)
+✔ a connecting client gets the current state (4.218318ms)
+✔ changes in the same turn go out as one snapshot, to open clients only (0.777884ms)
+✔ a change during a slow build is followed by a snapshot of the final state; builds never overlap (0.867282ms)
+✔ a disconnected client gets nothing more; events and heartbeats go out immediately (0.692994ms)
+✔ the store reports every runtime-state write, and only those (41.456602ms)
+ℹ tests 86
+ℹ suites 0
+ℹ pass 86
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2482.553279
