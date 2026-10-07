@@ -318,3 +318,37 @@ test('#58: "today" begins at local midnight in settings.timezone', () => {
   assert.equal(db.dayStart('Europe/Athens', new Date('2026-03-29T12:00:00Z')), '2026-03-28T22:00:00.000Z', 'the clocks go forward at 03:00, after midnight');
   assert.equal(db.dayStart('UTC', new Date('2026-10-08T12:00:00Z')), '2026-10-08T00:00:00.000Z');
 });
+
+// #63: a parent ends a kid's routine from /parent («Τέλος»). The same close as her ✕ (the flow moves on,
+// a later flow today starts it again, as above), and the kids' screens hear that it was a parent's,
+// so her lane can say so instead of the card just vanishing.
+function heard(): { events: { type: string; payload?: unknown }[]; stop: () => void } {
+  const events: { type: string; payload?: unknown }[] = [];
+  const client = { readyState: 1, send: (data: string) => { const m = JSON.parse(data); if (m.type !== 'STATE') events.push(m); } };
+  db.sync.connect(client);
+  return { events, stop: () => db.sync.disconnect(client) };
+}
+
+test('#63: a parent ends her routine: the same close, and the kids\' screens hear it was a parent', () => {
+  reset();
+  db.triggerAction('f1');
+  db.dismissAlarm(flowRun('f1').id, 0);
+  const run = routineRun('u1');
+  const { events, stop } = heard();
+  assert.equal(db.closeRoutine(run.id, 'parent'), true);
+  assert.equal(routineRun('u1'), undefined);
+  assert.equal(flowRun('f1'), undefined, 'her flow moved on, as after her ✕');
+  assert.deepEqual(events, [{ type: 'ROUTINE_ENDED_BY_PARENT', payload: { runId: run.id, userId: 'u1', routineId: 'a1' } }]);
+  assert.equal(db.closeRoutine(run.id, 'parent'), false, 'a second tap, or her ✕ racing it, is a no-op');
+  assert.equal(events.length, 1, 'and says nothing');
+  stop();
+});
+
+test('#63: her own ✕ (or the reward closing) says nothing more than the new state', () => {
+  reset();
+  db.triggerAction('a1');
+  const { events, stop } = heard();
+  db.closeRoutine(routineRun('u1').id);
+  assert.deepEqual(events, []);
+  stop();
+});

@@ -54,6 +54,10 @@ export type UserBody = { userId: string };
 export const helpSeenBody = object({ tourIds: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 20 } }, ['tourIds']);
 export type HelpSeenBody = { tourIds: string[] };
 
+/** Who closed a running routine: the kids' screens (no body, or no `by`) or a parent's «Τέλος» (#63). */
+export const closeBody = object({ by: { enum: ['kid', 'parent'] } }, []);
+export type CloseBody = { by?: 'kid' | 'parent' };
+
 /** No userId (or no body at all): every tour. */
 export const helpResetBody = object({ userId: { type: 'string' } }, []);
 export type HelpResetBody = { userId?: string };

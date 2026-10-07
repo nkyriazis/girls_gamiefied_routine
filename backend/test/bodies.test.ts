@@ -167,6 +167,7 @@ test('an answer must be there (any JSON value), and the other bodies name what t
   await refused('POST', '/api/help/seen', '{"tourIds":[]}');
   await refused('POST', '/api/help/reset', '{"userId":5}');
   await refused('POST', '/api/hooks/push', '{"id":""}');
+  await refused('POST', '/api/executions/x/close', '{"by":"teacher"}');
 });
 
 test('every body the screens send still passes (api.ts), and unknown fields are ignored', async () => {
@@ -205,6 +206,9 @@ test('every body the screens send still passes (api.ts), and unknown fields are 
   await ok('POST', '/api/help/reset', {});
   await ok('POST', '/api/help/reset'); // no body at all: every tour
   assert.equal(store.helpSeen.count(), 0);
+  await ok('POST', '/api/executions/x/close', {}); // the kids' ✕ (no such run here: a no-op)
+  await ok('POST', '/api/executions/x/close'); // no body at all: the same
+  await ok('POST', '/api/executions/x/close', { by: 'parent' }); // a parent's «Τέλος» (#63)
 });
 
 test("the exercises editor's pre-check (#31) names the one mistake and saves nothing", async () => {

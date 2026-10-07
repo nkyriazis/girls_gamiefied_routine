@@ -364,13 +364,19 @@ export function dismissAlarm(runId: string, stepIndex: number): boolean {
   });
 }
 
-/** A routine left the screen (reward shown, or the kid pressed ✕). Repeats are no-ops. */
-export function closeRoutine(runId: string): boolean {
-  return store.transaction(() => {
+/**
+ * A routine left the screen (reward shown, or the kid pressed ✕), or a parent ended it from
+ * /parent («Τέλος», #63): the same close, and the kids' screens hear it was a parent's, so her
+ * lane says so instead of just vanishing. Repeats are no-ops.
+ */
+export function closeRoutine(runId: string, by: 'kid' | 'parent' = 'kid'): boolean {
+  const run = store.transaction(() => {
     const run = store.routineRuns.get(runId);
     if (run) endRoutine(run, 'ROUTINE_CLOSED');
-    return !!run;
+    return run;
   });
+  if (run && by === 'parent' && !run.finishedAt) sync.notify({ type: 'ROUTINE_ENDED_BY_PARENT', payload: { runId, userId: run.userId, routineId: run.routineId } });
+  return !!run;
 }
 
 function endRoutine(run: Omit<RoutineRun, 'totalStars'>, logType: string): void {
