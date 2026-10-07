@@ -92,3 +92,33 @@ test('hintShows: small numbers count after «=», and in a label when a row abov
   // A digit of the story's number beside a remainder of 1 is no answer; nor a small number in words
   assert.deepEqual(hintShows({ story: 'Έχει [2.167 λουλούδια|known].', steps: [numbersStep([['Άθροισμα ψηφίων: 2 + 1 + 6 + 7 =', 16], ['Περισσεύουν', 1]], 'Μένει 1 ή 2;')] }), []);
 });
+
+test('rowsHint: a product with zeros is not worked out one zero short of the answer', () => {
+  // «5 × 3 = 15, και μετά βάζουμε το μηδενικό» for «5 × 30 = [150]»: 15 and a zero is 150
+  for (const rows of [
+    [{ label: 'Είσοδοι: 5 × 30 =', answer: 150 }, { label: 'Όλα μαζί: οι είσοδοι + 9 + 20 =', answer: 179, eq: '150 + 9 + 20' }],
+    [{ label: 'Κούπες την ημέρα', answer: 200, eq: '20 × 10' }, { label: 'Κούπες τον Οκτώβριο', answer: 5000, eq: '200 × 25' }],
+    [{ label: 'Ως τώρα διάνυσε', answer: 400, eq: '80 × 5' }],
+    [{ label: '29 × 400 =', answer: 11600 }],
+  ]) {
+    const hint = rowsHint(rows);
+    assert.ok(hint, `a hint for ${rows.map(r => r.label).join(' | ')}`);
+    const results = [...hint.matchAll(/=\s*(\d{1,3}(?:\.\d{3})+|\d+)/g)].map(m => Number(m[1].replace(/\./g, '')));
+    const shy = results.filter(n => rows.some(r => [10, 100, 1000].some(p => n * p === r.answer)));
+    assert.deepEqual(shy, [], `«${hint}» for ${rows.map(r => `${r.label} [${r.answer}]`).join(' | ')}`);
+  }
+});
+
+test('rowsHint never hints a row built on the answer of a row above it', () => {
+  // e5-gen-trip-costs-010: «200 × 2 = 400, και μετά 60 × 2» splits 260, the first row's sum, still to work out
+  const rows = [
+    { label: 'Εισιτήρια ατόμων, μία διαδρομή: 4 × 35 =', answer: 140, eq: '4 × 35' },
+    { label: 'Αυτοκίνητο και άτομα, μία διαδρομή: τα εισιτήρια + 120 =', answer: 260, eq: '140 + 120' },
+    { label: 'Πήγαινε και έλα: μία διαδρομή × 2 =', answer: 520, eq: '260 × 2' },
+    { label: 'Περισσεύουν: 550 − όλα μαζί =', answer: 30, eq: '550 − 520' },
+  ];
+  const hint = rowsHint(rows);
+  assert.ok(hint, 'a hint for the first row');
+  assert.deepEqual(told(hint, rows.map(r => r.answer)), [], `«${hint}»`);
+  assert.doesNotMatch(hint, /\b(200|60|400)\b/, `«${hint}» works on 260`);
+});

@@ -475,11 +475,12 @@ function mulHint(a: number, b: number): string {
   if (k <= 10) {
     const [hi, rest] = topSplit(m);
     if (rest) return `${first(k, hi)} = ${fmt(k * hi)}, και μετά ${first(k, rest)}.`;
+    // Not the product: «5 × 3 = 15, και μετά βάζουμε το μηδενικό» is 5 × 30 = 150 with its zero left off
     const z = trailingZeros(m);
-    return `${first(k, m / 10 ** z)} = ${fmt(k * m / 10 ** z)}, και μετά βάζουμε ${zeros(z)}.`;
+    return `Πόσο κάνει ${first(k, m / 10 ** z)}; Μετά βάζουμε ${zeros(z)}.`;
   }
   const [za, zb] = [trailingZeros(a), trailingZeros(b)];
-  if (za + zb) return `${fmt(a / 10 ** za)} × ${fmt(b / 10 ** zb)} = ${fmt((a / 10 ** za) * (b / 10 ** zb))}, και μετά βάζουμε ${zeros(za + zb)}.`;
+  if (za + zb) return `Πόσο κάνει ${fmt(a / 10 ** za)} × ${fmt(b / 10 ** zb)}; Μετά βάζουμε ${zeros(za + zb)}.`;
   const [hi, rest] = topSplit(k);
   return `${first(hi, m)} = ${fmt(hi * m)}, και μετά ${first(rest, m)}.`;
 }
@@ -548,7 +549,15 @@ function workHints(expr: string): string[] {
     return chainHints(nums, ops);
   }
   const named = h.match(new RegExp(String.raw`^((?:${NUMBER}) [+−×] (?:${NUMBER})) = (?:${NUMBER}), και μετά (.+)$`));
-  return [h, ...(named ? [`Πρώτα ${named[1]}, και μετά ${named[2]}`] : []), ...(ops.length === 1 && ops[0] === '−' ? [countUp(nums[0], nums[1])] : [])];
+  return [h, ...(named ? [`Πρώτα ${named[1]}, και μετά ${named[2]}`] : []), ...(ops.length === 1 && ops[0] === '−' ? [countUp(nums[0], nums[1])] : []),
+    ...(ops.length === 1 && ops[0] === '×' ? [unitsFirst(nums[0], nums[1])].filter((x): x is string => !!x) : [])];
+}
+
+/** 4 × 35 by its digits, no number from 10 up: «Ξεκινάμε από τις μονάδες: 4 × 5. …» (when its split names an answer) */
+function unitsFirst(a: number, b: number): string | null {
+  const [k, m] = a <= b ? [a, b] : [b, a];
+  if (k < 2 || k > 9 || m < 10 || m > 999 || m % 10 === 0) return null;
+  return `Ξεκινάμε από τις μονάδες: ${k} × ${m % 10}. Μετά οι δεκάδες${m >= 100 ? ' και οι εκατοντάδες' : ''}, μαζί με τα κρατούμενα.`;
 }
 
 /** The hint b.numbers writes from its rows: how to start the first row it can say something about. */
@@ -558,9 +567,17 @@ export function rowsHint(rows: { label: string; answer: number; eq?: string }[])
   // 10 up anywhere, even as a part of the calculation («23 − 10 = 13, και μετά βγάζουμε 3 ακόμα» when
   // 23 − 13 is 10: the count up says it instead) or a trial («Δοκιμάζουμε 5 × 500» when 2.502 : 5 is
   // 500: it tries 5 × 400). A digit is a step of the way («13 − 3 = 10, και μετά βγάζουμε 5 ακόμα» for 13 − 8).
+  // (A product one zero short of the answer, «5 × 3 = 15» for 5 × 30, is that answer too: mulHint asks it instead.)
   const fair = (h: string) => ![...h.matchAll(new RegExp(String.raw`=\s*(${NUMBER})(?![\d.]*\d)`, 'g'))].some(x => answers.has(toNumber(x[1])))
     && !numbersOf(h).some(n => n >= 10 && answers.has(n));
-  const hints = rows.map(r => workHints(r.eq ?? r.label).find(fair)).filter((h): h is string => !!h);
+  // A row worked from the answer of a row above it waits for that one: its hint would work on a number
+  // she hasn't found («200 × 2 = 400, και μετά 60 × 2» for 260 × 2, under the row that asks 260), and
+  // help with a later row while she is stuck on the first.
+  const hints = rows.map((r, i) => {
+    const expr = r.eq ?? r.label;
+    if (numbersOf(expr).some(n => rows.slice(0, i).some(above => above.answer === n))) return undefined;
+    return workHints(expr).find(fair);
+  }).filter((h): h is string => !!h);
   return hints[0] ?? null;
 }
 
