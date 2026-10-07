@@ -1,0 +1,144 @@
+
+g3: 500/500 problems from 25 families
+    change-left                       20 (share 20)
+    share-equally                     20 (share 20)  dropped: 4 same numbers
+    division-remainder                20 (share 20)  dropped: 1 same numbers
+      3 can't spread evenly, busiest place 50% at best: «Πόσα ταξί χρειάζονται λοιπόν;»
+      3 can't spread evenly, busiest place 100% at best: «Πόσα αυτοκίνητα χρειάζονται λοιπόν;»
+      3 can't spread evenly, busiest place 100% at best: «Πόσες βάρκες χρειάζονται λοιπόν;»
+    two-purchases                     20 (share 20)
+      5 can't spread evenly, busiest place 33% at best: «Ποια πράξη μας δίνει την απάντηση;»
+    total-cost                        20 (share 20)
+      2 can't spread evenly, busiest place 50% at best: «Είναι λογική η απάντηση;»
+      10 can't spread evenly, busiest place 42% at best: «Ποια πράξη μας δίνει το κόστος;»
+      8 can't spread evenly, busiest place 50% at best: «Φτάνουν τα # ευρώ;»
+      4 can't spread evenly, busiest place 50% at best: «Πώς ελέγχουμε;»
+    compare-difference                20 (share 20)
+      2 can't spread evenly, busiest place 50% at best: «Ποιος μάζεψε περισσότερα κοχύλια;»
+      1 can't spread evenly, busiest place 50% at best: «Πώς ελέγχουμε;»
+      1 can't spread evenly, busiest place 100% at best: «Ποιος διάβασε περισσότερες σελίδες;»
+    start-unknown                     20 (share 20)
+    bus-stops                         20 (share 20)
+      9 can't spread evenly, busiest place 50% at best: «Είναι λογική η απάντηση;»
+    equal-groups                      20 (share 20)  dropped: 13 same numbers
+      11 can't spread evenly, busiest place 33% at best: «Ποια πράξη μας βοηθά;»
+      12 can't spread evenly, busiest place 50% at best: «Πώς ελέγχουμε;»
+      7 can't spread evenly, busiest place 50% at best: «Μπορούμε να απαντήσουμε;»
+    two-digit-times                   20 (share 20)  dropped: 1 same numbers, 1 options that tell
+      4 can't spread evenly, busiest place 88% at best: «Πώς ελέγχουμε;»
+      6 can't spread evenly, busiest place 50% at best: «Είναι λογική η απάντηση;»
+      5 can't spread evenly, busiest place 50% at best: «Είναι κοντά στην εκτίμηση;»
+    table-reading                     20 (share 20)
+      10 can't spread evenly, busiest place 50% at best: «Ποιους αριθμούς χρειαζόμαστε;»
+    length-cm                         20 (share 20)
+    numberless                        20 (share 20)
+      7 can't spread evenly, busiest place 64% at best: «Διαβάζουμε την ιστορία χωρίς αριθμούς. Ποια ερώτηση ταιριάζει;»
+    double-half                       20 (share 20)  dropped: 2 same numbers
+    pages-per-day                     20 (share 20)
+      2 can't spread evenly, busiest place 75% at best: «Σε πόσα βράδια θα τελειώσουν λοιπόν το βιβλίο;»
+      1 can't spread evenly, busiest place 50% at best: «Τι σημαίνει ότι περισσεύουν # σελίδες;»
+    buy-and-change                    20 (share 20)  dropped: 2 same numbers, 2 options that tell
+      1 can't spread evenly, busiest place 50% at best: «Πώς ελέγχουμε;»
+    ages                              20 (share 20)  dropped: 1 same numbers
+      4 can't spread evenly, busiest place 50% at best: «Πόσα θα κάνουν μαζί σε # χρόνια;»
+    coins                             20 (share 20)  dropped: 1 same numbers, 1 options that tell
+      5 can't spread evenly, busiest place 37% at best: «Ποια δύο νομίσματα κάνουν # λεπτά;»
+      4 can't spread evenly, busiest place 38% at best: «Ποια τρία νομίσματα κάνουν # λεπτά;»
+      3 can't spread evenly, busiest place 33% at best: «Ποια τρία νομίσματα κάνουν # ευρώ και # λεπτά;»
+      2 can't spread evenly, busiest place 33% at best: «Ποια τέσσερα νομίσματα κάνουν # ευρώ και # λεπτά;»
+      1 can't spread evenly, busiest place 33% at best: «Ποια τρία νομίσματα κάνουν # ευρώ;»
+    estimate-first                    20 (share 20)
+      9 can't spread evenly, busiest place 50% at best: «Είναι λογικό το αποτέλεσμα;»
+      4 can't spread evenly, busiest place 50% at best: «@ βρήκε #. Πώς καταλαβαίνουμε ότι έκανε λάθος;»
+    collection-goal                   20 (share 20)
+      6 can't spread evenly, busiest place 44% at best: «Ποιες πράξεις μας βοηθούν;»
+      3 can't spread evenly, busiest place 50% at best: «Τι βρίσκουμε πρώτα;»
+      2 can't spread evenly, busiest place 50% at best: «Είναι λογική η απάντηση;»
+    order-the-plan                    20 (share 20)
+      10 can't spread evenly, busiest place 50% at best: «Πώς ελέγχουμε;»
+    missing-info                      20 (share 20)  dropped: 1 same numbers
+      18 can't spread evenly, busiest place 52% at best: «Μπορούμε να απαντήσουμε; Τι μας λείπει;»
+    cheaper-option                    20 (share 20)  dropped: 1 same numbers
+      6 can't spread evenly, busiest place 50% at best: «Ποιος τρόπος είναι φθηνότερος;»
+      5 can't spread evenly, busiest place 60% at best: «Ποιο παιδί πλήρωσε λιγότερα;»
+    days-to-goal                      20 (share 20)
+      1 can't spread evenly, busiest place 100% at best: «Σε πόσα Σάββατα λοιπόν;»
+      2 can't spread evenly, busiest place 50% at best: «Σε πόσες Κυριακές λοιπόν;»
+      1 can't spread evenly, busiest place 50% at best: «Σε πόσες μέρες λοιπόν;»
+      1 can't spread evenly, busiest place 50% at best: «Σε πόσα απογεύματα λοιπόν;»
+    exchange-rate                     20 (share 20)  dropped: 1 same numbers
+  wrote backend/exercise-pools/g-dimotikou-generated.json
+
+e5: 500/500 problems from 25 families
+    parts-ratio                       20 (share 20)
+    unit-rate                         20 (share 20)
+      17 can't spread evenly, busiest place 33% at best: «Ποιο σχέδιο δουλεύει;»
+      3 can't spread evenly, busiest place 50% at best: «Είναι λογική η απάντηση;»
+    equalize-by-giving                20 (share 20)
+      20 can't spread evenly, busiest place 50% at best: «Πώς ελέγχουμε;»
+    big-table                         20 (share 20)
+      5 can't spread evenly, busiest place 50% at best: «Κάποιος απάντησε «#». Τι έκανε λάθος;»
+      1 can't spread evenly, busiest place 50% at best: «Ποιον μήνα γέμισε περισσότερα μπουκάλια;»
+    round-estimate                    20 (share 20)
+      4 can't spread evenly, busiest place 63% at best: «Έχει δίκιο @;»
+    pattern-sum                       20 (share 20)
+      2 can't spread evenly, busiest place 50% at best: «Κάποιος απάντησε «#». Τι έκανε λάθος;»
+    round-table                       20 (share 20)
+    coins-notes                       20 (share 20)  dropped: 1 options that tell
+      5 can't spread evenly, busiest place 37% at best: «Πόσα € είναι τα # κέρματα των # λεπτών;»
+    growth-chain                      20 (share 20)  dropped: 1 same numbers
+      11 can't spread evenly, busiest place 50% at best: «Ποιο εργαλείο μας βοηθά;»
+    budget                            20 (share 20)
+    place-value                       20 (share 20)  dropped: 2 options that tell
+      1 can't spread evenly, busiest place 50% at best: «Ποιος είναι ο αριθμός;»
+    backwards-money                   20 (share 20)
+      12 can't spread evenly, busiest place 50% at best: «Ποια στρατηγική ταιριάζει;»
+      3 can't spread evenly, busiest place 50% at best: «Κάποιος απάντησε «#». Τι έκανε λάθος;»
+    sum-difference                    20 (share 20)
+      2 can't spread evenly, busiest place 50% at best: «Ποια στρατηγική μας βοηθά;»
+    missing-info                      20 (share 20)
+      18 can't spread evenly, busiest place 38% at best: «Μπορούμε να λύσουμε αυτό το πρόβλημα; Τι λείπει;»
+      1 can't spread evenly, busiest place 50% at best: «Κάποιος απάντησε «# €». Τι ξέχασε;»
+    together-again                    20 (share 20)  dropped: 5 same numbers
+      5 can't spread evenly, busiest place 50% at best: «Ποιο εργαλείο μας βοηθά περισσότερο;»
+      7 can't spread evenly, busiest place 50% at best: «Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;»
+      3 can't spread evenly, busiest place 100% at best: «Έχει δίκιο @;»
+    pack-round-up                     20 (share 20)
+      11 can't spread evenly, busiest place 44% at best: «Πώς ελέγχουμε τη διαίρεση;»
+    buses-needed                      20 (share 20)
+      6 can't spread evenly, busiest place 50% at best: «Αναστοχαζόμαστε: φτάνουν τα λεωφορεία;»
+      9 can't spread evenly, busiest place 50% at best: «Η διαίρεση θα αφήσει υπόλοιπο. Τι κάνουμε με αυτό;»
+    arrange-rows                      20 (share 20)  dropped: 2 same numbers
+      14 can't spread evenly, busiest place 34% at best: «Τι ψάχνουμε στην ουσία;»
+      5 can't spread evenly, busiest place 77% at best: «Γιατί δεν γίνονται σειρές των #;»
+      3 can't spread evenly, busiest place 100% at best: «Αναστοχαζόμαστε: πόσοι τρόποι είναι, και πόσες λεμονιές έχει κάθε σειρά;»
+      3 can't spread evenly, busiest place 100% at best: «Αναστοχαζόμαστε: πόσοι τρόποι είναι, και πόσους μαθητές έχει κάθε σειρά;»
+      5 can't spread evenly, busiest place 70% at best: «Ποιοι αριθμοί από το # ως το # διαιρούν ακριβώς το #;»
+      1 can't spread evenly, busiest place 100% at best: «Αναστοχαζόμαστε: πόσοι τρόποι είναι, και πόσα κεκάκια έχει κάθε σειρά;»
+      1 can't spread evenly, busiest place 100% at best: «Αναστοχαζόμαστε: πόσοι τρόποι είναι, και πόσες καρέκλες έχει κάθε σειρά;»
+      2 can't spread evenly, busiest place 100% at best: «Αναστοχαζόμαστε: πόσοι τρόποι είναι, και πόσες θέσεις έχει κάθε σειρά;»
+    production                        20 (share 20)
+      5 can't spread evenly, busiest place 50% at best: «Ποιο σχέδιο δουλεύει;»
+      4 can't spread evenly, busiest place 50% at best: «Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;»
+    trip-costs                        20 (share 20)
+      2 can't spread evenly, busiest place 50% at best: «Αναστοχαζόμαστε: κάποιος βρήκε # €. Τι ξέχασε;»
+      1 can't spread evenly, busiest place 50% at best: «Αναστοχαζόμαστε: πώς ελέγχουμε την αφαίρεση;»
+    division-check                    20 (share 20)
+      1 can't spread evenly, busiest place 50% at best: «Κάποιος βρήκε πηλίκο # και υπόλοιπο #. Τι λάθος έκανε;»
+    distance-time                     20 (share 20)  dropped: 1 same numbers
+    compare-offers                    20 (share 20)
+      3 can't spread evenly, busiest place 50% at best: «Ποια συσκευασία συμφέρει;»
+      9 can't spread evenly, busiest place 38% at best: «Πώς συγκρίνουμε σωστά τις δύο συσκευασίες;»
+    divisibility                      20 (share 20)
+      4 can't spread evenly, busiest place 50% at best: «Ποια γίνονται, χωρίς να περισσέψει καμία;»
+      4 can't spread evenly, busiest place 46% at best: «Αναστοχαζόμαστε: γιατί δεν γίνονται πακέτα των #;»
+      1 can't spread evenly, busiest place 50% at best: «Ποια γίνονται, χωρίς να περισσέψει κανένα;»
+      1 can't spread evenly, busiest place 33% at best: «Αναστοχαζόμαστε: γιατί δεν γίνονται σακουλάκια των #;»
+      4 can't spread evenly, busiest place 33% at best: «Πώς βρίσκουμε γρήγορα αν θα περισσέψουν;»
+      2 can't spread evenly, busiest place 50% at best: «Τι πρέπει να ισχύει για τον αριθμό;»
+      1 can't spread evenly, busiest place 50% at best: «Ποιες γίνονται, χωρίς να περισσέψει κανένας;»
+      2 can't spread evenly, busiest place 42% at best: «Αναστοχαζόμαστε: γιατί δεν γίνονται ομάδες των #;»
+    group-tickets                     20 (share 20)  dropped: 2 same numbers
+      15 can't spread evenly, busiest place 33% at best: «Πόσα εισιτήρια ενηλίκων και πόσα παιδικά χρειάζονται;»
+      5 can't spread evenly, busiest place 50% at best: «Είναι λογική η απάντηση;»
+  wrote backend/exercise-pools/e-dimotikou-generated.json

@@ -1,0 +1,70 @@
+265 problems change: 257 in option wording only (281 choices; story, numbers, steps, the right option's slot and every other text as they were), 8 with a new story.
+
+Option wording only, per pool and family (problem numbers):
+  e-dimotikou-generated parts-ratio             20  001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020
+  e-dimotikou-generated round-estimate           8  001 002 004 011 012 014 017 020
+  e-dimotikou-generated pattern-sum             11  001 002 005 006 007 009 012 015 016 018 019
+  e-dimotikou-generated round-table              9  004 005 008 011 012 014 016 017 018
+  e-dimotikou-generated coins-notes              1  001
+  e-dimotikou-generated growth-chain             8  002 004 005 009 012 013 014 020
+  e-dimotikou-generated backwards-money          5  002 005 010 011 013
+  e-dimotikou-generated sum-difference          12  001 002 003 005 006 009 010 011 012 016 017 020
+  e-dimotikou-generated missing-info             6  002 004 008 013 018 020
+  e-dimotikou-generated together-again           6  001 004 008 012 019 020
+  e-dimotikou-generated arrange-rows            14  001 002 004 005 007 008 009 011 013 014 015 016 017 020
+  e-dimotikou-generated production               3  004 005 019
+  e-dimotikou-generated trip-costs               7  001 008 012 015 017 018 020
+  e-dimotikou-generated division-check           9  002 003 005 010 011 015 016 017 019
+  e-dimotikou-generated distance-time            6  003 007 012 013 014 019
+  e-dimotikou-generated compare-offers           9  005 006 007 009 010 011 017 018 020
+  e-dimotikou-generated divisibility            11  003 005 008 010 011 013 014 015 016 018 020
+  e-dimotikou-generated group-tickets           20  001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020
+  g-dimotikou-generated change-left              6  001 003 011 014 016 019
+  g-dimotikou-generated two-purchases            3  002 005 015
+  g-dimotikou-generated start-unknown            7  003 006 008 010 012 014 019
+  g-dimotikou-generated bus-stops               11  001 003 005 006 007 009 012 014 015 016 018
+  g-dimotikou-generated equal-groups             4  001 009 014 015
+  g-dimotikou-generated length-cm                3  001 002 017
+  g-dimotikou-generated numberless               9  003 004 006 012 014 015 018 019 020
+  g-dimotikou-generated pages-per-day            8  001 004 009 012 014 015 017 019
+  g-dimotikou-generated buy-and-change           7  001 006 009 010 012 013 015
+  g-dimotikou-generated ages                     6  007 009 012 013 016 020
+  g-dimotikou-generated coins                    8  003 005 006 009 012 013 016 019
+  g-dimotikou-generated estimate-first           3  004 008 014
+  g-dimotikou-generated collection-goal          2  011 016
+  g-dimotikou-generated cheaper-option           3  009 010 014
+  g-dimotikou-generated days-to-goal             8  002 003 006 015 016 017 018 019
+  g-dimotikou-generated exchange-rate            4  001 003 013 015
+
+A new story (8):
+e5-gen-round-estimate-003
+  before: [Περίπου πόσα βιβλία έχουν οι δύο βιβλιοθήκες μαζί|sought], αν στρογγυλοποιήσουμε στις χιλιάδες; [Πόσα ακριβώς|sought]; Η δημοτική βιβλιοθήκη έχει [24.610 βιβλία|known] και η βιβλιοθήκη του σχολείου του Θοδωρή [3.794|known]. [Η βιβλιοθήκη του σχολείου είναι ανοιχτή 5 ημέρες την εβδομάδα|extra].
+  after:  Στον διαγωνισμό ανακύκλωσης, το σχολείο του Άρη μάζεψε [5.812 κουτάκια αλουμινίου|known] και το σχολείο της Ζωής [4.640|known]. [Ο διαγωνισμός κράτησε 3 εβδομάδες|extra]. Η Κατερίνα στρογγυλοποίησε στις χιλιάδες και [υπολόγισε ότι η διαφορά είναι περίπου 1.000|known]. [Έχει δίκιο|sought]; [Ποια είναι ακριβώς η διαφορά|sought];
+
+e5-gen-missing-info-012
+  before: [Κάθε κουτί χωράει 16 σοκολατάκια|known]. Ένα εργαστήριο ζαχαροπλαστικής έφτιαξε [567 σοκολατάκια τη Δευτέρα|known] και [672 την Τρίτη|known], και θέλει να τα συσκευάσει όλα. [Κάθε κουτί κοστίζει 3 €|extra]. [Πόσα κουτιά θα χρειαστεί|sought];
+  after:  Σε μια θεατρική παράσταση, [που κρατάει 80 λεπτά|extra], [το εισιτήριο κοστίζει 17 € για τους ενήλικες|known] και [6 € λιγότερα για τα παιδιά|known]. [Πόσα € θα πληρώσει μια οικογένεια|sought] [με 1 ενήλικα και 2 παιδιά|known];
+
+e5-gen-missing-info-015
+  before: [Πόσα λεωφορεία χρειάζονται|sought] για την εκδρομή ενός σχολείου, αν θα πάνε [271 μαθητές|known] και [12 εκπαιδευτικοί|known] και [κάθε λεωφορείο έχει 55 θέσεις|known]; Θα ξεκινήσουν [στις 8 το πρωί|extra].
+  after:  [Ο Πυθαγόρας και 3 φίλοι του|known] πάνε σινεμά, [σε μια ταινία 105 λεπτών|extra]. [Αγοράζουν ο καθένας ένα εισιτήριο των 8 €|known] και [ένα ποπ κορν των 5 €|known]. [Πόσα € πληρώνουν όλοι μαζί|sought];
+
+g3-gen-division-remainder-002
+  before: Η Χαρά θέλει να αγοράσει σοκολάτες για το πάρτι της. Στο μαγαζί «Το αστέρι» η σοκολάτα κοστίζει [2 ευρώ|known]. Η Χαρά έχει [13 ευρώ|known]. Το μαγαζί έχει [44 σοκολάτες|extra] στο ράφι. [Πόσες σοκολάτες μπορεί να αγοράσει|sought]; [Θα περισσέψουν χρήματα|sought];
+  after:  Ο Αλέξης θέλει να αγοράσει μαρκαδόρους για τα γενέθλιά του. Στο μαγαζί «Η φτήνια» ο μαρκαδόρος κοστίζει [3 ευρώ|known]. Ο Αλέξης έχει [11 ευρώ|known]. Το μαγαζί έχει [45 μαρκαδόρους|extra] στο ράφι. [Πόσους μαρκαδόρους μπορεί να αγοράσει|sought]; [Θα περισσέψουν χρήματα|sought];
+
+g3-gen-total-cost-010
+  before: Στο αθλητικό κατάστημα της γειτονιάς τα αθλητικά παπούτσια κοστίζουν [67 ευρώ|known]. Το παγούρι κοστίζει [8 ευρώ|known]. Ο Φώτης θέλει να αγοράσει και τα δύο για την προπόνησή του. Η προπόνηση αρχίζει στις [7 το απόγευμα|extra]. [Πόσα ευρώ θα δώσει στο ταμείο|sought];
+  after:  Στο κατάστημα με τα ποδήλατα της γειτονιάς το καλαθάκι κοστίζει [12 ευρώ|known]. Τα φωτάκια κοστίζουν [12 ευρώ|known]. Η κλειδαριά κοστίζει [17 ευρώ|known]. Ο Άρης θέλει να αγοράσει και τα τρία για το ποδήλατό του. Το ποδήλατο έχει [17 ταχύτητες|extra]. [Πόσα ευρώ θα πληρώσει|sought];
+
+g3-gen-numberless-017
+  before: Στον πάγκο της λαϊκής υπήρχαν [71 καρπούζια|known]. Ο κύριος Μανώλης πούλησε [54 καρπούζια|known] το πρωί. Ο ήλιος έδυσε στις [6 το απόγευμα|extra]. [Πόσα καρπούζια έμειναν στον πάγκο της λαϊκής|sought];
+  after:  Το πρωί η Υπατία μάζεψε [51 κοχύλια|known] στην παραλία. Το απόγευμα μάζεψε [άλλα 35 κοχύλια|known]. Ο ήλιος έδυσε στις [6 το απόγευμα|extra]. [Πόσα κοχύλια μάζεψε όλη τη μέρα|sought];
+
+g3-gen-missing-info-017
+  before: Η Υπατία έχει [51 κοχύλια|known]. Ο Νίκος έχει [10 κοχύλια περισσότερα|known] από την Υπατία. Τα φυλάνε σε [3 κουτιά|extra]. [Πόσα κοχύλια έχει ο Νίκος|sought];
+  after:  Ένα πλοίο είχε [680 επιβάτες|known]. Στο λιμάνι της Σύρου κατέβηκαν [300 επιβάτες|known] και δεν ανέβηκε κανείς. Το ταξίδι κράτησε [5 ώρες|extra]. [Πόσοι επιβάτες έμειναν|sought];
+
+g3-gen-exchange-rate-009
+  before: Σε ένα κιβώτιο χωράνε [11 μπουκάλια χυμό|known]. Το κυλικείο έχει [7 κιβώτια|known] γεμάτα και [10 μπουκάλια|known] ακόμη. Το κυλικείο ανοίγει στις [9 το πρωί|extra]. [Πόσα μπουκάλια χυμό έχει όλα μαζί|sought];
+  after:  Στο διάλειμμα τα παιδιά ανταλλάσσουν κάρτες με αυτοκόλλητα. Μία κάρτα αξίζει [3 αυτοκόλλητα|known]. Η Ζωή έχει [11 αυτοκόλλητα|known]. Το διάλειμμα κρατάει [20 λεπτά|extra]. [Πόσες κάρτες μπορεί να πάρει|sought]; [Θα περισσέψουν αυτοκόλλητα|sought];

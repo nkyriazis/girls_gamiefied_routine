@@ -1,0 +1,131 @@
+Tolerance 2 code points. P[k]: the right option is the k-th shortest (k = 1 … n), ties split.
+
+By pool (choices; P[1] … P[n]; best place wins; random 1/n):
+  e-dimotikou-generated n=3         352   23.0%  56.9%  20.1%   best 56.9% (random 33.3%)
+  e-dimotikou-generated n=4         248   15.0%  34.8%  29.0%  21.1%   best 34.8% (random 25.0%)
+  e-dimotikou-generated n=2           1   50.0%  50.0%   best 50.0% (random 50.0%)
+  e-dimotikou-generated n=5           1   20.0%  20.0%  20.0%  20.0%  20.0%   best 20.0% (random 20.0%)
+  e-dimotikou-problems n=3           14   39.3%  39.3%  21.4%   best 39.3% (random 33.3%)
+  e-dimotikou-problems n=4            2   12.5%  12.5%  37.5%  37.5%   best 37.5% (random 25.0%)
+  g-dimotikou-generated n=4         133   22.9%  28.0%  27.6%  21.5%   best 28.0% (random 25.0%)
+  g-dimotikou-generated n=3         680   28.9%  44.7%  26.4%   best 44.7% (random 33.3%)
+  g-dimotikou-generated n=2          16   53.1%  46.9%   best 53.1% (random 50.0%)
+  g-dimotikou-problems n=4            5   26.7%  26.7%  26.7%  20.0%   best 26.7% (random 25.0%)
+  g-dimotikou-problems n=3           10   21.7%  51.7%  26.7%   best 51.7% (random 33.3%)
+  g-dimotikou-world n=4              81   25.0%  25.0%  25.0%  25.0%   best 25.0% (random 25.0%)
+  g-dimotikou-world n=3             119   33.3%  33.3%  33.3%   best 33.3% (random 33.3%)
+  e-dimotikou-generated: prompts with ≥6 choices 39 (three-option 26); one place wins > 50%: 13, all of them: 7
+  e-dimotikou-problems: prompts with ≥6 choices 0 (three-option 0); one place wins > 50%: 0, all of them: 0
+  g-dimotikou-generated: prompts with ≥6 choices 61 (three-option 51); one place wins > 50%: 5, all of them: 2
+  g-dimotikou-problems: prompts with ≥6 choices 0 (three-option 0); one place wins > 50%: 0, all of them: 0
+  g-dimotikou-world: prompts with ≥6 choices 4 (three-option 2); one place wins > 50%: 0, all of them: 0
+
+By family (three-option choices only; middle = P[2]):
+  e-dimotikou-generated backwards-money                 15  short  43.3%  middle  50.0%  long   6.7%
+  e-dimotikou-generated big-table                       19  short  36.8%  middle  39.5%  long  23.7%
+  e-dimotikou-generated budget                          20  short  33.3%  middle  33.3%  long  33.3%
+  e-dimotikou-generated buses-needed                     2  short  50.0%  middle  50.0%  long   0.0%
+  e-dimotikou-generated coins-notes                      2  short  41.7%  middle  41.7%  long  16.7%
+  e-dimotikou-generated compare-offers                  20  short  35.8%  middle  35.8%  long  28.3%
+  e-dimotikou-generated distance-time                   15  short  20.0%  middle  40.0%  long  40.0%
+  e-dimotikou-generated divisibility                     2  short   0.0%  middle  50.0%  long  50.0%
+  e-dimotikou-generated division-check                   8  short   0.0%  middle  62.5%  long  37.5%
+  e-dimotikou-generated equalize-by-giving              20  short  33.3%  middle  33.3%  long  33.3%
+  e-dimotikou-generated group-tickets                   20  short  12.5%  middle  87.5%  long   0.0%
+  e-dimotikou-generated growth-chain                    21  short   0.0%  middle 100.0%  long   0.0%
+  e-dimotikou-generated missing-info                     9  short   7.4%  middle  85.2%  long   7.4%
+  e-dimotikou-generated pack-round-up                    2  short  33.3%  middle  33.3%  long  33.3%
+  e-dimotikou-generated parts-ratio                     33  short   0.0%  middle 100.0%  long   0.0%
+  e-dimotikou-generated pattern-sum                     17  short  25.5%  middle  46.1%  long  28.4%
+  e-dimotikou-generated place-value                      7  short  33.3%  middle  33.3%  long  33.3%
+  e-dimotikou-generated production                      17  short  31.4%  middle  43.1%  long  25.5%
+  e-dimotikou-generated round-estimate                  18  short  38.9%  middle  47.2%  long  13.9%
+  e-dimotikou-generated round-table                     18  short  16.7%  middle  50.0%  long  33.3%
+  e-dimotikou-generated sum-difference                  19  short  26.3%  middle  68.4%  long   5.3%
+  e-dimotikou-generated together-again                   8  short   0.0%  middle  68.8%  long  31.3%
+  e-dimotikou-generated trip-costs                      20  short  27.5%  middle  52.5%  long  20.0%
+  e-dimotikou-generated unit-rate                       20  short  28.3%  middle  35.8%  long  35.8%
+  e-dimotikou-problems (curated)                        14  short  39.3%  middle  39.3%  long  21.4%
+  g-dimotikou-generated ages                            18  short  14.8%  middle  42.6%  long  42.6%
+  g-dimotikou-generated bus-stops                       30  short  11.1%  middle  46.1%  long  42.8%
+  g-dimotikou-generated buy-and-change                  24  short  22.2%  middle  53.5%  long  24.3%
+  g-dimotikou-generated change-left                     27  short  40.7%  middle  40.7%  long  18.5%
+  g-dimotikou-generated cheaper-option                  20  short  35.8%  middle  45.8%  long  18.3%
+  g-dimotikou-generated coins                           11  short  22.7%  middle  68.2%  long   9.1%
+  g-dimotikou-generated collection-goal                 27  short  22.2%  middle  44.4%  long  33.3%
+  g-dimotikou-generated compare-difference              42  short  34.9%  middle  33.7%  long  31.3%
+  g-dimotikou-generated days-to-goal                    22  short  27.3%  middle  59.1%  long  13.6%
+  g-dimotikou-generated division-remainder              26  short  21.8%  middle  50.6%  long  27.6%
+  g-dimotikou-generated double-half                     35  short  33.3%  middle  33.3%  long  33.3%
+  g-dimotikou-generated equal-groups                    33  short  24.7%  middle  61.1%  long  14.1%
+  g-dimotikou-generated estimate-first                  29  short  17.2%  middle  48.3%  long  34.5%
+  g-dimotikou-generated exchange-rate                   30  short  27.8%  middle  44.4%  long  27.8%
+  g-dimotikou-generated length-cm                       27  short  29.6%  middle  40.7%  long  29.6%
+  g-dimotikou-generated missing-info                    21  short  27.8%  middle  39.7%  long  32.5%
+  g-dimotikou-generated numberless                      46  short  38.0%  middle  40.2%  long  21.7%
+  g-dimotikou-generated order-the-plan                  15  short  44.4%  middle  44.4%  long  11.1%
+  g-dimotikou-generated pages-per-day                   19  short  27.2%  middle  58.8%  long  14.0%
+  g-dimotikou-generated share-equally                   31  short  33.3%  middle  33.3%  long  33.3%
+  g-dimotikou-generated start-unknown                   47  short  28.4%  middle  43.3%  long  28.4%
+  g-dimotikou-generated table-reading                   32  short  38.5%  middle  38.5%  long  22.9%
+  g-dimotikou-generated total-cost                      23  short  33.3%  middle  48.6%  long  18.1%
+  g-dimotikou-generated two-digit-times                 25  short  15.3%  middle  49.3%  long  35.3%
+  g-dimotikou-generated two-purchases                   20  short  40.8%  middle  40.8%  long  18.3%
+  g-dimotikou-problems (curated)                        10  short  21.7%  middle  51.7%  long  26.7%
+  g-dimotikou-world world                              119  short  33.3%  middle  33.3%  long  33.3%
+
+By family (four-option choices):
+  e-dimotikou-generated arrange-rows                    39   24.6%  63.0%   9.2%   3.2%
+  e-dimotikou-generated buses-needed                    13   15.4%  15.4%  34.6%  34.6%
+  e-dimotikou-generated coins-notes                      6   34.7%  34.7%  26.4%   4.2%
+  e-dimotikou-generated compare-offers                   9    0.0%   0.0%  88.9%  11.1%
+  e-dimotikou-generated divisibility                    25    9.0%  49.0%  25.0%  17.0%
+  e-dimotikou-generated division-check                  21   23.8%  23.8%  26.2%  26.2%
+  e-dimotikou-generated equalize-by-giving              20    0.0%   0.0%  50.0%  50.0%
+  e-dimotikou-generated group-tickets                   20   25.0%  50.0%  25.0%   0.0%
+  e-dimotikou-generated missing-info                    20   19.2%  37.5%  25.0%  18.3%
+  e-dimotikou-generated pack-round-up                   18    9.7%  17.1%  36.6%  36.6%
+  e-dimotikou-generated place-value                      6   20.8%  20.8%  29.2%  29.2%
+  e-dimotikou-generated production                       1    0.0%  50.0%  50.0%   0.0%
+  e-dimotikou-generated round-table                     11   25.0%  25.0%  25.0%  25.0%
+  e-dimotikou-generated together-again                  15    0.0%  53.3%  23.3%  23.3%
+  e-dimotikou-generated trip-costs                       7   25.0%  25.0%  25.0%  25.0%
+  e-dimotikou-generated unit-rate                       17    0.0%  33.3%  33.3%  33.3%
+  e-dimotikou-problems (curated)                         2   12.5%  12.5%  37.5%  37.5%
+  g-dimotikou-generated buy-and-change                   6   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated change-left                      7   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated coins                           15   31.1%  35.6%  28.9%   4.4%
+  g-dimotikou-generated collection-goal                  2    0.0%  33.3%  33.3%  33.3%
+  g-dimotikou-generated days-to-goal                     7   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated division-remainder               5   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated equal-groups                    11   33.3%  33.3%  33.3%   0.0%
+  g-dimotikou-generated length-cm                        3   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated missing-info                     8   13.5%  28.1%  34.4%  24.0%
+  g-dimotikou-generated pages-per-day                   12   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated share-equally                   20   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated table-reading                    5   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated total-cost                      12    8.3%  30.6%  30.6%  30.6%
+  g-dimotikou-generated two-digit-times                 15   25.0%  25.0%  25.0%  25.0%
+  g-dimotikou-generated two-purchases                    5    0.0%  33.3%  33.3%  33.3%
+  g-dimotikou-problems (curated)                         5   26.7%  26.7%  26.7%  20.0%
+  g-dimotikou-world world                               81   25.0%  25.0%  25.0%  25.0%
+
+Prompts (≥6 choices) where one place wins more than half (numbers aside):
+   20    0.0% 100.0%   0.0%   e-dimotikou-generated | parts-ratio | n=3 | plan | Ποια στρατηγική μας βοηθά περισσότερο;
+   13    0.0% 100.0%   0.0%   e-dimotikou-generated | parts-ratio | n=3 | check | Κάποιος απάντησε: «# και #». Τι λείπει από την απάντηση;
+   10    0.0% 100.0%   0.0%   e-dimotikou-generated | growth-chain | n=3 | check | Κάποιος απάντησε «#». Τι έκανε λάθος;
+    7    0.0% 100.0%   0.0%   e-dimotikou-generated | growth-chain | n=3 | plan | Ποιο εργαλείο μας βοηθά;
+    6    0.0% 100.0%   0.0%   e-dimotikou-generated | missing-info | n=3 | check | Κάποιος απάντησε «#». Τι ξέχασε;
+    8    0.0% 100.0%   0.0%   0.0%   e-dimotikou-generated | together-again | n=4 | plan | Τι ψάχνουμε στην ουσία;
+   15    0.0% 100.0%   0.0%   e-dimotikou-generated | group-tickets | n=3 | check | Αναστοχαζόμαστε: κάποιος βρήκε # × # = # €. Τι λάθος έκανε;
+    7    0.0% 100.0%   0.0%   g-dimotikou-generated | start-unknown | n=3 | plan | Πώς το λύνουμε;
+    7    0.0% 100.0%   0.0%   g-dimotikou-generated | buy-and-change | n=3 | check | Είναι λογική η απάντηση;
+    7    7.1%  92.9%   0.0%   e-dimotikou-generated | sum-difference | n=3 | check | Κάποιος απάντησε «# και #». Γιατί είναι λάθος;
+    9    0.0%   0.0%  88.9%  11.1%   e-dimotikou-generated | compare-offers | n=4 | plan | Πώς συγκρίνουμε σωστά τις δύο συσκευασίες;
+   20   13.3%  73.3%  13.3%   g-dimotikou-generated | equal-groups | n=3 | check | Πώς ελέγχουμε;
+   10   20.0%  70.0%  10.0%   e-dimotikou-generated | trip-costs | n=3 | check | Αναστοχαζόμαστε: κάποιος βρήκε # €. Τι ξέχασε;
+   11    0.0%  63.6%  18.2%  18.2%   e-dimotikou-generated | divisibility | n=4 | plan | Πώς βρίσκουμε γρήγορα αν θα περισσέψουν;
+    8    0.0%  62.5%  37.5%   e-dimotikou-generated | division-check | n=3 | check | Αναστοχαζόμαστε: τι πρέπει να ισχύει ακόμα;
+   12   37.5%  54.2%   8.3%   e-dimotikou-generated | sum-difference | n=3 | plan | Ποια στρατηγική μας βοηθά;
+   20    0.0%  52.5%  47.5%   g-dimotikou-generated | bus-stops | n=3 | check | Είναι λογική η απάντηση;
+   12   26.4%  51.4%  22.2%   g-dimotikou-generated | cheaper-option | n=3 | solve | Ποιος τρόπος είναι φθηνότερος;
