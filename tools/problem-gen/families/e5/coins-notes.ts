@@ -176,7 +176,8 @@ export const coinsNotes: Family = {
         : b.choice('check', `Κάποιος απάντησε «${fmt(naive)} €». Τι έκανε λάθος;`,
           `Μέτρησε κάθε ${coin.short === 'κέρματα' ? 'κέρμα' : 'χαρτονόμισμα'} σαν 1 €`,
           [NO_MISTAKE, [`Ξέχασε να αφαιρέσει ${i2.the}`, `Δεν αφαίρεσε ${i2.the}`]],
-          `Τα ${coin.short} δεν αξίζουν 1 € το καθένα.`));
+          // (the whole calculation, so it points at none of the options: #50 part 6)
+          `Κάνε τον λογαριασμό από την αρχή: πόσα € είναι όλα τα ${coin.short} μαζί, και πόσα κοστίζουν όσα αγοράζονται;`));
     }
     return { title: s.title, story, steps };
   },
