@@ -3,6 +3,7 @@
 //   node tools/problem-gen/audit.ts                    every problem in backend/exercise-pools
 //   node tools/problem-gen/audit.ts --sample out.md 40  also write 40 random problems per grade, as text, for reading
 //   node tools/problem-gen/audit.ts --dir DIR           audit the pools in DIR instead
+//   node tools/problem-gen/audit.ts --all-errors        list every error, not only the first 80
 //
 // Errors (exit 1):
 //   - every equation in the story, prompts, hints, number rows (label + answer) and right
@@ -21,9 +22,15 @@
 //     name, nothing changes after «Τώρα», the question names someone when two people are
 //     subjects, a gift counts on both sides, world checks have 3 options, prices fit the item
 //     and «πληρώνει με» is real notes;
-//   - no choice gives its answer away by length (lib.ts, lengthTell): no option stands out (the
-//     longest at most 30 % or 5 code points longer than the next), the right one is never the only
-//     longest, and among options that are all numbers never the only one with the most digits;
+//   - no choice gives its answer away by length (lib.ts, lengthTell): no option stands out at either
+//     end (the longest at most 30 % or 5 code points longer than the next, the shortest at most 30 %
+//     or 5 shorter), the right one is never the only longest, and among options that are all numbers
+//     never the only one with the most digits; and in a family (a curated pool counts as one), the
+//     right option of one prompt (numbers and names aside) is the only shortest in at most half its
+//     choices, from 3 choices on (onlyShortest);
+//   - no wrong option shows an answer still to come: a number from 10 up that a later numbers row
+//     asks for, that the story doesn't give and the right option doesn't show («30 − 21» above
+//     «9 + 3 + 9 = 21»; smaller numbers meet by chance, «4 παιδικά» beside a price of 4 €);
 //   - every step has a hint of its own;
 //   - a check step's numbers don't ask for a number its prompt already states («βγαίνουν όλα
 //     μαζί 390;» with a row whose answer is 390);
@@ -36,7 +43,8 @@
 //     a warning).
 // Warnings: a family with little variety (few distinct story skeletons), a story without
 // a question, very long stories, check-gender's words already in the pools (one line per
-// family and place).
+// family and place), hints and prompts that show an answer of their own step or a later one
+// (one line per family, kind and place: many written hints work the row out, «12 × 2 = 24.»).
 //
 //   node tools/problem-gen/audit.ts --gender-baseline   write gender-baseline.json from the pools as they are
 //
@@ -49,7 +57,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { Exercise, ProblemExercise } from '../../shared/types.ts';
 import { genderedWords } from '../../frontend/scripts/gendered.mjs';
-import { lengthTell, PEOPLE, rng } from './lib.ts';
+import { lengthTell, onlyShortest, PEOPLE, rng, SHORTEST_MIN_CHOICES, SHORTEST_SHARE } from './lib.ts';
 import { auditMaths, mathsSample } from './maths/check.ts';
 import { auditLanguage, languageSample } from './language/check.ts';
 import { checkStory } from './story-check.ts';
@@ -116,6 +124,10 @@ const genderBaseline = new Set<string>(existsSync(BASELINE_FILE) ? JSON.parse(re
 const genderHits: string[] = [];
 const gendered = new Map<string, string[]>();
 const families = new Map<string, { grade: number; skeletons: Set<string>; n: number; steps: number }>();
+// Per family and prompt (numbers and names aside): choices, and how many have the right option the only shortest
+const shortest = new Map<string, { n: number; only: number; example: string }>();
+// Per family, kind and place: hints and prompts that show an answer of their own step or a later one
+const laterAnswers = new Map<string, { n: number; example: string }>();
 const kinds = new Map<string, number>();
 
 // A story with numbers and names blanked out: how many really different stories a family has.
@@ -175,6 +187,16 @@ for (const pool of pools) {
       });
     }
 
+    // Family ids are unique within a grade (Γ΄ and Ε΄ both have a missing-info)
+    const fam = `${grade}:${(ex.generatorParams as { family?: string } | undefined)?.family ?? `(curated ${pool.file})`}`;
+
+    // An answer still to come, shown before it is asked: a later row's answer the story doesn't give
+    const given = new Set((plain(ex.story).match(new RegExp(NUM, 'g')) ?? []).map(toNumber));
+    const answerAt = new Map<number, number>();
+    ex.steps.forEach((st, j) => { if (st.kind === 'numbers') for (const row of st.rows) if (!given.has(row.answer) && !answerAt.has(row.answer)) answerAt.set(row.answer, j); });
+    const shows = (i: number, text: string, own: boolean) => (text.match(new RegExp(`(?<![\\d.])(?:${NUM})(?![\\d.]*\\d)`, 'g')) ?? [])
+      .map(toNumber).filter(x => x >= 10 && answerAt.has(x) && (answerAt.get(x)! > i || (own && answerAt.get(x) === i)));
+
     ex.steps.forEach((step, i) => {
       const at = `step ${i} (${step.kind})`;
       // Working it out: every relation holds by its numbers, and the answer can be reached
@@ -207,6 +229,22 @@ for (const pool of pools) {
         if (step.given.includes(step.sought)) err(ex, `${at}: the answer is given`);
         step.quantities.forEach(x => hygiene(ex, `${at} label`, x.label));
       }
+      // A wrong option with a number she works out later (and the story doesn't give) shows it
+      // to her, beside the operation that makes it («30 − 21» above «9 + 3 + 9 = 21»)
+      // (unless the right option shows it too: a plan that names the sum it then asks for)
+      if (step.kind === 'choice') step.options.forEach((o, j) => {
+        const right = shows(i, step.options[step.correctIndex] ?? '', false);
+        if (j !== step.correctIndex) for (const x of shows(i, o, false)) if (!right.includes(x)) err(ex, `${at} wrong option «${o}» shows ${x}, the answer of step ${answerAt.get(x)}`);
+      });
+      // Hints and prompts that do the same: listed per family, for now (#50 part 5a found them)
+      for (const [what, text, own] of [['prompt', step.prompt, false], ['hint', step.hint ?? '', true]] as const) {
+        const x = shows(i, text, own)[0];
+        if (x === undefined) continue;
+        const k = `${fam} ${step.kind} ${what}`;
+        const l = laterAnswers.get(k) ?? { n: 0, example: `${ex.id} step ${i}: «${text}» shows ${x}` };
+        l.n++;
+        laterAnswers.set(k, l);
+      }
       kinds.set(step.kind, (kinds.get(step.kind) ?? 0) + 1);
       if (!step.hint?.trim()) err(ex, `${at}: no hint (a wrong try would say only «Διάβασε ξανά την ιστορία»)`);
       hygiene(ex, `${at} prompt`, step.prompt);
@@ -222,6 +260,11 @@ for (const pool of pools) {
         if (opts.length < 2 || opts.length > 5) err(ex, `${at}: ${opts.length} options`);
         const tell = step.correctIndex >= 0 && step.correctIndex < opts.length ? lengthTell(opts, step.correctIndex) : null;
         if (tell) err(ex, `${at}: gives its answer away by length: ${tell}`);
+        const key = `${fam} «${step.prompt.replace(namesRe, '@').replace(new RegExp(NUM, 'g'), '#')}»`;
+        const t = shortest.get(key) ?? { n: 0, only: 0, example: ex.id };
+        t.n++;
+        if (onlyShortest(opts, step.correctIndex)) t.only++;
+        shortest.set(key, t);
       }
       if (step.kind === 'numbers') {
         // A check that states the number it asks for: she types it back
@@ -242,9 +285,6 @@ for (const pool of pools) {
         step.items.forEach(o => hygiene(ex, `${at} item`, o));
       }
     });
-
-    // Family ids are unique within a grade (Γ΄ and Ε΄ both have a missing-info)
-    const fam = `${grade}:${(ex.generatorParams as { family?: string } | undefined)?.family ?? `(curated ${pool.file})`}`;
 
     // Everything she reads, by where it is
     const read: [string, string][] = [['title', ex.title], ['story', plain(ex.story)], ...ex.steps.flatMap((st, i): [string, string][] => [
@@ -282,11 +322,19 @@ for (const pool of pools) {
   }
 }
 
+// A prompt whose right option is mostly the only shortest: tapping the shortest wins it
+for (const [key, t] of shortest) {
+  if (t.n >= SHORTEST_MIN_CHOICES && t.only > SHORTEST_SHARE * t.n) {
+    errors.push(`family ${key.slice(2)}: the right option is the only shortest in ${t.only} of ${t.n} choices (e.g. ${t.example})`);
+  }
+}
+
 for (const [key, f] of families) {
   const id = key.slice(2);
   if (!id.startsWith('(') && f.skeletons.size < Math.min(Math.max(5, Math.ceil(f.n / 3)), f.n)) warnings.push(`family ${id}: only ${f.skeletons.size} different story shapes in ${f.n} problems`);
 }
 
+for (const [key, l] of laterAnswers) warnings.push(`${key.slice(2)}: ${l.n} show an answer still to work out (e.g. ${l.example})`);
 for (const [where, words] of gendered) warnings.push(`${where}: check-gender's words already in the pools: ${[...new Set(words)].join(', ')} (${words.length})`);
 if (process.argv.includes('--gender-baseline')) {
   writeFileSync(BASELINE_FILE, JSON.stringify([...new Set(genderHits)].sort(), null, 1) + '\n');
@@ -322,8 +370,9 @@ for (const pool of pools) {
   }
 }
 console.log(`\n${errors.length} errors, ${warnings.length} warnings`);
-for (const e of errors.slice(0, 80)) console.log(`  ✘ ${e}`);
-if (errors.length > 80) console.log(`  … and ${errors.length - 80} more`);
+const shown = process.argv.includes('--all-errors') ? errors.length : 80;
+for (const e of errors.slice(0, shown)) console.log(`  ✘ ${e}`);
+if (errors.length > shown) console.log(`  … and ${errors.length - shown} more (--all-errors lists them all)`);
 for (const w of warnings.slice(0, 40)) console.log(`  ! ${w}`);
 
 // A sample to read, as a kid would see it

@@ -174,12 +174,15 @@ export const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 // ---------------------------------------------------------------------------
 // Options that don't give the answer away. The screen shuffles them, so their length is the
-// only tell left: no option stands out by length (the longest at most 30 % longer than the next,
-// in code points, or at most 5 longer: «Δεν τους χρειαζόμαστε» beside «Τους προσθέτουμε» doesn't
-// show), and the right one is never the only longest. Options that are all numbers
-// («12», «1.229 €») are compared by their digits instead: the right one is never the only one
-// with the most digits. builder.choice flags a choice that breaks this, gen.ts drops the draft,
-// and audit.ts fails it in every pool.
+// only tell left. At both ends no option stands out by length: the longest at most 30 % longer
+// than the next, in code points, or at most 5 longer («Δεν τους χρειαζόμαστε» beside «Τους
+// προσθέτουμε» doesn't show), and the shortest at most 30 % or 5 shorter than the next. The right
+// one is never the only longest. Options that are all numbers («12», «1.229 €») are compared by
+// their digits instead: the right one is never the only one with the most digits. builder.choice
+// flags a choice that breaks this, gen.ts drops the draft, and audit.ts fails it in every pool.
+// The other end can't be a rule per choice (never the only longest nor the only shortest would
+// make the right one the middle one, every time): audit.ts fails a family whose right option is
+// the only shortest in more than half the choices of one prompt (onlyShortest).
 
 export const STAND_OUT = 1.3;
 const STAND_OUT_MIN = 6;
@@ -199,8 +202,21 @@ export function lengthTell(options: string[], correctIndex: number): string | nu
   if (others.every(x => x < L[correctIndex])) return `the right option «${opts[correctIndex]}» is the only longest (${L[correctIndex]} code points, the next ${Math.max(...others)})`;
   const [first, second] = [...L].sort((a, b) => b - a);
   if (first > STAND_OUT * second && first - second >= STAND_OUT_MIN) return `«${opts[L.indexOf(first)]}» stands out by its length (${first} code points, the next ${second})`;
+  const [low, low2] = [...L].sort((a, b) => a - b);
+  if (low2 > STAND_OUT * low && low2 - low >= STAND_OUT_MIN) return `«${opts[L.indexOf(low)]}» stands out by its shortness (${low} code points, the next ${low2})`;
   return null;
 }
+
+/** Whether the right option is the only shortest (code points): fine once, a tell when a family's prompt always does it. */
+export function onlyShortest(options: string[], correctIndex: number): boolean {
+  const L = options.map(o => codePoints(o.trim()));
+  return L.every((x, j) => j === correctIndex || x > L[correctIndex]);
+}
+
+/** The most a family's prompt may have its right option as the only shortest: half its choices. */
+export const SHORTEST_SHARE = 0.5;
+/** A family's prompt counts from this many choices on. */
+export const SHORTEST_MIN_CHOICES = 3;
 
 // ---------------------------------------------------------------------------
 // Hints that fit their numbers: how to start a calculation, without its result. b.numbers
