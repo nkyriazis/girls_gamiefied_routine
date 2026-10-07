@@ -116,10 +116,13 @@ The audit can't read Greek; you must. The traps the generator has already hit:
     still the order on screen, so stories, numbers and slots stay when wordings are added. The audit
     counts the places per family, prompt (`promptKey`: names with their article and numbers aside;
     `SAME_PROMPT` merges prompts that ask the same with the same options) and number of options, with
-    options **within 2 code points counted as the same length** (the eye can't tell them apart; ties
-    split): a prompt from 6 choices on fails where one place wins more than a fair die would (`placeLimit`,
-    over it in under 1 prompt in 100), from 3 to 5 choices that is a warning, and a prompt over its share
-    and one in 8 is a warning too. Its summary prints, per pool, how often each place is right.
+    options **within 2 code points counted as the same length** (the measure the owner chose; on screen
+    2 code points can still show, «44» beside «43» and «46» in Γ΄ bus-stops; ties split): a prompt from 6
+    choices on fails where one place wins more than a fair die would (`placeLimit`, over it in under 1
+    prompt in 100: of 20 three-option choices, more than 12), from 3 to 5 choices that is a warning, and a
+    prompt over its share and one in 8 (of 20, more than 9) is a warning too. Share and one in 8 is not
+    the error because the places come from each problem's seed, not a rotation: the seeds alone already
+    put 23 of the 103 prompts asked 6 times or more over it (6 choices: 3 at one place). Its summary prints, per pool, how often each place is right.
     `gen.ts --places` lists the prompts whose wordings can't spread the right option evenly, and how far
     they get.
   - **How to write a variant.** A wrong option's variant is the *same typical mistake in other words*,
@@ -127,9 +130,12 @@ The audit can't read Greek; you must. The traps the generator has already hit:
     να είναι πάνω από 36 ευρώ» / «Όχι, θα είναι πάνω από 36 ευρώ»). A right option's variant comes **only
     from the book's own wording** (the strategies by their names in Ε΄ κεφ. 1.3: «Παρουσιάζω το πρόβλημα
     με σχέδιο» / «Παρουσιάζω το πρόβλημα», `STRATEGY` in lib.ts; «Το Ε.Κ.Π. των 9 και 10» / «Το Ε.Κ.Π.
-    τους»; «6 + 6 + 6 + 6 = 24» / «6 × 4 = 24»), never new content. `b.choice` never takes a variant
+    τους»), never new content. `b.choice` never takes a variant
     longer than the longest first wording (nothing new wraps), so give the shortest option a longer
-    variant and the longest a shorter one. The «not wrong» options are shared (`NO_MISTAKE`,
+    variant and the longest a shorter one. A choice's equations keep **one form**: all sums or all
+    products, as its hint says («Προσθέτουμε 4 φορές το 6»). A product among sums is the odd one out and,
+    when only right options get it, a tell of its own (equal-groups gives its sum check another wrong
+    sum instead: two groups too few). The «not wrong» options are shared (`NO_MISTAKE`,
     `NOTHING_FORGOTTEN`). Every variant says it the same way to every child: no «όλους/όλες» (check-gender
     in the audit fails a new one in an option). A prompt whose right option sits at the cap with nothing
     shorter in the book (a yes/no check, an equation as long as its wrong twin) can't be spread without

@@ -237,7 +237,7 @@ export const SHORTEST_SHARE = 0.5;
 /** A curated prompt counts from this many choices on. */
 export const SHORTEST_MIN_CHOICES = 3;
 
-/** Options within this many code points of each other look the same length (on a proportional font). */
+/** Options within this many code points of each other count as the same length (the measure chosen for #50 part 5c; on screen 2 can still show). */
 export const PLACE_TOLERANCE = 2;
 
 /**
