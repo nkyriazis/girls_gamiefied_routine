@@ -10,6 +10,10 @@
 //   - the key isn't the rule's answer: a multiple choice or fill-blank without exactly one option
 //     the rule accepts (so a wrong option that is itself right for the sentence is an error too);
 //     an ordering out of order; a true-false whose statement the lexicon says otherwise;
+//   - a key the rule can't prove alone: δε(ν)/μη(ν) where the subjunctive could follow too, a mood asked of a
+//     form that is still two moods (ακούτε), a tense asked of part of a compound form, an adverb that can tell
+//     two things (αργά), two definitions too close to pit against each other, the masculine genitive of an
+//     -ης adjective (the everyday «του διεθνή» is right too), a compound or option the lexicon doesn't know;
 //   - fewer than 3 or repeated options; the right option the only longest; for the spelling skills
 //     the right option the one closest to all the others (a letter-by-letter vote would find it), or a
 //     wrong spelling that is a word of the lexicon or isn't one or two slips (ι/η/υ/ει/οι, ο/ω, ε/αι,
@@ -31,13 +35,13 @@ import { genderedWords } from '../../../frontend/scripts/gendered.mjs';
 import type { Rng } from '../lib.ts';
 import { revealMax, revealed } from '../maths/check.ts';
 import { CURRICULUM, pageExists, placeOf, type LanguageGrade } from './curriculum.ts';
-import { LEXICON, type Gender, type Lexicon, type Person, type Tag } from './lexicon.ts';
+import { LEXICON, TENSES, type Expression, type Gender, type Lexicon, type Mood, type Person, type Tag, type Tense } from './lexicon.ts';
 
 type Plain = Exclude<Exercise, { type: 'problem' }>;
 type Pool = { file: string; grades: number[]; exercises: Exercise[] };
 
 export const MIN_ITEMS = 60;
-const PREFIX: Record<LanguageGrade, string> = { 3: 'g3' };
+const PREFIX: Record<LanguageGrade, string> = { 3: 'g3', 5: 'e5' };
 const MAX_TRUE_FALSE = 0.1;
 /** A gap in a sentence is the book's own «Συμπλήρωσε»; one gap means no word left over by elimination. */
 const MAX_FILL_BLANK = 0.4;
@@ -137,21 +141,47 @@ const QUESTION_WORDS = new Set(['τι', 'πώς', 'πόσο', 'πόσα', 'πό�
 const WEEK = ['Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο', 'Κυριακή'];
 const COLLATE = new Intl.Collator('el', { sensitivity: 'base' });
 
+/** «Βάλε το ρήμα στον αόριστο»: the tense in the accusative, as the wording names it. */
+const TENSE_ACC: Record<string, Tense> = {
+  'ενεστώτα': 'ενεστώτας', 'παρατατικό': 'παρατατικός', 'αόριστο': 'αόριστος', 'παρακείμενο': 'παρακείμενος', 'υπερσυντέλικο': 'υπερσυντέλικος',
+  'εξακολουθητικό μέλλοντα': 'εξακολουθητικός μέλλοντας', 'συνοπτικό μέλλοντα': 'συνοπτικός μέλλοντας', 'συντελεσμένο μέλλοντα': 'συντελεσμένος μέλλοντας',
+};
+/** «οριστική ενεστώτα»: the indicative named with its tense, as the books' tables do (β26, τ21, γ142). */
+const TENSE_GEN: Record<Tense, string> = {
+  'ενεστώτας': 'ενεστώτα', 'παρατατικός': 'παρατατικού', 'αόριστος': 'αορίστου', 'παρακείμενος': 'παρακειμένου', 'υπερσυντέλικος': 'υπερσυντελίκου',
+  'εξακολουθητικός μέλλοντας': 'εξακολουθητικού μέλλοντα', 'συνοπτικός μέλλοντας': 'συνοπτικού μέλλοντα', 'συντελεσμένος μέλλοντας': 'συντελεσμένου μέλλοντα',
+};
+const MOOD_LABELS = [...Object.values(TENSE_GEN).map(t => `οριστική ${t}`), 'εξακολουθητική υποτακτική', 'συνοπτική υποτακτική', 'εξακολουθητική προστακτική', 'συνοπτική προστακτική'];
+const PAST: Tense[] = ['παρατατικός', 'αόριστος', 'υπερσυντέλικος'];
+/** What a time word, phrase or clause is (β9); «προθετική φράση» is the grammar's name (γ162) for the book's «φράση με πρόθεση». */
+const TIME_KINDS = ['επίρρημα', 'προθετική φράση', 'χρονική πρόταση'];
+const SHOWS = ['τόπο', 'χρόνο', 'τρόπο', 'ποσό'];
+/** The final -ν stays before a vowel, κ, π, τ, μπ, ντ, γκ, ξ, ψ (γ55). */
+const KEEPS_N = /^(?:[αεηιουωάέήίόύώϊϋΐΰ]|μπ|ντ|γκ|[κπτξψ])/;
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** Whether `text` has `piece` as whole words, case ignored. */
+const contains = (text: string, piece: string) => new RegExp(`(?<!\\p{L})${escape(lower(piece))}(?!\\p{L})`, 'u').test(lower(text));
+
 // ---------------------------------------------------------------------------
 // The lexicon, indexed
+
+/** A verb form's reading: whose form it is, in which tense and mood, for which person. */
+interface VerbReading { lemma: string; tense: Tense; mood: Mood; person: Person }
 
 interface Index {
   tags: Map<string, Set<Tag>>;
   gender: Map<string, Gender>;
   pos: Map<string, Set<string>>;
   person: Map<string, Set<Person>>;
+  verbs: Map<string, VerbReading[]>;
+  expressions: Map<string, Expression>;
   proper: Set<string>;
   known: Set<string>;
   lex: Lexicon;
 }
 
 function index(lex: Lexicon): Index {
-  const ix: Index = { tags: new Map(), gender: new Map(), pos: new Map(), person: new Map(), proper: new Set(), known: new Set(), lex };
+  const ix: Index = { tags: new Map(), gender: new Map(), pos: new Map(), person: new Map(), verbs: new Map(), expressions: new Map(), proper: new Set(), known: new Set(), lex };
   const add = <T>(m: Map<string, Set<T>>, k: string, v: T) => m.set(k, (m.get(k) ?? new Set()).add(v));
   for (const n of lex.nouns) {
     for (const [c, forms] of Object.entries(n.forms)) {
@@ -173,23 +203,32 @@ function index(lex: Lexicon): Index {
     }
   }
   for (const v of lex.verbs) {
-    for (const [p, f] of Object.entries(v.forms)) { add(ix.person, f!, p as Person); add(ix.pos, f!, 'ρήμα'); ix.known.add(f!); }
+    for (const [p, f] of Object.entries(v.forms)) {
+      add(ix.person, f!, p as Person); add(ix.pos, f!, 'ρήμα'); ix.known.add(f!);
+      ix.verbs.set(f!, [...(ix.verbs.get(f!) ?? []), { lemma: v.lemma, tense: v.tense ?? 'ενεστώτας', mood: v.mood ?? 'οριστική', person: p as Person }]);
+    }
   }
   for (const w of Object.keys(ARTICLE)) add(ix.pos, w, 'άρθρο');
   for (const l of lex.words) l.words.forEach(w => ix.known.add(w));
   for (const p of [...lex.opposites, ...lex.synonyms]) p.pair.forEach(w => ix.known.add(w));
   for (const f of lex.families) f.words.forEach(w => ix.known.add(w));
   for (const s of lex.sayings) ix.known.add(s.answer);
+  for (const e of lex.expressions ?? []) { ix.expressions.set(lower(e.text), e); ix.known.add(e.text); }
+  for (const c of lex.compounds ?? []) ix.known.add(c.word);
+  for (const n of lex.numerals ?? []) ix.known.add(n.word);
+  for (const d of lex.definitions ?? []) ix.known.add(d.word);
   return ix;
 }
 
 /** Every page the lexicon cites, and no gendered word in it. */
 function lexiconErrors(grade: LanguageGrade, lex: Lexicon): string[] {
   const errs: string[] = [];
-  const cites = [...lex.nouns, ...lex.adjectives, ...lex.verbs, ...lex.words, ...lex.opposites, ...lex.synonyms, ...lex.families, ...lex.phrases, ...lex.sayings].map(e => e.at);
+  const cites = [...lex.nouns, ...lex.adjectives, ...lex.verbs, ...lex.words, ...lex.opposites, ...lex.synonyms, ...lex.families, ...lex.phrases,
+    ...lex.sayings, ...lex.expressions ?? [], ...lex.compounds ?? [], ...lex.numerals ?? [], ...lex.definitions ?? []].map(e => e.at);
+  const BOOKS = { 'β': 'βιβλίο', 'τ': 'τετράδιο', 'γ': 'γραμματική' } as const;
   for (const at of new Set(cites)) {
-    const m = at.match(/^([βτ])(\d+)$/);
-    if (!m || !pageExists(grade, m[1] === 'β' ? 'βιβλίο' : 'τετράδιο', Number(m[2]))) errs.push(`lexicon: «${at}» is not a page of the ${CURRICULUM[grade].label} books`);
+    const m = at.match(/^([βτγ])(\d+)$/);
+    if (!m || !pageExists(grade, BOOKS[m[1] as keyof typeof BOOKS], Number(m[2]))) errs.push(`lexicon: «${at}» is not a page of the ${CURRICULUM[grade].label} books`);
   }
   for (const w of index(lex).known) for (const g of genderedWords(w)) errs.push(`lexicon: «${w}» is on check-gender's list («${g}»)`);
   return errs;
@@ -265,7 +304,9 @@ function solvers(ix: Index): Record<string, (ex: Plain) => Verdict> {
       return [...noGender, ...one(options, o => ix.gender.get(o) === asked, key)];
     },
     // A word next to an article takes the article's gender, case and number (and its noun's): the
-    // gap is the word after the article, or the article before a word
+    // gap is the word after the article, or the article before a word. With no article before the gap,
+    // a word before a noun takes the noun's («λεπτά και … συναισθήματα»), and a word after «είναι» the
+    // subject's, in the nominative («Η διαφορά … είναι …»: the sentence's first article and its noun)
     agree(ex) {
       const { options, key } = choice(ex);
       const { words, at } = gapped(ex);
@@ -277,11 +318,24 @@ function solvers(ix: Index): Record<string, (ex: Plain) => Verdict> {
         if (after && posOf(next).has('επίθετο') && tagsOf(after).size) want = meet(want, tagsOf(after));
         compatible = o => articleTags(o).some(t => want.has(t));
       } else {
-        const before = words[at - 1];
-        if (!before || !articleTags(before)) return [`no article before the gap («${before ?? ''}»)`];
-        let want = new Set<Tag>(articleTags(before));
-        const next = words[at + 1];
-        if (next && posOf(next).has('ουσιαστικό')) want = meet(want, tagsOf(next));
+        const strange = options.filter(o => !tagsOf(o).size).map(o => `«${o}» is not in the lexicon`);
+        if (strange.length) return strange;
+        const before = words[at - 1], next = words[at + 1];
+        let want: Set<Tag>;
+        if (before && articleTags(before)) {
+          want = new Set<Tag>(articleTags(before));
+          if (next && posOf(next).has('ουσιαστικό')) want = meet(want, tagsOf(next));
+        } else if (next && posOf(next).has('ουσιαστικό')) {
+          want = tagsOf(next);
+        } else if (before && (ix.verbs.get(lower(before)) ?? []).some(r => r.lemma === 'είμαι')) {
+          const [article, noun] = words;
+          if (!articleTags(article) || !posOf(noun ?? '').has('ουσιαστικό')) return [`can't read the subject of «${words.join(' ')}» (an article and a noun first)`];
+          want = new Set([...meet(articleTags(article), tagsOf(noun))].filter(t => t.includes('.nom.')));
+        } else return [`no article before the gap («${before ?? ''}»), no noun after it («${next ?? ''}») and no «είναι» before it`];
+        // The masculine genitive of an -ης/-ες adjective is «του διεθνούς», but everyday speech says «του διεθνή»
+        // (γ104): asked, the everyday form would be a right answer offered as wrong
+        const isEs = (o: string) => ix.lex.adjectives.some(a => a.forms.m.gen?.[0].endsWith('ούς') && Object.values(a.forms).some(g => Object.values(g).some(f => f?.includes(o))));
+        if (want.has('m.gen.sg') && options.some(isEs)) return ['asks the masculine genitive of an -ης adjective, whose everyday form (-ή, γ104) is right too'];
         compatible = o => [...tagsOf(o)].some(t => want.has(t));
       }
       return one(options, compatible, key);
@@ -324,16 +378,19 @@ function solvers(ix: Index): Record<string, (ex: Plain) => Verdict> {
       }
       return errs;
     },
-    // The verb takes its subject's person: a pronoun, or «Ο/Η/Το …» (3rd singular; with «και», plural), «Οι/Τα …»
+    // The verb takes its subject's person: a pronoun, or «Ο/Η/Το …», «Ένα/Μια …» (3rd singular; with «και»,
+    // plural), «Οι/Τα …». Every option is a form of the lexicon or a slip of one (-ται/-τε, υ/ι, a double letter)
     person(ex) {
       if (ex.type !== 'fill-blank') return ['person is a fill-blank'];
       const before = ex.textWithGaps.split('{0}')[0];
       const first = lower(wordsOf(before)[0] ?? '');
       const person: Person | undefined = PRONOUN[first]
-        ?? (['ο', 'η', 'το'].includes(first) ? (/ και /.test(before) ? '3pl' : '3sg') : ['οι', 'τα'].includes(first) ? '3pl' : undefined);
+        ?? (['ο', 'η', 'το', 'ένας', 'μια', 'μία', 'ένα'].includes(first) ? (/ και /.test(before) ? '3pl' : '3sg') : ['οι', 'τα'].includes(first) ? '3pl' : undefined);
       if (!person) return [`can't read the subject of «${ex.textWithGaps}»`];
       const { options, key } = choice(ex);
-      return one(options, o => ix.person.get(o)?.has(person) ?? false, key, `${person} form`);
+      const forms = [...ix.person.keys()];
+      const strange = options.filter(o => !ix.person.has(o) && !forms.some(f => slipped(f, o))).map(o => `«${o}» is neither a verb form of the lexicon nor a slip of one`);
+      return [...strange, ...one(options, o => ix.person.get(o)?.has(person) ?? false, key, `${person} form`)];
     },
     opposite(ex) {
       const word = read(ex.type === 'multiple-choice' ? ex.question : '', /^Κύκλωσε το αντίθετο της λέξης «(.+)»\.$/)[1];
@@ -431,6 +488,163 @@ function solvers(ix: Index): Record<string, (ex: Plain) => Verdict> {
       const errs = one(options, o => ix.known.has(o), key, 'spelling of the lexicon');
       for (const o of options) if (o !== options[key] && !ix.known.has(o) && !slipped(options[key], o)) errs.push(`«${o}» is not a slip of «${options[key]}»`);
       return errs;
+    },
+    // «Κύκλωσε τον χρόνο του ρήματος «…».», the sentence as body: the form's tense in the lexicon. The whole
+    // form is asked («έχουν μολυνθεί», not «μολυνθεί»), and a form that is also a subjunctive or imperative has none
+    tense(ex) {
+      if (ex.type !== 'multiple-choice') return ['tense is a multiple choice'];
+      const form = read(ex.question, /^Κύκλωσε τον χρόνο του ρήματος «(.+)»\.$/)[1];
+      const body = ex.body ?? '';
+      if (!contains(body, form)) return [`the sentence «${body}» does not have «${form}»`];
+      const longer = [...ix.verbs.keys()].filter(f => f !== form && contains(f, form) && contains(body, f));
+      if (longer.length) return [`«${form}» is part of «${longer[0]}» in the sentence: ask the whole form`];
+      const readings = ix.verbs.get(form) ?? ix.verbs.get(lower(form)) ?? [];
+      if (!readings.length) return [`«${form}» is not a verb form of the lexicon`];
+      const other = readings.filter(r => r.mood !== 'οριστική');
+      if (other.length) return [`«${form}» is also ${other[0].mood}: it has no tense to ask`];
+      const tenses = [...new Set(readings.map(r => r.tense))];
+      if (tenses.length !== 1) return [`«${form}» is ${tenses.join(' and ')} in the lexicon`];
+      const { options, key } = choice(ex);
+      const strange = options.filter(o => !(TENSES as readonly string[]).includes(o)).map(o => `«${o}» is not a tense`);
+      return [...strange, ...one(options, o => o === tenses[0], key)];
+    },
+    // «Βάλε το ρήμα στον αόριστο: «…»»: the sentence has one verb form; the options are that verb's forms in
+    // the same person, and one of them is in the asked tense
+    retense(ex) {
+      if (ex.type !== 'multiple-choice') return ['retense is a multiple choice'];
+      const [, acc, sentence] = read(ex.question, /^Βάλε το ρήμα στον (.+?): «(.+)»$/);
+      const asked = TENSE_ACC[acc];
+      if (!asked) return [`«${acc}» is not a tense`];
+      let found = [...ix.verbs.keys()].filter(f => contains(sentence, f));
+      found = found.filter(f => !found.some(g => g !== f && contains(g, f)));
+      if (found.length !== 1) return [`the sentence has ${found.length} verb forms of the lexicon (${found.join(', ') || 'none'}): one`];
+      const readings = (ix.verbs.get(found[0]) ?? []).filter(r => r.mood === 'οριστική');
+      const whose = [...new Set(readings.map(r => `${r.lemma} ${r.person}`))];
+      if (whose.length !== 1) return [`«${found[0]}» reads as ${whose.join(', ')}`];
+      const { lemma, person } = readings[0];
+      if (readings.some(r => r.tense === asked)) return [`«${found[0]}» is already in the ${asked}`];
+      const { options, key } = choice(ex);
+      const same = (o: string) => (ix.verbs.get(o) ?? []).filter(r => r.lemma === lemma && r.person === person && r.mood === 'οριστική');
+      const strange = options.filter(o => !same(o).length).map(o => `«${o}» is not a form of «${lemma}» (${person})`);
+      return [...strange, ...one(options, o => same(o).some(r => r.tense === asked), key)];
+    },
+    // «Κύκλωσε την έγκλιση του ρήματος «…».», the sentence as body, options as the books' tables name them
+    // («οριστική ενεστώτα», «συνοπτική προστακτική», …): after «να» or «μη(ν)» a subjunctive, without them
+    // never; a form that is still two moods (ακούτε: indicative and imperative) is an error
+    mood(ex) {
+      if (ex.type !== 'multiple-choice') return ['mood is a multiple choice'];
+      const form = read(ex.question, /^Κύκλωσε την έγκλιση του ρήματος «(.+)»\.$/)[1];
+      const ws = wordsOf(ex.body ?? '').map(lower);
+      const i = ws.indexOf(lower(form));
+      if (i < 0) return [`the sentence «${ex.body ?? ''}» does not have «${form}»`];
+      const particle = ['να', 'μη', 'μην'].includes(ws[i - 1] ?? '');
+      const label = (r: VerbReading) => (r.mood === 'οριστική' ? `οριστική ${TENSE_GEN[r.tense]}` : r.mood);
+      const labels = [...new Set((ix.verbs.get(lower(form)) ?? []).map(label))].filter(l => l.includes('υποτακτική') === particle);
+      if (labels.length !== 1) return [`«${form}» ${particle ? 'after «να»/«μη»' : 'with no «να»/«μη»'} reads as ${labels.join(', ') || 'nothing in the lexicon'}`];
+      const { options, key } = choice(ex);
+      const strange = options.filter(o => !MOOD_LABELS.includes(o)).map(o => `«${o}» is not a mood of the books' tables`);
+      return [...strange, ...one(options, o => o === labels[0], key)];
+    },
+    // A gap before a verb, options δε, δεν, μη, μην: δε(ν) with the indicative, μη(ν) with the subjunctive
+    // (β26, γ142), and the -ν by the next word (γ55). After «να» the subjunctive; before «θα» or a past tense
+    // the indicative; anything else could be either («Δεν/Μην ακούτε»), so it is an error
+    negation(ex) {
+      if (ex.type !== 'fill-blank') return ['negation is a fill-blank'];
+      const { options, key } = choice(ex);
+      if (options.length !== 4 || ['δε', 'δεν', 'μη', 'μην'].some(o => !options.includes(o))) return [`options ${JSON.stringify(options)}: δε, δεν, μη, μην`];
+      const { words, at } = gapped(ex);
+      const prev = lower(words[at - 1] ?? ''), next = lower(words[at + 1] ?? '');
+      if (!next) return ['no word after the gap'];
+      let indicative: boolean;
+      if (prev === 'να') indicative = false;
+      else if (next === 'θα') indicative = true;
+      else {
+        const readings = ix.verbs.get(next) ?? [];
+        if (!readings.length) return [`«${next}» after the gap is not a verb form of the lexicon`];
+        if (!readings.every(r => r.mood === 'οριστική' && PAST.includes(r.tense))) return [`«${next}» could follow δε(ν) or μη(ν): only after «να», before «θα» or before a past tense is it one`];
+        indicative = true;
+      }
+      const answer = (indicative ? 'δε' : 'μη') + (KEEPS_N.test(next) ? 'ν' : '');
+      return one(options, o => o === answer, key);
+    },
+    // «Κύκλωσε αυτό που φανερώνει χρόνο στην πρόταση.» (options are pieces of the sentence, each an expression of
+    // the lexicon, one telling time) and «Τι είναι το «…» στην πρόταση;» (επίρρημα, προθετική φράση, χρονική πρόταση)
+    time(ex) {
+      if (ex.type !== 'multiple-choice') return ['time is a multiple choice'];
+      const body = ex.body ?? '';
+      const { options, key } = choice(ex);
+      if (/^Κύκλωσε αυτό που φανερώνει χρόνο στην πρόταση\.$/.test(ex.question)) {
+        const errs = options.filter(o => !contains(body, o)).map(o => `«${o}» is not in the sentence`);
+        for (const o of options) {
+          const e = ix.expressions.get(lower(o));
+          if (!e) errs.push(`«${o}» is not an expression of the lexicon`);
+          else if (e.shows.length > 1) errs.push(`«${o}» can tell ${e.shows.join(' or ')}`);
+        }
+        return [...errs, ...one(options, o => ix.expressions.get(lower(o))?.shows[0] === 'χρόνο', key)];
+      }
+      const piece = read(ex.question, /^Τι είναι το «(.+)» στην πρόταση;$/)[1];
+      if (!contains(body, piece)) return [`«${piece}» is not in the sentence`];
+      const e = ix.expressions.get(lower(piece));
+      if (!e?.kind || !e.shows.includes('χρόνο')) return [`«${piece}» is not a time expression of the lexicon with its kind`];
+      const strange = options.filter(o => !TIME_KINDS.includes(o)).map(o => `«${o}» is not one of ${TIME_KINDS.join(', ')}`);
+      return [...strange, ...one(options, o => o === e.kind, key)];
+    },
+    // «Τι φανερώνει το επίρρημα «…» στην πρόταση;»: what the lexicon says it tells; a word that can tell two
+    // things (αργά: time or manner) is never asked
+    adverb(ex) {
+      if (ex.type !== 'multiple-choice') return ['adverb is a multiple choice'];
+      const word = read(ex.question, /^Τι φανερώνει το επίρρημα «(.+)» στην πρόταση;$/)[1];
+      if (!contains(ex.body ?? '', word)) return [`«${word}» is not in the sentence`];
+      const e = ix.expressions.get(lower(word));
+      if (e?.kind !== 'επίρρημα') return [`«${word}» is not an adverb of the lexicon`];
+      if (e.shows.length !== 1) return [`«${word}» can tell ${e.shows.join(' or ')}: never asked bare`];
+      const { options, key } = choice(ex);
+      const strange = options.filter(o => !SHOWS.includes(o)).map(o => `«${o}» is not one of ${SHOWS.join(', ')}`);
+      return [...strange, ...one(options, o => o === e.shows[0], key)];
+    },
+    // «Κύκλωσε το τακτικό αριθμητικό του 7.», «Κύκλωσε το αναλογικό αριθμητικό.»: the lexicon's numerals
+    numeral(ex) {
+      if (ex.type !== 'multiple-choice') return ['numeral is a multiple choice'];
+      const [, kind, n] = read(ex.question, /^Κύκλωσε το (απόλυτο|τακτικό|πολλαπλασιαστικό|αναλογικό|περιληπτικό) αριθμητικό(?: του (\d+))?\.$/);
+      const num = (o: string) => (ix.lex.numerals ?? []).find(x => x.word === o);
+      const { options, key } = choice(ex);
+      const strange = options.filter(o => !num(o)).map(o => `«${o}» is not a numeral of the lexicon`);
+      return [...strange, ...one(options, o => num(o)?.kind === kind && (n === undefined || num(o)?.value === Number(n)), key)];
+    },
+    // «Κύκλωσε τη σύνθετη λέξη με συνθετικά «A + B».», «Κύκλωσε τη λέξη που έχει α΄/β΄ συνθετικό τη λέξη «…».»:
+    // the lexicon's compounds; a part it doesn't know can't be ruled out, unless the word has the asked one on its other side
+    compound(ex) {
+      if (ex.type !== 'multiple-choice') return ['compound is a multiple choice'];
+      const comp = (o: string) => (ix.lex.compounds ?? []).find(c => c.word === o);
+      const { options, key } = choice(ex);
+      const errs = options.filter(o => !comp(o)).map(o => `«${o}» is not a compound of the lexicon`);
+      if (errs.length) return errs;
+      const both = ex.question.match(/^Κύκλωσε τη σύνθετη λέξη με συνθετικά «(.+) \+ (.+)»\.$/);
+      if (both) {
+        for (const o of options) if (comp(o)!.parts.includes(null)) errs.push(`«${o}»: a part the lexicon doesn't know can't be ruled out`);
+        return [...errs, ...one(options, o => comp(o)!.parts[0] === both[1] && comp(o)!.parts[1] === both[2], key)];
+      }
+      const [, side, part] = read(ex.question, /^Κύκλωσε τη λέξη που έχει (α΄|β΄) συνθετικό τη λέξη «(.+)»\.$/);
+      const i = side === 'α΄' ? 0 : 1;
+      for (const o of options) {
+        const p = comp(o)!.parts;
+        if (p[i] === null && p[1 - i] !== part) errs.push(`«${o}»: its ${side} συνθετικό is not in the lexicon`);
+      }
+      return [...errs, ...one(options, o => comp(o)!.parts[i] === part, key)];
+    },
+    // «Κύκλωσε τη λέξη που ταιριάζει στον ορισμό: «…».»: the book's definitions; every option has one, and two
+    // confusable words (αφετηρία, σταθμός, στάση, τέρμα) are never offered together
+    define(ex) {
+      if (ex.type !== 'multiple-choice') return ['define is a multiple choice'];
+      const means = read(ex.question, /^Κύκλωσε τη λέξη που ταιριάζει στον ορισμό: «(.+)»\.$/)[1];
+      const def = (o: string) => (ix.lex.definitions ?? []).find(d => d.word === o);
+      const { options, key } = choice(ex);
+      const errs = options.filter(o => !def(o)).map(o => `«${o}» has no definition in the lexicon`);
+      for (const set of ix.lex.confusable ?? []) {
+        const close = options.filter(o => set.includes(o));
+        if (close.length > 1) errs.push(`${close.map(o => `«${o}»`).join(' and ')} are too close to pit against each other`);
+      }
+      return [...errs, ...one(options, o => def(o)?.means === means, key)];
     },
   };
 }

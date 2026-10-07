@@ -5,13 +5,15 @@
 // against this list, within the units the class has covered, without reading materials/.
 //
 // Keyed by grade. Γ΄ is «Τα απίθανα μολύβια», first volume (student book 10-0048, workbook
-// 10-0049). #49 part 3b adds Ε΄.
+// 10-0049). Ε΄ is «Της γλώσσας ρόδι και ροδάνι», first volume (student book 10-0245, workbook
+// 10-0111), with the grammar «Γραμματική Ε΄ και ΣΤ΄ Δημοτικού» (10-0138) as a reference the
+// lexicon may cite («γ104»); an item cites only a lesson page of the student book or workbook.
 
-export type LanguageGrade = 3;
+export type LanguageGrade = 3 | 5;
 
-/** «βιβλίο» is the student book, «τετράδιο» the workbook. */
-export type Book = 'βιβλίο' | 'τετράδιο';
-export const BOOK_NAME: Record<Book, string> = { 'βιβλίο': 'βιβλίο', 'τετράδιο': 'τετράδιο εργασιών' };
+/** «βιβλίο» is the student book, «τετράδιο» the workbook, «γραμματική» a grammar book (reference only). */
+export type Book = 'βιβλίο' | 'τετράδιο' | 'γραμματική';
+export const BOOK_NAME: Record<Book, string> = { 'βιβλίο': 'βιβλίο', 'τετράδιο': 'τετράδιο εργασιών', 'γραμματική': 'γραμματική' };
 
 export interface Lesson {
   unit: number;
@@ -29,8 +31,8 @@ export interface LanguageCurriculum {
   units: number[];
   unitTitles: Record<number, string>;
   lessons: Lesson[];
-  /** Pages of reference outside the lessons (the grammar summary), which the lexicon may cite. */
-  reference: Partial<Record<Book, [number, number]>>;
+  /** Pages of reference outside the lessons (a grammar summary or book), which the lexicon may cite. */
+  reference: Partial<Record<Book, [number, number][]>>;
 }
 
 const lessons = (unit: number, list: [number, string, Partial<Record<Book, [number, number]>>][]): Lesson[] =>
@@ -82,7 +84,44 @@ export const CURRICULUM: Record<LanguageGrade, LanguageCurriculum> = {
       ]),
     ],
     // «Η γραμματική μου»: the volume's grammar summary (declensions, είμαι, the spelling rules)
-    reference: { 'βιβλίο': [85, 87] },
+    reference: { 'βιβλίο': [[85, 87]] },
+  },
+  5: {
+    label: 'Ε΄',
+    // Units 1–2 hold the autumn grammar (tenses, time words, moods, -ος feminines, -ης/-ες
+    // adjectives, numerals, adverbs, compounds); unit 3 (28η Οκτωβρίου) has no grammar box
+    units: [1, 2],
+    unitTitles: {
+      1: 'Ο φίλος μας το περιβάλλον', 2: 'Η ζωή στην πόλη', 3: '28η Οκτωβρίου',
+      4: 'Τα ζώα που ζουν κοντά μας', 5: '17η Νοέμβρη', 6: 'Οι φίλοι μας, οι φίλες μας',
+    },
+    // A lesson is a student-book text, under the heading the book prints; the workbook's sections
+    // don't follow the book's texts, so each is a lesson too, numbered after the book's
+    lessons: [
+      ...lessons(1, [
+        [1, 'Ο φίλος μας το δάσος', { 'βιβλίο': [8, 11] }],
+        [2, 'Η φίλη μας η θάλασσα', { 'βιβλίο': [12, 15] }],
+        [3, 'Ο φίλος μας ο άνεμος', { 'βιβλίο': [16, 20] }],
+        [4, 'Τα λουλούδια που φυτρώνουν στο τσιμέντο', { 'τετράδιο': [7, 8] }],
+        [5, 'Τα αγριόγιδα της βόρειας Πίνδου', { 'τετράδιο': [9, 11] }],
+        [6, 'Πάρτι στη... λάσπη', { 'τετράδιο': [12, 13] }],
+        [7, 'Μια ολόκληρη πόλη χρησιμοποιεί ποδήλατο', { 'τετράδιο': [14, 16] }],
+      ]),
+      ...lessons(2, [
+        [1, 'Η γειτονιά της πόλης', { 'βιβλίο': [24, 27] }],
+        [2, 'Πόλη και πολιτισμός', { 'βιβλίο': [28, 32] }],
+        [3, 'Διαδρομές στην πόλη', { 'βιβλίο': [33, 35] }],
+        [4, 'Υπόγειες διαδρομές', { 'βιβλίο': [36, 39] }],
+        [5, 'Οροβίλ', { 'τετράδιο': [17, 18] }],
+        [6, 'Ντίσνεϋλαντ', { 'τετράδιο': [19, 22] }],
+        [7, 'Μια σύγχρονη τενεκεδούπολη', { 'τετράδιο': [23, 25] }],
+        [8, 'Με το τραμ φανταστικές διαδρομές', { 'τετράδιο': [26, 28] }],
+      ]),
+    ],
+    // The grammar book's pages for what units 1–2 use but don't print in full: τελικό -ν (γ55),
+    // θηλυκά σε -ος (γ79–80), επίθετα σε -ης/-ες (γ104), αριθμητικά (γ122–129), the verb: χρόνοι,
+    // εγκλίσεις and the conjugation tables (γ131–152), επιρρήματα (γ162–165)
+    reference: { 'γραμματική': [[55, 55], [79, 80], [104, 104], [122, 129], [131, 152], [162, 165]] },
   },
 };
 
@@ -122,9 +161,9 @@ export function placeOf(grade: LanguageGrade, source: string): Place | undefined
   }
 }
 
-/** Whether a page exists in this grade's books (a lesson's or the grammar summary's): what the lexicon may cite. */
+/** Whether a page exists in this grade's books (a lesson's or a reference page): what the lexicon may cite. */
 export function pageExists(grade: LanguageGrade, book: Book, page: number): boolean {
   const c = CURRICULUM[grade];
-  const ranges = [...c.lessons.map(l => l.pages[book]), c.reference[book]].filter((r): r is [number, number] => !!r);
+  const ranges = [...c.lessons.map(l => l.pages[book]), ...(c.reference[book] ?? [])].filter((r): r is [number, number] => !!r);
   return ranges.some(([a, b]) => page >= a && page <= b);
 }
