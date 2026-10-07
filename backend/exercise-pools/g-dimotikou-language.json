@@ -1,0 +1,1761 @@
+{
+ "description": "Γ΄ Δημοτικού: γλώσσα από τις ενότητες 1–3 του βιβλίου «Τα απίθανα μολύβια», γραμμένη στο tools/problem-gen/language (κάθε άσκηση με το μάθημα και τη σελίδα της στο source) και ελεγμένη από το audit.ts. Μην τη διορθώνετε εδώ: αλλάξτε το g3.ts και ξανατρέξτε το gen-language.ts.",
+ "grades": [
+  3
+ ],
+ "exercises": [
+  {
+   "id": "g3-lang-rimata-ousiastika-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ρήματα και ουσιαστικά",
+   "question": "Κύκλωσε το ρήμα της πρότασης: «Η Πάολα γράφει την άσκηση.»",
+   "options": [
+    "γράφει",
+    "Πάολα",
+    "άσκηση"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 10)",
+   "generatorParams": {
+    "family": "rimata-ousiastika",
+    "unit": 1,
+    "skill": "pos"
+   }
+  },
+  {
+   "id": "g3-lang-rimata-ousiastika-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ρήματα και ουσιαστικά",
+   "question": "Κύκλωσε το ρήμα της πρότασης: «Η Ελένη ρωτά τον Θοδωρή.»",
+   "options": [
+    "Ελένη",
+    "ρωτά",
+    "Θοδωρή"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 10)",
+   "generatorParams": {
+    "family": "rimata-ousiastika",
+    "unit": 1,
+    "skill": "pos"
+   }
+  },
+  {
+   "id": "g3-lang-rimata-ousiastika-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ρήματα και ουσιαστικά",
+   "question": "Κύκλωσε το ουσιαστικό της πρότασης: «Ο δάσκαλος διορθώνει τα τετράδια.»",
+   "options": [
+    "τα",
+    "τετράδια",
+    "διορθώνει"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 10)",
+   "generatorParams": {
+    "family": "rimata-ousiastika",
+    "unit": 1,
+    "skill": "pos"
+   }
+  },
+  {
+   "id": "g3-lang-rimata-ousiastika-004",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ρήματα και ουσιαστικά",
+   "question": "Κύκλωσε το ρήμα της πρότασης: «Η κότα τρώει το σκουλήκι.»",
+   "options": [
+    "τρώει",
+    "κότα",
+    "σκουλήκι"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 11)",
+   "generatorParams": {
+    "family": "rimata-ousiastika",
+    "unit": 1,
+    "skill": "pos"
+   }
+  },
+  {
+   "id": "g3-lang-rimata-ousiastika-005",
+   "type": "true-false",
+   "category": "Γλώσσα",
+   "title": "Ρήματα και ουσιαστικά",
+   "question": "Στην πρόταση «Ο Κώστας διαβάζει ένα βιβλίο.» η λέξη «βιβλίο» είναι ρήμα.",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 3: Το σχολείο ταξιδεύει στον χρόνο (τετράδιο εργασιών, σ. 11)",
+   "generatorParams": {
+    "family": "rimata-ousiastika",
+    "unit": 1,
+    "skill": "pos"
+   }
+  },
+  {
+   "id": "g3-lang-genos-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Το γένος των ουσιαστικών",
+   "question": "Κύκλωσε το αρσενικό ουσιαστικό.",
+   "options": [
+    "μαθήματα",
+    "ομάδες",
+    "μαθητές"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (τετράδιο εργασιών, σ. 14)",
+   "generatorParams": {
+    "family": "genos",
+    "unit": 1,
+    "skill": "gender"
+   }
+  },
+  {
+   "id": "g3-lang-genos-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Το γένος των ουσιαστικών",
+   "question": "Κύκλωσε το ουδέτερο ουσιαστικό.",
+   "options": [
+    "τάξεις",
+    "δάσκαλοι",
+    "θρανία"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (τετράδιο εργασιών, σ. 14)",
+   "generatorParams": {
+    "family": "genos",
+    "unit": 1,
+    "skill": "gender"
+   }
+  },
+  {
+   "id": "g3-lang-genos-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Το γένος των ουσιαστικών",
+   "question": "Κύκλωσε το θηλυκό ουσιαστικό.",
+   "options": [
+    "γραφεία",
+    "αίθουσες",
+    "διευθυντές"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (τετράδιο εργασιών, σ. 14)",
+   "generatorParams": {
+    "family": "genos",
+    "unit": 1,
+    "skill": "gender"
+   }
+  },
+  {
+   "id": "g3-lang-arithmos-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ενικός και πληθυντικός",
+   "body": "Κύκλωσε τη λέξη που ταιριάζει στο κενό.",
+   "question": "Οι δίδυμοι έχουν επιτυχίες σε όλα τα …",
+   "options": [
+    "μάθημα",
+    "μαθημάτων",
+    "μαθήματα"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (τετράδιο εργασιών, σ. 16)",
+   "generatorParams": {
+    "family": "arithmos",
+    "unit": 1,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-arithmos-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ενικός και πληθυντικός",
+   "body": "Κύκλωσε τη λέξη που ταιριάζει στο κενό.",
+   "question": "Στο τέλος του … οι δίδυμοι αλλάζουν τάξη.",
+   "options": [
+    "διαλειμμάτων",
+    "διαλείμματος",
+    "διάλειμμα",
+    "διαλείμματα"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (τετράδιο εργασιών, σ. 16)",
+   "generatorParams": {
+    "family": "arithmos",
+    "unit": 1,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-arithmos-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ενικός και πληθυντικός",
+   "body": "Κύκλωσε τη λέξη που ταιριάζει στο κενό.",
+   "question": "Έρχεται η ώρα για το μάθημα της …",
+   "options": [
+    "Γεωγραφιών",
+    "Γεωγραφίας",
+    "Γεωγραφία"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (τετράδιο εργασιών, σ. 16)",
+   "generatorParams": {
+    "family": "arithmos",
+    "unit": 1,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-alfavitiki-001",
+   "type": "ordering",
+   "category": "Γλώσσα",
+   "title": "Αλφαβητική σειρά",
+   "body": "Βάλε τις λέξεις σε αλφαβητική σειρά.",
+   "items": [
+    {
+     "id": "a",
+     "content": "αίθουσα"
+    },
+    {
+     "id": "b",
+     "content": "αυλή"
+    },
+    {
+     "id": "c",
+     "content": "κυλικείο"
+    },
+    {
+     "id": "d",
+     "content": "σχολείο"
+    },
+    {
+     "id": "e",
+     "content": "τάξη"
+    }
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (βιβλίο, σ. 20)",
+   "generatorParams": {
+    "family": "alfavitiki",
+    "unit": 1,
+    "skill": "alpha"
+   }
+  },
+  {
+   "id": "g3-lang-alfavitiki-002",
+   "type": "ordering",
+   "category": "Γλώσσα",
+   "title": "Αλφαβητική σειρά",
+   "body": "Βάλε τις λέξεις σε αλφαβητική σειρά.",
+   "items": [
+    {
+     "id": "a",
+     "content": "κασετίνα"
+    },
+    {
+     "id": "b",
+     "content": "κιμωλία"
+    },
+    {
+     "id": "c",
+     "content": "κόλλα"
+    },
+    {
+     "id": "d",
+     "content": "κυλικείο"
+    }
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, Λεξιλόγιο (βιβλίο, σ. 26)",
+   "generatorParams": {
+    "family": "alfavitiki",
+    "unit": 1,
+    "skill": "alpha"
+   }
+  },
+  {
+   "id": "g3-lang-alfavitiki-003",
+   "type": "ordering",
+   "category": "Γλώσσα",
+   "title": "Αλφαβητική σειρά",
+   "body": "Βάλε τις λέξεις σε αλφαβητική σειρά.",
+   "items": [
+    {
+     "id": "a",
+     "content": "γη"
+    },
+    {
+     "id": "b",
+     "content": "ενώνω"
+    },
+    {
+     "id": "c",
+     "content": "θάλασσα"
+    },
+    {
+     "id": "d",
+     "content": "πολιτεία"
+    },
+    {
+     "id": "e",
+     "content": "ποτάμι"
+    }
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (βιβλίο, σ. 58)",
+   "generatorParams": {
+    "family": "alfavitiki",
+    "unit": 3,
+    "skill": "alpha"
+   }
+  },
+  {
+   "id": "g3-lang-alfavitiki-004",
+   "type": "ordering",
+   "category": "Γλώσσα",
+   "title": "Αλφαβητική σειρά",
+   "body": "Βάλε τις λέξεις σε αλφαβητική σειρά.",
+   "items": [
+    {
+     "id": "a",
+     "content": "αέρας"
+    },
+    {
+     "id": "b",
+     "content": "βουνό"
+    },
+    {
+     "id": "c",
+     "content": "βράχος"
+    },
+    {
+     "id": "d",
+     "content": "γκρεμός"
+    }
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (βιβλίο, σ. 61)",
+   "generatorParams": {
+    "family": "alfavitiki",
+    "unit": 3,
+    "skill": "alpha"
+   }
+  },
+  {
+   "id": "g3-lang-evdomada-001",
+   "type": "ordering",
+   "category": "Γλώσσα",
+   "title": "Οι μέρες της εβδομάδας",
+   "body": "Βάλε τις μέρες της εβδομάδας στη σειρά, από τη Δευτέρα.",
+   "items": [
+    {
+     "id": "a",
+     "content": "Δευτέρα"
+    },
+    {
+     "id": "b",
+     "content": "Τετάρτη"
+    },
+    {
+     "id": "c",
+     "content": "Παρασκευή"
+    },
+    {
+     "id": "d",
+     "content": "Σάββατο"
+    }
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)",
+   "generatorParams": {
+    "family": "evdomada",
+    "unit": 2,
+    "skill": "week"
+   }
+  },
+  {
+   "id": "g3-lang-kyria-onomata-001",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Κύρια ονόματα",
+   "body": "Συμπλήρωσε τη λέξη που είναι γραμμένη σωστά.",
+   "textWithGaps": "Την {0} δεν έχω σχολείο.",
+   "options": [
+    "Κιριακή",
+    "Κυριακή",
+    "κιριακή",
+    "κυριακή"
+   ],
+   "correctAnswers": [
+    "Κυριακή"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 29)",
+   "generatorParams": {
+    "family": "kyria-onomata",
+    "unit": 2,
+    "skill": "capital"
+   }
+  },
+  {
+   "id": "g3-lang-kyria-onomata-002",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Κύρια ονόματα",
+   "body": "Συμπλήρωσε τη λέξη που είναι γραμμένη σωστά.",
+   "textWithGaps": "Τα γενέθλιά μου είναι στις 24 {0}.",
+   "options": [
+    "οκτοβρίου",
+    "Οκτοβρίου",
+    "οκτωβρίου",
+    "Οκτωβρίου"
+   ],
+   "correctAnswers": [
+    "Οκτωβρίου"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 29)",
+   "generatorParams": {
+    "family": "kyria-onomata",
+    "unit": 2,
+    "skill": "capital"
+   }
+  },
+  {
+   "id": "g3-lang-kyria-onomata-003",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Κύρια ονόματα",
+   "body": "Συμπλήρωσε τη λέξη που είναι γραμμένη σωστά.",
+   "textWithGaps": "Η Κατερίνα είναι από τη {0}.",
+   "options": [
+    "σύφνο",
+    "Σύφνο",
+    "σίφνο",
+    "Σίφνο"
+   ],
+   "correctAnswers": [
+    "Σίφνο"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 20)",
+   "generatorParams": {
+    "family": "kyria-onomata",
+    "unit": 2,
+    "skill": "capital"
+   }
+  },
+  {
+   "id": "g3-lang-kyria-onomata-004",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Κύρια ονόματα",
+   "body": "Συμπλήρωσε τη λέξη που είναι γραμμένη σωστά.",
+   "textWithGaps": "Είδαμε ένα ντοκιμαντέρ για τα ποτάμια της {0}.",
+   "options": [
+    "θράκης",
+    "θράκις",
+    "Θράκης",
+    "Θράκις"
+   ],
+   "correctAnswers": [
+    "Θράκης"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 21)",
+   "generatorParams": {
+    "family": "kyria-onomata",
+    "unit": 2,
+    "skill": "capital"
+   }
+  },
+  {
+   "id": "g3-lang-kyria-onomata-005",
+   "type": "true-false",
+   "category": "Γλώσσα",
+   "title": "Κύρια ονόματα",
+   "question": "Η λέξη «Σάββατο» γράφεται πάντα με κεφαλαίο.",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 30)",
+   "generatorParams": {
+    "family": "kyria-onomata",
+    "unit": 2,
+    "skill": "capital"
+   }
+  },
+  {
+   "id": "g3-lang-kyria-onomata-006",
+   "type": "true-false",
+   "category": "Γλώσσα",
+   "title": "Κύρια ονόματα",
+   "question": "Η λέξη «θάλασσα» γράφεται πάντα με κεφαλαίο.",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 30)",
+   "generatorParams": {
+    "family": "kyria-onomata",
+    "unit": 2,
+    "skill": "capital"
+   }
+  },
+  {
+   "id": "g3-lang-eimai-001",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Το ρήμα είμαι",
+   "body": "Συμπλήρωσε το ρήμα που ταιριάζει.",
+   "textWithGaps": "Εμείς {0} γείτονες.",
+   "options": [
+    "είστε",
+    "είμαστε",
+    "είμασται",
+    "είσται"
+   ],
+   "correctAnswers": [
+    "είμαστε"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 20)",
+   "generatorParams": {
+    "family": "eimai",
+    "unit": 2,
+    "skill": "person"
+   }
+  },
+  {
+   "id": "g3-lang-eimai-002",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Το ρήμα είμαι",
+   "body": "Συμπλήρωσε το ρήμα που ταιριάζει.",
+   "textWithGaps": "Εσείς, παιδιά, από πού {0};",
+   "options": [
+    "είστε",
+    "είσται",
+    "είμαστε",
+    "είμασται"
+   ],
+   "correctAnswers": [
+    "είστε"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 20)",
+   "generatorParams": {
+    "family": "eimai",
+    "unit": 2,
+    "skill": "person"
+   }
+  },
+  {
+   "id": "g3-lang-eimai-003",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Το ρήμα είμαι",
+   "body": "Συμπλήρωσε το ρήμα που ταιριάζει.",
+   "textWithGaps": "Εγώ {0} στην Τρίτη τάξη.",
+   "options": [
+    "είμαι",
+    "είμε",
+    "είναι",
+    "είνε"
+   ],
+   "correctAnswers": [
+    "είμαι"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (τετράδιο εργασιών, σ. 20)",
+   "generatorParams": {
+    "family": "eimai",
+    "unit": 2,
+    "skill": "person"
+   }
+  },
+  {
+   "id": "g3-lang-rimata-o-mai-001",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Ρήματα σε -ω και -μαι",
+   "body": "Συμπλήρωσε το ρήμα που ταιριάζει.",
+   "textWithGaps": "Ο Γιάννης {0} πίσω από την πόρτα.",
+   "options": [
+    "κρύβετε",
+    "κρύβεσται",
+    "κρύβεται",
+    "κρύβεστε"
+   ],
+   "correctAnswers": [
+    "κρύβεται"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)",
+   "generatorParams": {
+    "family": "rimata-o-mai",
+    "unit": 2,
+    "skill": "person"
+   }
+  },
+  {
+   "id": "g3-lang-rimata-o-mai-002",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Ρήματα σε -ω και -μαι",
+   "body": "Συμπλήρωσε το ρήμα που ταιριάζει.",
+   "textWithGaps": "Εσείς {0} μπροστά στον καθρέφτη.",
+   "options": [
+    "χτενιζόμαστε",
+    "χτενιζόμασται",
+    "χτενίζεστε",
+    "χτενίζεσται"
+   ],
+   "correctAnswers": [
+    "χτενίζεστε"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)",
+   "generatorParams": {
+    "family": "rimata-o-mai",
+    "unit": 2,
+    "skill": "person"
+   }
+  },
+  {
+   "id": "g3-lang-rimata-o-mai-003",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Ρήματα σε -ω και -μαι",
+   "body": "Συμπλήρωσε το ρήμα που ταιριάζει.",
+   "textWithGaps": "Εσείς {0} πάντα από τη διάβαση.",
+   "options": [
+    "περνάτε",
+    "περνάμε",
+    "περνάται",
+    "περνάμαι"
+   ],
+   "correctAnswers": [
+    "περνάτε"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)",
+   "generatorParams": {
+    "family": "rimata-o-mai",
+    "unit": 2,
+    "skill": "person"
+   }
+  },
+  {
+   "id": "g3-lang-rimata-o-mai-004",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Ρήματα σε -ω και -μαι",
+   "body": "Συμπλήρωσε το ρήμα που ταιριάζει.",
+   "textWithGaps": "Οι γονείς μας {0}, επειδή περνάμε τη λεωφόρο.",
+   "options": [
+    "φοβούντε",
+    "φοβόμασται",
+    "φοβούνται",
+    "φοβόμαστε"
+   ],
+   "correctAnswers": [
+    "φοβούνται"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)",
+   "generatorParams": {
+    "family": "rimata-o-mai",
+    "unit": 2,
+    "skill": "person"
+   }
+  },
+  {
+   "id": "g3-lang-antitheta-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Αντίθετα",
+   "question": "Κύκλωσε το αντίθετο της λέξης «χαρούμενος».",
+   "options": [
+    "ευχαριστημένος",
+    "λυπημένος",
+    "πονηρός"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (βιβλίο, σ. 35)",
+   "generatorParams": {
+    "family": "antitheta",
+    "unit": 2,
+    "skill": "opposite"
+   }
+  },
+  {
+   "id": "g3-lang-antitheta-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Αντίθετα",
+   "question": "Κύκλωσε το αντίθετο της λέξης «γελάει».",
+   "options": [
+    "τραγουδάει",
+    "κλαίει",
+    "χορεύει"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (βιβλίο, σ. 35)",
+   "generatorParams": {
+    "family": "antitheta",
+    "unit": 2,
+    "skill": "opposite"
+   }
+  },
+  {
+   "id": "g3-lang-antitheta-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Αντίθετα",
+   "question": "Κύκλωσε το αντίθετο της λέξης «κρύβεται».",
+   "options": [
+    "στριφογυρνάει",
+    "χαμογελάει",
+    "φανερώνεται"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 2: Η φίλη μας η Αργυρώ (βιβλίο, σ. 35)",
+   "generatorParams": {
+    "family": "antitheta",
+    "unit": 2,
+    "skill": "opposite"
+   }
+  },
+  {
+   "id": "g3-lang-fraseis-001",
+   "type": "true-false",
+   "category": "Γλώσσα",
+   "title": "Τι σημαίνει;",
+   "question": "Η φράση «Βγαίνω από τα ρούχα μου» σημαίνει «Αγανακτώ, θυμώνω πολύ».",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)",
+   "generatorParams": {
+    "family": "fraseis",
+    "unit": 2,
+    "skill": "meaning"
+   }
+  },
+  {
+   "id": "g3-lang-fraseis-002",
+   "type": "true-false",
+   "category": "Γλώσσα",
+   "title": "Τι σημαίνει;",
+   "question": "Η φράση «Δε μου βγαίνει από το μυαλό» σημαίνει «Ξεχνάω συνεχώς».",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)",
+   "generatorParams": {
+    "family": "fraseis",
+    "unit": 2,
+    "skill": "meaning"
+   }
+  },
+  {
+   "id": "g3-lang-fraseis-003",
+   "type": "true-false",
+   "category": "Γλώσσα",
+   "title": "Τι σημαίνει;",
+   "question": "Η φράση «Βγαίνω να παίξω» σημαίνει «Πηγαίνω έξω να παίξω».",
+   "correctValue": true,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)",
+   "generatorParams": {
+    "family": "fraseis",
+    "unit": 2,
+    "skill": "meaning"
+   }
+  },
+  {
+   "id": "g3-lang-fraseis-004",
+   "type": "true-false",
+   "category": "Γλώσσα",
+   "title": "Τι σημαίνει;",
+   "question": "Η φράση «Δε βγαίνουν τα γράμματα» σημαίνει «Δεν μπορώ να σβήσω τα γράμματα».",
+   "correctValue": false,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)",
+   "generatorParams": {
+    "family": "fraseis",
+    "unit": 2,
+    "skill": "meaning"
+   }
+  },
+  {
+   "id": "g3-lang-fraseis-005",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Τι σημαίνει;",
+   "body": "Χτες με ρώτησε η δασκάλα για τα δελφίνια κι εγώ, επειδή δεν είχα διαβάσει, τα έκανα θάλασσα.",
+   "question": "Τι σημαίνει εδώ η φράση «τα έκανα θάλασσα»;",
+   "options": [
+    "Μίλησα για τη θάλασσα.",
+    "Απάντησα σωστά και τέλεια.",
+    "Δεν έδωσα σωστή απάντηση."
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (βιβλίο, σ. 58)",
+   "generatorParams": {
+    "family": "fraseis",
+    "unit": 3,
+    "skill": "meaning"
+   }
+  },
+  {
+   "id": "g3-lang-geniki-001",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Γενική πτώση",
+   "body": "Συμπλήρωσε το άρθρο που ταιριάζει.",
+   "textWithGaps": "Η αξία {0} συλλογής είναι μεγάλη.",
+   "options": [
+    "της",
+    "τις",
+    "των"
+   ],
+   "correctAnswers": [
+    "της"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (τετράδιο εργασιών, σ. 25)",
+   "generatorParams": {
+    "family": "geniki",
+    "unit": 2,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-geniki-002",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Γενική πτώση",
+   "body": "Συμπλήρωσε τη λέξη που ταιριάζει.",
+   "textWithGaps": "Η συλλογή του {0} έχει σπάνια γραμματόσημα.",
+   "options": [
+    "παππούδων",
+    "παππούς",
+    "παππού"
+   ],
+   "correctAnswers": [
+    "παππού"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (τετράδιο εργασιών, σ. 25)",
+   "generatorParams": {
+    "family": "geniki",
+    "unit": 2,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-geniki-003",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Γενική πτώση",
+   "body": "Συμπλήρωσε τη λέξη που ταιριάζει.",
+   "textWithGaps": "Το τετράδιο είναι στο σπίτι της {0} μου.",
+   "options": [
+    "κορών",
+    "κόρης",
+    "κόρη"
+   ],
+   "correctAnswers": [
+    "κόρης"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (βιβλίο, σ. 38)",
+   "generatorParams": {
+    "family": "geniki",
+    "unit": 2,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-epitheta-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Τα επίθετα",
+   "body": "Κύκλωσε τη λέξη που ταιριάζει στο κενό.",
+   "question": "Θυμάμαι το … πρόσωπο της κυρίας.",
+   "options": [
+    "πρόσχαρο",
+    "πρόσχαρος",
+    "πρόσχαρη"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (βιβλίο, σ. 39)",
+   "generatorParams": {
+    "family": "epitheta",
+    "unit": 2,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-epitheta-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Τα επίθετα",
+   "body": "Κύκλωσε τη λέξη που ταιριάζει στο κενό.",
+   "question": "Μου άρεσαν οι … τρόποι της κυρίας.",
+   "options": [
+    "ευγενικούς",
+    "ευγενικοί",
+    "ευγενικές"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (βιβλίο, σ. 39)",
+   "generatorParams": {
+    "family": "epitheta",
+    "unit": 2,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-epitheta-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Τα επίθετα",
+   "body": "Κύκλωσε τη λέξη που ταιριάζει στο κενό.",
+   "question": "Η Λιλή συλλέγει τις … δακτυλήθρες της.",
+   "options": [
+    "πολύχρωμες",
+    "πολύχρωμα",
+    "πολύχρωμους"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (τετράδιο εργασιών, σ. 27)",
+   "generatorParams": {
+    "family": "epitheta",
+    "unit": 2,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-geitonia-001",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Λέξεις της γειτονιάς",
+   "body": "Συμπλήρωσε τη λέξη που ταιριάζει.",
+   "textWithGaps": "Μια κυρία βγήκε από το {0} σπίτι.",
+   "options": [
+    "γειτονιά",
+    "γειτονικό",
+    "γείτονα",
+    "γειτονικός"
+   ],
+   "correctAnswers": [
+    "γειτονικό"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 4: Στη νέα μας γειτονιά (βιβλίο, σ. 42)",
+   "generatorParams": {
+    "family": "geitonia",
+    "unit": 2,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-geitonia-002",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Λέξεις της γειτονιάς",
+   "body": "Συμπλήρωσε τη λέξη που ταιριάζει.",
+   "textWithGaps": "Χτες όλα τα {0} μαζευτήκαμε για ποδόσφαιρο.",
+   "options": [
+    "γειτονόπουλο",
+    "γειτονιές",
+    "γειτονόπουλα"
+   ],
+   "correctAnswers": [
+    "γειτονόπουλα"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 4: Στη νέα μας γειτονιά (βιβλίο, σ. 42)",
+   "generatorParams": {
+    "family": "geitonia",
+    "unit": 2,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-oikogeneies-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Οικογένειες λέξεων",
+   "question": "Κύκλωσε τη λέξη που ανήκει στην οικογένεια της λέξης «μαθαίνω».",
+   "options": [
+    "μάτια",
+    "μάθημα",
+    "μαλλιά"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (βιβλίο, σ. 24)",
+   "generatorParams": {
+    "family": "oikogeneies",
+    "unit": 1,
+    "skill": "family"
+   }
+  },
+  {
+   "id": "g3-lang-oikogeneies-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Οικογένειες λέξεων",
+   "question": "Κύκλωσε τη λέξη που δεν ανήκει στην ίδια οικογένεια με τις άλλες.",
+   "options": [
+    "ψάρι",
+    "ψαρεύω",
+    "ψαρόβαρκα",
+    "κολύμπι"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (βιβλίο, σ. 55)",
+   "generatorParams": {
+    "family": "oikogeneies",
+    "unit": 3,
+    "skill": "family"
+   }
+  },
+  {
+   "id": "g3-lang-oikogeneies-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Οικογένειες λέξεων",
+   "question": "Κύκλωσε τη λέξη που δεν ανήκει στην ίδια οικογένεια με τις άλλες.",
+   "options": [
+    "συλλεκτικός",
+    "συλλέκτης",
+    "σχολείο",
+    "συλλογή"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 3: Τα παιδικά μου παιχνίδια (βιβλίο, σ. 39)",
+   "generatorParams": {
+    "family": "oikogeneies",
+    "unit": 2,
+    "skill": "family"
+   }
+  },
+  {
+   "id": "g3-lang-aitiatiki-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Αιτιατική πτώση",
+   "body": "Κύκλωσε τη λέξη που ταιριάζει στο κενό.",
+   "question": "Το γεράκι αρπάζει τον …",
+   "options": [
+    "σκίουρο",
+    "σκίουροι",
+    "σκίουρος"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (τετράδιο εργασιών, σ. 37)",
+   "generatorParams": {
+    "family": "aitiatiki",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-aitiatiki-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Αιτιατική πτώση",
+   "body": "Κύκλωσε τη λέξη που ταιριάζει στο κενό.",
+   "question": "Οι γάτες κυνηγούν τις …",
+   "options": [
+    "ακρίδας",
+    "ακρίδες",
+    "ακρίδα"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (τετράδιο εργασιών, σ. 37)",
+   "generatorParams": {
+    "family": "aitiatiki",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-aoristo-arthro-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Το αόριστο άρθρο",
+   "body": "Κύκλωσε το άρθρο που ταιριάζει στο κενό.",
+   "question": "Είμαι … κατοικίδιος γάτος έξι μηνών.",
+   "options": [
+    "έναν",
+    "ένα",
+    "μια",
+    "ένας"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (βιβλίο, σ. 51)",
+   "generatorParams": {
+    "family": "aoristo-arthro",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-aoristo-arthro-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Το αόριστο άρθρο",
+   "body": "Κύκλωσε το άρθρο που ταιριάζει στο κενό.",
+   "question": "Τότε … αλεπού είδε τον σκύλο να τρέχει.",
+   "options": [
+    "ένα",
+    "ένας",
+    "μια"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (τετράδιο εργασιών, σ. 37)",
+   "generatorParams": {
+    "family": "aoristo-arthro",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-tis-tis-001",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Της ή τις;",
+   "body": "Συμπλήρωσε το άρθρο που ταιριάζει.",
+   "textWithGaps": "Τα δελφίνια πλησιάζουν συχνά {0} ακτές.",
+   "options": [
+    "της",
+    "τις",
+    "των"
+   ],
+   "correctAnswers": [
+    "τις"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (τετράδιο εργασιών, σ. 39)",
+   "generatorParams": {
+    "family": "tis-tis",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-tis-tis-002",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Της ή τις;",
+   "body": "Συμπλήρωσε το άρθρο που ταιριάζει.",
+   "textWithGaps": "Το πτερύγιο {0} ράχης των δελφινιών είναι σαν μισοφέγγαρο.",
+   "options": [
+    "των",
+    "τις",
+    "της"
+   ],
+   "correctAnswers": [
+    "της"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (τετράδιο εργασιών, σ. 39)",
+   "generatorParams": {
+    "family": "tis-tis",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-tis-tis-003",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Της ή τις;",
+   "body": "Συμπλήρωσε το άρθρο που ταιριάζει.",
+   "textWithGaps": "Τα δελφίνια λατρεύουν {0} σουπιές και τα καλαμάρια.",
+   "options": [
+    "των",
+    "της",
+    "τις"
+   ],
+   "correctAnswers": [
+    "τις"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (τετράδιο εργασιών, σ. 39)",
+   "generatorParams": {
+    "family": "tis-tis",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-tis-tis-004",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Της ή τις;",
+   "body": "Συμπλήρωσε το άρθρο που ταιριάζει.",
+   "textWithGaps": "Τα δελφίνια είναι οι πρωταθλητές {0} κολύμβησης.",
+   "options": [
+    "τις",
+    "των",
+    "της"
+   ],
+   "correctAnswers": [
+    "της"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (τετράδιο εργασιών, σ. 39)",
+   "generatorParams": {
+    "family": "tis-tis",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-tis-tis-005",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Της ή τις;",
+   "body": "Συμπλήρωσε το άρθρο που ταιριάζει.",
+   "textWithGaps": "Τα δελφίνια ανεβαίνουν στην επιφάνεια {0} θάλασσας.",
+   "options": [
+    "τις",
+    "της",
+    "των"
+   ],
+   "correctAnswers": [
+    "της"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (βιβλίο, σ. 55)",
+   "generatorParams": {
+    "family": "tis-tis",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-tis-tis-006",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Της ή τις;",
+   "body": "Συμπλήρωσε το άρθρο που ταιριάζει.",
+   "textWithGaps": "Τα δίχτυα {0} ψαράδων παγιδεύουν τα δελφίνια.",
+   "options": [
+    "τις",
+    "της",
+    "των"
+   ],
+   "correctAnswers": [
+    "των"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 3: Οι ακροβάτες της θάλασσας (βιβλίο, σ. 55)",
+   "generatorParams": {
+    "family": "tis-tis",
+    "unit": 3,
+    "skill": "agree"
+   }
+  },
+  {
+   "id": "g3-lang-stixi-001",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Σημεία στίξης",
+   "body": "Συμπλήρωσε το σημείο στίξης που ταιριάζει.",
+   "textWithGaps": "Πού πέρασες το καλοκαίρι{0}",
+   "options": [
+    ",",
+    ".",
+    ";"
+   ],
+   "correctAnswers": [
+    ";"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 2: Επιστροφή στα θρανία! (τετράδιο εργασιών, σ. 9)",
+   "generatorParams": {
+    "family": "stixi",
+    "unit": 1,
+    "skill": "punct"
+   }
+  },
+  {
+   "id": "g3-lang-stixi-002",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Σημεία στίξης",
+   "body": "Συμπλήρωσε το σημείο στίξης που ταιριάζει.",
+   "textWithGaps": "Τι παιχνίδια έπαιξες το καλοκαίρι{0}",
+   "options": [
+    ";",
+    ".",
+    ","
+   ],
+   "correctAnswers": [
+    ";"
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 2: Επιστροφή στα θρανία! (τετράδιο εργασιών, σ. 9)",
+   "generatorParams": {
+    "family": "stixi",
+    "unit": 1,
+    "skill": "punct"
+   }
+  },
+  {
+   "id": "g3-lang-stixi-003",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Σημεία στίξης",
+   "body": "Συμπλήρωσε το σημείο στίξης που ταιριάζει.",
+   "textWithGaps": "Η γη είναι καλή με τα δάση{0} τα χωράφια και τα εργοστάσια.",
+   "options": [
+    ".",
+    ",",
+    ";"
+   ],
+   "correctAnswers": [
+    ","
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (βιβλίο, σ. 57)",
+   "generatorParams": {
+    "family": "stixi",
+    "unit": 3,
+    "skill": "punct"
+   }
+  },
+  {
+   "id": "g3-lang-stixi-004",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Σημεία στίξης",
+   "body": "Συμπλήρωσε το σημείο στίξης που ταιριάζει.",
+   "textWithGaps": "Στην αυλή υπάρχουν κούνιες{0} τσουλήθρα και μονόζυγα.",
+   "options": [
+    ".",
+    ";",
+    ","
+   ],
+   "correctAnswers": [
+    ","
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (τετράδιο εργασιών, σ. 41)",
+   "generatorParams": {
+    "family": "stixi",
+    "unit": 3,
+    "skill": "punct"
+   }
+  },
+  {
+   "id": "g3-lang-stixi-005",
+   "type": "fill-blank",
+   "category": "Γλώσσα",
+   "title": "Σημεία στίξης",
+   "body": "Συμπλήρωσε το σημείο στίξης που ταιριάζει.",
+   "textWithGaps": "Περνάμε υπέροχα στο χωριό της γιαγιάς{0}",
+   "options": [
+    ";",
+    ",",
+    "."
+   ],
+   "correctAnswers": [
+    "."
+   ],
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 4: Γη και θάλασσα (τετράδιο εργασιών, σ. 41)",
+   "generatorParams": {
+    "family": "stixi",
+    "unit": 3,
+    "skill": "punct"
+   }
+  },
+  {
+   "id": "g3-lang-paromoiosis-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Παρομοιώσεις και παροιμίες",
+   "body": "Συμπλήρωσε την παρομοίωση.",
+   "question": "Οι δίδυμοι κολυμπάνε σαν …",
+   "options": [
+    "γαϊδούρια",
+    "κατσίκια",
+    "ψάρια"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (βιβλίο, σ. 21)",
+   "generatorParams": {
+    "family": "paromoiosis",
+    "unit": 1,
+    "skill": "saying"
+   }
+  },
+  {
+   "id": "g3-lang-paromoiosis-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Παρομοιώσεις και παροιμίες",
+   "body": "Συμπλήρωσε την παρομοίωση.",
+   "question": "Μοιάζουν σαν δύο σταγόνες …",
+   "options": [
+    "κύμα",
+    "νερό",
+    "χιόνι"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 5: Δεν είναι τρελοί οι δίδυμοι! (βιβλίο, σ. 21)",
+   "generatorParams": {
+    "family": "paromoiosis",
+    "unit": 1,
+    "skill": "saying"
+   }
+  },
+  {
+   "id": "g3-lang-paromoiosis-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Παρομοιώσεις και παροιμίες",
+   "body": "Συμπλήρωσε την παρομοίωση.",
+   "question": "Η γάτα μου είναι κάτασπρη σαν το …",
+   "options": [
+    "κουδούνι",
+    "σκοτάδι",
+    "χιόνι"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 1: Σπίτι με κήπον (τετράδιο εργασιών, σ. 34)",
+   "generatorParams": {
+    "family": "paromoiosis",
+    "unit": 3,
+    "skill": "saying"
+   }
+  },
+  {
+   "id": "g3-lang-paromoiosis-004",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Παρομοιώσεις και παροιμίες",
+   "body": "Συμπλήρωσε την παρομοίωση.",
+   "question": "Περπατάει αργά σαν …",
+   "options": [
+    "αλεπού",
+    "γαζέλα",
+    "χελώνα"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, Λεξιλόγιο (βιβλίο, σ. 62)",
+   "generatorParams": {
+    "family": "paromoiosis",
+    "unit": 3,
+    "skill": "saying"
+   }
+  },
+  {
+   "id": "g3-lang-paromoiosis-005",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Παρομοιώσεις και παροιμίες",
+   "body": "Συμπλήρωσε την παροιμία.",
+   "question": "Λείπει ο γάτος και χορεύουν τα …",
+   "options": [
+    "σκυλιά",
+    "ποντίκια",
+    "δελφίνια"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (βιβλίο, σ. 52)",
+   "generatorParams": {
+    "family": "paromoiosis",
+    "unit": 3,
+    "skill": "saying"
+   }
+  },
+  {
+   "id": "g3-lang-paromoiosis-006",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Παρομοιώσεις και παροιμίες",
+   "body": "Συμπλήρωσε την παροιμία.",
+   "question": "Τρώγονται σαν τον σκύλο με τη …",
+   "options": [
+    "κότα",
+    "γάτα",
+    "αλεπού"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 2: Γάτος από σπίτι ζητά νέα οικογένεια (βιβλίο, σ. 52)",
+   "generatorParams": {
+    "family": "paromoiosis",
+    "unit": 3,
+    "skill": "saying"
+   }
+  },
+  {
+   "id": "g3-lang-san-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Σαν: όταν ή όπως;",
+   "question": "Τι σημαίνει το «σαν» στην πρόταση «Σαν έφτασαν στη βρύση, κάθισαν να φάνε.»;",
+   "options": [
+    "όπως",
+    "επειδή",
+    "όταν"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (τετράδιο εργασιών, σ. 44)",
+   "generatorParams": {
+    "family": "san",
+    "unit": 3,
+    "skill": "san"
+   }
+  },
+  {
+   "id": "g3-lang-san-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Σαν: όταν ή όπως;",
+   "question": "Τι σημαίνει το «σαν» στην πρόταση «Μην περπατάς σαν χελώνα!»;",
+   "options": [
+    "επειδή",
+    "όταν",
+    "όπως"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (τετράδιο εργασιών, σ. 44)",
+   "generatorParams": {
+    "family": "san",
+    "unit": 3,
+    "skill": "san"
+   }
+  },
+  {
+   "id": "g3-lang-synonyma-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Συνώνυμα",
+   "question": "Κύκλωσε τη λέξη που σημαίνει το ίδιο με τη λέξη «γοργός».",
+   "options": [
+    "πελώριος",
+    "γρήγορος",
+    "απότομος"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (βιβλίο, σ. 61)",
+   "generatorParams": {
+    "family": "synonyma",
+    "unit": 3,
+    "skill": "synonym"
+   }
+  },
+  {
+   "id": "g3-lang-synonyma-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Συνώνυμα",
+   "question": "Κύκλωσε τη λέξη που σημαίνει το ίδιο με τη λέξη «θεόρατος».",
+   "options": [
+    "πελώριος",
+    "γρήγορος",
+    "ήμερος"
+   ],
+   "correctIndex": 0,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 5: Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό (βιβλίο, σ. 61)",
+   "generatorParams": {
+    "family": "synonyma",
+    "unit": 3,
+    "skill": "synonym"
+   }
+  },
+  {
+   "id": "g3-lang-synonyma-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Συνώνυμα",
+   "question": "Κύκλωσε τη λέξη που σημαίνει το ίδιο με τη λέξη «κατοικία».",
+   "options": [
+    "κήπος",
+    "χωριό",
+    "σπίτι"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 3: Στη γη και στη θάλασσα, μάθημα 1: Σπίτι με κήπον (βιβλίο, σ. 49)",
+   "generatorParams": {
+    "family": "synonyma",
+    "unit": 3,
+    "skill": "synonym"
+   }
+  },
+  {
+   "id": "g3-lang-orthografia-001",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ορθογραφία",
+   "question": "Κύκλωσε τη λέξη που είναι γραμμένη σωστά.",
+   "options": [
+    "έθουσσα",
+    "αίθουσσα",
+    "έθουσα",
+    "αίθουσα"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (βιβλίο, σ. 20)",
+   "generatorParams": {
+    "family": "orthografia",
+    "unit": 1,
+    "skill": "spell"
+   }
+  },
+  {
+   "id": "g3-lang-orthografia-002",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ορθογραφία",
+   "question": "Κύκλωσε τη λέξη που είναι γραμμένη σωστά.",
+   "options": [
+    "διευθιντή",
+    "διεφθυντή",
+    "διεφθιντή",
+    "διευθυντή"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 1: Πάλι μαζί!, μάθημα 4: Δημοτικό Σχολείο Τρικάλων Ημαθίας (βιβλίο, σ. 20)",
+   "generatorParams": {
+    "family": "orthografia",
+    "unit": 1,
+    "skill": "spell"
+   }
+  },
+  {
+   "id": "g3-lang-orthografia-003",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ορθογραφία",
+   "question": "Κύκλωσε τη λέξη που είναι γραμμένη σωστά.",
+   "options": [
+    "τηλεώραση",
+    "τηλεόραση",
+    "τιλεόραση",
+    "τιλεώραση"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 1: Αγαπητό μου ημερολόγιο (βιβλίο, σ. 31)",
+   "generatorParams": {
+    "family": "orthografia",
+    "unit": 2,
+    "skill": "spell"
+   }
+  },
+  {
+   "id": "g3-lang-orthografia-004",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ορθογραφία",
+   "question": "Κύκλωσε τη λέξη που είναι γραμμένη σωστά.",
+   "options": [
+    "καινούρειο",
+    "κενούριο",
+    "καινούριο",
+    "κενούρειο"
+   ],
+   "correctIndex": 2,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, μάθημα 4: Στη νέα μας γειτονιά (βιβλίο, σ. 42)",
+   "generatorParams": {
+    "family": "orthografia",
+    "unit": 2,
+    "skill": "spell"
+   }
+  },
+  {
+   "id": "g3-lang-orthografia-005",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ορθογραφία",
+   "question": "Κύκλωσε τη λέξη που είναι γραμμένη σωστά.",
+   "options": [
+    "πεχνήδι",
+    "παιχνίδι",
+    "πεχνίδι",
+    "παιχνήδι"
+   ],
+   "correctIndex": 1,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, Λεξιλόγιο (βιβλίο, σ. 43)",
+   "generatorParams": {
+    "family": "orthografia",
+    "unit": 2,
+    "skill": "spell"
+   }
+  },
+  {
+   "id": "g3-lang-orthografia-006",
+   "type": "multiple-choice",
+   "category": "Γλώσσα",
+   "title": "Ορθογραφία",
+   "question": "Κύκλωσε τη λέξη που είναι γραμμένη σωστά.",
+   "options": [
+    "σιλλογή",
+    "συλογή",
+    "σιλογή",
+    "συλλογή"
+   ],
+   "correctIndex": 3,
+   "stars": 1,
+   "source": "Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά, Λεξιλόγιο (βιβλίο, σ. 43)",
+   "generatorParams": {
+    "family": "orthografia",
+    "unit": 2,
+    "skill": "spell"
+   }
+  }
+ ]
+}
