@@ -17,11 +17,13 @@
 //     within the grade's range;
 //   - no leftover template text, doubled spaces, spaces before punctuation, unbalanced marks;
 //   - no id or story twice;
-//   - in the world pool and change-left, the story reads right (story-check.ts): a clitic
-//     points at one person named before it, no two sentences in a row open with the same
-//     name, nothing changes after «Τώρα», the question names someone when two people are
-//     subjects, a gift counts on both sides, world checks have 3 options, prices fit the item
-//     and «πληρώνει με» is real notes;
+//   - every story reads right (story-check.ts, every pool, generated and curated): a clitic or
+//     «Αναρωτιέται» points at one person named before it (relatives and friends are people), no
+//     two sentences in a row open with the same person or repeat «<noun> του <someone>», nothing
+//     changes after «Τώρα» unless told «Νωρίτερα», a question with a singular verb and no subject
+//     of its own names whom it means once two people are subjects, a gift counts on both sides,
+//     world checks have 3 options, every price names its item in its sentence and fits the
+//     item's range (per piece), notes and coins are real and «πληρώνει με» is real notes;
 //   - no choice gives its answer away by length (lib.ts, lengthTell): no option stands out at either
 //     end (the longest at most 30 % or 5 code points longer than the next, the shortest at most 30 %
 //     or 5 shorter), the right one is never the only longest, and among options that are all numbers
@@ -156,9 +158,8 @@ for (const pool of pools) {
     if (!/^[Α-ΩΆΈΉΊΌΎΏ\d«]/.test(plain(ex.story))) err(ex, 'story does not start with a capital letter');
     if (!/[.;!;»]$/.test(plain(ex.story))) err(ex, 'story does not end with punctuation');
 
-    // Stories that read right: the world pool and change-left so far (#50 part 1)
-    const params = ex.generatorParams as { world?: string; family?: string } | undefined;
-    if (params?.world || params?.family === 'change-left') for (const m of checkStory(ex)) err(ex, m);
+    // Stories that read right, in every pool (#50 part 5b): a story that fails is a family bug
+    for (const m of checkStory(ex)) err(ex, m);
 
     // A tag step always has something to leave out; a painted story may have nothing
     // unneeded (so she can't count on there being something)
