@@ -17,8 +17,15 @@ function amount(c: number, gen = false): string {
   const cents = l === 1 ? (gen ? '1 λεπτού' : '1 λεπτό') : `${l} ${gen ? 'λεπτών' : 'λεπτά'}`;
   return e === 0 ? cents : l === 0 ? `${e} ευρώ` : `${e} ευρώ και ${cents}`;
 }
-// The coins of an answer, one by one: "50 λεπτά + 20 λεπτά + 2 λεπτά"
-const list = (vs: number[]) => [...vs].sort((x, y) => y - x).map(coin).join(' + ');
+// The coins of an answer, one by one, the unit once: "50 + 20 + 2 λεπτά", "2 + 1 ευρώ", "1 ευρώ + 50 + 5 λεπτά"
+// (a unit after every coin made the wrong answer with one coin more stand out by its length)
+function list(vs: number[]): string {
+  const sorted = [...vs].sort((x, y) => y - x);
+  const euros = sorted.filter(v => v >= 100).map(v => v / 100), cents = sorted.filter(v => v < 100);
+  const e = euros.length ? `${euros.join(' + ')} ευρώ` : '';
+  const c = cents.length ? `${cents.join(' + ')} ${cents.length === 1 && cents[0] === 1 ? 'λεπτό' : 'λεπτά'}` : '';
+  return [e, c].filter(Boolean).join(' + ');
+}
 const key = (vs: number[]) => [...vs].sort((x, y) => y - x).join('+');
 
 // How many ways n coins make the amount (multisets)
@@ -106,8 +113,8 @@ function which(r: Args[0], b: Args[1], p: P) {
   steps.push(b.choice('solve', `Ποια ${W} νομίσματα κάνουν ${amount(total)};`, list(set), wrongs.slice(0, 3).map(list),
     `Προσθέτουμε τα νομίσματα κάθε απάντησης. Πρέπει να κάνουν ${amount(total)} και να είναι ${W}.`));
   if (split && r.chance(0.5)) {
-    steps.push(b.choice('check', `Γιατί δεν είναι σωστό το «${list(split)}»;`, `Γιατί είναι ${WORD[n + 1]} νομίσματα και όχι ${W}`,
-      [`Γιατί δεν κάνουν ${amount(total)}`, 'Γιατί δεν υπάρχουν τέτοια νομίσματα'],
+    steps.push(b.choice('check', `Γιατί δεν είναι σωστό το «${list(split)}»;`, `Γιατί είναι ${WORD[n + 1]} νομίσματα`,
+      [`Γιατί όλα μαζί δεν κάνουν ${amount(total)}`, 'Γιατί δεν υπάρχουν τέτοια νομίσματα'],
       'Μετράμε τα νομίσματα και τα προσθέτουμε.'));
   } else {
     steps.push(b.numbers('check', 'Ελέγχουμε: προσθέτουμε τα νομίσματα σε λεπτά.', [

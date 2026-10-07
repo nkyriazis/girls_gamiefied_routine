@@ -92,7 +92,8 @@ function market(r: Rng): Chain | null {
     ],
     check: {
       right: `${tot} + ${left} = ${have}`,
-      wrong: [`${have} − ${kg} − ${pp} − ${po} = ${have - kg - pp - po}`, `${have} + ${left} = ${have + left}`],
+      // the price of a kilo taken for the cost of the fruit
+      wrong: [`${have} − ${pp} − ${po} = ${have - pp - po}`, `${have} + ${left} = ${have + left}`],
       hint: `Όσα ξόδεψε μαζί με όσα έμειναν πρέπει να κάνουν ${have} ευρώ.`,
     },
   };
@@ -122,7 +123,8 @@ function pages(r: Rng, p: Person): Chain | null {
     ],
     check: {
       right: `${read} + ${total - read} = ${total}`,
-      wrong: [`${total} − ${k} − ${d} − ${x} = ${total - k - d - x}`, `${total} + ${read} = ${total + read}`],
+      // one day's pages taken for the pages of every day
+      wrong: [`${total} − ${k} − ${x} = ${total - k - x}`, `${total} + ${read} = ${total + read}`],
       hint: 'Όσες διάβασε μαζί με όσες μένουν πρέπει να κάνουν όλο το βιβλίο.',
     },
   };

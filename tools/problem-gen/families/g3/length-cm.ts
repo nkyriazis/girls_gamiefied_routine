@@ -74,7 +74,7 @@ function cut(r: Rng, b: B, p: Person) {
     ], '1 μέτρο = 100 εκατοστά.'));
   }
   steps.push(b.choice('check', 'Πώς ελέγχουμε;', `${a} + ${c} + ${left} = ${fmt(total)}`,
-    [`${a} + ${c} + ${left} = ${metres}`, `${fmt(total)} + ${left} = ${fmt(total + left)}`],
+    [`${a} + ${c} + ${left} = ${metres}`, `${fmt(total)} + ${a} + ${c} = ${fmt(total + a + c)}`],
     'Τα κομμάτια μαζί με ό,τι έμεινε κάνουν όλο το μήκος.'));
   return { title: r.pick(['Κόβουμε κομμάτια', 'Τι έμεινε;', 'Μέτρα και εκατοστά']), story, steps };
 }
@@ -99,7 +99,7 @@ function fit(r: Rng, b: B, p: Person) {
     { label: 'Εκατοστά που περισσεύουν', answer: rest },
   ], `${k} × ${n} = ${n * k}.${rest ? ` Πόσα μένουν ως το ${L};` : ''}`));
   steps.push(b.choice('check', 'Πώς ελέγχουμε;', rest ? `${n} × ${k} + ${rest} = ${L}` : `${n} × ${k} = ${L}`,
-    [`${n} + ${k} = ${n + k}`, `${L} − ${k} = ${L - k}`],
+    rest ? [`${n} + ${k} + ${rest} = ${n + k + rest}`, `${n} × ${k} − ${rest} = ${n * k - rest}`] : [`${n} + ${k} = ${n + k}`, `${L} − ${k} = ${L - k}`],
     'Όλα τα κομμάτια μαζί, και ό,τι περισσεύει, κάνουν όλο το μήκος.'));
   return { title: r.pick(['Πόσα κομμάτια;', 'Κομματάκια', 'Κόβουμε ίσα κομμάτια']), story, steps };
 }
@@ -122,8 +122,8 @@ function height(r: Rng, b: B, p: Person, q: Person) {
   const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε το ύψος του ενός και πόσο διαφέρει ο άλλος.')];
   if (r.chance(0.5)) {
     steps.push(b.choice('plan', `Αφού ${q.nom} είναι ${relQ}, το ύψος ${q.female ? 'της' : 'του'} θα είναι…`,
-      taller ? `μεγαλύτερο από ${fmt(hp)} εκατοστά` : `μικρότερο από ${fmt(hp)} εκατοστά`,
-      [taller ? `μικρότερο από ${fmt(hp)} εκατοστά` : `μεγαλύτερο από ${fmt(hp)} εκατοστά`, `ίσο με ${fmt(hp)} εκατοστά`],
+      taller ? `πάνω από ${fmt(hp)} εκατοστά` : `κάτω από ${fmt(hp)} εκατοστά`,
+      [taller ? `κάτω από ${fmt(hp)} εκατοστά` : `πάνω από ${fmt(hp)} εκατοστά`, `ακριβώς ${fmt(hp)} εκατοστά`],
       taller ? 'Ψηλότερος σημαίνει περισσότερα εκατοστά.' : 'Κοντύτερος σημαίνει λιγότερα εκατοστά.'));
   }
   steps.push(b.numbers('solve', 'Λύνουμε.', [

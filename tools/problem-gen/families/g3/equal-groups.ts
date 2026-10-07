@@ -1,7 +1,7 @@
 // Equal groups: n boxes, packs or rows with k in each (Γ΄ κεφ. 4–5 «Πολλαπλασιασμός,
 // προπαίδεια»). Sometimes first the story without k: can we answer yet?
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { count, extra, fmt, HowMany, howMany, known, PEOPLE, rng, sought, thing, type Family, type Person, type Rng, type Thing } from '../../lib.ts';
+import { count, extra, fmt, HowMany, howMany, known, PEOPLE, rng, sought, the, thing, type Family, type Person, type Rng, type Thing } from '../../lib.ts';
 
 type Mark = (s: string) => string;
 const id: Mark = s => s;
@@ -90,8 +90,9 @@ export const equalGroups: Family = {
     const steps: ProblemStep[] = [];
     const missing = r.chance(0.35);
     if (missing) {
-      steps.push(b.choice('read', 'Μπορούμε να απαντήσουμε;', `Όχι, δεν ξέρουμε ${howMany(item)} ${item.manyAcc} έχει κάθε ${cont.one}`,
-        [`Ναι, είναι ${count(n, item, true)}`, `Ναι, αρκεί να μετρήσουμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`],
+      steps.push(b.choice('read', 'Μπορούμε να απαντήσουμε;', `Όχι, δεν λέει ${howMany(item)} έχει κάθε ${cont.one}`,
+        [`Ναι, είναι ${count(n, item)}, όσ${cont.g === 'n' ? 'α' : cont.g === 'f' ? 'ες' : 'οι'} και ${the(cont, false)} ${cont.many}`,
+          `Ναι, αρκεί να μετρήσουμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`],
         `Ξέρουμε ${howMany(cont)} ${cont.manyAcc} είναι. Ξέρουμε και τι έχει ${cont.g === 'n' ? 'το καθένα' : 'η καθεμία'};`,
         build(id, id, id, false)));
     }
@@ -107,7 +108,8 @@ export const equalGroups: Family = {
     ], `Μετράμε ανά ${k}: ${Array.from({ length: Math.min(n, 4) }, (_x, i) => fmt((i + 1) * k)).join(', ')}${n > 4 ? ', …' : ''}`));
     steps.push(n <= 5
       ? b.choice('check', 'Πώς ελέγχουμε;', `${Array(n).fill(k).join(' + ')} = ${fmt(total)}`,
-        [`${n} + ${k} = ${n + k}`, `${Array(n).fill(n).join(' + ')} = ${n * n}`].filter(o => !o.startsWith(`${Array(n).fill(k).join(' + ')} =`)),
+        // one group too many, as many terms as the right one and one more
+        [`${n} + ${k} = ${n + k}`, `${Array(n + 1).fill(k).join(' + ')} = ${fmt(k * (n + 1))}`],
         `Προσθέτουμε ${n} φορές το ${k}.`)
       : b.choice('check', 'Πώς ελέγχουμε;', `${k} × ${n} = ${fmt(total)}`,
         [`${n} + ${k} = ${n + k}`, `${k} × ${n + 1} = ${fmt(k * (n + 1))}`],

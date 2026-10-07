@@ -167,7 +167,7 @@ export const daysToGoal: Family = {
       if (wrongs.length < 2 && rest > 1 && q + rest !== q + 1) wrongs.push(`${q + rest}, γιατί προσθέτουμε και όσα περισσεύουν`);
       if (wrongs.length < 2) wrongs.push(`${need - c}, γιατί ${need} − ${c}`);
       steps.push(b.choice('check', `${per.HowMany} λοιπόν;`,
-        `${q + 1}, γιατί σε ${q} ${per.many} ${s.still(p, rest)}`, wrongs,
+        `${q + 1}, ${per.oneMore} για όσα μένουν`, wrongs,
         `Αυτά που περισσεύουν χρειάζονται κι αυτά ${per.oneMore}.`));
     }
     return { title: r.pick([s.title, 'Ο στόχος', 'Πότε θα φτάσουμε;']), story, steps };

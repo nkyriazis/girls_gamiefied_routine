@@ -26,11 +26,12 @@ const list = (xs: string[]) => xs.length === 1 ? xs[0] : `${xs.slice(0, -1).join
 const Cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 const TEAMS: Entry[] = [
-  { nom: 'οι Αετοί', acc: 'τους Αετούς', name: 'Οι Αετοί' },
+  // Names of one length, so the winner's doesn't stand out among the options
+  { nom: 'οι Πελαργοί', acc: 'τους Πελαργούς', name: 'Οι Πελαργοί' },
   { nom: 'τα Δελφίνια', acc: 'τα Δελφίνια', name: 'Τα Δελφίνια' },
-  { nom: 'οι Γλάροι', acc: 'τους Γλάρους', name: 'Οι Γλάροι' },
-  { nom: 'τα Λιοντάρια', acc: 'τα Λιοντάρια', name: 'Τα Λιοντάρια' },
-  { nom: 'οι Κένταυροι', acc: 'τους Κενταύρους', name: 'Οι Κένταυροι' },
+  { nom: 'οι Αρκούδες', acc: 'τις Αρκούδες', name: 'Οι Αρκούδες' },
+  { nom: 'οι Πειρατές', acc: 'τους Πειρατές', name: 'Οι Πειρατές' },
+  { nom: 'οι Φάλαινες', acc: 'τις Φάλαινες', name: 'Οι Φάλαινες' },
 ];
 const CLASSES: Entry[] = [
   { nom: 'η Α΄ τάξη', acc: 'την Α΄ τάξη', name: 'Η Α΄ τάξη' },
@@ -42,17 +43,17 @@ const CLASSES: Entry[] = [
 ];
 const PARTIES: Entry[] = [
   { nom: 'η «Αναγέννηση»', acc: 'την «Αναγέννηση»', name: 'Η «Αναγέννηση»' },
-  { nom: 'το «Πράσινο περιβάλλον»', acc: 'το «Πράσινο περιβάλλον»', name: 'Το «Πράσινο περιβάλλον»' },
-  { nom: 'η «Αλλαγή στην κοινότητα»', acc: 'την «Αλλαγή στην κοινότητα»', name: 'Η «Αλλαγή στην κοινότητα»' },
-  { nom: 'η «Νέα πνοή»', acc: 'τη «Νέα πνοή»', name: 'Η «Νέα πνοή»' },
+  { nom: 'η «Πράσινη γη»', acc: 'την «Πράσινη γη»', name: 'Η «Πράσινη γη»' },
+  { nom: 'η «Συνεργασία»', acc: 'τη «Συνεργασία»', name: 'Η «Συνεργασία»' },
+  { nom: 'η «Νέα ελπίδα»', acc: 'τη «Νέα ελπίδα»', name: 'Η «Νέα ελπίδα»' },
 ];
 // For the trip vote, nom/acc are the "για ..." phrase and name is where they go
 const PLACES: Entry[] = [
   { nom: 'για τη θάλασσα', acc: 'για τη θάλασσα', name: 'Στη θάλασσα' },
-  { nom: 'για το βουνό', acc: 'για το βουνό', name: 'Στο βουνό' },
+  { nom: 'για τον Όλυμπο', acc: 'για τον Όλυμπο', name: 'Στον Όλυμπο' },
   { nom: 'για το μουσείο', acc: 'για το μουσείο', name: 'Στο μουσείο' },
-  { nom: 'για τον ζωολογικό κήπο', acc: 'για τον ζωολογικό κήπο', name: 'Στον ζωολογικό κήπο' },
-  { nom: 'για το πλανητάριο', acc: 'για το πλανητάριο', name: 'Στο πλανητάριο' },
+  { nom: 'για το φαράγγι', acc: 'για το φαράγγι', name: 'Στο φαράγγι' },
+  { nom: 'για τη Βεργίνα', acc: 'για τη Βεργίνα', name: 'Στη Βεργίνα' },
 ];
 
 const SETTINGS: Setting[] = [
@@ -169,7 +170,8 @@ export const tableReading: Family = {
       const others = es.map((_e, i) => i).filter(i => !used.includes(i));
       const wrongPair = [...used.slice(0, -1), others[0]].map(i => fmt(vs[i]));
       steps.push(b.choice('plan', 'Ποιους αριθμούς χρειαζόμαστε;', list(pick),
-        [list(vs.map(fmt)), list(wrongPair)].filter(o => o !== list(pick)),
+        // the two and one more (not every number: that would stand out by its length)
+        [list([...pick, fmt(vs[others[others.length - 1]])]), list(wrongPair)].filter(o => o !== list(pick)),
         'Κοιτάμε ποιους ονομάζει η ερώτηση.'));
     }
     if (kind === 'diff') {
@@ -178,7 +180,7 @@ export const tableReading: Family = {
         [`${fmt(A)} + ${fmt(B)} = ${fmt(A + B)}`, `${fmt(A)} + ${fmt(A - B)} = ${fmt(A + A - B)}`],
         'Στον μικρότερο αριθμό προσθέτουμε τη διαφορά. Πρέπει να βρούμε τον μεγαλύτερο.'));
     } else if (kind === 'sum') {
-      steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: r.chance(0.5) ? `${fmt(A)} + ${fmt(B)} =` : 'Μαζί', answer: A + B, unit: s.unit }]));
+      steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: r.chance(0.5) ? `${fmt(A)} + ${fmt(B)} =` : 'Μαζί', answer: A + B, unit: s.unit, eq: `${fmt(A)} + ${fmt(B)}` }]));
       steps.push(b.choice('check', 'Πώς ελέγχουμε;', `${fmt(A + B)} − ${fmt(B)} = ${fmt(A)}`,
         [`${fmt(A)} − ${fmt(B)} = ${fmt(A - B)}`, `${fmt(A + B)} + ${fmt(B)} = ${fmt(A + 2 * B)}`],
         'Αν από το άθροισμα βγάλουμε τον έναν αριθμό, μένει ο άλλος.'));
@@ -188,7 +190,7 @@ export const tableReading: Family = {
         { label: `Διαφορά: ${fmt(A + B)} − ${fmt(C)} =`, answer: A + B - C, unit: s.unit },
       ], 'Πρώτα βρίσκουμε το άθροισμα και μετά το συγκρίνουμε με τον τρίτο αριθμό.'));
       steps.push(b.choice('check', 'Πώς ελέγχουμε τη δεύτερη απάντηση;', `${fmt(C)} + ${fmt(A + B - C)} = ${fmt(A + B)}`,
-        [`${fmt(A)} + ${fmt(B)} + ${fmt(C)} = ${fmt(A + B + C)}`, `${fmt(A + B)} + ${fmt(C)} = ${fmt(A + B + C)}`],
+        [`${fmt(A)} + ${fmt(A + B - C)} = ${fmt(A + A + B - C)}`, `${fmt(A + B)} + ${fmt(C)} = ${fmt(A + B + C)}`],
         'Στον τρίτο αριθμό προσθέτουμε τη διαφορά. Πρέπει να βρούμε το άθροισμα.'));
     }
     return { title: s.title, story, steps };

@@ -19,6 +19,7 @@ export const change: Family = {
     const have = telling === 1
       ? payWith(r, cost, big ? [50, 100, 200] : [5, 10, 20, 50, 100], big ? 4 : 3)
       : big ? r.step(cost + 20, Math.min(600, cost + 250), 5) : r.int(cost + 8, 99);
+    if (have === null) return null;
     const left = have - cost;
     const noise = r.pick([
       `Το μαγαζί ανοίγει στις ${extra(`${r.int(8, 10)} το πρωί`)}.`,
@@ -48,8 +49,8 @@ export const change: Family = {
         ? b.choice('check', 'Πώς ελέγχουμε;', `${fmt(cost)} + ${fmt(left)} = ${fmt(have)}`,
           [`${fmt(have)} + ${fmt(left)} = ${fmt(have + left)}`, `${fmt(left)} − ${fmt(cost)} = ${fmt(Math.abs(left - cost))}`],
           'Όσα πλήρωσε μαζί με όσα έμειναν πρέπει να κάνουν όσα είχε.')
-        : b.choice('check', 'Είναι λογική η απάντηση;', `Ναι, γιατί τα ${fmt(left)} ευρώ είναι λιγότερα από τα ${fmt(have)} που είχε`,
-          [`Όχι, πρέπει να είναι περισσότερα από ${fmt(have)} ευρώ`, `Όχι, πρέπει να είναι ${fmt(have + cost)} ευρώ`],
+        : b.choice('check', 'Είναι λογική η απάντηση;', `Ναι, είναι λιγότερα από ${fmt(have)} ευρώ`,
+          [`Όχι, πρέπει να είναι πάνω από ${fmt(have)} ευρώ`, `Όχι, πρέπει να είναι ${fmt(have + cost)}: όλα μαζί`],
           `Αφού ξόδεψε χρήματα, ${p.his} μένουν λιγότερα από όσα είχε.`),
     ];
     return { title: r.pick(['Στο μαγαζί', 'Τα ρέστα', 'Ο κουμπαράς', 'Ψώνια']), story, steps };
