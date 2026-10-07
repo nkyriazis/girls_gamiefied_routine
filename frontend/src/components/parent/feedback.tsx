@@ -13,10 +13,10 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         setTimeout(() => setToasts(list => list.filter(t => t.id !== id)), 3000);
     }, []);
 
-    const run = useCallback(async (action: () => Promise<unknown>, done: string) => {
+    const run = useCallback(async <T,>(action: () => Promise<T>, done: string | ((result: T) => string)) => {
         try {
-            await action();
-            notify(done);
+            const result = await action();
+            notify(typeof done === 'string' ? done : done(result));
             return true;
         } catch (err) {
             notify((err as Error).message, 'error');
