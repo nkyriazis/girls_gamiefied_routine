@@ -48,12 +48,12 @@ tools/help-voice/run.sh
 # The screens' sounds, rarely: fetch the CC0 packs, then choose and make the palette (see tools/sfx/README.md)
 tools/sfx/fetch.sh
 
-# Validate data.json / state.json against their schemas
+# data.json against its schema, then a legacy state.json (an ENOENT line when there is none); prints, exits 0 either way
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm run test-schemas
 
-# Backend tests (node:test): store, config cache, legacy import
+# Backend tests (node:test, every backend/test/*.test.ts)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm test
-# Frontend tests (node:test on src/**/*.test.ts, types stripped by Node): the alarm's sound
+# Frontend tests (node:test on src/**/*.test.ts, types stripped by Node)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec frontend npm test
 
 # Import state.json + logs.jsonl into the database (if not done yet) and verify record by record (prod image)
@@ -65,8 +65,7 @@ docker compose exec backend npm run backup
 
 Beyond `npm test`, verify changes manually:
 - `/?push=<id>`, `POST /api/hooks/push` and the parents' «Ξεκίνα τώρα» start exactly that flow, routine assignment or `alarm`, now (`triggerAction(id, 'push_hook')`), never the other schedules due at the same time (#29). A push of a kid's routine while she is already in one keeps hers: the answer is `{ skipped, runningId }` and the parent's toast says «Ήδη σε ρουτίνα».
-- `POST /api/debug/time` simulates a minute: every schedule due then starts, logged as `SCHEDULE_MATCH`.
-- `POST /api/debug/time` and `GET /api/debug/schedule` help with time and schedule debugging.
+- `POST /api/debug/time` (`{"time": "07:00"}` today in `settings.timezone`, or an ISO date) simulates that minute: every schedule due then starts, logged as `SCHEDULE_MATCH`. `GET /api/debug/schedule` lists each schedule's next run.
 - `GET /api/debug/logs` returns recent action logs.
 
 ### CI
