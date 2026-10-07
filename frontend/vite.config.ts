@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
+import fs from 'fs'
 
 // Monaco's ESM vendors its own DOMPurify (esm/vs/base/browser/dompurify/dompurify.js, imported by
 // domSanitize.js as './dompurify/dompurify.js'), so package.json's dompurify override alone changes
@@ -31,6 +32,28 @@ function monacoDompurify(): Plugin {
   }
 }
 
+// @monaco-editor/loader (under @monaco-editor/react) keeps a default Monaco on cdn.jsdelivr.net
+// (lib/*/config/index.js: paths.vs), which it fetches unless it is handed one. monaco.ts hands it the
+// bundled Monaco (loader.config({ monaco })), and that one line is all that keeps the editor off the
+// CDN: drop it and everything is still bundled, so check-bundle would see nothing wrong, and the editor
+// would quietly load jsdelivr's Monaco online and «Φόρτωση…» forever offline (#35). So the default goes
+// too: every jsdelivr URL in the loader becomes this local path, which nothing serves. Without the
+// loader.config line the editor then never loads, online or not, in dev and in the build, and
+// scripts/check-bundle.mjs fails on any jsdelivr URL left in dist, the loader's included.
+const MONACO_LOADER = /@monaco-editor[\\/]loader[\\/]/
+const NO_CDN = { url: /https:\/\/cdn\.jsdelivr\.net\/npm\/monaco-editor@[^'"`]+/g, path: '/monaco-is-bundled-see-monaco.ts' }
+const noLoaderCdn = (code: string) => code.replace(NO_CDN.url, NO_CDN.path)
+function monacoLoaderNoCdn(): Plugin {
+  return {
+    name: 'monaco-loader-no-cdn',
+    apply: 'build',
+    transform(code, id) {
+      if (!MONACO_LOADER.test(id) || !code.includes('cdn.jsdelivr.net')) return null
+      return { code: noLoaderCdn(code), map: null }
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   resolve: {
@@ -40,6 +63,7 @@ export default defineConfig({
   },
   plugins: [
     monacoDompurify(),
+    monacoLoaderNoCdn(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -128,6 +152,14 @@ export default defineConfig({
         setup(build) {
           build.onResolve({ filter: /^\.\/dompurify\/dompurify\.js$/ },
             args => (MONACO_PURIFY.importer.test(args.importer) ? { path: PURIFY } : undefined))
+        },
+      }, {
+        name: 'monaco-loader-no-cdn',
+        setup(build) {
+          build.onLoad({ filter: /@monaco-editor[\\/]loader[\\/].*\.js$/ }, async args => {
+            const code = await fs.promises.readFile(args.path, 'utf8')
+            return code.includes('cdn.jsdelivr.net') ? { contents: noLoaderCdn(code), loader: 'js' } : undefined
+          })
         },
       }],
     },
