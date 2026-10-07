@@ -1,0 +1,15 @@
+== master (shared/problems.ts)
+e-dimotikou-generated.json paint: 121
+e-dimotikou-generated.json paint-all: 121
+e-dimotikou-problems.json paint: 6
+e-dimotikou-problems.json paint-all: 6
+g-dimotikou-generated.json paint: 13
+g-dimotikou-generated.json paint-all: 13
+== prototype: in a sentence that holds both a needed and an unneeded fact, 🟢/🟡 strays count only in the comma-clause holding the unneeded fact (proto-clauses.diff)
+e-dimotikou-generated.json paint: 11: e5-gen-big-table-002 e5-gen-big-table-005 e5-gen-big-table-010 e5-gen-big-table-011 e5-gen-big-table-014 e5-gen-big-table-019 e5-gen-pattern-sum-004 e5-gen-pattern-sum-013 e5-gen-pattern-sum-017 e5-gen-coins-notes-012 e5-gen-coins-notes-016
+e-dimotikou-generated.json paint-all: 11: e5-gen-big-table-002 e5-gen-big-table-005 e5-gen-big-table-010 e5-gen-big-table-011 e5-gen-big-table-014 e5-gen-big-table-019 e5-gen-pattern-sum-004 e5-gen-pattern-sum-013 e5-gen-pattern-sum-017 e5-gen-coins-notes-012 e5-gen-coins-notes-016
+e-dimotikou-problems.json paint: 1: e5-problem-oranges
+e-dimotikou-problems.json paint-all: 1: e5-problem-oranges
+g-dimotikou-generated.json paint: 8: g3-gen-table-reading-001 g3-gen-table-reading-004 g3-gen-table-reading-005 g3-gen-table-reading-008 g3-gen-table-reading-012 g3-gen-table-reading-014 g3-gen-table-reading-015 g3-gen-table-reading-019
+g-dimotikou-generated.json paint-all: 8: g3-gen-table-reading-001 g3-gen-table-reading-004 g3-gen-table-reading-005 g3-gen-table-reading-008 g3-gen-table-reading-012 g3-gen-table-reading-014 g3-gen-table-reading-015 g3-gen-table-reading-019
+(backend npm test with the prototype: 95/95 pass)

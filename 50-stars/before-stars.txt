@@ -1,0 +1,9 @@
+before: g3-world-013 (paint, calc, choice), ⭐3
+  stepCounts on marked: paint=false calc=false choice=true
+  stepCounts on paint: paint=false calc=false choice=true
+  stepCounts on paint-all: paint=false calc=false choice=true
+  forgiving, paint: one wrong painting and one calc slip (mistakes [1,1,0]) pays ⭐3
+  forgiving, paint-all: one wrong painting and one calc slip (mistakes [1,1,0]) pays ⭐3
+  unforgiving, paint: one wrong painting and one calc slip (mistakes [1,1,0]) pays ⭐3
+  unforgiving, paint-all: one wrong painting and one calc slip (mistakes [1,1,0]) pays ⭐3
+  unforgiving, the calc step after 2 slips: still hers (plays the forgiving way: hint, outline, «Δείξε μου» from the 3rd)

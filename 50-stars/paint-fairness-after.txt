@@ -1,0 +1,2 @@
+== after (shared/problems.ts on this branch, pools regenerated)
+(no line above: the right painting passes on every shipped problem, both rungs; 1216 problems)

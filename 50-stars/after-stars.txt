@@ -1,0 +1,6 @@
+after: g3-world-013 (paint, calc, choice), ⭐3
+  wrongTryCounts: paint=true calc=true choice=true; calc slips: math=true order=true nothing=false
+  forgiving: one wrong painting and one calc slip in the arithmetic (mistakes [1,1,0]) pays ⭐1
+  unforgiving: one wrong painting and one calc slip in the arithmetic (mistakes [1,1,0]) pays ⭐1
+  unforgiving, the calc step after 2 counted slips: shown worked; after 4 slips of which 1 counted: still hers
+  unforgiving, a painting after its 1st wrong try: frames shown
