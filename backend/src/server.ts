@@ -27,11 +27,10 @@ import { HEARTBEAT_MS } from './sync';
 import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
 import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
+import { cronMatchesAt, nextCronRun } from './cron';
 
 const pump = util.promisify(pipeline);
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const cronParser = require('cron-parser');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { DateTime } = require('luxon');
 
@@ -48,16 +47,7 @@ async function checkSchedules(date: Date) {
   // Check regular schedules (flows, routines)
   for (const schedule of schedules) {
     try {
-      const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
-        currentDate: new Date(date.getTime() - 1000),
-        tz: timezone
-      });
-      
-      const next = interval.next().toDate();
-      const diff = Math.abs(next.getTime() - date.getTime());
-      const isMatch = diff < 60000 && next.getMinutes() === date.getMinutes();
-
-      if (isMatch) {
+      if (cronMatchesAt(schedule.cron, date, timezone)) {
         console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
         logAction('SCHEDULE_MATCH', { scheduleId: schedule.id, targetId: schedule.targetId, cron: schedule.cron, time: localTime });
         triggerAction(schedule.targetId, `schedule:${schedule.id}`);
@@ -365,10 +355,7 @@ server.post('/api/hooks/push', async (request, reply) => {
 
     if (schedule) {
       const timezone = settings?.timezone || 'Europe/Athens';
-      const interval = cronParser.CronExpressionParser.parse(schedule.cron, {
-        tz: timezone
-      });
-      const nextTime = interval.next().toDate();
+      const nextTime = nextCronRun(schedule.cron, timezone);
       
       request.log.info(`[Hook] Found schedule for ${id}: ${schedule.cron}. Simulating time: ${nextTime.toISOString()}`);
       
@@ -448,11 +435,7 @@ server.get('/api/debug/schedule', async (request, reply) => {
   
   const schedules = configuredSchedules.map(s => {
     try {
-      const interval = cronParser.CronExpressionParser.parse(s.cron, {
-        currentDate: now,
-        tz: timezone
-      });
-      const next = interval.next().toDate();
+      const next = nextCronRun(s.cron, timezone, now);
       const nextLocal = DateTime.fromJSDate(next).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
       
       return {
