@@ -109,7 +109,8 @@ export const cheaperOption: Family = {
     ], `Όσ${P.g === 'f' ? 'ες' : 'α'} ${P.many}, επί την τιμή ${P.g === 'f' ? 'της μίας' : 'του ενός'}.`));
     const trap = (pa < pc) !== cheapA; // the cheaper pack is not the cheaper way
     steps.push(b.choice('solve', telling === 2 ? 'Ποιο παιδί πλήρωσε λιγότερα;' : 'Ποιος τρόπος είναι φθηνότερος;',
-      cheapA ? options[0] : options[1], [cheapA ? options[1] : options[0], ['Κοστίζουν το ίδιο παντού', 'Κοστίζουν το ίδιο', 'Ακριβώς ίσα'][telling]],
+      cheapA ? options[0] : options[1], [cheapA ? options[1] : options[0],
+        [['Κοστίζουν το ίδιο παντού', 'Κοστίζουν το ίδιο', 'Το ίδιο παντού'], ['Κοστίζουν το ίδιο', 'Το ίδιο', 'Έχουν το ίδιο κόστος'], ['Ακριβώς ίσα', 'Πλήρωσαν ίσα']][telling]],
       trap ? `Δεν κοιτάμε την τιμή ${P.gen}, αλλά όσα πληρώνουμε για όλα: ${A} ή ${C} ευρώ;` : `Συγκρίνουμε ${A} και ${C} ευρώ.`));
     steps.push(b.numbers('check', 'Πόσα ευρώ λιγότερα;', [
       { label: r.chance(0.6) ? `${Math.max(A, C)} − ${Math.min(A, C)} =` : 'Λιγότερα', answer: diff, unit: 'ευρώ' },

@@ -1,6 +1,6 @@
 // Working backwards: spent some, then half of what was left, ... and ended with c: how
 // much at first? (Ε΄ κεφ. 1.3, στρατηγική «Εργάζομαι αντίστροφα»; Επαναληπτικό 2, 2ο πρόβλημα).
-import { extra, fmt, known, people, sought, type Family, type Person } from '../../lib.ts';
+import { extra, fmt, known, NO_MISTAKE, people, sought, STRATEGY, type Family, type Person } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 type Kind = 'minus' | 'plus' | 'half';
@@ -156,9 +156,10 @@ export const backwardsMoney: Family = {
     const halfBack = ops.reduceRight((acc, op) => op.kind === 'half' ? acc / 2 : op.kind === 'minus' ? acc + op.n : acc - op.n, c);
     const steps: ProblemStep[] = [b.tag(undefined, 'Ξέρουμε το τέλος και όλα όσα έγιναν. Ό,τι δεν αλλάζει τους αριθμούς το αφήνουμε.')];
     if (r.chance(0.6)) {
-      steps.push(b.choice('plan', 'Ποια στρατηγική ταιριάζει;', 'Εργάζομαι αντίστροφα: από το τέλος',
+      steps.push(b.choice('plan', 'Ποια στρατηγική ταιριάζει;', STRATEGY.backwards,
         // (never the number the naive sum gives: it is the first step's answer)
-        ['Αναζητώ ένα μοτίβο στους αριθμούς', naive > 0 && naive !== start ? 'Κάνω με τη σειρά τις πράξεις της ιστορίας' : 'Προσθέτω όλους τους αριθμούς της ιστορίας'],
+        [STRATEGY.pattern, naive > 0 && naive !== start ? ['Κάνω με τη σειρά τις πράξεις της ιστορίας', 'Κάνω τις πράξεις με τη σειρά']
+          : ['Προσθέτω όλους τους αριθμούς της ιστορίας', 'Προσθέτω τους αριθμούς']],
         'Ξέρουμε μόνο πόσα έμειναν στο τέλος. Από εκεί γυρίζουμε πίσω, κάνοντας κάθε φορά το αντίθετο.'));
     }
     steps.push(b.numbers('solve', 'Πηγαίνουμε αντίστροφα, από το τέλος προς την αρχή.', back,
@@ -171,7 +172,7 @@ export const backwardsMoney: Family = {
       ? b.numbers('check', `Πώς ελέγχουμε; Ξαναπαίζουμε την ιστορία από την αρχή, με ${fmt(start)}.`, fwd,
         `Στο τέλος πρέπει να βρούμε ${fmt(c)}.`)
       : b.choice('check', `Κάποιος απάντησε «${fmt(halfBack)}». Τι έκανε λάθος;`, s.wrongHalf,
-        ['Κανένα λάθος, η απάντηση είναι σωστή', 'Ξεκίνησε από την αρχή αντί από το τέλος'],
+        [['Κανένα λάθος, η απάντηση είναι σωστή', ...NO_MISTAKE], ['Ξεκίνησε από την αρχή αντί από το τέλος', 'Ξεκίνησε από την αρχή']],
         'Όταν πηγαίνουμε πίσω, κάνουμε το αντίθετο κάθε βήματος.'));
     return { title: s.title, story, steps };
   },

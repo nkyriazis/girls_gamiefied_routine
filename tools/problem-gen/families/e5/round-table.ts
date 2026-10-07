@@ -1,7 +1,7 @@
 // Numbered places around a circle, two of them exactly opposite: how many places? Half the
 // circle is the difference of the two numbers (Ε΄ Επαναληπτικό 1, 5ο πρόβλημα: «Ο Νίκος
 // κάθεται στην καρέκλα με τον αριθμό 7 και απέναντί του κάθεται η Δανάη στην καρέκλα 18»).
-import { extra, fmt, known, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, people, sought, STRATEGY, type Family, type Person, type Rng } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 interface Setting {
@@ -74,8 +74,8 @@ export const roundTable: Family = {
     const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε πώς είναι αριθμημένες οι θέσεις και ποιες δύο είναι απέναντι.')];
     if (r.chance(0.6)) {
       steps.push(b.choice('plan', 'Ποια στρατηγική μας βοηθά;',
-        r.chance(0.5) ? 'Παρουσιάζω το πρόβλημα με σχέδιο' : 'Λύνω πρώτα ένα πιο απλό πρόβλημα',
-        [`Απαντώ ${hi}, τον μεγαλύτερο αριθμό`, `Προσθέτω ${lo} + ${hi} και τελειώνω`],
+        r.chance(0.5) ? STRATEGY.draw : STRATEGY.simpler,
+        [[`Απαντώ ${hi}, τον μεγαλύτερο αριθμό`, `Απαντώ ${hi}, τον μεγαλύτερο`], [`Προσθέτω ${lo} + ${hi} και τελειώνω`, `Προσθέτω ${lo} + ${hi}`]],
         'Από τη μία θέση ως την απέναντι είναι μισός κύκλος.'));
     }
     const show = r.chance(0.5);
@@ -100,7 +100,7 @@ export const roundTable: Family = {
           `Από την 1 προχωράμε μισό κύκλο: 1 + ${half}.`)
         : b.choice('check', `Γιατί η απάντηση δεν είναι απλώς το ${hi}, ο μεγαλύτερος αριθμός της ιστορίας;`,
           `Μετά το ${hi} υπάρχουν κι άλλες θέσεις`,
-          [`Γιατί πρέπει να προσθέσουμε ${lo} + ${hi}`, 'Είναι η απάντηση: ο μεγαλύτερος αριθμός'],
+          [[`Γιατί πρέπει να προσθέσουμε ${lo} + ${hi}`, `Πρέπει να προσθέσουμε ${lo} + ${hi}`], ['Είναι η απάντηση: ο μεγαλύτερος αριθμός', 'Είναι η απάντηση: ο μεγαλύτερος']],
           `Ζωγράφισε τον κύκλο: το ${hi} δεν είναι η τελευταία θέση.`));
     return { title: s.title, story, steps };
   },

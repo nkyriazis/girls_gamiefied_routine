@@ -1,7 +1,7 @@
 // Have a, need b, gather c every day or week: how many days or weeks? What is missing is
 // divided by c, and a remainder means one more day (Γ΄ κεφ. 18 «Διαιρέσεις» και κεφ. 10).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { extra, fmt, known, PEOPLE, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, PEOPLE, sought, type Family, type Person, type Rng, type Wording } from '../../lib.ts';
 
 interface Period {
   HowMany: string; // "Σε πόσες εβδομάδες"
@@ -163,10 +163,10 @@ export const daysToGoal: Family = {
         { label: `${cap(s.unit)} που περισσεύουν`, answer: rest },
       ], c >= 10 ? `Μετράμε ανά ${c}: ${c}, ${2 * c}, ${3 * c}, … Πού σταματάμε, πριν ξεπεράσουμε το ${need};`
         : `Σκέψου την προπαίδεια του ${c}: ποιο γινόμενο φτάνει πιο κοντά στο ${need} χωρίς να το ξεπερνά;`));
-      const wrongs = [`${q}, γιατί τόσες φορές χωράει το ${c} στο ${need}`];
-      if (rest > 1 && rest !== q && rest !== q + 1) wrongs.push(`${rest}, όσα περισσεύουν στο τέλος`);
+      const wrongs: Wording[] = [[`${q}, γιατί τόσες φορές χωράει το ${c} στο ${need}`, `${q}, όσες φορές χωράει το ${c}`]];
+      if (rest > 1 && rest !== q && rest !== q + 1) wrongs.push([`${rest}, όσα περισσεύουν στο τέλος`, `${rest}, γιατί τόσα περισσεύουν στο τέλος`, `${rest}, όσα περισσεύουν`]);
       else if (!given && Math.ceil(total / c) !== q + 1 && Math.ceil(total / c) !== q) wrongs.push(`${Math.ceil(total / c)}, όσες φορές χωράει το ${c} στο ${fmt(total)}`);
-      if (wrongs.length < 2 && rest > 1 && q + rest !== q + 1) wrongs.push(`${q + rest}, γιατί προσθέτουμε και όσα περισσεύουν`);
+      if (wrongs.length < 2 && rest > 1 && q + rest !== q + 1) wrongs.push([`${q + rest}, γιατί προσθέτουμε και όσα περισσεύουν`, `${q + rest}, μαζί με όσα περισσεύουν`]);
       if (wrongs.length < 2) wrongs.push(`${need - c}, γιατί αφαιρούμε ${need} − ${c}`);
       steps.push(b.choice('check', `${per.HowMany} λοιπόν;`,
         `${q + 1}, ${per.oneMore} για όσα μένουν`, wrongs,

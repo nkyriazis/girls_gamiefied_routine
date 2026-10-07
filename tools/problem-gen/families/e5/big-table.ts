@@ -1,7 +1,7 @@
 // A table of large numbers in the story (visitors per year, cars per month): add or compare
 // two of its rows; the other rows are there but not needed (Ε΄ κεφ. 2.8, the visitors of
 // the Acropolis Museum).
-import { cap, extra, fmt, known, people, sought, type Family, type Person } from '../../lib.ts';
+import { cap, extra, fmt, known, NO_MISTAKE, people, sought, type Family, type Person } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 // "2021" / "το 2021", "Ιούνιος" / "τον Ιούνιο"; w: how busy that period is (2020 had few visitors, August many)
@@ -177,7 +177,7 @@ export const bigTable: Family = {
         ? b.numbers('check', 'Πώς ελέγχουμε; Προσθέτουμε τη διαφορά στον μικρότερο αριθμό.', [{ label: `${fmt(diff)} + ${fmt(lo)} =`, answer: hi }],
           `Πρέπει να βρούμε τον μεγαλύτερο αριθμό, το ${fmt(hi)}.`)
         : b.choice('check', `Κάποιος απάντησε «${fmt(hi + lo)}». Τι έκανε λάθος;`, 'Πρόσθεσε αντί να αφαιρέσει',
-          ['Κανένα λάθος, είναι σωστό', `Πήρε λάθος ${s.periods === YEARS ? 'χρονιά' : 'μήνα'} από τον πίνακα`],
+          [NO_MISTAKE, [`Πήρε λάθος ${s.periods === YEARS ? 'χρονιά' : 'μήνα'} από τον πίνακα`, `Πήρε λάθος ${s.periods === YEARS ? 'χρονιά' : 'μήνα'}`, `Διάβασε λάθος ${s.periods === YEARS ? 'χρονιά' : 'μήνα'}`]],
           `Το ${fmt(hi + lo)} είναι το άθροισμα των δύο αριθμών. Η ερώτηση όμως ζητάει τη διαφορά τους.`));
     }
     return { title: s.title, story, steps };

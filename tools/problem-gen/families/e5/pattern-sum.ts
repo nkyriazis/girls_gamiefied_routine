@@ -1,15 +1,15 @@
 // A growing pattern: a staircase of bricks (1, 2, 3, ...), tables joined in a row, squares
 // of straws, rows of a theatre. Find it for small cases, then for n (Ε΄ Επαναληπτικό 1,
 // 1ο πρόβλημα: «Ο Αντρέι φτιάχνει με τουβλάκια μια σκάλα»).
-import { extra, fmt, known, people, sought, type Builder, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, NO_MISTAKE, NOTHING_FORGOTTEN, people, sought, STRATEGY, type Builder, type Family, type Person, type Rng } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 const tri = (n: number) => (n * (n + 1)) / 2;
 
 // The strategy step, the same for every setting: the wrong options are the typical mistakes.
 function plan(b: Builder, r: Rng, mistake: string, small: string) {
-  const right = r.chance(0.5) ? 'Λύνω πρώτα ένα πιο απλό πρόβλημα' : 'Αναζητώ ένα μοτίβο: τι αλλάζει';
-  return b.choice('plan', 'Ποια στρατηγική μας βοηθά;', right, ['Εργάζομαι αντίστροφα, από το τέλος', `${mistake} και τελειώνω`],
+  const right = r.chance(0.5) ? STRATEGY.simpler : ['Αναζητώ ένα μοτίβο: τι αλλάζει', 'Αναζητώ ένα μοτίβο'];
+  return b.choice('plan', 'Ποια στρατηγική μας βοηθά;', right, [STRATEGY.backwards, [`${mistake} και τελειώνω`, mistake]],
     'Με λίγα κομμάτια μπορούμε να ζωγραφίσουμε και να μετρήσουμε. Μετά βλέπουμε τι αλλάζει κάθε φορά.');
 }
 
@@ -50,7 +50,7 @@ const staircase: Maker = (r, b, p) => {
       [{ label: `${fmt(tri(n - 1))} + ${n} =`, answer: total }], `Για ${n - 1}: 1 + 2 + … + ${n - 1} είναι ${fmt(tri(n - 1))}.`)
     : b.choice('check', `Κάποιος απάντησε «${fmt(n * n)}». Τι έκανε λάθος;`,
       `Μέτρησε ${n} σε κάθε ${cans ? 'σειρά' : 'σκαλοπάτι'}`,
-      ['Κανένα λάθος, είναι σωστό', `Ξέχασε ${cans ? 'την πάνω σειρά' : 'ένα σκαλοπάτι, το πρώτο'}`],
+      [NO_MISTAKE, cans ? ['Ξέχασε την πάνω σειρά', 'Ξέχασε την πάνω σειρά της πυραμίδας'] : ['Ξέχασε ένα σκαλοπάτι, το πρώτο', 'Ξέχασε το πρώτο σκαλοπάτι']],
       `Μόνο ${cans ? 'η κάτω σειρά έχει' : 'το τελευταίο σκαλοπάτι έχει'} ${n}. ${cans ? 'Οι άλλες σειρές έχουν λιγότερες.' : 'Τα άλλα σκαλοπάτια έχουν λιγότερα.'}`));
   return { title: cans ? 'Η πυραμίδα από κονσέρβες' : 'Η σκάλα με τα τουβλάκια', story, steps };
 };
@@ -96,7 +96,8 @@ const linear: Maker = (r, b, p) => {
       [{ label: `${per} × 3 + ${base} =`, answer: f(3) }], `Η ιστορία λέει ${f(3)}. Αν βγει το ίδιο, ο κανόνας δουλεύει.`)
     : b.choice('check', `Κάποιος απάντησε «${fmt(4 * n)}». Τι ξέχασε;`,
       straws ? 'Ότι τα διπλανά έχουν κοινό καλαμάκι' : 'Ότι στις ενώσεις χάνονται θέσεις',
-      [`Τίποτα, κάθε ${straws ? 'τετράγωνο θέλει 4 καλαμάκια' : 'τραπέζι έχει 4 θέσεις'}`, `Να προσθέσει ${straws ? 'ένα ακόμα τετράγωνο' : 'ένα ακόμα τραπέζι'}`],
+      [[`Τίποτα, κάθε ${straws ? 'τετράγωνο θέλει 4 καλαμάκια' : 'τραπέζι έχει 4 θέσεις'}`, NOTHING_FORGOTTEN[0]],
+        [`Να προσθέσει ${straws ? 'ένα ακόμα τετράγωνο' : 'ένα ακόμα τραπέζι'}`, straws ? 'Ένα ακόμα τετράγωνο' : 'Ένα ακόμα τραπέζι']],
       straws ? 'Ζωγράφισε 2 τετράγωνα το ένα δίπλα στο άλλο και μέτρησε τα καλαμάκια.' : 'Ζωγράφισε 2 ενωμένα τραπέζια και μέτρησε τις θέσεις.'));
   return { title: straws ? 'Τα τετράγωνα με τα καλαμάκια' : 'Τα ενωμένα τραπέζια', story, steps };
 };
@@ -124,7 +125,7 @@ const theatre: Maker = (r, b, p) => {
     ? b.numbers('check', 'Πώς ελέγχουμε; Δοκιμάζουμε τον κανόνα στη σειρά 3, που την ξέρουμε.', [{ label: `${a} + 2 × 2 =`, answer: a + 4 }],
       'Από την πρώτη ως την τρίτη σειρά ανεβαίνουμε 2 φορές.')
     : b.choice('check', `Κάποιος απάντησε «${fmt(a + 2 * n)}». Τι έκανε λάθος;`, `Μέτρησε ${n} φορές το 2, όχι ${n - 1}`,
-      ['Κανένα λάθος, είναι σωστό', `Έπρεπε να πολλαπλασιάσει ${a} × ${n}`],
+      [NO_MISTAKE, [`Έπρεπε να πολλαπλασιάσει ${a} × ${n}`, `Έπρεπε να κάνει ${a} × ${n}`]],
       'Η πρώτη σειρά έχει ήδη τις θέσεις της. Οι 2 θέσεις προστίθενται από τη δεύτερη σειρά και μετά.'));
   return { title: 'Οι σειρές του θεάτρου', story, steps };
 };

@@ -26,10 +26,19 @@
 //     item's range (per piece), notes and coins are real and «πληρώνει με» is real notes;
 //   - no choice gives its answer away by length (lib.ts, lengthTell): no option stands out at either
 //     end (the longest at most 30 % or 5 code points longer than the next, the shortest at most 30 %
-//     or 5 shorter), the right one is never the only longest, and among options that are all numbers
-//     never the only one with the most digits; and in a family (a curated pool counts as one), the
-//     right option of one prompt (numbers and names aside) is the only shortest in at most half its
-//     choices, from 3 choices on (onlyShortest);
+//     or 5 shorter), and among options that are all numbers the right one is never the only one with
+//     the most digits;
+//   - the place rule (#50 part 5c): in a family (the world pool is one, a curated pool is one), the
+//     right option of one prompt (lib.ts, promptKey: numbers and names aside, synonyms as one) with
+//     the same number of options is not at one place by length (lib.ts, places: within 2 code points
+//     counts as tied) more often than a fair die would allow (placeLimit: over it in less than 1
+//     prompt in 100), from 6 choices on; from 3 to 5 a warning. A prompt (from 6 choices) under that
+//     but over its share and one in 8 more is a warning: mostly a prompt whose wordings can't spread
+//     the right option evenly without new content (gen.ts --places says which and how far they
+//     get), sometimes only the seeds of the few problems that ask it. The
+//     curated pools keep the rules per choice and per prompt they had before it: the right one is
+//     never the only longest, nor the only shortest in more than half a prompt's choices from 3 on
+//     (onlyShortest);
 //   - no wrong option shows an answer still to come: a number from 10 up that a later numbers row
 //     asks for, that the story doesn't give and the right option doesn't show («30 − 21» above
 //     «9 + 3 + 9 = 21»; smaller numbers meet by chance, «4 παιδικά» beside a price of 4 €);
@@ -43,7 +52,7 @@
 //   - check-gender's words in a hint or an option where the pools had none (gender-baseline.json:
 //     family, place and word as they were before #50 part 5a; the ones already there are listed as
 //     a warning).
-// Warnings: a family with little variety (few distinct story skeletons), a story without
+// Warnings: the place rule's prompts with 3–5 choices and those its wordings can't spread evenly, a family with little variety (few distinct story skeletons), a story without
 // a question, very long stories, check-gender's words already in the pools (one line per
 // family and place), hints and prompts that show an answer of their own step or a later one
 // (one line per family, kind and place: many written hints work the row out, «12 × 2 = 24.»).
@@ -59,7 +68,10 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { Exercise, ProblemExercise } from '../../shared/types.ts';
 import { genderedWords } from '../../frontend/scripts/gendered.mjs';
-import { lengthTell, onlyShortest, PEOPLE, rng, SHORTEST_MIN_CHOICES, SHORTEST_SHARE } from './lib.ts';
+import {
+  lengthTell, NAMES, onlyShortest, PLACE_MIN_CHOICES, PLACE_WARN_CHOICES, placeLimit, places, promptKey, rng,
+  SHORTEST_MIN_CHOICES, SHORTEST_SHARE
+} from './lib.ts';
 import { auditMaths, mathsSample } from './maths/check.ts';
 import { auditLanguage, languageSample } from './language/check.ts';
 import { checkStory } from './story-check.ts';
@@ -126,16 +138,18 @@ const genderBaseline = new Set<string>(existsSync(BASELINE_FILE) ? JSON.parse(re
 const genderHits: string[] = [];
 const gendered = new Map<string, string[]>();
 const families = new Map<string, { grade: number; skeletons: Set<string>; n: number; steps: number }>();
-// Per family and prompt (numbers and names aside): choices, and how many have the right option the only shortest
+// Per curated pool and prompt (numbers and names aside): choices, and how many have the right option the only shortest
 const shortest = new Map<string, { n: number; only: number; example: string }>();
+// Per family, prompt key and number of options: the choices, and how often each place by length wins
+const placeTally = new Map<string, { N: number; P: number[]; example: string }>();
+// Per pool and number of options, the same
+const poolPlaces = new Map<string, { N: number; P: number[] }>();
 // Per family, kind and place: hints and prompts that show an answer of their own step or a later one
 const laterAnswers = new Map<string, { n: number; example: string }>();
 const kinds = new Map<string, number>();
 
 // A story with numbers and names blanked out: how many really different stories a family has.
-const names = PEOPLE.flatMap(p => [p.bare, p.gen.split(' ')[1], p.acc.split(' ')[1]]);
-const namesRe = new RegExp(`(${[...new Set(names)].sort((a, b) => b.length - a.length).join('|')})`, 'g');
-const skeleton = (story: string) => plain(story).replace(namesRe, '@').replace(/\d[\d.]*/g, '#');
+const skeleton = (story: string) => plain(story).replace(NAMES, '@').replace(/\d[\d.]*/g, '#');
 
 for (const pool of pools) {
   for (const ex of pool.exercises) {
@@ -188,8 +202,10 @@ for (const pool of pools) {
       });
     }
 
-    // Family ids are unique within a grade (Γ΄ and Ε΄ both have a missing-info)
-    const fam = `${grade}:${(ex.generatorParams as { family?: string } | undefined)?.family ?? `(curated ${pool.file})`}`;
+    // Family ids are unique within a grade (Γ΄ and Ε΄ both have a missing-info); the world pool is one family
+    const params = ex.generatorParams as { family?: string; world?: string } | undefined;
+    const curated = !params?.family && !params?.world;
+    const fam = `${grade}:${params?.family ?? (params?.world ? 'world' : `(curated ${pool.file})`)}`;
 
     // An answer still to come, shown before it is asked: a later row's answer the story doesn't give
     const given = new Set((plain(ex.story).match(new RegExp(NUM, 'g')) ?? []).map(toNumber));
@@ -259,13 +275,25 @@ for (const pool of pools) {
         else checkEquations(ex, `${at} right option`, opts[step.correctIndex]);
         opts.forEach(o => hygiene(ex, `${at} option`, o));
         if (opts.length < 2 || opts.length > 5) err(ex, `${at}: ${opts.length} options`);
-        const tell = step.correctIndex >= 0 && step.correctIndex < opts.length ? lengthTell(opts, step.correctIndex) : null;
+        const inRange = step.correctIndex >= 0 && step.correctIndex < opts.length;
+        const tell = inRange ? lengthTell(opts, step.correctIndex, { onlyLongest: curated }) : null;
         if (tell) err(ex, `${at}: gives its answer away by length: ${tell}`);
-        const key = `${fam} «${step.prompt.replace(namesRe, '@').replace(new RegExp(NUM, 'g'), '#')}»`;
-        const t = shortest.get(key) ?? { n: 0, only: 0, example: ex.id };
-        t.n++;
-        if (onlyShortest(opts, step.correctIndex)) t.only++;
-        shortest.set(key, t);
+        if (inRange) {
+          const key = `${fam} «${promptKey(step.prompt)}»`;
+          if (curated) {
+            const t = shortest.get(key) ?? { n: 0, only: 0, example: ex.id };
+            t.n++;
+            if (onlyShortest(opts, step.correctIndex)) t.only++;
+            shortest.set(key, t);
+          }
+          const P = places(opts, step.correctIndex);
+          for (const [map, k, example] of [[placeTally, `${key} n=${opts.length}`, `${ex.id} step ${i}`], [poolPlaces, `${pool.file.replace(/\.json$/, '')} n=${opts.length}`, '']] as const) {
+            const t = (map as Map<string, { N: number; P: number[]; example?: string }>).get(k) ?? { N: 0, P: P.map(() => 0), example };
+            t.N++;
+            P.forEach((p, j) => (t.P[j] += p));
+            (map as Map<string, { N: number; P: number[]; example?: string }>).set(k, t);
+          }
+        }
       }
       if (step.kind === 'numbers') {
         // A check that states the number it asks for: she types it back
@@ -323,11 +351,24 @@ for (const pool of pools) {
   }
 }
 
-// A prompt whose right option is mostly the only shortest: tapping the shortest wins it
+// A curated prompt whose right option is mostly the only shortest: tapping the shortest wins it
 for (const [key, t] of shortest) {
   if (t.n >= SHORTEST_MIN_CHOICES && t.only > SHORTEST_SHARE * t.n) {
     errors.push(`family ${key.slice(2)}: the right option is the only shortest in ${t.only} of ${t.n} choices (e.g. ${t.example})`);
   }
+}
+
+// The place rule: a prompt whose right option sits at one place by length more than a fair die would
+// put it there. Tapping «the k-th by length» wins P[k] of its choices.
+const PLACE_NAMES = (n: number) => (n === 2 ? ['shorter', 'longer'] : n === 3 ? ['shortest', 'middle', 'longest'] : ['shortest', ...Array.from({ length: n - 2 }, (_, k) => `${k + 2}nd shortest`.replace('3nd', '3rd').replace('4nd', '4th')), 'longest']);
+for (const [key, t] of placeTally) {
+  if (t.N < PLACE_WARN_CHOICES) continue;
+  const n = t.P.length, top = Math.max(...t.P), k = t.P.indexOf(top), limit = placeLimit(t.N, n);
+  // As even as a prompt asked by every problem gets (lib.ts, placeSeed): its share, and one in 8 more
+  const even = Math.ceil(t.N / n) + Math.floor(t.N / 8);
+  const msg = `family ${key.slice(2)}: the ${PLACE_NAMES(n)[k]} by length is right in ${+top.toFixed(1)} of ${t.N} choices`;
+  if (top > limit + 1e-9) (t.N >= PLACE_MIN_CHOICES ? errors : warnings).push(`${msg} (a fair die: at most ${limit}; e.g. ${t.example})`);
+  else if (t.N >= PLACE_MIN_CHOICES && top > even + 1e-9) warnings.push(`${msg}, over its share and one in 8 (${even}): gen.ts --places tells whether its wordings can spread it (e.g. ${t.example})`);
 }
 
 for (const [key, f] of families) {
@@ -353,6 +394,11 @@ for (const grade of [3, 5]) {
   }
 }
 console.log(`\nSteps by kind: ${[...kinds].map(([k, n]) => `${k} ${n}`).join(', ')}`);
+// Where the right option sits by length, per pool: what tapping «the k-th by length» wins
+console.log('\nThe right option by length (within 2 code points tied), per pool: shortest … longest, and at random');
+for (const [k, t] of [...poolPlaces].filter(([, t]) => t.N >= 10).sort(([a], [b]) => a.localeCompare(b))) {
+  console.log(`  ${k.padEnd(28)} ${String(t.N).padStart(4)} choices  ${t.P.map(p => `${(100 * p / t.N).toFixed(1)}%`.padStart(6)).join(' ')}   (${(100 / t.P.length).toFixed(1)}% each)`);
+}
 
 // The plain maths items, re-solved from their text; the language items, keys derived again from the lexicon
 const maths = auditMaths(pools);

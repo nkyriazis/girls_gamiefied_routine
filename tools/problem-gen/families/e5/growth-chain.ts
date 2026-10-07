@@ -1,7 +1,7 @@
 // A quantity that changes day by day: three times the day before, twice the day before,
 // and on the last day as much as all the days before (Ε΄ Επαναληπτικό 1, 4ο πρόβλημα:
 // «Η κυρία Μαρία την πρώτη ημέρα μάζεψε από την πορτοκαλιά της 8 πορτοκάλια»).
-import { extra, fmt, known, people, sought, type Family, type Person } from '../../lib.ts';
+import { extra, fmt, known, NO_MISTAKE, people, sought, type Family, type Person } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 const TIMES: Record<number, { n: string; f: string }> = {
@@ -114,7 +114,8 @@ export const growthChain: Family = {
     if (r.chance(0.6)) {
       steps.push(b.choice('plan', r.chance(0.5) ? 'Ποιο εργαλείο μας βοηθά;' : 'Πώς οργανώνουμε τη λύση;',
         'Ένας πίνακας με μια γραμμή για κάθε ημέρα',
-        ['Προσθέτω τους αριθμούς της ιστορίας', `Πολλαπλασιάζω ${a} × 4, γιατί είναι τέσσερις ημέρες`],
+        [['Προσθέτω τους αριθμούς της ιστορίας', 'Προσθέτω τους αριθμούς'],
+          [`Πολλαπλασιάζω ${a} × 4, γιατί είναι τέσσερις ημέρες`, `Πολλαπλασιάζω ${a} × 4, για τις 4 ημέρες`]],
         'Κάθε ημέρα εξαρτάται από την προηγούμενη. Τις βρίσκουμε μία μία, με τη σειρά.'));
     }
     steps.push(b.numbers('solve', 'Βρίσκουμε κάθε ημέρα με τη σειρά.', rows,
@@ -123,7 +124,7 @@ export const growthChain: Family = {
       ? b.numbers('check', 'Αναστοχαζόμαστε: η τέταρτη ημέρα είναι όσο οι τρεις πρώτες μαζί. Άρα όλες οι ημέρες είναι το διπλάσιο της τέταρτης.',
         [{ label: `2 × ${d4} =`, answer: total, unit: s.noun }], 'Αν βγει ίδιο με το σύνολο που βρήκαμε, οι πράξεις μας είναι σωστές.')
       : b.choice('check', `Κάποιος απάντησε «${fmt(d4)}». Τι έκανε λάθος;`, 'Βρήκε μόνο την τέταρτη ημέρα',
-        ['Κανένα λάθος, είναι σωστό', 'Ξέχασε να πολλαπλασιάσει με το 4'],
+        [NO_MISTAKE, ['Ξέχασε να πολλαπλασιάσει με το 4', 'Δεν πολλαπλασίασε με το 4']],
         'Η ερώτηση ζητάει και τις τέσσερις ημέρες μαζί.'));
     return { title: s.title, story, steps };
   },

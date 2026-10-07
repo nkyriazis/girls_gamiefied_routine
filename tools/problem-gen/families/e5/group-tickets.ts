@@ -2,7 +2,7 @@
 // λιγότερα»), paid with a note, the change; or a school group where one teacher for every
 // 10 pupils goes in free (Ε΄ Επαναληπτικό 2, 3ο πρόβλημα; κεφ. 2.8 και 2.9).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { extra, fmt, known, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, NO_MISTAKE, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
 
 interface Venue {
   title: string[];
@@ -93,7 +93,8 @@ export const groupTickets: Family = {
       const allAdult = nAll * A;
       steps.push(b.choice('check', `Αναστοχαζόμαστε: κάποιος βρήκε ${nAll} × ${A} = ${allAdult} €. Τι λάθος έκανε;`,
         'Πλήρωσε τα παιδιά σαν ενήλικες',
-        ['Κανένα λάθος, είναι σωστό', f.kids > 1 ? `Έπρεπε να αφαιρέσει ${less} € μόνο μία φορά` : `Έπρεπε να προσθέσει ${less} € στο σύνολο`],
+        [NO_MISTAKE, f.kids > 1 ? [`Έπρεπε να αφαιρέσει ${less} € μόνο μία φορά`, `Έπρεπε να αφαιρέσει ${less} € μία φορά`]
+          : [`Έπρεπε να προσθέσει ${less} € στο σύνολο`, `Έπρεπε να προσθέσει ${less} €`, `Έπρεπε να προσθέσει άλλα ${less} €`]],
         `Η διαφορά είναι ${f.kids} × ${less} = ${f.kids * less} €.`));
       return { title: r.pick(v.title), story, steps };
     }
@@ -115,8 +116,9 @@ export const groupTickets: Family = {
     if (note && note - total > 150) return null;
     steps.push(b.tag(undefined, 'Το «για κάθε 10 μαθητές» μάς λέει πόσοι εκπαιδευτικοί δεν πληρώνουν.'));
     steps.push(b.choice('plan', 'Πόσοι εκπαιδευτικοί μπαίνουν δωρεάν;', `${free}, γιατί ${pupils} = 10 × ${free} + ${pupils % 10}`,
-      [`${teachers}, δηλαδή κάθε εκπαιδευτικός`, ...(pupils % 10 ? [`${free + 1}, γιατί το ${pupils} είναι περίπου ${Math.ceil(pupils / 10) * 10}`] : []), ...(free > 1 ? [`${free - 1}, γιατί ${free - 1} × 10 = ${(free - 1) * 10}`] : ['Κανένας, γιατί είναι λίγοι'])]
-        .filter(o => !o.startsWith(`${free + 1},`) || free + 1 !== teachers || o.includes('κάθε')),
+      [[`${teachers}, δηλαδή κάθε εκπαιδευτικός`, `${teachers}, κάθε εκπαιδευτικός`],
+        ...(pupils % 10 && free + 1 !== teachers ? [[`${free + 1}, γιατί το ${pupils} είναι περίπου ${Math.ceil(pupils / 10) * 10}`, `${free + 1}, περίπου ${Math.ceil(pupils / 10) * 10} μαθητές`]] : []),
+        ...(free > 1 ? [[`${free - 1}, γιατί ${free - 1} × 10 = ${(free - 1) * 10}`, `${free - 1}, γιατί ${free - 1} × 10 = ${(free - 1) * 10} μαθητές`]] : ['Κανένας, γιατί είναι λίγοι'])],
       `Πόσες ολόκληρες δεκάδες μαθητών υπάρχουν στο ${pupils};`));
     const ops = r.chance(0.6);
     steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
