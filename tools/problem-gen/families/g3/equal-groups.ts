@@ -106,11 +106,13 @@ export const equalGroups: Family = {
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: r.chance(0.5) ? `${n} × ${k} =` : 'Όλα μαζί', answer: total, unit: item.manyAcc },
     ], `Μετράμε ανά ${k}: ${Array.from({ length: Math.min(n, 4) }, (_x, i) => fmt((i + 1) * k)).join(', ')}${n > 4 ? ', …' : ''}`));
+    const sum = (m: number) => `${Array(m).fill(k).join(' + ')} = ${fmt(k * m)}`;
     steps.push(n <= 5
-      ? b.choice('check', 'Πώς ελέγχουμε;', [`${Array(n).fill(k).join(' + ')} = ${fmt(total)}`, `${k} × ${n} = ${fmt(total)}`],
-        // one group too many or one too few (a term more, a term fewer, or as a product), or n + k when there are only two
-        [n > 2 ? [`${Array(n - 1).fill(k).join(' + ')} = ${fmt(k * (n - 1))}`, `${k} × ${n - 1} = ${fmt(k * (n - 1))}`] : `${n} + ${k} = ${n + k}`,
-          [`${Array(n + 1).fill(k).join(' + ')} = ${fmt(k * (n + 1))}`, `${k} × ${n + 1} = ${fmt(k * (n + 1))}`]],
+      // Every option a sum, as the hint says: a product among sums stands out by its form.
+      // One group too few, or n + k when there are only two; and one group too many or, the other
+      // length (so the right sum isn't always the middle one), two too few (n + k when n is 3)
+      ? b.choice('check', 'Πώς ελέγχουμε;', sum(n),
+        n > 2 ? [sum(n - 1), [sum(n + 1), n > 3 ? sum(n - 2) : `${n} + ${k} = ${n + k}`]] : [`${n} + ${k} = ${n + k}`, sum(n + 1)],
         `Προσθέτουμε ${n} φορές το ${k}.`)
       : b.choice('check', 'Πώς ελέγχουμε;', `${k} × ${n} = ${fmt(total)}`,
         [`${n} + ${k} = ${n + k}`, `${k} × ${n + 1} = ${fmt(k * (n + 1))}`],
