@@ -34,6 +34,6 @@ export function ChoresEditor() {
             create={() => ({ id: newId('chore'), title: '', icon: { type: 'emoji', value: '🧹' }, defaultStars: 10, availabilityCron: '0 17 * * *', expirationHours: 4, category: 'chore' })}
             row={c => ({ icon: c.icon, title: c.title, sub: `${c.category === 'bonus' ? 'Έξτρα' : 'Δουλειά'} · ${describeCron(c.availabilityCron)} · ⭐ ${c.defaultStars}` })}
             isValid={c => c.title.trim() !== '' && Number.isInteger(c.defaultStars) && c.defaultStars >= 1 && c.expirationHours >= 0.5}
-            save={(items, done) => save('chores', items, done)} />
+            save={(items, options) => save('chores', items, options)} />
     );
 }
