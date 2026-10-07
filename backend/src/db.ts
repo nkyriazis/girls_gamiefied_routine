@@ -937,7 +937,7 @@ export function checkProblemStep(
     case 'paint':
       if (Array.isArray(value)) return compare(storyMarks(exercise.story).map(m => m.role));
       return checkPaint(step.kind === 'paint' ? step.targets : targetsFromMarks(exercise.story),
-        storyWords(exercise.story).length, value, { unneeded: reading === 'paint-all' });
+        storyWords(exercise.story), value, { unneeded: reading === 'paint-all' });
     case 'choice':
       return { correct: value === step.correctIndex };
     case 'numbers':

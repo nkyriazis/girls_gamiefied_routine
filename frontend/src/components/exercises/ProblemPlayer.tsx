@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import type {
   ExerciseAssignmentWithExercise, Forgiveness, ProblemExercise, ProblemPhase, ProblemReading, ProblemRole, ProblemStep
 } from '@shared/types';
-import { readCalculation, storyWords, targetsFromMarks, usefulToAnswer, workedAnswer, type CalcLine, type PaintTarget } from '@shared/problems';
+import { paintStrays, readCalculation, storyWords, targetsFromMarks, usefulToAnswer, workedAnswer, type CalcLine, type Painting, type PaintTarget } from '@shared/problems';
 import { stepCounts, stepHelp } from '@shared/forgiveness';
 import { api } from '../../api';
 import { CalcBench, PaintWords } from './ProblemFreeSteps';
@@ -11,6 +11,7 @@ import { help } from '../../help/anchors';
 import { HelpScreen } from '../../help/HelpProvider';
 import { problemTour, type ProblemHelpKind } from './ProblemPlayer.help';
 import { optionLetter, useSeededOrder, useShuffled, shuffle as draw } from './shuffle';
+import { frameLine, paintMarks } from './paintFrames';
 import { calcNudge, emptyCalc, paintFeedback, readLine, type Brush, type CalcNote, type CalcValue, type PaintValue } from './problemFreeLogic';
 import { sfx, sound } from '../../sound/sfx';
 import { numbersInput, type NumbersInput } from './answerFields';
@@ -160,7 +161,9 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
   const wrong = lastWrong?.step === stepIndex ? lastWrong : null;
   const [draft, setDraft] = useState<Draft | null>(null);
   const typed = draft?.step === stepIndex ? draft.value : initialValue(kind, step, marks, words.length);
-  const setValue = (v: unknown) => { setDraft({ step: stepIndex, value: v }); setLastWrong(null); setNote(null); };
+  // A painting's verdict and its frames stay up while she paints and erases, until the next
+  // check: they say what the checked painting got wrong, and she fixes it while she sees them.
+  const setValue = (v: unknown) => { setDraft({ step: stepIndex, value: v }); if (kind !== 'paint') setLastWrong(null); setNote(null); };
   // Working it out: what the last calculation found, said in the hint slot
   const [note, setNoteState] = useState<{ step: number; note: CalcNote } | null>(null);
   const calcNote = note?.step === stepIndex ? note.note : null;
@@ -178,6 +181,10 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
   // Her wrong parts, once the rung outlines them (not over a step shown worked: red on the
   // right answer would say it is wrong; a choice outlines her wrong pick, another option)
   const outlined = ladder.outline && !shown ? wrong?.parts : undefined;
+  // A painting: what was checked, its frames (in red, what counted as too much, as the server counted it)
+  const checked = kind === 'paint' && wrong ? wrong.picked as PaintValue : null;
+  const frames = useMemo(() => paintMarks(targets, checked ? outlined : undefined, checked ?? [],
+    checked && outlined?.includes(-1) ? paintStrays(targets, words, answerOf('paint', checked) as Painting) : []), [targets, outlined, checked, words]);
   const [brush, setBrush] = useState<Brush>('known');
   const [busy, setBusy] = useState(false);
   const [praise, setPraise] = useState(false);
@@ -269,7 +276,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
         wrong={kind === 'tag' ? outlined : undefined} disabled={busy || shown} onTap={paint}
         paint={kind === 'paint' ? {
           words, value: value as PaintValue, brush, onChange: setValue,
-          ...paintMarks(targets, outlined, value as PaintValue),
+          ...frames,
         } : undefined} />
 
       <div className="problem-prompt" {...help('problem.prompt')}>{step.prompt}</div>
@@ -315,9 +322,9 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
         {!shown && wrong && (
           <motion.span key={`${stepIndex}-${lastWrong?.parts?.join()}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <strong>Όχι ακόμα. </strong>
-            {kind === 'paint' && wrong.parts?.length ? paintFeedback(targets, words, wrong.parts, value as PaintValue) + ' '
+            {checked && wrong.parts?.length ? paintFeedback(targets, words, wrong.parts, checked)
               : step.hint ? <>💡 {step.hint}</> : 'Διάβασε ξανά την ιστορία και ξαναδοκίμασε.'}
-            {kind === 'paint' && ladder.outline && ' Κοίτα τις λέξεις με το κίτρινο πλαίσιο.'}
+            {checked && frameLine(frames)}
           </motion.span>
         )}
         {!shown && !wrong && calcNote && calcNote.kind !== 'answer' && (
@@ -406,20 +413,6 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
 // The story, always the same size: the full story sits in the same cell (invisible
 // when a step shows a shorter version), and the phrases keep one shape in every mode,
 // only their colours change.
-// After the second wrong painting (when the rung outlines): the unneeded facts she painted as
-// needed in red, the ones she missed in a dashed frame (on "paint-all", an unneeded one left
-// unpainted too).
-function paintMarks(targets: PaintTarget[], wrong: number[] | undefined, painted: PaintValue) {
-  const wrongWords = new Set<number>(), revealWords = new Set<number>();
-  targets.forEach((t, i) => {
-    if (!wrong?.includes(i)) return;
-    const asNeeded = t.role === 'extra' && t.words.some(w => painted[w] === 'known' || painted[w] === 'sought');
-    const into = asNeeded ? wrongWords : revealWords;
-    t.words.forEach(w => into.add(w));
-  });
-  return { wrongWords, revealWords };
-}
-
 const StoryCard: React.FC<{
   parts: Part[]; mode: 'plain' | 'tagged' | 'tag' | 'paint'; override?: string; roles: ProblemRole[];
   wrong?: number[]; disabled: boolean; onTap: (mark: number) => void;

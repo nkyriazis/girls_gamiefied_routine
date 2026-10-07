@@ -72,17 +72,65 @@ export const PAINT_SLACK = 3;
 /** Words around a phrase that still count as part of it (a stroke is never exact). */
 const MARGIN = 2;
 
+// A word that ends a sentence: its last mark is . ; (Greek or Latin) · ! ? or …, maybe
+// followed by closing » ) ” ’ " '. «9.238» or «3,5» end nothing.
+const SENTENCE_END = /[.;\u037e\u0387\u00b7!?…][»)”’"']*$/;
+
+/** The story's sentences, as the first and last of its words. */
+export function paintSentences(words: string[]): [number, number][] {
+  const out: [number, number][] = [];
+  let from = 0;
+  words.forEach((w, i) => {
+    if (SENTENCE_END.test(w) || i === words.length - 1) { out.push([from, i]); from = i + 1; }
+  });
+  return out;
+}
+
+/**
+ * The painted words that count as too much, each further than MARGIN from a phrase of its
+ * own colour. 🟢 and 🟡 say "needed": too much only in a sentence that holds an unneeded
+ * fact, so a needed fact's sentence painted whole, or one that tells what happened without
+ * a number, is fine. ⚪ says "not needed": fine in an unneeded fact's own sentence (one
+ * with no needed fact or question in it), too much anywhere else, so the whole story ⚪
+ * with the needed phrases painted over it is still too much. The unneeded fact itself,
+ * painted as needed, is its own mistake (checkPaint), not also a stray.
+ */
+export function paintStrays(targets: PaintTarget[], words: string[], value: Painting): number[] {
+  const sentences = paintSentences(words);
+  const holds = ([a, b]: [number, number], needed: boolean) =>
+    targets.some(t => (t.role !== 'extra') === needed && t.span[0] <= b && t.span[1] >= a);
+  // Where a needed brush is too much, and where ⚪ is forgiven
+  const unneeded = sentences.filter(s => holds(s, false));
+  const extraOnly = unneeded.filter(s => !holds(s, true));
+  const within = (w: number, ss: [number, number][]) => ss.some(([a, b]) => w >= a && w <= b);
+  const inExtra = (w: number) => targets.some(t => t.role === 'extra' && w >= t.span[0] && w <= t.span[1]);
+  const near = (w: number, role: PaintTarget['role']) =>
+    targets.some(t => t.role === role && w >= t.span[0] - MARGIN && w <= t.span[1] + MARGIN);
+  const strays = new Set<number>();
+  for (const role of ['known', 'sought', 'extra'] as const) {
+    for (const w of Array.isArray(value?.[role]) ? value[role]! : []) {
+      if (!Number.isInteger(w) || w < 0 || w >= words.length || near(w, role)) continue;
+      if (role === 'extra' ? within(w, extraOnly) : !within(w, unneeded) || inExtra(w)) continue;
+      strays.add(w);
+    }
+  }
+  return [...strays].sort((a, b) => a - b);
+}
+
 /**
  * A painting is right when every needed fact has its core words painted "known", the
- * question its core words painted "sought", nothing unneeded is painted, and not much
- * else. `wrong` lists the targets to look at again; -1 means too much was painted.
+ * question its core words painted "sought", nothing unneeded is painted as needed (on
+ * "paint-all", each is painted ⚪), and no more than PAINT_SLACK words are too much
+ * (paintStrays: a needed fact's whole sentence is fine in 🟢, an unneeded fact's own
+ * sentence in ⚪; 🟢/🟡 around an unneeded fact in its sentence are not, nor ⚪ outside
+ * an unneeded fact's own sentence). `wrong` lists the targets to look at again; -1 means too much.
  */
 export function checkPaint(
-  targets: PaintTarget[], words: number, value: unknown, opts: { unneeded?: boolean } = {}
+  targets: PaintTarget[], words: string[], value: unknown, opts: { unneeded?: boolean } = {}
 ): { correct: boolean; wrong?: number[] } {
   const v = value as Painting;
   if (!v || !Array.isArray(v.known) || !Array.isArray(v.sought)) return { correct: false };
-  const valid = (xs: unknown) => new Set((Array.isArray(xs) ? xs : []).filter(i => Number.isInteger(i) && i >= 0 && i < words) as number[]);
+  const valid = (xs: unknown) => new Set((Array.isArray(xs) ? xs : []).filter(i => Number.isInteger(i) && i >= 0 && i < words.length) as number[]);
   const known = valid(v.known), sought = valid(v.sought), extra = valid(v.extra);
   const wrong: number[] = [];
   targets.forEach((t, i) => {
@@ -95,14 +143,7 @@ export function checkPaint(
       if (t.words.filter(w => brush.has(w)).length < (t.need ?? t.words.length)) wrong.push(i);
     }
   });
-  // Strays: painted words that aren't near a phrase of their colour (an unneeded fact
-  // painted is its own mistake, above, not also "too much")
-  const inExtra = (w: number) => targets.some(t => t.role === 'extra' && w >= t.span[0] && w <= t.span[1]);
-  const near = (w: number, role: PaintTarget['role']) =>
-    inExtra(w) || targets.some(t => t.role === role && w >= t.span[0] - MARGIN && w <= t.span[1] + MARGIN);
-  const strays = [...known].filter(w => !near(w, 'known')).length + [...sought].filter(w => !near(w, 'sought')).length
-    + [...extra].filter(w => !near(w, 'extra')).length;
-  if (strays > PAINT_SLACK) wrong.push(-1);
+  if (paintStrays(targets, words, v).length > PAINT_SLACK) wrong.push(-1);
   return wrong.length ? { correct: false, wrong } : { correct: true };
 }
 
