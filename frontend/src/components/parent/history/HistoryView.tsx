@@ -52,9 +52,10 @@ export function HistoryView() {
     const { spendings, starTransfers, choreInstances, chores, rewards, users } = useGame();
     const { notify } = useFeedback();
     const [kid, setKid] = useState<string | null>(null);
-    const [loaded, setLoaded] = useState<Loaded>({ kid: null, entries: [], next: null, olderPages: false });
+    // Null until a first page arrives. It belongs to one kid; while another kid's first page is on its way,
+    // nothing is shown (not «Δεν υπάρχει ακόμη ιστορικό.», which is true only once her page came back empty).
+    const [loaded, setLoaded] = useState<Loaded | null>(null);
     const [busy, setBusy] = useState(false);
-    const [ready, setReady] = useState(false);
     const kidNow = useRef(kid);
     kidNow.current = kid;
 
@@ -63,18 +64,20 @@ export function HistoryView() {
         let current = true;
         api.history(null, kid).then(first => {
             if (!current) return;
-            setLoaded(l => withFirst(l.kid === kid ? l : { kid, entries: [], next: null, olderPages: false }, first));
-            setReady(true);
+            setLoaded(l => withFirst(l?.kid === kid ? l : { kid, entries: [], next: null, olderPages: false }, first));
         }).catch(() => current && notify('Το ιστορικό δεν διαβάστηκε', 'error'));
         return () => { current = false; };
     }, [kid, spendings, starTransfers, choreInstances, notify]);
 
+    const shown = loaded?.kid === kid ? loaded : null;
+
     const more = async () => {
-        if (!loaded.next) return;
+        const next = shown?.next;
+        if (!next) return;
         setBusy(true);
         try {
-            const page = await api.history(loaded.next, kid);
-            setLoaded(l => (l.kid === kidNow.current && l.next === loaded.next ? withOlder(l, page) : l));
+            const page = await api.history(next, kid);
+            setLoaded(l => (l && l.kid === kidNow.current && l.next === next ? withOlder(l, page) : l));
         } catch {
             notify('Το ιστορικό δεν διαβάστηκε', 'error');
         } finally {
@@ -84,7 +87,7 @@ export function HistoryView() {
 
     const name = (id?: string) => users.find(u => u.id === id)?.name ?? id ?? '';
     const reward = (id: string) => rewards.find(r => r.id === id);
-    const rows: Row[] = loaded.kid !== kid ? [] : loaded.entries.map(e => {
+    const rows: Row[] = (shown?.entries ?? []).map(e => {
         switch (e.kind) {
             case 'spending': {
                 const s = e.spending;
@@ -118,7 +121,7 @@ export function HistoryView() {
                     <button key={u.id} type="button" className={kid === u.id ? 'p-chip on' : 'p-chip'} onClick={() => setKid(u.id)}>{u.name}</button>
                 ))}
             </div>
-            {ready && rows.length === 0 && <Empty>Δεν υπάρχει ακόμη ιστορικό.</Empty>}
+            {shown && rows.length === 0 && <Empty>Δεν υπάρχει ακόμη ιστορικό.</Empty>}
             <ul className="p-list">
                 {rows.map(e => (
                     <li key={e.key} className={e.undone ? 'p-row undone' : 'p-row'}>
@@ -131,7 +134,7 @@ export function HistoryView() {
                     </li>
                 ))}
             </ul>
-            {loaded.kid === kid && loaded.next && (
+            {shown?.next && (
                 <button type="button" className="p-btn ghost wide" disabled={busy} onClick={more}>{busy ? 'Φόρτωση…' : 'Περισσότερα'}</button>
             )}
         </section>
