@@ -8,7 +8,7 @@ import Ajv, { ErrorObject, ValidateFunction } from 'ajv';
 
 export const SCHEMA_DIR = process.env.SCHEMA_DIR || process.cwd();
 
-const ajv = new Ajv({ allErrors: true, validateFormats: false });
+const ajv = new Ajv({ allErrors: true, validateFormats: false, discriminator: true });
 
 // Each schema is registered under its file name, so schemas can $ref each
 // other (exercises.schema.json reuses data.schema.json's icon definition).
