@@ -14,7 +14,12 @@
 //   - options are distinct, indexes in range, order items distinct, answers whole numbers
 //     within the grade's range;
 //   - no leftover template text, doubled spaces, spaces before punctuation, unbalanced marks;
-//   - no id or story twice.
+//   - no id or story twice;
+//   - in the world pool and change-left, the story reads right (story-check.ts): a clitic
+//     points at one person named before it, no two sentences in a row open with the same
+//     name, nothing changes after «Τώρα», the question names someone when two people are
+//     subjects, a gift counts on both sides, world checks have 3 options, prices fit the item
+//     and «πληρώνει με» is real notes.
 // Warnings: a family with little variety (few distinct story skeletons), a story without
 // a question, very long stories.
 //
@@ -29,6 +34,7 @@ import type { Exercise, ProblemExercise } from '../../shared/types.ts';
 import { PEOPLE, rng } from './lib.ts';
 import { auditMaths, mathsSample } from './maths/check.ts';
 import { auditLanguage, languageSample } from './language/check.ts';
+import { checkStory } from './story-check.ts';
 
 // --dir DIR audits another folder (e.g. gen.ts --out DIR while trying out families)
 const dirAt = process.argv.indexOf('--dir');
@@ -106,6 +112,10 @@ for (const pool of pools) {
     if (plain(ex.story).length > 420) warnings.push(`${ex.id}: long story (${plain(ex.story).length} characters)`);
     if (!/^[Α-ΩΆΈΉΊΌΎΏ\d«]/.test(plain(ex.story))) err(ex, 'story does not start with a capital letter');
     if (!/[.;!;»]$/.test(plain(ex.story))) err(ex, 'story does not end with punctuation');
+
+    // Stories that read right: the world pool and change-left so far (#50 part 1)
+    const params = ex.generatorParams as { world?: string; family?: string } | undefined;
+    if (params?.world || params?.family === 'change-left') for (const m of checkStory(ex)) err(ex, m);
 
     // A tag step always has something to leave out; a painted story may have nothing
     // unneeded (so she can't count on there being something)
