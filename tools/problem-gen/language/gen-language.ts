@@ -8,7 +8,8 @@
 // and shuffles their options, seeded by the id, so the output is the same on every run until
 // an item changes. An item that breaks a rule of lib.ts (too few options, the right one the
 // only longest, a spelling whose right form is the closest to all the others, a «Δείξε μου»
-// over the screen's limit) stops the run: fix the item, nothing is dropped silently.
+// over the screen's limit, a fill-blank sentence longer than a line) stops the run: fix the
+// item, nothing is dropped silently.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -17,6 +18,7 @@ import type { PlainExercise } from '../maths/lib.ts';
 import { revealMax, revealed } from '../maths/check.ts';
 import { lessonAt, parsePlace, sourceOf, type LanguageGrade } from './curriculum.ts';
 import { optionProblems, type Draft, type LanguageFamily } from './lib.ts';
+import { FILL_LINE_MAX } from './check.ts';
 import { G3_LANGUAGE } from './g3.ts';
 
 interface LanguageGradeSpec {
@@ -64,6 +66,7 @@ function build(g: LanguageGradeSpec): PlainExercise[] {
       if (!lessonAt(g.grade, place)) problems.push(`${id}: ${item.at} is no lesson page of the book`);
       const d = shuffled(item.draft, id);
       for (const p of optionProblems(d, f.skill)) problems.push(`${id}: ${p}`);
+      if (d.type === 'fill-blank' && d.textWithGaps.replace('{0}', '').length > FILL_LINE_MAX) problems.push(`${id}: the sentence is over ${FILL_LINE_MAX} characters besides its gap`);
       const ex = { ...d } as PlainExercise;
       const shown = revealed(ex);
       if (shown.length > revealMax(ex)) problems.push(`${id}: «Δείξε μου» would show ${shown.length} characters («${shown}»), over ${revealMax(ex)}`);

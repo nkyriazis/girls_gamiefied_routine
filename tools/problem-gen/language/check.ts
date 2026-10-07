@@ -13,7 +13,8 @@
 //     the right option the one closest to all the others (a letter-by-letter vote would find it), or a
 //     wrong spelling that is a word of the lexicon or isn't one or two slips (ι/η/υ/ει/οι, ο/ω, ε/αι,
 //     ευ/εφ, a double letter, the capital) from the right one;
-//   - a fill-blank without exactly one gap, or a gap inside a word (a punctuation mark goes right after one);
+//   - a fill-blank without exactly one gap, or a gap inside a word (a punctuation mark goes right after one),
+//     or a sentence over FILL_LINE_MAX besides its gap (it would break at the gap);
 //   - a «Δείξε μου» over 60 characters (a match over 40);
 //   - check-gender's words anywhere the child reads (title, body, question, options, items), template
 //     leftovers, stray spaces, a space before punctuation, a Latin letter, a word of two or more
@@ -39,6 +40,12 @@ const PREFIX: Record<LanguageGrade, string> = { 3: 'g3' };
 const MAX_TRUE_FALSE = 0.1;
 /** A gap in a sentence is the book's own «Συμπλήρωσε»; one gap means no word left over by elimination. */
 const MAX_FILL_BLANK = 0.4;
+/**
+ * Characters a fill-blank's sentence may have besides its gap: FillBlankRenderer lays the sentence out as
+ * pieces between gaps, so a piece that doesn't fit after the gap jumps whole to the next line. At 1280×800
+ * a line holds 43 characters and an empty gap («Είδαμε ένα ντοκιμαντέρ για τα ποτάμια της ___.»).
+ */
+export const FILL_LINE_MAX = 43;
 
 // ---------------------------------------------------------------------------
 // Greek words
@@ -515,6 +522,7 @@ export function auditLanguage(pools: Pool[]): LanguageAudit {
         if (gaps.length !== 1 || !ex.textWithGaps.includes('{0}') || ex.correctAnswers.length !== 1) err('a language fill-blank has exactly one gap, {0}');
         const [before, after] = ex.textWithGaps.split('{0}');
         const mark = ex.options.every(o => /^[.;,]$/.test(o));
+        if (before.length + after.length > FILL_LINE_MAX) err(`the sentence has ${before.length + after.length} characters besides its gap: over ${FILL_LINE_MAX}, it breaks at the gap`);
         if (mark ? !/\p{L}$/u.test(before) || !/^( |$)/.test(after) : /\p{L}$/u.test(before) || /^\p{L}/u.test(after)) {
           err(mark ? 'a punctuation gap goes right after a word' : 'the gap is inside a word: a gap is a whole word');
         }

@@ -56,6 +56,7 @@ export const G3_LEXICON: Lexicon = {
     { gender: 'f', at: 'τ39', forms: { nom: ['κολύμβηση', null], gen: ['κολύμβησης', null], acc: ['κολύμβηση', null] } },
     { gender: 'm', at: 'β53', forms: { nom: ['ψαράς', 'ψαράδες'], gen: ['ψαρά', 'ψαράδων'], acc: ['ψαρά', 'ψαράδες'] } },
     { gender: 'f', at: 'β53', forms: { nom: ['γη', null], gen: ['γης', null], acc: ['γη', null] } },
+    { gender: 'f', proper: true, at: 'β53', forms: { nom: ['Μεσόγειος', null], gen: ['Μεσογείου', null], acc: ['Μεσόγειο', null] } },
     { gender: 'n', at: 'β50', forms: { nom: ['ψάρι', 'ψάρια'], gen: ['ψαριού', 'ψαριών'], acc: ['ψάρι', 'ψάρια'] } },
     { gender: 'f', at: 'τ44', forms: { nom: ['χελώνα', 'χελώνες'], gen: ['χελώνας', null], acc: ['χελώνα', 'χελώνες'] } },
     { gender: 'f', at: 'τ44', forms: { nom: ['βρύση', 'βρύσες'], acc: ['βρύση', 'βρύσες'] } },
