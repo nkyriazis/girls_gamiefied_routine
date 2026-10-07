@@ -160,7 +160,8 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
       case 'ordering':
         return <OrderingRenderer exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
       case 'fill-blank':
-        return <FillBlankRenderer exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        // Keyed on the player: the next one starts with empty gaps, not one tap from checking the last one's sentence
+        return <FillBlankRenderer key={nextPlayerId} exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
       case 'number-input':
         return <NumberInputRenderer exercise={currentExercise as any} onAnswer={(ans: number) => handleAnswer(ans)} disabled={!!submittingUser} />;
       default:
