@@ -1,0 +1,183 @@
+$ git log -1 --format='%h %s'    # issue-37-docs-today
+  8d7d34d Merge pull request #105 from nkyriazis/issue-36-routines-forms
+
+1. Claims that describe the old design
+  -- .cursorrules (15)
+  .cursorrules:15  - **Data**: File-based persistence (data.json for config, state.json for runtime state)
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  .cursorrules:31  - State: `backend/state.json` (dynamic, auto-generated)
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  .cursorrules:43  2. **In-memory cache**: `globalState` holds runtime state, synced to disk with 10s debounce
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  .cursorrules:48  - **Initial load**: REST API (`GET /api/users`, `/api/flows`, etc.)
+      -> old WebSocket events / REST initial load (now one STATE message)
+  .cursorrules:49  - **Real-time updates**: WebSocket events (`SYNC_STATE`, `ROUTINE_START`, `STARS_AWARDED`)
+      -> old WebSocket events / REST initial load (now one STATE message)
+  .cursorrules:54  - Always include `type` field (e.g., `SYNC_STATE`, `ROUTINE_START`)
+      -> old WebSocket events / REST initial load (now one STATE message)
+  .cursorrules:68  const db = await readDb();
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  .cursorrules:178  - [ ] State changes trigger debounced persist (use `writeDb()`)
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  .cursorrules:187  docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+      -> compose file / Node image that no longer exist
+  .cursorrules:229  - Use `readDb()` for full data reads (includes hot-reload)
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  .cursorrules:230  - Use `globalState` for frequent reads (in-memory)
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  .cursorrules:231  - Debounce writes (already implemented with 10s delay)
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  .cursorrules:241  - Batch multiple state changes into single `SYNC_STATE` event
+      -> old WebSocket events / REST initial load (now one STATE message)
+  .cursorrules:256  ### Why File-Based Persistence?
+      -> JSON-file persistence
+  .cursorrules:258  - Easy backups (copy 2 files)
+      -> JSON-file persistence
+  -- CLAUDE.md (1)
+  CLAUDE.md:49  # Validate data.json / state.json against their schemas
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  -- CUSTOM_SOUNDS.md (5)
+  CUSTOM_SOUNDS.md:11  1. Navigate to the Parent Dashboard (append `?parent=true` to your URL)
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  CUSTOM_SOUNDS.md:12  2. Go to the "Dashboard" tab
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  CUSTOM_SOUNDS.md:136  1. **Test your sound first**: Upload and trigger manually using the "Trigger Actions" section in Parent Dashbo
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  CUSTOM_SOUNDS.md:139  4. **Fallback**: If the file fails to load, the alarm will be silent (always test before scheduling!)
+      -> a failed upload now rings the melody
+  CUSTOM_SOUNDS.md:146  1. Go to Parent Dashboard → "Trigger Actions (Test)" section
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  -- GITHUB_TOKEN.md (2)
+  GITHUB_TOKEN.md:78  - ✅ Docker container runs gh CLI and exits (no persistence)
+      -> build.sh runs curl, not the gh CLI
+  GITHUB_TOKEN.md:91  - Docker pulls the `ghcr.io/cli/cli` image (~50MB)
+      -> build.sh runs curl, not the gh CLI
+  -- VALIDATION.md (6)
+  VALIDATION.md:29  Validates runtime state data (state.json):
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  VALIDATION.md:61  - New "Validate" button to check configuration/state before saving
+      -> a Validate button the JSON editor does not have
+  VALIDATION.md:68  - Works for both Config (data.json) and State (state.json) editors
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  VALIDATION.md:83  In the parent dashboard Config tab, try removing the `stars` field from a task:
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  VALIDATION.md:184  In the parent dashboard State tab, try setting a negative star balance:
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  VALIDATION.md:323  7. **Prevents State Corruption**: Protects against invalid data being written to state.json
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  -- frontend/README.md (1)
+  frontend/README.md:3  This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+      -> the Vite template README
+  -- index.md (51)
+  index.md:12  - **Data Persistence**: JSON files (file-based database)
+      -> JSON-file persistence
+  index.md:46  MEM[In-Memory State globalState<br/>userStars, routineExecutions, taskExecutions, spendings]
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:55  STATE[state.json<br/>state]
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:60  MEM -->|Debounced Write 10s| STATE
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:74  - Modified via Admin panel (`/parent` → Config tab)
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  index.md:76  2. **Dynamic State (`state.json`)**
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:78  - Loaded into memory at startup (`globalState`)
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:79  - Written to disk with 10-second debounce on changes
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:82  3. **In-Memory Cache (`globalState`)**
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:85  - Persisted to `state.json` asynchronously
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:91  ### Backend: File-Based Persistence
+      -> JSON-file persistence
+  index.md:97  let globalState: {
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:105  **Read Flow** (`readDb()`):
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:107  2. Merge `globalState.userStars` into user objects
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:108  3. Append execution history and spendings from `globalState`
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:111  **Write Flow** (`writeDb()`):
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:112  1. Extract star balances from user objects → update `globalState.userStars`
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:113  2. Update execution/spending arrays in `globalState`
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:114  3. Schedule a debounced persist (10s delay)
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:115  4. On persist: atomic write to `state.json.tmp` → rename to `state.json`
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:257  - **Lines 1-50**: Imports, file path setup, in-memory state declaration
+      -> tests/files/line numbers that no longer match
+  index.md:258  - **Lines 51-90**: `loadState()`, `persistState()`, debounced save logic
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:259  - **Lines 92-140**: `readDb()`, `writeDb()` (hybrid data access)
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:260  - **Lines 142-180**: WebSocket connection management, `broadcast()` helper
+      -> tests/files/line numbers that no longer match
+  index.md:261  - **Lines 182-230**: `triggerAction()` (dispatch routine/flow), `checkSchedules()` (cron logic)
+      -> tests/files/line numbers that no longer match
+  index.md:262  - **Lines 232-280**: REST API routes (`/api/users`, `/api/flows`, `/api/rewards`, etc.)
+      -> tests/files/line numbers that no longer match
+  index.md:263  - **Lines 282-320**: Task completion endpoint (star awards)
+      -> tests/files/line numbers that no longer match
+  index.md:264  - **Lines 322-360**: Admin endpoints (upload, config editor, state editor)
+      -> tests/files/line numbers that no longer match
+  index.md:265  - **Lines 362-380**: WebSocket route registration
+      -> tests/files/line numbers that no longer match
+  index.md:266  - **Lines 382-400**: Startup sequence (load state, start cron, listen)
+      -> tests/files/line numbers that no longer match
+  index.md:279  **`backend/state.json`** (Dynamic State, auto-generated)
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:324  - Uses: `node:20-alpine` images, volume mounts for hot-reload
+      -> compose file / Node image that no longer exist
+  index.md:328  **`docker-compose.prod.yml`** (Production Mode - explicit)
+      -> compose file / Node image that no longer exist
+  index.md:407  - **Data Persistence**: `backend/data.json` and `backend/state.json` mounted as volumes
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:412  docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+      -> compose file / Node image that no longer exist
+  index.md:423  - Base images (`node:20-alpine`, `nginx:alpine`) support ARM64
+      -> compose file / Node image that no longer exist
+  index.md:433  | `STATE_FILE` | `./state.json` | Path to state file (prod: `/data/state.json`) |
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:446  ### 2. **Debounced Persistence**
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:447  - **Pattern**: In-memory cache with delayed disk writes (10s debounce)
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:469  - **Implementation**: `readDb()` always hits disk for config, merges with memory state
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:500  ✅ **Debounced persistence** prevents write storms and improves performance
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:552  #### 🟡 **Migrate `verify_api.js` to TypeScript**
+      -> tests/files/line numbers that no longer match
+  index.md:567  **Current**: JSON files (`data.json`, `state.json`)
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:574  4. Update `readDb()`/`writeDb()` to use SQL queries
+      -> in-memory state + debounced state.json writes (now SQLite, written through)
+  index.md:586  **Current**: No automated tests
+      -> tests/files/line numbers that no longer match
+  index.md:649  3. Upload icon via `/parent` → Uploads section if using custom image
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  index.md:671  1. Open `/parent` → State tab
+      -> parent screen before Σήμερα/Ιστορικό/Ρυθμίσεις/Προχωρημένα
+  index.md:674  4. Or directly edit `backend/state.json` (requires server restart)
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:681  cp backend/state.json backup/state-$(date +%Y%m%d).json
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:688  cp backup/state-20250101.json backend/state.json
+      -> state.json as where state lives (now routine.db; state.json is a one-time import)
+  index.md:697  This project demonstrates a **real-time, event-driven architecture** suitable for small-scale interactive appl
+      -> JSON-file persistence
+
+2. Files, npm scripts and routes the docs name that do not exist
+  -- .cursorrules (1)
+  route  /api/resource
+  -- index.md (3)
+  file   docker-compose.prod.yml
+  file   DEPLOYMENT.md
+  file   CONTRIBUTING.md
+
+85 findings

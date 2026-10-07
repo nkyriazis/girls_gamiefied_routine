@@ -1,0 +1,8 @@
+$ git log -1 --format='%h %s'    # issue-37-docs-today
+  756552f docs: CUSTOM_SOUNDS.md, an alarm file must be under 1 MB (#37)
+
+1. Claims that describe the old design
+
+2. Files, npm scripts and routes the docs name that do not exist
+
+nothing found: the docs name only what exists, and no old design

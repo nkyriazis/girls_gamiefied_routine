@@ -1,0 +1,20 @@
+# Issue #37 review: what happens to an upload over 1 MiB (dev stack, backend :3000), 2026-10-08
+# server.ts:144 server.register(multipart) with no limits -> fileSize = Fastify bodyLimit (1048576),
+# node_modules/@fastify/multipart/index.js:51
+$ head -c 1500000 /dev/urandom > probe-1500k.mp3
+$ curl -s -w ' HTTP %{http_code}' -F "file=@probe-1500k.mp3" http://localhost:3000/api/admin/upload
+{"success":true,"url":"http://localhost/uploads/1791408151125-probe-1500k.mp3","filename":"1791408151125-probe-1500k.mp3"} HTTP 200
+$ ls -l /app/uploads/1791408151125-probe-1500k.mp3      # in the backend container
+-rw-r--r--    1 root     root       1048576 Oct  7 21:22 /app/uploads/1791408151125-probe-1500k.mp3
+# 1 500 000 bytes sent, 200 success, 1 048 576 stored: truncated, silently.
+$ rm /app/uploads/1791408151125-probe-1500k.mp3; GET /api/admin/uploads/list before == after (cmp)
+# Behind nginx (as on the Pi): nginx:alpine (the frontend image's base) with frontend/nginx.conf, on the dev
+# compose network so /api reaches the dev backend. frontend/nginx.conf sets no client_max_body_size (default 1m).
+$ docker run -d --rm --name nginx-probe-37 --network girls_gamiefied_routine_routine-net -p 127.0.0.1:18080:80 \
+    -v $PWD/frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro nginx:alpine
+$ curl -s -o /dev/null -w 'HTTP %{http_code}' http://127.0.0.1:18080/api/admin/uploads/list
+HTTP 200
+$ curl -s -w ' HTTP %{http_code}' -F "file=@probe-1500k.mp3" http://127.0.0.1:18080/api/admin/upload
+<html><head><title>413 Request Entity Too Large</title></head> ... nginx/1.31.6 ... HTTP 413
+$ docker stop nginx-probe-37; GET /api/admin/uploads/list before == after (cmp)
+# The parent page's upload (UploadsPanel -> api.uploadFile, !response.ok -> throw) shows «Failed to upload file».
