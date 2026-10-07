@@ -130,6 +130,8 @@ const articleTags = (w: string) => ARTICLE[lower(w)];
 const PRONOUN: Record<string, Person> = {
   'εγώ': '1sg', 'εσύ': '2sg', 'αυτός': '3sg', 'αυτή': '3sg', 'αυτό': '3sg', 'εμείς': '1pl', 'εσείς': '2pl', 'αυτοί': '3pl', 'αυτές': '3pl', 'αυτά': '3pl',
 };
+/** Words with no part of speech in the lexicon that are never a verb. */
+const PREPOSITIONS = new Set(['από', 'με', 'για', 'σε', 'χωρίς', 'μέχρι', 'προς']);
 const QUESTION_WORDS = new Set(['τι', 'πώς', 'πόσο', 'πόσα', 'πόσες', 'πόσοι', 'πού', 'πότε', 'γιατί']);
 const WEEK = ['Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο', 'Κυριακή'];
 const COLLATE = new Intl.Collator('el', { sensitivity: 'base' });
@@ -393,16 +395,25 @@ function solvers(ix: Index): Record<string, (ex: Plain) => Verdict> {
       if (!options.includes('όταν') || !options.includes('όπως')) return ['the options must have both «όταν» and «όπως»'];
       return one(options, o => o === answer, key);
     },
-    // «.», «;» or «,»: a question (it starts with a question word) ends with «;», any other sentence with
-    // «.»; a mark followed by a small letter, inside a list, is «,»
+    // «.», «;» or «,»: a question (it starts with a question word) ends with «;»; a mark followed by a small
+    // letter, inside a list, is «,»; «.» only after a sentence with no verb (a greeting, a title). In Greek a
+    // yes/no question is a statement with «;» («Περνάμε υπέροχα στο χωριό;»), so a sentence with a verb and
+    // no question word takes either mark, and «;» is always among the options
     punct(ex) {
       if (ex.type !== 'fill-blank') return ['punct is a fill-blank'];
       const { options, key } = choice(ex);
       if (options.length !== 3 || options.some(o => !['.', ';', ','].includes(o))) return [`options ${JSON.stringify(options)}: «.», «;» and «,»`];
       const [before, after] = ex.textWithGaps.split('{0}');
       let answer: string;
-      if (after === '') answer = QUESTION_WORDS.has(lower(wordsOf(before)[0] ?? '')) ? ';' : '.';
-      else if (/^ \p{Ll}/u.test(after)) answer = ',';
+      if (after === '' && QUESTION_WORDS.has(lower(wordsOf(before)[0] ?? ''))) answer = ';';
+      else if (after === '') {
+        const ws = wordsOf(before);
+        const verbs = ws.filter(w => posOf(w).has('ρήμα'));
+        if (verbs.length) return [`«${before}» has a verb («${verbs.join('», «')}») and no question word: it can be asked too, so «;» is right as well as «.»`];
+        const unread = ws.filter(w => !PREPOSITIONS.has(lower(w)) && !posOf(w).size);
+        if (unread.length) return [`can't tell whether «${before}» has a verb: ${unread.map(w => `«${w}»`).join(', ')} not in the lexicon`];
+        answer = '.';
+      } else if (/^ \p{Ll}/u.test(after)) answer = ',';
       else return [`can't tell the mark before «${after}»`];
       return one(options, o => o === answer, key);
     },

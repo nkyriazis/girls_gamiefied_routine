@@ -235,7 +235,7 @@ derives the key again from the lexicon and the rule, written apart from the item
 | `meaning` | true-false «Η φράση «…» σημαίνει «…».»; «Τι σημαίνει εδώ η φράση «…»;» with the sentence as body | the book's meanings, right and wrong |
 | `saying` | body «Συμπλήρωσε την παρομοίωση/παροιμία.», the saying with «…» | the lexicon's sayings |
 | `san` | «Τι σημαίνει το «σαν» στην πρόταση «…»;» | before a verb «όταν», before a noun «όπως» (τ44) |
-| `punct` | fill-blank with the gap right after a word, options «.», «;», «,» | a question word first: «;»; else «.»; a small letter after: «,» |
+| `punct` | fill-blank with the gap right after a word, options «.», «;», «,» | a question word first: «;»; a small letter after: «,»; «.» only after a sentence with no verb («Πολλούς χαιρετισμούς από την πανέμορφη Μάνη», τ41): a Greek yes/no question is the statement with «;», so a sentence with a verb and no question word could take either |
 | `spell` | «Κύκλωσε τη λέξη που είναι γραμμένη σωστά.» | one spelling of the lexicon; the rest one or two slips of it (ι/η/υ/ει/οι, ο/ω, ε/αι, ευ/εφ, a double letter) |
 
 A wrong option may be a real word (another person, case or article: that is the point), but never
