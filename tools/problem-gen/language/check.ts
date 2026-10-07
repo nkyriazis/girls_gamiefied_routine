@@ -6,6 +6,7 @@
 // pools, curriculum.ts, lexicon.ts and check-gender's word list; never materials/.
 //
 // Errors:
+//   - a title that names some of the options and not all («Της ή τις;» over τις · της · των);
 //   - the key isn't the rule's answer: a multiple choice or fill-blank without exactly one option
 //     the rule accepts (so a wrong option that is itself right for the sentence is an error too);
 //     an ordering out of order; a true-false whose statement the lexicon says otherwise;
@@ -507,6 +508,12 @@ export function auditLanguage(pools: Pool[]): LanguageAudit {
       // What it shows
       for (const [where, text] of texts(ex)) errors.push(...textErrors(where, text).map(e => `${ex.id}: ${e}`));
       if (!/^[Α-ΩΆΈΉΊΌΎΏ]/.test(ex.title)) err('title does not start with a capital');
+      if (ex.type === 'multiple-choice' || ex.type === 'fill-blank') {
+        // A title that names some of the options and not the rest («Της ή τις;» over τις · της · των) rules the rest out
+        const titleWords = new Set(wordsOf(ex.title).map(lower));
+        const named = ex.options.filter(o => titleWords.has(lower(o)));
+        if (named.length && named.length < ex.options.length) err(`the title «${ex.title}» names ${named.map(o => `«${o}»`).join(', ')} and not the other options: it rules them out`);
+      }
       const ask = ex.type === 'match-pairs' || ex.type === 'ordering' || ex.type === 'fill-blank' ? ex.body ?? '' : ex.question;
       if (!/^[Α-ΩΆΈΉΊΌΎΏ]/.test(ask)) err(`«${ask}» does not start with a capital`);
       if (!/[.;!…]»?$/.test(ask)) err(`«${ask}» does not end with punctuation`);

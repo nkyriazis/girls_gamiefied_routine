@@ -242,7 +242,9 @@ A wrong option may be a real word (another person, case or article: that is the 
 one the rule also accepts: the audit fails an item with more than one acceptable option. A new
 wording needs its solver in `language/check.ts`.
 
-**Not giving the answer away.** At least 3 options; the right one never the only longest. A spelling
+**Not giving the answer away.** At least 3 options; the right one never the only longest. The title names
+none of the options or all of them: «Της ή τις;» over τις · της · των rules «των» out before she reads the
+sentence, so the title is «Τα άρθρα της, τις, των». A spelling
 choice crosses two places a word is often misspelt, four spellings with one right (τηλεόραση,
 τιλεόραση, τηλεώραση, τιλεώραση): with each wrong spelling one slip from the right one, a vote letter
 by letter would find it, so the audit fails a right option that is the one closest to all the others.
