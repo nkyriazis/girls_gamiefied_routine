@@ -142,7 +142,7 @@ export const distanceTime: Family = {
       const wrongSame = k * (h + h2);
       steps.push(b.choice('check', `Κάποιος έγραψε ${fmt(k)} × ${h + h2} = ${fmt(wrongSame)}. Τι λάθος έκανε;`,
         `Στο δεύτερο κομμάτι: ${fmt(k2)}, όχι ${fmt(k)}`,
-        ['Κανένα: έτσι βρίσκουμε το σύνολο', `Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)} = ${fmt(k + k2)}`],
+        ['Κανένα λάθος, είναι σωστό', `Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)} = ${fmt(k + k2)}`],
         'Οι δύο δρόμοι δεν είναι ίδιοι.'));
     }
     return { title: r.pick(s.title), story, steps };

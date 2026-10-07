@@ -77,7 +77,7 @@ export const groupTickets: Family = {
       steps.push(b.tag(undefined, 'Μετράμε χωριστά τους ενήλικες και τα παιδιά: έχουν άλλη τιμή.'));
       const right = `${adults(f.adults)} και ${kidsT(f.kids)}`;
       steps.push(b.choice('plan', 'Πόσα εισιτήρια ενηλίκων και πόσα παιδικά χρειάζονται;', right,
-        [adults(nAll), `${adults(f.adults)} και ${kidsT(f.kids - 1 || f.kids + 1)}`, `${adults(f.adults - 1)} και ${kidsT(f.kids + 1)}`]
+        [`${adults(nAll)} και κανένα παιδικό`, `${adults(f.adults)} και ${kidsT(f.kids - 1 || f.kids + 1)}`, `${adults(f.adults - 1)} και ${kidsT(f.kids + 1)}`]
           .filter((o, i, a) => o !== right && a.indexOf(o) === i),
         f.mine ? `Μην ξεχάσεις ${p.acc}: είναι κι ${p.female ? 'αυτή' : 'αυτός'} παιδί.` : 'Μια οικογένεια έχει δύο γονείς.'));
       const ops = r.chance(0.6);
@@ -91,7 +91,7 @@ export const groupTickets: Family = {
       const allAdult = nAll * A;
       steps.push(b.choice('check', `Αναστοχαζόμαστε: κάποιος βρήκε ${nAll} × ${A} = ${allAdult} €. Τι λάθος έκανε;`,
         'Πλήρωσε τα παιδιά σαν ενήλικες',
-        ['Κανένα: έτσι βρίσκουμε το σύνολο', f.kids > 1 ? `Έπρεπε να αφαιρέσει ${less} € μόνο μία φορά` : `Έπρεπε να προσθέσει ${less} €`],
+        ['Κανένα λάθος, είναι σωστό', f.kids > 1 ? `Έπρεπε να αφαιρέσει ${less} € μόνο μία φορά` : `Έπρεπε να προσθέσει ${less} € στο σύνολο`],
         `Η διαφορά είναι ${f.kids} × ${less} = ${f.kids * less} €.`));
       return { title: r.pick(v.title), story, steps };
     }
@@ -112,7 +112,7 @@ export const groupTickets: Family = {
     if (note && note - total > 150) return null;
     steps.push(b.tag(undefined, 'Το «για κάθε 10 μαθητές» μάς λέει πόσοι εκπαιδευτικοί δεν πληρώνουν.'));
     steps.push(b.choice('plan', 'Πόσοι εκπαιδευτικοί μπαίνουν δωρεάν;', `${free}, γιατί ${pupils} = 10 × ${free} + ${pupils % 10}`,
-      [`${teachers}, δηλαδή κάθε εκπαιδευτικός`, ...(pupils % 10 ? [`${free + 1}, γιατί το ${pupils} είναι περίπου ${Math.ceil(pupils / 10) * 10}`] : []), ...(free > 1 ? [`${free - 1}`] : ['Κανένας'])]
+      [`${teachers}, δηλαδή κάθε εκπαιδευτικός`, ...(pupils % 10 ? [`${free + 1}, γιατί το ${pupils} είναι περίπου ${Math.ceil(pupils / 10) * 10}`] : []), ...(free > 1 ? [`${free - 1}, γιατί ${free - 1} × 10 = ${(free - 1) * 10}`] : ['Κανένας, γιατί είναι λίγοι'])]
         .filter(o => !o.startsWith(`${free + 1},`) || free + 1 !== teachers || o.includes('κάθε')),
       `Πόσες ολόκληρες δεκάδες μαθητών υπάρχουν στο ${pupils};`));
     const ops = r.chance(0.6);

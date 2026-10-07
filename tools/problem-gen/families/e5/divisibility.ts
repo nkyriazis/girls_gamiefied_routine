@@ -153,17 +153,23 @@ export const divisibility: Family = {
         { label: 'Το τελευταίο ψηφίο του', answer: last },
         { label: r.chance(0.5) ? `Το άθροισμα των ψηφίων: ${ds.join(' + ')} =` : 'Το άθροισμα των ψηφίων του', answer: sum },
       ], `Το τελευταίο ψηφίο είναι το πιο δεξί του ${fmt(n)}. Μετά προσθέτουμε τα ψηφία ένα ένα, από τα αριστερά.`));
-      const wrongs = new Set<string>();
-      for (const k of r.shuffle(KS)) {
-        const t = divs.includes(k) ? divs.filter(d => d !== k) : [...divs, k].sort((x, y) => x - y);
-        if (t.length) wrongs.add(groupsText(s, t));
+      // One with as many as the right one (one swapped for another), then lists one longer (from a
+      // single one) or one shorter (from three): a list of one beside lists of two, or of three beside
+      // two, stands out by its length, so two of the right one's size are swapped instead
+      const others = KS.filter(k => !divs.includes(k));
+      const sorted = (t: number[]) => [...t].sort((x, y) => x - y);
+      const swaps = divs.flatMap(d => others.map(k => sorted([...divs.filter(x => x !== d), k])));
+      const wrongs = new Set<string>([groupsText(s, r.pick(swaps))]);
+      const more = divs.length === 1 ? others.map(k => sorted([...divs, k])) : divs.length === 3 ? divs.map(k => divs.filter(d => d !== k)) : swaps;
+      for (const t of r.shuffle(more)) {
+        wrongs.add(groupsText(s, t));
         if (wrongs.size === 3) break;
       }
       steps.push(b.choice('solve', `${fem(s) ? 'Ποιες' : 'Ποια'} γίνονται, χωρίς να περισσέψει ${none};`, groupsText(s, divs), [...wrongs], criteria));
       const notK = r.pick(KS.filter(k => !divs.includes(k)));
       steps.push(b.choice('check', `Αναστοχαζόμαστε: γιατί δεν γίνονται ${s.of(notK)};`, why(n, notK),
         // the other criterion, and two that are true of every number but beside the point
-        [notK === 9 || notK === 3 ? byLast(n) : bySum(n), `Γιατί ο αριθμός έχει ${ds.length} ψηφία`, `Γιατί το πρώτο ψηφίο του αριθμού είναι το ${ds[0]}`],
+        [notK === 9 || notK === 3 ? byLast(n) : bySum(n), `Γιατί ο αριθμός αυτός έχει ${ds.length} ψηφία`, `Γιατί το πρώτο ψηφίο του αριθμού είναι το ${ds[0]}`],
         `Το κριτήριο για το ${notK}: ${notK === 3 || notK === 9 ? 'το άθροισμα των ψηφίων' : 'το τελευταίο ψηφίο'}.`));
       return { title: r.pick(s.title), story, steps };
     }

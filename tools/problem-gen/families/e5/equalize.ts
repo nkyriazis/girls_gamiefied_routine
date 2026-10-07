@@ -47,12 +47,13 @@ export const equalize: Family = {
       b.choice('check', 'Πώς ελέγχουμε;',
         toA ? `${fmt(otherHas)} − ${fmt(give)} = ${fmt(after)} και ${fmt(has)} + ${fmt(give)} = ${fmt(after)}`
           : `${fmt(otherHas)} + ${fmt(give)} = ${fmt(after)} και ${fmt(has)} − ${fmt(give)} = ${fmt(after)}`,
-        // the giving the other way round (both sides, as the right one), the two added, their difference
+        // the giving the other way round (both sides, as the right one), the two added and their
+        // difference, each with a verdict that doesn't follow
         // (or, where that would go below zero, added to both)
         [toA && has > give ? `${fmt(otherHas)} + ${fmt(give)} = ${fmt(otherHas + give)} και ${fmt(has)} − ${fmt(give)} = ${fmt(has - give)}`
           : !toA && otherHas > give ? `${fmt(otherHas)} − ${fmt(give)} = ${fmt(otherHas - give)} και ${fmt(has)} + ${fmt(give)} = ${fmt(has + give)}`
             : `${fmt(otherHas)} + ${fmt(give)} = ${fmt(otherHas + give)} και ${fmt(has)} + ${fmt(give)} = ${fmt(has + give)}`,
-        `${fmt(otherHas)} + ${fmt(has)} = ${fmt(otherHas + has)}`, `${fmt(Math.max(otherHas, has))} − ${fmt(Math.min(otherHas, has))} = ${fmt(Math.abs(otherHas - has))}, άρα λάθος`],
+        `${fmt(otherHas)} + ${fmt(has)} = ${fmt(otherHas + has)}, άρα σωστό`, `${fmt(Math.max(otherHas, has))} − ${fmt(Math.min(otherHas, has))} = ${fmt(Math.abs(otherHas - has))}, άρα λάθος`],
         'Ξαναπαίζουμε την ιστορία με την απάντησή μας: έχουν στο τέλος τον ίδιο αριθμό;'),
     ];
     return { title: r.pick([`Οι συλλογές`, 'Ίδιος αριθμός', 'Δώσε και πάρε']), story, steps };

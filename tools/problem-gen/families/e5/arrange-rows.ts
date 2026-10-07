@@ -101,8 +101,8 @@ export const arrangeRows: Family = {
       b.tag(undefined, 'Ό,τι δεν αλλάζει τις σειρές δεν χρειάζεται.'),
     ];
     if (r.chance(0.6)) {
-      steps.push(b.choice('plan', 'Τι ψάχνουμε στην ουσία;', `Διαιρέτες του ${fmt(n)}`,
-        [`Πολλαπλάσια του ${fmt(n)}`, `Το Ε.Κ.Π. του ${fmt(n)} και του ${fmt(r.pick(inner))}`, `Αριθμούς που τελειώνουν σε 0 ή 5`],
+      steps.push(b.choice('plan', 'Τι ψάχνουμε στην ουσία;', `Τους διαιρέτες του ${fmt(n)}`,
+        [`Τα πολλαπλάσια του ${fmt(n)}`, `Το Ε.Κ.Π. του ${fmt(n)} και του ${fmt(r.pick(inner))}`, `Αριθμούς που τελειώνουν σε 0 ή 5`],
         `Όλες οι σειρές έχουν τον ίδιο αριθμό και δεν περισσεύει ${nobody(it)}: το ${fmt(n)} πρέπει να διαιρείται ακριβώς με τον αριθμό κάθε σειράς.`));
     }
     if (ask === 'ways') {
@@ -110,9 +110,11 @@ export const arrangeRows: Family = {
         { label: `Διαιρέτες του ${fmt(n)}, μαζί με το 1 και το ${fmt(n)}`, answer: ds.length },
         { label: r.chance(0.5) ? `Χωρίς το 1 και το ${fmt(n)}` : 'Τρόποι που γίνονται', answer: inner.length },
       ], `Ψάχνουμε ζευγάρια: 1 × ${fmt(n)}, 2 × ${fmt(n / 2)}, … Με 1 σε κάθε σειρά ή με όλ${it.g === 'f' ? 'ες' : it.g === 'm' ? 'ους' : 'α'} σε μία σειρά δεν έχουμε τουλάχιστον ${2} σε κάθε σειρά και ${2} σειρές.`));
-      const half = inner.filter(d => d * d <= n);
+      // (a number that isn't a divisor among them: as long as the right list)
+      const stray = Array.from({ length: n - 2 }, (_, i) => i + 2).find(d => n % d !== 0)!;
+      const withStray = [...inner, stray].sort((x, y) => x - y);
       const right = `${inner.length} τρόποι: ${list(inner)}`;
-      const wrong = [`${ds.length} τρόποι: ${list(ds)}`, `${half.length} τρόποι: ${list(half)}`, `${inner.length - 1} τρόποι: ${list(inner.slice(0, -1))}`]
+      const wrong = [`${ds.length} τρόποι: ${list(ds)}`, `${withStray.length} τρόποι: ${list(withStray)}`, `${inner.length - 1} τρόποι: ${list(inner.slice(0, -1))}`]
         .filter((o, i, a) => o !== right && a.indexOf(o) === i);
       steps.push(b.choice('check', `Αναστοχαζόμαστε: πόσοι τρόποι είναι, και ${howManyCap(it).toLowerCase()} ${it.manyAcc} έχει κάθε σειρά;`, right,
         wrong, `Το 1 και το ${fmt(n)} τα βγάζουμε. Οι 3 σειρές των 4 και οι 4 σειρές των 3 είναι διαφορετικοί τρόποι.`));
@@ -121,7 +123,8 @@ export const arrangeRows: Family = {
       const wrongB = inRange.slice(0, -1);
       const wrongC = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i).filter(d => d % 2 === 0);
       const right = list(inRange);
-      const wrongs = [list(wrongA), wrongB.length ? list(wrongB) : `${fmt(notIn[0])}`, list(wrongC)].filter((o, i, a) => o !== right && a.indexOf(o) === i);
+      // (one fewer only from three on: «10» beside «10 και 12» stands out; else the last swapped for one that doesn't divide)
+      const wrongs = [list(wrongA), wrongB.length >= 2 ? list(wrongB) : list([...inRange.slice(0, -1), notIn[0]].sort((x, y) => x - y)), list(wrongC)].filter((o, i, a) => o !== right && a.indexOf(o) === i);
       steps.push(b.choice('solve', `Ποιοι αριθμοί από το ${fmt(lo)} ως το ${fmt(hi)} διαιρούν ακριβώς το ${fmt(n)};`, right, wrongs,
         `Δοκιμάζουμε έναν έναν: ${fmt(n)} : ${fmt(inRange[0])} = ${fmt(n / inRange[0])}, τέλεια διαίρεση.`));
       steps.push(b.numbers('solve', 'Πόσες σειρές βγαίνουν κάθε φορά;',

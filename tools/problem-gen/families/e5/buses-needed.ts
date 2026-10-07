@@ -119,7 +119,7 @@ export const busesNeeded: Family = {
     }
 
     if (steps.length < 5 && r.chance(0.5)) {
-      const wrong = [`${fmt(total)} : ${seats} = ${q}, άρα ${q} λεωφορεία`, `${need} + ${seats} = ${fmt(need + seats)}`];
+      const wrong = [`${fmt(total)} : ${seats} = ${q}, άρα ${q} λεωφορεία`, `Ναι: ${need} + ${seats} = ${fmt(need + seats)} θέσεις`];
       if (withoutSmall && withoutSmall !== need) wrong.push(`Οι ${fmt(counts[0])} χωράνε σε ${withoutSmall} λεωφορεία`);
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: φτάνουν τα λεωφορεία;',
         `Ναι: ${need} × ${seats} = ${fmt(need * seats)} θέσεις`, wrong,

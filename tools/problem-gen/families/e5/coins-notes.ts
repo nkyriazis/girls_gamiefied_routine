@@ -142,9 +142,11 @@ export const coinsNotes: Family = {
       ? `Το 1 € έχει 100 λεπτά. ${100 / coin.cents!} κέρματα των ${coin.cents} λεπτών κάνουν 1 €.`
       : `Κάθε ${coin.short === 'κέρματα' ? 'κέρμα' : 'χαρτονόμισμα'} αξίζει ${coin.euros} €.`;
     // (for notes, also one note fewer: as many digits as the right sum)
-    const wrongEuros = (coin.perEuro ? [count, count * coin.perEuro, count * coin.cents!] : [euros - coin.euros!, count, count / coin.euros!, count + coin.euros!])
+    // (for coins also a smaller one, when it is whole: 10 coins to the euro, as if they were of 10 cents, or
+    // 100 for coins of 10 cents; then the cents taken for euros, the largest, is left out)
+    const wrongEuros = (coin.perEuro ? [count, count / (coin.perEuro === 10 ? 100 : 10), count * coin.perEuro, count * coin.cents!] : [euros - coin.euros!, count, count / coin.euros!, count + coin.euros!])
       .filter(x => Number.isInteger(x))
-      .filter((x, k, xs) => x !== euros && xs.indexOf(x) === k);
+      .filter((x, k, xs) => x !== euros && xs.indexOf(x) === k).slice(0, coin.perEuro ? 3 : 4);
 
     const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε πόσα και τι κέρματα ή χαρτονομίσματα είναι, και τις τιμές. Ό,τι δεν αλλάζει τα χρήματα το αφήνουμε.')];
     if (r.chance(0.4)) {
@@ -170,7 +172,7 @@ export const coinsNotes: Family = {
         ? b.numbers('check', 'Πώς ελέγχουμε; Όλα μαζί πρέπει να κάνουν όσα ήταν στην αρχή.', [{ label: `${p1} + ${p2} + ${p3} =`, answer: euros, unit: '€' }])
         : b.choice('check', `Κάποιος απάντησε «${fmt(naive)} €». Τι έκανε λάθος;`,
           `Μέτρησε κάθε ${coin.short === 'κέρματα' ? 'κέρμα' : 'χαρτονόμισμα'} σαν 1 €`,
-          ['Τίποτα, είναι σωστό', `Ξέχασε να αφαιρέσει ${i2.the}`],
+          ['Κανένα λάθος, είναι σωστό', `Ξέχασε να αφαιρέσει ${i2.the}`],
           `Τα ${coin.short} δεν αξίζουν 1 € το καθένα.`));
     }
     return { title: s.title, story, steps };

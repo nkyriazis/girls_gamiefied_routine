@@ -210,7 +210,7 @@ export const togetherAgain: Family = {
         `Ξανασυμπίπτουν σε έναν αριθμό ${sc.unit === 'ημέρες' ? 'ημερών' : sc.unit === 'λεπτά' ? 'λεπτών' : 'δευτερολέπτων'} που είναι πολλαπλάσιο ${nums.map(n => `και του ${n}`).join(' ')}.`));
     } else if (plan === 1) {
       steps.push(b.choice('plan', 'Ποιο εργαλείο μας βοηθά περισσότερο;', `Ένας κατάλογος με τα πολλαπλάσια των ${list(nums)}`,
-        [`Ένας κατάλογος με τους διαιρέτες των ${list(nums)}`, `Μια διαίρεση ${fmt(big)} : ${fmt(ps[0])}`],
+        [`Ένας κατάλογος με τους διαιρέτες των ${list(nums)}`, `Μια διαίρεση, ${fmt(big)} : ${fmt(ps[0])}, και κρατάω το πηλίκο`],
         `Γράφουμε πότε ξαναγίνεται το καθένα: ${fmt(ps[0])}, ${fmt(2 * ps[0])}, ${fmt(3 * ps[0])}, …`));
     } else {
       steps.push(b.order('plan', 'Βάζουμε σε σειρά το σχέδιό μας.', [
@@ -240,13 +240,16 @@ export const togetherAgain: Family = {
 
     if (claim) {
       steps.push(b.choice('check', `Έχει δίκιο ${c.nom};`, `Όχι: συμπίπτουν νωρίτερα, στο ${fmt(L)}`,
-        ['Ναι: πολλαπλασιάζουμε τους αριθμούς', `Όχι: έπρεπε να προσθέσει ${nums.join(' + ')} = ${fmt(sum)}`],
+        ['Ναι: τους πολλαπλασιάζουμε', `Όχι: έπρεπε να προσθέσει ${nums.join(' + ')} = ${fmt(sum)}`],
         `Συμπίπτουν και στο ${fmt(prod)}, αλλά μήπως συμπίπτουν νωρίτερα;`));
     } else if (r.chance(0.5)) {
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;',
-        // a true check, unfinished (one of them), and a true one beside the point (bigger than each)
-        `Διαιρείται με ${list(nums.map(n => `το ${n}`))}`,
-        [`${nums.join(' + ')} = ${fmt(sum)}`, `Διαιρείται με το ${nums[0]}`, `Είναι μεγαλύτερο από ${list(nums.map(n => `το ${n}`))}`],
+        // The right one is the whole of it: divides by each, and the smallest such. Beside it the
+        // greatest for the smallest (Μ.Κ.Δ. for Ε.Κ.Π.), half of it (true of every common multiple), and
+        // a true one beside the point (bigger than each)
+        `Είναι το μικρότερο που διαιρείται με ${list(nums.map(n => `το ${n}`))}`,
+        [`Είναι το μεγαλύτερο που διαιρείται με ${list(nums.map(n => `το ${n}`))}`, `Διαιρείται με ${list(nums.map(n => `το ${n}`))}`,
+          `Είναι μεγαλύτερο από ${list(nums.map(n => `το ${n}`))}`],
         'Το Ε.Κ.Π. διαιρείται ακριβώς με καθέναν από τους αριθμούς, και είναι το μικρότερο τέτοιο.'));
     } else {
       steps.push(b.numbers('check', `Αναστοχαζόμαστε: διαιρείται το ${fmt(L)} ακριβώς με καθέναν από τους αριθμούς;`,

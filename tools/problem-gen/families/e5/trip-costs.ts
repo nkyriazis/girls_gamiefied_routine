@@ -52,7 +52,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fuel} + ${toll * 2} + ${night * 2}`, value: fuel + toll * 2 + night * 2 },
         ],
         perPerson: false,
-        slip: { value: fuel + toll + night * 2, what: 'Τα διόδια της επιστροφής', others: ['Τη βενζίνη της επιστροφής', 'Τη δεύτερη νύχτα στο ξενοδοχείο'] },
+        slip: { value: fuel + toll + night * 2, what: 'Τα διόδια της επιστροφής', others: ['Τη βενζίνη του γυρισμού', 'Τη δεύτερη νύχτα στο ξενοδοχείο'] },
       };
     },
     noise: r => `Το χωριό απέχει ${extra(`${r.int(150, 320)} χιλιόμετρα`)}.`,
@@ -68,7 +68,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fmt(n * entry)} + ${park} + ${fuel}`, value: n * entry + park + fuel },
         ],
         perPerson: true,
-        slip: { value: (n - 1) * entry + park + fuel, what: 'Την είσοδο ενός ατόμου', others: ['Το πάρκινγκ του αυτοκινήτου', 'Τη βενζίνη του ταξιδιού'] },
+        slip: { value: (n - 1) * entry + park + fuel, what: 'Την είσοδο ενός ατόμου', others: ['Το πάρκινγκ του αυτοκινήτου', 'Τη βενζίνη ως εκεί'] },
       };
     },
     noise: r => `Το πάρκο έχει ${extra(`${r.int(25, 60)} παιχνίδια`)}.`,
@@ -174,7 +174,7 @@ export const tripCosts: Family = {
         [{ label: `${pt.n} × ${fmt(total / pt.n)} =`, answer: total }]));
     } else if (ask === 'left') {
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: πώς ελέγχουμε την αφαίρεση;', `${fmt(total)} + ${fmt(budget - total)} = ${fmt(budget)}`,
-        [`${fmt(budget)} + ${fmt(total)} = ${fmt(budget + total)}`, `${fmt(budget - total)} − ${fmt(total)}`], 'Ό,τι ξόδεψαν συν ό,τι περισσεύει κάνει όσα είχαν.'));
+        [`${fmt(budget)} + ${fmt(total)} = ${fmt(budget + total)}`, `${fmt(budget - total)} + ${fmt(budget - total)} = ${fmt(2 * (budget - total))}`], 'Ό,τι ξόδεψαν συν ό,τι περισσεύει κάνει όσα είχαν.'));
     } else {
       steps.push(b.choice('check', `Αναστοχαζόμαστε: κάποιος βρήκε ${fmt(pl.slip.value)} €. Τι ξέχασε;`, pl.slip.what, pl.slip.others,
         `Η διαφορά είναι ${fmt(total)} − ${fmt(pl.slip.value)} = ${fmt(total - pl.slip.value)} €. Σε ποιο ποσό αντιστοιχεί;`));
