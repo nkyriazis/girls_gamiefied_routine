@@ -711,17 +711,6 @@ server.register(async (fastify) => {
   });
 });
 
-// Graceful shutdown (SIGTERM from `docker stop`, SIGINT from Ctrl-C). Every
-// change is already committed; closing checkpoints the WAL into routine.db.
-for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.on(signal, async () => {
-    console.log(`${signal}: stopping server...`);
-    await server.close();
-    store.close();
-    process.exit(0);
-  });
-}
-
 const start = async () => {
   try {
     // First start on a database: import the legacy JSON files (read-only).
@@ -768,4 +757,20 @@ const start = async () => {
   }
 };
 
-start();
+// The routes are importable (the tests call them with server.inject against their own data); only
+// running this file (nodemon in dev, `node dist/backend/src/server.js` in the image) starts the server.
+export { server };
+
+if (require.main === module) {
+  // Graceful shutdown (SIGTERM from `docker stop`, SIGINT from Ctrl-C). Every
+  // change is already committed; closing checkpoints the WAL into routine.db.
+  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+    process.on(signal, async () => {
+      console.log(`${signal}: stopping server...`);
+      await server.close();
+      store.close();
+      process.exit(0);
+    });
+  }
+  start();
+}
