@@ -177,12 +177,12 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
       <div className="game-header">
         <div className="game-progress" {...help('game.progress')}>
           <div className="round-indicator">Γύρος {currentSession.currentRound} / {currentSession.totalRounds}</div>
-          <div className="question-indicator">Ερώτηση {currentSession.currentQuestionIndex + 1} / {currentSession.questionsPerRound}</div>
+          <div className="question-indicator">Ερώτηση {Math.min(currentSession.currentQuestionIndex + 1, currentSession.questionsPerRound)} / {currentSession.questionsPerRound}</div>
         </div>
         
         <div className="players-scores" {...help('game.turn')}>
           {players.map((player: User) => (
-            <div key={player.id} className={`player-puck ${nextPlayerId === player.id ? 'active-turn' : ''}`}>
+            <div key={player.id} className={`player-puck ${!currentSession.completedAt && nextPlayerId === player.id ? 'active-turn' : ''}`}>
               <span className="player-puck-name">{player.name}</span>
               <span className="player-puck-stars">⭐ {currentSession.totalStarsEarned[player.id] || 0}</span>
             </div>
@@ -230,9 +230,10 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
         {feedback && (
           <motion.div 
             className={`feedback-overlay ${feedback.correct ? 'correct' : 'incorrect'}`}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1.5, opacity: 0 }}
+            // Centred by Framer's x/y: its scale replaces a CSS transform
+            initial={{ scale: 0.5, opacity: 0, x: '-50%', y: '-50%' }}
+            animate={{ scale: 1, opacity: 1, x: '-50%', y: '-50%' }}
+            exit={{ scale: 1.5, opacity: 0, x: '-50%', y: '-50%' }}
           >
             <div className="feedback-icon">
               {feedback.correct ? '✨' : '❌'}
@@ -526,7 +527,6 @@ const styles = `
           position: fixed;
           top: 50%;
           left: 50%;
-          transform: translate(-50%, -50%);
           z-index: calc(var(--z-player) + 10);
           padding: 3rem 5rem;
           border-radius: 2rem;
