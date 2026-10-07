@@ -58,6 +58,8 @@ const routineRun = (userId: string) => store.routineRuns.all('userId = ?', userI
 function reset() {
   store.flowRuns.deleteWhere('1');
   store.routineRuns.deleteWhere('1');
+  store.routineExecutions.deleteWhere('1'); // a flow skips a routine finished today (#58)
+  store.taskExecutions.deleteWhere('1');
 }
 
 test('a flow runs on the server: alarms, parallel routines, sub-flows, then it ends', () => {
@@ -235,4 +237,84 @@ test('she is in her routine and dismisses her alarm: her routine goes on, nothin
   assert.equal(routineRun('u1').taskIndex, 1, 'where she was');
   assert.equal(store.routineExecutions.count(), executions, 'no second execution');
   assert.equal(flowRun('f1'), undefined, 'the flow moved on and ended');
+});
+
+// #58: a flow doesn't start a routine the kid already finished today
+// u1 did her routine by hand: started, both tasks done, closed
+function doneByHand() {
+  db.triggerAction('a1');
+  const run = routineRun('u1');
+  db.completeTask(run.id, 't1');
+  db.completeTask(run.id, 't2');
+  db.closeRoutine(run.id);
+}
+const executionsOf = (userId: string) => store.routineExecutions.all('userId = ?', userId).length;
+const starsOf = (userId: string) => db.usersWithStars().find(u => u.id === userId)!.stars;
+const skips = () => store.recentLogs(50).filter(l => l.type === 'FLOW_ROUTINE_SKIPPED').map(l => l.details);
+
+test('#58: her flow reaches a routine she finished today: her alarm rings, dismissing it starts nothing', () => {
+  reset();
+  doneByHand();
+  const stars = starsOf('u1');
+  const before = skips().length;
+  db.triggerAction('f1');
+  assert.ok(flowRun('f1'), 'her alarm rings: an alarm is never hidden (#25)');
+  assert.equal(db.dismissAlarm(flowRun('f1').id, 0), true);
+  assert.equal(routineRun('u1'), undefined, 'the routine does not start again');
+  assert.equal(executionsOf('u1'), 1, 'no second execution');
+  assert.equal(starsOf('u1'), stars, 'no second stars');
+  assert.equal(flowRun('f1'), undefined, 'the flow moved on and ended');
+  const [skip, ...more] = skips().slice(before) as { userId: string; reason: string }[];
+  assert.equal(more.length, 0);
+  assert.deepEqual([skip.userId, skip.reason], ['u1', 'done-today'], 'logged as FLOW_ROUTINE_SKIPPED');
+});
+
+test('#58: a flow for both kids with one done: the alarm names both, only the other one\'s routine starts', async () => {
+  reset();
+  doneByHand();
+  db.triggerAction('together');
+  assert.deepEqual(await alarmsFor(), { together: ['u1', 'u2'] }, 'the alarm is unchanged');
+  db.dismissAlarm(flowRun('together').id, 0);
+  assert.equal(routineRun('u1'), undefined);
+  assert.ok(routineRun('u2'));
+  assert.equal(executionsOf('u1'), 1);
+  db.closeRoutine(routineRun('u2').id);
+  assert.equal(flowRun('together'), undefined);
+});
+
+test('#58: finished yesterday does not count: her flow starts it again', () => {
+  reset();
+  doneByHand();
+  const [execution] = store.routineExecutions.all('userId = ?', 'u1');
+  store.routineExecutions.put({ ...execution, startedAt: new Date(Date.now() - 36 * 3600_000).toISOString() });
+  db.triggerAction('f1');
+  db.dismissAlarm(flowRun('f1').id, 0);
+  assert.ok(routineRun('u1'));
+  assert.equal(executionsOf('u1'), 2);
+});
+
+test('#58: started today but left unfinished (✕) does not count: her flow starts it', () => {
+  reset();
+  db.triggerAction('a1');
+  db.completeTask(routineRun('u1').id, 't1');
+  db.closeRoutine(routineRun('u1').id);
+  db.triggerAction('f1');
+  db.dismissAlarm(flowRun('f1').id, 0);
+  assert.ok(routineRun('u1'));
+  assert.equal(executionsOf('u1'), 2);
+});
+
+test('#58: a routine started by itself (push, its own schedule, «Ξεκίνα τώρα») still starts after she finished it', () => {
+  reset();
+  doneByHand();
+  assert.deepEqual(db.triggerAction('a1'), { success: true, type: 'assignment', id: 'a1' });
+  assert.equal(executionsOf('u1'), 2);
+});
+
+test('#58: "today" begins at local midnight in settings.timezone', () => {
+  assert.equal(db.dayStart('Europe/Athens', new Date('2026-10-08T12:00:00Z')), '2026-10-07T21:00:00.000Z', 'summer, UTC+3');
+  assert.equal(db.dayStart('Europe/Athens', new Date('2026-10-07T22:30:00Z')), '2026-10-07T21:00:00.000Z', '01:30 local: already the 8th');
+  assert.equal(db.dayStart('Europe/Athens', new Date('2026-12-01T12:00:00Z')), '2026-11-30T22:00:00.000Z', 'winter, UTC+2');
+  assert.equal(db.dayStart('Europe/Athens', new Date('2026-03-29T12:00:00Z')), '2026-03-28T22:00:00.000Z', 'the clocks go forward at 03:00, after midnight');
+  assert.equal(db.dayStart('UTC', new Date('2026-10-08T12:00:00Z')), '2026-10-08T00:00:00.000Z');
 });

@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import {
-  AppState, Chore, ChoreInstance, ConfigSaveSource, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
+  AppState, Chore, ChoreInstance, ConfigSaveSource, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineExecution, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
   ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
   ProblemExercise, ProblemReading, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
@@ -239,19 +239,39 @@ export function triggerAction(id: string, source: string = 'unknown'): TriggerRe
   });
 }
 
-// A user has at most one routine on screen.
+// A user has at most one routine on screen. A flow doesn't start a routine she
+// already finished today (#58); started by itself (push, its own schedule,
+// «Ξεκίνα τώρα» on the routine), it starts again.
 function startRoutine(assignmentId: string, flowRunId?: string): { started: boolean; id: string } {
   const assignment = config().routineAssignments.find(a => a.id === assignmentId);
   if (!assignment) return { started: false, id: '' };
   closeStaleRoutines(assignment.userId);
   const [running] = store.routineRuns.all('userId = ?', assignment.userId);
   if (running) return { started: false, id: running.id };
+  if (flowRunId) {
+    const done = finishedToday(assignment.userId, assignment.routineId);
+    if (done) {
+      logAction('FLOW_ROUTINE_SKIPPED', { assignmentId, userId: assignment.userId, flowRunId, reason: 'done-today', executionId: done.id });
+      return { started: false, id: done.id };
+    }
+  }
 
   const now = new Date().toISOString();
   const id = randomUUID();
   store.routineExecutions.put({ id, userId: assignment.userId, routineId: assignment.routineId, startedAt: now, totalStars: 0 });
   store.routineRuns.put({ id, userId: assignment.userId, routineId: assignmentId, taskIndex: 0, taskStartedAt: now, flowRunId });
   return { started: true, id };
+}
+
+// Her execution of a routine (the routine's id, not the assignment's) started today
+// in settings.timezone, as closeStaleRoutines counts days, and finished (every task done).
+// A start she left with ✕ doesn't count. The latest, if she did it more than once.
+function finishedToday(userId: string, routineId: string): RoutineExecution | undefined {
+  const timezone = config().settings?.timezone || 'Europe/Athens';
+  const done = store.routineExecutions.all(
+    'userId = ? AND routineId = ? AND completedAt IS NOT NULL AND startedAt >= ?',
+    userId, routineId, dayStart(timezone));
+  return done[done.length - 1];
 }
 
 // Triggering a flow that is already running restarts it, so an alarm nobody
@@ -1174,6 +1194,22 @@ function localDateStr(timezone: string, date = new Date()): string {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit'
   }).format(date);
+}
+
+// The instant (ISO, UTC, as the tables store times) the local day of `date` began in `timezone`
+export function dayStart(timezone: string, date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone, hourCycle: 'h23',
+    year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric'
+  });
+  // How far ahead of UTC the local clock is at instant t
+  const offset = (t: number) => {
+    const p = Object.fromEntries(parts.formatToParts(t).map(x => [x.type, Number(x.value)]));
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(t / 1000) * 1000;
+  };
+  const midnight = Date.parse(`${localDateStr(timezone, date)}T00:00:00Z`); // local midnight read as UTC
+  const guess = midnight - offset(midnight);
+  return new Date(midnight - offset(guess)).toISOString();
 }
 
 // When a kid last had each exercise (daily or extra), for drawing ones they haven't seen.
