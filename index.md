@@ -161,9 +161,11 @@ cron.schedule('* * * * *', () => {
 ```json
 { "id": "morning-flow" }
 ```
-- Used by parent dashboard "Trigger" buttons
+- Used by the parent dashboard's «Ξεκίνα τώρα» buttons (Ρυθμίσεις)
 - Used by URL parameter (`?push=morning-flow`) for testing
-- Simulates scheduled trigger immediately
+- Starts exactly this routine assignment, flow or `alarm`, now: `triggerAction(id, 'push_hook')`. Other schedules due at the same time don't start (#29)
+- A kid already in a routine keeps it: the answer is `{ skipped: true, runningId }`, and the parent's toast says «Ήδη σε ρουτίνα»
+- To simulate a minute, every schedule due in it, use `POST /api/debug/time` (`{ "time": "20:00" }`)
 
 **3. Flow Orchestration**
 - Flows define multi-step sequences (`alarm` → `parallel routines`)
@@ -660,8 +662,8 @@ server.addHook('preHandler', (request, reply, done) => {
 
 ### Testing a Routine Manually
 1. Open `/parent` dashboard
-2. Scroll to "Trigger Routines" section
-3. Click button for desired routine/flow
+2. Ρυθμίσεις → «Ξεκίνα τώρα» section
+3. Click the chip of the routine/flow (only that one starts)
 4. Watch frontend for immediate response
 5. Or use URL parameter: `/?push=morning-flow`
 
