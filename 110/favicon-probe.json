@@ -1,0 +1,61 @@
+{
+ "headless-shell": {
+  "version": "140.0.7339.16",
+  "requests": [
+   {
+    "url": "http://localhost:5173/uploads/1763893864988-1.png",
+    "type": "image"
+   },
+   {
+    "url": "http://localhost:5173/uploads/1763893873621-2.png",
+    "type": "image"
+   }
+  ]
+ },
+ "chromium-new-headless": {
+  "version": "140.0.7339.16",
+  "requests": [
+   {
+    "url": "http://localhost:5173/uploads/1763893864988-1.png",
+    "type": "image"
+   },
+   {
+    "url": "http://localhost:5173/uploads/1763893873621-2.png",
+    "type": "image"
+   },
+   {
+    "url": "http://localhost:5173/logo.svg",
+    "type": "other"
+   },
+   {
+    "url": "http://localhost:5173/logo.svg",
+    "type": "cdp:Other"
+   }
+  ]
+ },
+ "chromium-new-headless, ICO link without sizes": {
+  "version": "140.0.7339.16",
+  "requests": [
+   {
+    "url": "http://localhost:5173/uploads/1763893864988-1.png",
+    "type": "image"
+   },
+   {
+    "url": "http://localhost:5173/uploads/1763893873621-2.png",
+    "type": "image"
+   },
+   {
+    "url": "http://localhost:5173/logo.svg",
+    "type": "cdp:Other"
+   },
+   {
+    "url": "http://localhost:5173/logo.svg",
+    "type": "other"
+   },
+   {
+    "url": "http://localhost:5173/favicon.ico",
+    "type": "cdp:Other"
+   }
+  ]
+ }
+}

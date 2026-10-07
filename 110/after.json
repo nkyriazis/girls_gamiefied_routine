@@ -1,0 +1,57 @@
+{
+ "kiosk": [
+  {
+   "rel": "icon",
+   "type": "",
+   "sizes": "64x64",
+   "href": "/favicon.ico",
+   "url": "http://localhost:5173/favicon.ico",
+   "status": 200,
+   "contentType": "image/x-icon",
+   "bytes": 5599
+  },
+  {
+   "rel": "icon",
+   "type": "image/svg+xml",
+   "sizes": "",
+   "href": "/logo.svg",
+   "url": "http://localhost:5173/logo.svg",
+   "status": 200,
+   "contentType": "image/svg+xml",
+   "bytes": 532
+  },
+  {
+   "rel": "apple-touch-icon",
+   "type": "",
+   "sizes": "",
+   "href": "/apple-touch-icon.png",
+   "url": "http://localhost:5173/apple-touch-icon.png",
+   "status": 200,
+   "contentType": "image/png",
+   "bytes": 32144
+  }
+ ],
+ "phone": [
+  {
+   "rel": "icon",
+   "type": "",
+   "sizes": "64x64",
+   "href": "/favicon.ico",
+   "url": "http://192.168.122.1:5173/favicon.ico"
+  },
+  {
+   "rel": "icon",
+   "type": "image/svg+xml",
+   "sizes": "",
+   "href": "/logo.svg",
+   "url": "http://192.168.122.1:5173/logo.svg"
+  },
+  {
+   "rel": "apple-touch-icon",
+   "type": "",
+   "sizes": "",
+   "href": "/apple-touch-icon.png",
+   "url": "http://192.168.122.1:5173/apple-touch-icon.png"
+  }
+ ]
+}
