@@ -54,8 +54,8 @@
 //     a warning).
 // Warnings: the place rule's prompts with 3–5 choices and those its wordings can't spread evenly, a family with little variety (few distinct story skeletons), a story without
 // a question, very long stories, check-gender's words already in the pools (one line per
-// family and place), hints and prompts that show an answer of their own step or a later one
-// (one line per family, kind and place: many written hints work the row out, «12 × 2 = 24.»).
+// family and place), prompts, hints and row labels that show an answer still to work out (lib.ts,
+// hintShows; one line per family, kind and place: many written hints work the row out, «12 × 2 = 24.»).
 //
 //   node tools/problem-gen/audit.ts --gender-baseline   write gender-baseline.json from the pools as they are
 //
@@ -69,8 +69,8 @@ import path from 'node:path';
 import type { Exercise, ProblemExercise } from '../../shared/types.ts';
 import { genderedWords } from '../../frontend/scripts/gendered.mjs';
 import {
-  lengthTell, NAMES, onlyShortest, PLACE_MIN_CHOICES, PLACE_WARN_CHOICES, placeLimit, places, promptKey, rng,
-  SHORTEST_MIN_CHOICES, SHORTEST_SHARE
+  hintShows, lengthTell, NAMES, onlyShortest, PLACE_MIN_CHOICES, PLACE_WARN_CHOICES, placeLimit, places, promptKey, rng,
+  SHORTEST_MIN_CHOICES, SHORTEST_SHARE, shownText
 } from './lib.ts';
 import { auditMaths, mathsSample } from './maths/check.ts';
 import { auditLanguage, languageSample } from './language/check.ts';
@@ -101,8 +101,10 @@ const plain = (story: string) => story.replace(MARK, '$1');
 const NUM = String.raw`\d{1,3}(?:\.\d{3})+|\d+`;
 const TERM = String.raw`\(?\s*(?:${NUM})\s*\)?`;
 // Operators have a space on each side, as the books write them: a colon right after a word
-// or number ("έχει 4: 328 : 4 = 82") is punctuation, not division.
-const EQUATION = new RegExp(String.raw`(${TERM}(?:\s+[+−×:]\s+${TERM})+)\s*=\s*(${NUM})(?![\d.]*\d)`, 'g');
+// or number ("έχει 4: 328 : 4 = 82") is punctuation, not division. An equation starts at its first
+// number: never inside one, nor after an operator, where a row names the term before it
+// («όσοι ήταν − 166 + 152 =» is not «166 + 152 =»).
+const EQUATION = new RegExp(String.raw`(?<![\d.]|\s[+−×:]\s*)(${TERM}(?:\s+[+−×:]\s+${TERM})+)\s*=\s*(${NUM})(?![\d.]*\d)`, 'g');
 
 const toNumber = (s: string) => Number(s.replace(/\./g, ''));
 function evaluate(expr: string): number {
@@ -144,7 +146,7 @@ const shortest = new Map<string, { n: number; only: number; example: string }>()
 const placeTally = new Map<string, { N: number; P: number[]; example: string }>();
 // Per pool and number of options, the same
 const poolPlaces = new Map<string, { N: number; P: number[] }>();
-// Per family, kind and place: hints and prompts that show an answer of their own step or a later one
+// Per family, kind and place (prompt, hint, row): what shows an answer still to work out (lib.ts, hintShows)
 const laterAnswers = new Map<string, { n: number; example: string }>();
 const kinds = new Map<string, number>();
 
@@ -253,15 +255,6 @@ for (const pool of pools) {
         const right = shows(i, step.options[step.correctIndex] ?? '', false);
         if (j !== step.correctIndex) for (const x of shows(i, o, false)) if (!right.includes(x)) err(ex, `${at} wrong option «${o}» shows ${x}, the answer of step ${answerAt.get(x)}`);
       });
-      // Hints and prompts that do the same: listed per family, for now (#50 part 5a found them)
-      for (const [what, text, own] of [['prompt', step.prompt, false], ['hint', step.hint ?? '', true]] as const) {
-        const x = shows(i, text, own)[0];
-        if (x === undefined) continue;
-        const k = `${fam} ${step.kind} ${what}`;
-        const l = laterAnswers.get(k) ?? { n: 0, example: `${ex.id} step ${i}: «${text}» shows ${x}` };
-        l.n++;
-        laterAnswers.set(k, l);
-      }
       kinds.set(step.kind, (kinds.get(step.kind) ?? 0) + 1);
       if (!step.hint?.trim()) err(ex, `${at}: no hint (a wrong try would say only «Διάβασε ξανά την ιστορία»)`);
       hygiene(ex, `${at} prompt`, step.prompt);
@@ -314,6 +307,18 @@ for (const pool of pools) {
         step.items.forEach(o => hygiene(ex, `${at} item`, o));
       }
     });
+
+    // A prompt, a hint or a row label that shows an answer still to work out (lib.ts, hintShows): listed per
+    // family, kind and place, for now
+    const placesShown = new Set<string>();
+    for (const s of hintShows(ex)) {
+      if (placesShown.has(`${s.step} ${s.where}`)) continue;
+      placesShown.add(`${s.step} ${s.where}`);
+      const k = `${fam} ${ex.steps[s.step].kind} ${s.where.replace(/ \d+$/, '')}`;
+      const l = laterAnswers.get(k) ?? { n: 0, example: `${ex.id} ${shownText(s)}` };
+      l.n++;
+      laterAnswers.set(k, l);
+    }
 
     // Everything she reads, by where it is
     const read: [string, string][] = [['title', ex.title], ['story', plain(ex.story)], ...ex.steps.flatMap((st, i): [string, string][] => [

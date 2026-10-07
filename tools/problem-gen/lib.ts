@@ -395,6 +395,8 @@ function chooseWordings(sets: string[][], slot: number[], seed: number | undefin
 const NUMBER = String.raw`\d{1,3}(?:\.\d{3})+|\d+`;
 const EXPRESSION = new RegExp(String.raw`\(?(?:${NUMBER})\)?(?:\s+[+−×:]\s+\(?(?:${NUMBER})\)?)+`);
 const toNumber = (s: string) => Number(s.replace(/\./g, ''));
+/** The numbers of a text, as written (1.229 is one) */
+const numbersOf = (s: string) => [...s.matchAll(new RegExp(String.raw`(?<![\d.])(?:${NUMBER})(?![\d.]*\d)`, 'g'))].map(x => toNumber(x[0]));
 /** 368 → [300, 68]; 2.900 → [2.000, 900] */
 const topSplit = (n: number): [number, number] => {
   const p = 10 ** (String(n).length - 1);
@@ -452,10 +454,13 @@ function subHint(a: number, b: number): string {
   if (roundPart(b)) return `Από το ${fmt(a)} βγάζουμε ${roundPart(b)}.`;
   const [hi, rest] = topSplit(b);
   if (b >= 10 && rest && hi) return `${fmt(a)} − ${fmt(hi)} = ${fmt(a - hi)}, και μετά βγάζουμε ${fmt(rest)} ακόμα.`;
-  // A round number taken away: count up from it, to the next round number and then to the other
-  const p = 10 ** String(b).length;
-  const next = Math.ceil((b + 1) / p) * p;
-  if (b >= 10 && next < a) return `Μετράμε από το ${fmt(b)} ως το ${fmt(a)}: πρώτα ως το ${fmt(next)}, και μετά ως το ${fmt(a)}.`;
+  return countUp(a, b);
+}
+
+/** 23 − 13 counted up: «Μετράμε από το 13 ως το 23: πρώτα ως το 20, και μετά ως το 23.» (to the next round number on the way) */
+function countUp(a: number, b: number): string {
+  const next = [1000, 100, 10].map(p => Math.ceil((b + 1) / p) * p).find(n => n < a);
+  if (b >= 10 && next !== undefined) return `Μετράμε από το ${fmt(b)} ως το ${fmt(a)}: πρώτα ως το ${fmt(next)}, και μετά ως το ${fmt(a)}.`;
   return `Πόσα λείπουν από το ${fmt(b)} για να φτάσουμε στο ${fmt(a)};`;
 }
 
@@ -527,35 +532,89 @@ function chainHints(nums: number[], ops: string[]): string[] {
   ];
 }
 
-/** Every hint workHint could give for `expr`, the preferred first (rowsHint takes the first that keeps the answers back). */
+/**
+ * Every hint workHint could give for `expr`, the preferred first (rowsHint takes the first that keeps the
+ * answers back): a part worked out may be a row's answer, so each «x − 20 = 46, και μετά …» also comes
+ * with the part only named («Πρώτα x − 20, και μετά …»), and a subtraction counted up.
+ */
 function workHints(expr: string): string[] {
   const h = workHint(expr);
   if (!h) return [];
   const m = expr.match(EXPRESSION)!;
   const tokens = m[0].replace(/[()]/g, '').trim().split(/\s+/);
+  const nums = tokens.filter((_, i) => i % 2 === 0).map(toNumber);
   const ops = tokens.filter((_, i) => i % 2 === 1);
   if (ops.length > 1 && !/\(/.test(m[0]) && !(ops.some(o => o === '×' || o === ':') && ops.some(o => o === '+' || o === '−'))) {
-    return chainHints(tokens.filter((_, i) => i % 2 === 0).map(toNumber), ops);
+    return chainHints(nums, ops);
   }
-  return [h];
+  const named = h.match(new RegExp(String.raw`^((?:${NUMBER}) [+−×] (?:${NUMBER})) = (?:${NUMBER}), και μετά (.+)$`));
+  return [h, ...(named ? [`Πρώτα ${named[1]}, και μετά ${named[2]}`] : []), ...(ops.length === 1 && ops[0] === '−' ? [countUp(nums[0], nums[1])] : [])];
 }
 
 /** The hint b.numbers writes from its rows: how to start the first row it can say something about. */
 export function rowsHint(rows: { label: string; answer: number; eq?: string }[]): string | null {
   const answers = new Set(rows.map(r => r.answer));
-  const numbersIn = (s: string) => [...s.matchAll(new RegExp(NUMBER, 'g'))].map(x => toNumber(x[0]));
-  // A hint that states a row's answer gives it away: after «=», or anywhere else unless it is a
-  // number of the calculation or a part of one («23 − 10 = 13, και μετά βγάζουμε 3 ακόμα» when
-  // 23 − 13 is 10), not a trial («Δοκιμάζουμε 5 × 500» when 2.502 : 5 is 500). A digit is a step
-  // of the way («13 − 3 = 10, και μετά βγάζουμε 5 ακόμα» for 13 − 8).
-  const fair = (expr: string) => (h: string) => {
-    const given = new Set(numbersIn(expr).flatMap(n => [n, ...topSplit(n), n % 10, n - (n % 10)]));
-    return ![...h.matchAll(new RegExp(String.raw`=\s*(${NUMBER})`, 'g'))].some(x => answers.has(toNumber(x[1])))
-      && !numbersIn(h).some(n => n >= 10 && answers.has(n) && !given.has(n));
-  };
-  const hints = rows.map(r => workHints(r.eq ?? r.label).find(fair(r.eq ?? r.label))).filter((h): h is string => !!h);
+  // A hint that states a row's answer gives it away (hintShows' rule): any of them after «=», and from
+  // 10 up anywhere, even as a part of the calculation («23 − 10 = 13, και μετά βγάζουμε 3 ακόμα» when
+  // 23 − 13 is 10: the count up says it instead) or a trial («Δοκιμάζουμε 5 × 500» when 2.502 : 5 is
+  // 500: it tries 5 × 400). A digit is a step of the way («13 − 3 = 10, και μετά βγάζουμε 5 ακόμα» for 13 − 8).
+  const fair = (h: string) => ![...h.matchAll(new RegExp(String.raw`=\s*(${NUMBER})(?![\d.]*\d)`, 'g'))].some(x => answers.has(toNumber(x[1])))
+    && !numbersOf(h).some(n => n >= 10 && answers.has(n));
+  const hints = rows.map(r => workHints(r.eq ?? r.label).find(fair)).filter((h): h is string => !!h);
   return hints[0] ?? null;
 }
+
+// ---------------------------------------------------------------------------
+// Nothing on a step shows an answer still to work out (#50 part 5d). A hint shows after a wrong try,
+// and a hint that works the row out is copied on the second; a row label that names the row above's
+// answer («Περίπου: 69.000 − 58.000 =» under «Το 69.348») gives that row away, since every row of a
+// step is on screen at once. Showing the step is «Δείξε μου»'s job.
+
+/** A number on a step that she hasn't worked out yet, where it is and which step asks for it. */
+export interface Shown { step: number; where: string; text: string; number: number; answerOf: number }
+
+const MARKED = /\[([^\]|]+)\|(?:known|sought|extra)\]/g;
+
+/**
+ * What each step of a problem shows (its prompt, its hint, its rows' labels) that is an answer still to
+ * work out: a number that a numbers row of this step or a later one asks for and she hasn't settled.
+ * Settled: what the story (or an earlier step's own story) gives, the answers of earlier steps' rows,
+ * and the numbers of earlier choices' right options (she picked them). In a prompt or a hint a number
+ * below 10 counts only after «=»: written words meet small numbers by chance («4 παιδικά» beside a
+ * price of 4 €). A row label counts a small one too when a row above it asks for it: its numbers are
+ * its calculation («3 × 7 =» under «Πόσα παιδιά είναι [3]»), and a digit of its own («2 + 1 + 6 + 7 =»
+ * beside a remainder of 1) is not a row's answer.
+ */
+export function hintShows(ex: { story: string; steps: ProblemStep[] }): Shown[] {
+  const settled = new Set(numbersOf(ex.story.replace(MARKED, '$1')));
+  const out: Shown[] = [];
+  ex.steps.forEach((step, i) => {
+    if (step.story) for (const n of numbersOf(step.story)) settled.add(n);
+    // Asked at this step or later, and not settled before it: the first step that asks
+    const asked = new Map<number, number>();
+    ex.steps.forEach((s, j) => {
+      if (j >= i && s.kind === 'numbers') for (const r of s.rows) if (!settled.has(r.answer) && !asked.has(r.answer)) asked.set(r.answer, j);
+    });
+    // [where, text, the small numbers that count there: a label's, the rows above it ask for]
+    const texts: [string, string, Set<number>][] = [['prompt', step.prompt, new Set()], ['hint', step.hint ?? '', new Set()]];
+    if (step.kind === 'numbers') step.rows.forEach((r, k) => texts.push([`row ${k}`, r.label, new Set(step.rows.slice(0, k).map(x => x.answer))]));
+    for (const [where, text, above] of texts) {
+      const after = new Set([...text.matchAll(new RegExp(String.raw`=\s*(${NUMBER})(?![\d.]*\d)`, 'g'))].map(x => toNumber(x[1])));
+      const seen = new Set<number>();
+      for (const n of numbersOf(text)) {
+        if (seen.has(n) || !asked.has(n) || (n < 10 && !after.has(n) && !above.has(n))) continue;
+        seen.add(n);
+        out.push({ step: i, where, text, number: n, answerOf: asked.get(n)! });
+      }
+    }
+    if (step.kind === 'numbers') for (const r of step.rows) settled.add(r.answer);
+    if (step.kind === 'choice') for (const n of numbersOf(step.options[step.correctIndex] ?? '')) settled.add(n);
+  });
+  return out;
+}
+
+/** «step 2 hint «…» shows 445, the answer of step 2» */
+export const shownText = (s: Shown) => `step ${s.step} ${s.where} «${s.text}» shows ${fmt(s.number)}, the answer of step ${s.answerOf}`;
 
 // ---------------------------------------------------------------------------
 // Steps. Choices are shuffled here, so a family lists the right answer first.
@@ -566,11 +625,13 @@ export interface Builder {
   tag(prompt?: string, hint?: string): ProblemTagStep;
   /** Each option one wording or several (Wording): the ones that put the right option at the problem's place for this prompt. */
   choice(phase: ProblemPhase, prompt: string, right: Wording, wrong: Wording[], hint?: string, story?: string): ProblemChoiceStep;
-  /** Without `hint`, one is written from the rows' equations (rowsHint); a step it can't write one for throws. */
+  /** Without `hint`, one is written from the rows' equations (rowsHint); a step it can't write a fair one for is listed in `hintless`. */
   numbers(phase: ProblemPhase, prompt: string, rows: Row[], hint?: string): ProblemNumbersStep;
   order(phase: ProblemPhase, prompt: string, items: string[], hint?: string): ProblemOrderStep;
   /** What the choices give away (lengthTell), or options repeated: gen.ts drops such a draft. */
   tells: string[];
+  /** Numbers steps with no hint of their own and none rowsHint could write without an answer: gen.ts drops such a draft. */
+  hintless: string[];
   /** The prompts (promptKey) whose wordings can't spread the right option evenly over the places, with the busiest place's share: gen.ts --places lists them. */
   uneven: { key: string; busiest: number }[];
 }
@@ -584,9 +645,10 @@ export const READ_PROMPT_E5 = 'Τι προσπαθούμε να βρούμε; Τ
  */
 export function builder(r: Rng, readPrompt: string, seedFor?: (key: string) => number): Builder {
   const tells: string[] = [];
+  const hintless: string[] = [];
   const uneven: { key: string; busiest: number }[] = [];
   return {
-    tells, uneven,
+    tells, hintless, uneven,
     tag: (prompt = readPrompt, hint) => ({ kind: 'tag', phase: 'read', prompt, ...(hint ? { hint } : {}) }),
     choice: (phase, prompt, right, wrong, hint, story) => {
       const sets = [right, ...wrong].map(w => (typeof w === 'string' ? [w] : [...w]));
@@ -607,11 +669,11 @@ export function builder(r: Rng, readPrompt: string, seedFor?: (key: string) => n
     },
     numbers: (phase, prompt, rows, hint) => {
       const h = hint ?? rowsHint(rows);
-      if (!h) throw new Error(`numbers step «${prompt}» (${rows.map(row => row.label).join(' | ')}): no hint, and no equation to write one from`);
+      if (!h) hintless.push(`«${prompt}» (${rows.map(row => `${row.label} [${row.answer}]`).join(' | ')})`);
       return {
         kind: 'numbers', phase, prompt,
         rows: rows.map(row => ({ label: row.label, answer: row.answer, ...(row.unit ? { unit: row.unit } : {}) })),
-        hint: h,
+        hint: h ?? '',
       };
     },
     order: (phase, prompt, items, hint) => ({ kind: 'order', phase, prompt, items, ...(hint ? { hint } : {}) }),
