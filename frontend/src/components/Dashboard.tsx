@@ -335,8 +335,9 @@ export const Dashboard: React.FC = () => {
       <AnimatePresence>
         {exerciseSessions.length > 0 && (
           <ExerciseGame
+            key={exerciseSessions[0].id}
             session={exerciseSessions[0]}
-            onClose={() => api.cancelExerciseSession(exerciseSessions[0].id)}
+            onClose={() => api.closeExerciseSession(exerciseSessions[0].id)}
           />
         )}
       </AnimatePresence>
