@@ -118,8 +118,9 @@ server.register(cors, {
   origin: true,
 });
 
-// Enable WebSocket
-server.register(websocket);
+// Enable WebSocket. STATE is the whole world as JSON, sent to every screen on every change: deflated
+// (permessage-deflate, when the browser offers it; Vite's proxy and nginx pass it through) it is a fifth.
+server.register(websocket, { options: { perMessageDeflate: true } });
 
 // Enable Multipart
 server.register(multipart);
