@@ -317,8 +317,16 @@ needed in one problem and extra in another. Pieces of text remember their quanti
 the painting check knows each fact's words, and the calc step can read back any
 calculation. `world/run.ts` prints a sample and how far lazy strategies get;
 `world/gen-world.ts` writes `backend/exercise-pools/g-dimotikou-world.json`. Every
-other valid way to work it out must be a quantity too (the other order of two changes,
-two changes taken together), or a right calculation reads back as meaning nothing.
+other valid way to work it out must read back, or a right calculation reads back as
+meaning nothing. Mostly as a quantity of its own (the other order of two changes, two
+changes taken together). The exception is a × done by hand (#50 part 3a): adding or
+taking away its same-unit factor again and again (58 − 9 − 9 − 9 − 9, 8 + 8) is read by
+the checker (`readLines` in shared/problems.ts: runs), not written as partial quantities.
+Partials in the world would enter the solver, and `problem()` refuses a problem where a
+needed fact can be done without (world.ts, «Needed must be the only way»), so they would
+change which problems are made. So a × relation must give its product's unit to exactly one
+factor (the each, the stock «διπλάσια» doubles), and the other, how many times, is at most
+10: `audit.ts` checks both.
 Questions that refer to what the story tells (the item bought, «η νονά της», «αυτές τις
 εβδομάδες») go in `late` and are asked only at the end.
 
