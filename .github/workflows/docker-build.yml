@@ -78,8 +78,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # :latest for deploy-rpi.sh, and sha-<7> to roll back to any build (image: ...:sha-xxxxxxx).
+      # Both point at this run's per-arch digests, so the next build overwriting :amd64/:arm64 leaves them be.
       - name: Create and push manifest for ${{ matrix.service }}
         run: |
           docker buildx imagetools create -t ${{ env.IMAGE_PREFIX }}/routine-${{ matrix.service }}:latest \
+            -t "${{ env.IMAGE_PREFIX }}/routine-${{ matrix.service }}:sha-${GITHUB_SHA::7}" \
             ${{ env.IMAGE_PREFIX }}/routine-${{ matrix.service }}:amd64 \
             ${{ env.IMAGE_PREFIX }}/routine-${{ matrix.service }}:arm64
