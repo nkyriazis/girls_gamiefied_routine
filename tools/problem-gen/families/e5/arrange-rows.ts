@@ -80,6 +80,9 @@ export const arrangeRows: Family = {
     // "impossible": one length that doesn't divide, among ones that do
     const bad = r.pick(Array.from({ length: 12 }, (_, i) => i + 3).filter(d => n % d !== 0));
     const goods = r.sample(inner.filter(d => d >= 3 && d <= 20), 3);
+    // A two-digit row length among them when the impossible one has two digits (its length mustn't tell)
+    const twoDigit = inner.filter(d => d >= 10 && d <= 20 && !goods.includes(d));
+    if (bad >= 10 && goods.length === 3 && goods.every(g => g < 10) && twoDigit.length) goods[0] = r.pick(twoDigit);
     if (ask === 'impossible' && goods.length < 3) return null;
 
     const rowWord = (d: number) => `σειρές των ${fmt(d)}`;
@@ -122,7 +125,7 @@ export const arrangeRows: Family = {
       steps.push(b.choice('solve', `Ποιοι αριθμοί από το ${fmt(lo)} ως το ${fmt(hi)} διαιρούν ακριβώς το ${fmt(n)};`, right, wrongs,
         `Δοκιμάζουμε έναν έναν: ${fmt(n)} : ${fmt(inRange[0])} = ${fmt(n / inRange[0])}, τέλεια διαίρεση.`));
       steps.push(b.numbers('solve', 'Πόσες σειρές βγαίνουν κάθε φορά;',
-        inRange.map(d => ({ label: r.chance(0.5) ? `Με ${fmt(d)} σε κάθε σειρά: ${fmt(n)} : ${fmt(d)} =` : `Με ${fmt(d)} σε κάθε σειρά`, answer: n / d, unit: 'σειρές' }))));
+        inRange.map(d => ({ label: r.chance(0.5) ? `Με ${fmt(d)} σε κάθε σειρά: ${fmt(n)} : ${fmt(d)} =` : `Με ${fmt(d)} σε κάθε σειρά`, answer: n / d, unit: 'σειρές', eq: `${fmt(n)} : ${fmt(d)}` }))));
       steps.push(b.numbers('check', 'Αναστοχαζόμαστε: βγαίνουν πάλι όλ' + (it.g === 'f' ? 'ες' : it.g === 'm' ? 'οι' : 'α') + ';',
         [{ label: `${fmt(inRange[0])} × ${fmt(n / inRange[0])} =`, answer: n }]));
     } else {
@@ -131,8 +134,8 @@ export const arrangeRows: Family = {
         `Διαιρείται το ${fmt(n)} ακριβώς με καθέναν από τους αριθμούς;`));
       steps.push(b.numbers('solve', 'Πόσες σειρές βγαίνουν με τις άλλες;',
         [...goods].sort((x, y) => x - y).map(d => ({ label: `Με ${fmt(d)} σε κάθε σειρά: ${fmt(n)} : ${fmt(d)} =`, answer: n / d, unit: 'σειρές' }))));
-      steps.push(b.choice('check', `Γιατί δεν γίνονται ${rowWord(bad)};`, `Γιατί ${fmt(bad)} × ${fmt(q)} + ${fmt(rest)} = ${fmt(n)}: ${rest === 1 ? 'περισσεύει 1' : `περισσεύουν ${fmt(rest)}`}`,
-        [`Γιατί το ${fmt(bad)} είναι ${bad % 2 ? 'περιττός' : 'άρτιος'} αριθμός`, `Γιατί ${fmt(bad)} σειρές δεν χωράνε`, `Γιατί ${fmt(n)} + ${fmt(bad)} = ${fmt(n + bad)}`],
+      steps.push(b.choice('check', `Γιατί δεν γίνονται ${rowWord(bad)};`, `Γιατί ${fmt(bad)} × ${fmt(q)} + ${fmt(rest)} = ${fmt(n)}`,
+        [`Γιατί το ${fmt(bad)} είναι ${bad % 2 ? 'περιττός' : 'άρτιος'}`, `Γιατί ${fmt(bad)} σειρές δεν χωράνε`, `Γιατί ${fmt(n)} + ${fmt(bad)} = ${fmt(n + bad)}`],
         `Κάνουμε τη διαίρεση ${fmt(n)} : ${fmt(bad)} και κοιτάμε το υπόλοιπο.`));
     }
     return { title: r.pick(s.title), story, steps };

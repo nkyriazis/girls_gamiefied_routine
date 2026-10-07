@@ -90,7 +90,7 @@ export const groupTickets: Family = {
       ], `Το «${less} € λιγότερα» σημαίνει ${A} − ${less}.`));
       const allAdult = nAll * A;
       steps.push(b.choice('check', `Αναστοχαζόμαστε: κάποιος βρήκε ${nAll} × ${A} = ${allAdult} €. Τι λάθος έκανε;`,
-        `Πλήρωσε και τα παιδιά σαν ενήλικες· τα παιδιά πληρώνουν ${less} € λιγότερα`,
+        'Πλήρωσε τα παιδιά σαν ενήλικες',
         ['Κανένα: έτσι βρίσκουμε το σύνολο', f.kids > 1 ? `Έπρεπε να αφαιρέσει ${less} € μόνο μία φορά` : `Έπρεπε να προσθέσει ${less} €`],
         `Η διαφορά είναι ${f.kids} × ${less} = ${f.kids * less} €.`));
       return { title: r.pick(v.title), story, steps };
@@ -112,8 +112,8 @@ export const groupTickets: Family = {
     if (note && note - total > 150) return null;
     steps.push(b.tag(undefined, 'Το «για κάθε 10 μαθητές» μάς λέει πόσοι εκπαιδευτικοί δεν πληρώνουν.'));
     steps.push(b.choice('plan', 'Πόσοι εκπαιδευτικοί μπαίνουν δωρεάν;', `${free}, γιατί ${pupils} = 10 × ${free} + ${pupils % 10}`,
-      [`${teachers}: όλοι`, ...(pupils % 10 ? [`${free + 1}, γιατί ${pupils} μαθητές είναι περίπου ${Math.ceil(pupils / 10) * 10}`] : []), ...(free > 1 ? [`${free - 1}`] : ['Κανένας'])]
-        .filter(o => !o.startsWith(`${free + 1}`) || free + 1 !== teachers || o.includes('όλοι')),
+      [`${teachers}, δηλαδή κάθε εκπαιδευτικός`, ...(pupils % 10 ? [`${free + 1}, γιατί το ${pupils} είναι περίπου ${Math.ceil(pupils / 10) * 10}`] : []), ...(free > 1 ? [`${free - 1}`] : ['Κανένας'])]
+        .filter(o => !o.startsWith(`${free + 1},`) || free + 1 !== teachers || o.includes('κάθε')),
       `Πόσες ολόκληρες δεκάδες μαθητών υπάρχουν στο ${pupils};`));
     const ops = r.chance(0.6);
     steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
@@ -123,7 +123,7 @@ export const groupTickets: Family = {
       { label: 'Όλα μαζί', answer: total, unit: '€' },
       ...(note ? [{ label: ops ? `Ρέστα: ${note} − ${fmt(total)} =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
     ], `${pupils} × ${C} = ${fmt(pupils * C)}.`));
-    steps.push(b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: οι μαθητές μόνοι τους κάνουν ${fmt(pupils * C)} €, και οι εκπαιδευτικοί προσθέτουν λίγα`,
+    steps.push(b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: λίγο πάνω από τα ${fmt(pupils * C)} € των μαθητών`,
       [`Όχι: πρέπει να είναι ${fmt((pupils + teachers) * A)} €, όλοι με τιμή ενήλικα`, `Όχι: πρέπει να είναι λιγότερα από ${fmt(pupils * C)} €`],
       'Συγκρίνουμε με το ποσό για τους μαθητές μόνο.'));
     return { title: r.pick(v.title), story, steps };

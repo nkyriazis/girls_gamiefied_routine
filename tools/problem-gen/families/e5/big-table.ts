@@ -147,8 +147,8 @@ export const bigTable: Family = {
     const steps: ProblemStep[] = [b.tag(undefined, 'Από τον πίνακα χρειαζόμαστε μόνο όσα ρωτάει η ερώτηση. Τα άλλα τα αφήνουμε.')];
     if (kind === 'sum') {
       if (r.chance(0.5)) {
-        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `Πρόσθεση μόνο των δύο αριθμών: ${fmt(a)} + ${fmt(c)}`,
-          ['Πρόσθεση όλων των αριθμών του πίνακα', `Αφαίρεση: ${fmt(Math.max(a, c))} − ${fmt(Math.min(a, c))}`],
+        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `Πρόσθεση: ${fmt(a)} + ${fmt(c)}`,
+          ['Πρόσθεση όλων των αριθμών', `Αφαίρεση: ${fmt(Math.max(a, c))} − ${fmt(Math.min(a, c))}`],
           `Η ερώτηση λέει «μαζί» και ρωτάει μόνο για ${periods[i].at} και ${periods[j].at}.`));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [

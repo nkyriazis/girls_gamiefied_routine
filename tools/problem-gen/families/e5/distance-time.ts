@@ -101,8 +101,8 @@ export const distanceTime: Family = {
     const ops = r.chance(0.5);
     if (ask === 'far') {
       if (r.chance(0.6)) {
-        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `Πολλαπλασιασμό: ${h} φορές από ${fmt(k)} χιλιόμετρα`,
-          [`Πρόσθεση: ${fmt(k)} + ${h}`, `Διαίρεση: ${fmt(k)} : ${h}`], `Κάθε ώρα προστίθενται ${fmt(k)} χιλιόμετρα.`));
+        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `${fmt(k)} × ${h}`,
+          [`${fmt(k)} + ${h}`, `${fmt(k)} : ${h}`], `Κάθε ώρα προστίθενται ${fmt(k)} χιλιόμετρα.`));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: ops ? `${fmt(k)} × ${h} =` : `Σε ${h} ώρες`, answer: done, unit: 'χιλιόμετρα' }],
         `${fmt(k)} + ${fmt(k)} + … ${h} φορές.`));
@@ -122,13 +122,13 @@ export const distanceTime: Family = {
         { label: ops ? `Μένουν: ${fmt(R)} − ${fmt(done)} =` : 'Μένουν', answer: R - done, unit: 'χιλιόμετρα' },
         ...(asksHoursLeft ? [{ label: ops ? `Ώρες ακόμα: ${fmt(R - done)} : ${fmt(k)} =` : 'Ώρες ακόμα', answer: more, unit: 'ώρες' }] : []),
       ], `${fmt(k)} × ${h} = ${fmt(done)}.`));
-      steps.push(b.choice('check', 'Αναστοχαζόμαστε: πώς ελέγχουμε;', `${fmt(done)} + ${fmt(R - done)} = ${fmt(R)}: όσα ${s.v[1]} και όσα μένουν κάνουν όλη τη διαδρομή`,
-        [`${fmt(R)} + ${fmt(done)} = ${fmt(R + done)}`, `${fmt(R)} − ${fmt(k)} = ${fmt(R - k)}: μένουν τόσα`],
+      steps.push(b.choice('check', 'Αναστοχαζόμαστε: πώς ελέγχουμε;', `${fmt(done)} + ${fmt(R - done)} = ${fmt(R)}`,
+        [`${fmt(R)} + ${fmt(done)} = ${fmt(R + done)}`, `${fmt(R)} − ${fmt(k)} = ${fmt(R - k)}`],
         'Τα δύο κομμάτια μαζί πρέπει να κάνουν όλη τη διαδρομή.'));
     } else if (ask === 'hours') {
       if (r.chance(0.6)) {
-        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `Διαίρεση: πόσες φορές χωράει το ${fmt(k)} στο ${fmt(done)}`,
-          [`Πολλαπλασιασμό: ${fmt(done)} × ${fmt(k)}`, `Αφαίρεση: ${fmt(done)} − ${fmt(k)}`], 'Κάθε ώρα «τρώει» ένα κομμάτι της διαδρομής.'));
+        steps.push(b.choice('plan', 'Ποια πράξη κάνουμε;', `${fmt(done)} : ${fmt(k)}`,
+          [`${fmt(done)} × ${fmt(k)}`, `${fmt(done)} − ${fmt(k)}`], 'Κάθε ώρα «τρώει» ένα κομμάτι της διαδρομής.'));
       }
       steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: ops ? `${fmt(done)} : ${fmt(k)} =` : 'Θα φτάσει σε', answer: h, unit: 'ώρες' }],
         `${fmt(k)} × 2 = ${fmt(k * 2)}, ${fmt(k)} × 3 = ${fmt(k * 3)}, …`));
@@ -141,7 +141,7 @@ export const distanceTime: Family = {
       ], `${fmt(k)} × ${h} = ${fmt(done)}.`));
       const wrongSame = k * (h + h2);
       steps.push(b.choice('check', `Κάποιος έγραψε ${fmt(k)} × ${h + h2} = ${fmt(wrongSame)}. Τι λάθος έκανε;`,
-        `Στο δεύτερο κομμάτι ${s.v[0]} ${fmt(k2)} χιλιόμετρα την ώρα, όχι ${fmt(k)}`,
+        `Στο δεύτερο κομμάτι: ${fmt(k2)}, όχι ${fmt(k)}`,
         ['Κανένα: έτσι βρίσκουμε το σύνολο', `Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)} = ${fmt(k + k2)}`],
         'Οι δύο δρόμοι δεν είναι ίδιοι.'));
     }

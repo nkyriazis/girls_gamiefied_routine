@@ -35,7 +35,7 @@ const SETTINGS: Setting[] = [
           { label: 'Πήγαινε και έλα', ops: `${fmt(n * t + car)} × 2`, value: 2 * (n * t + car) },
         ],
         perPerson: true,
-        slip: { value: n * t + car, what: 'Την επιστροφή: πληρώνουν και τις δύο διαδρομές', others: ['Το εισιτήριο του αυτοκινήτου', 'Ένα άτομο'] },
+        slip: { value: n * t + car, what: 'Την επιστροφή', others: ['Το αυτοκίνητο', 'Ένα άτομο'] },
       };
     },
     noise: r => `Το ταξίδι με το πλοίο κρατά ${extra(`${r.int(4, 7)} ώρες`)}.`,
@@ -52,7 +52,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fuel} + ${toll * 2} + ${night * 2}`, value: fuel + toll * 2 + night * 2 },
         ],
         perPerson: false,
-        slip: { value: fuel + toll + night * 2, what: 'Τα διόδια της επιστροφής', others: ['Τη βενζίνη', 'Τη δεύτερη νύχτα'] },
+        slip: { value: fuel + toll + night * 2, what: 'Τα διόδια της επιστροφής', others: ['Τη βενζίνη της επιστροφής', 'Τη δεύτερη νύχτα στο ξενοδοχείο'] },
       };
     },
     noise: r => `Το χωριό απέχει ${extra(`${r.int(150, 320)} χιλιόμετρα`)}.`,
@@ -68,7 +68,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fmt(n * entry)} + ${park} + ${fuel}`, value: n * entry + park + fuel },
         ],
         perPerson: true,
-        slip: { value: (n - 1) * entry + park + fuel, what: 'Μία είσοδο: ξέχασε ένα άτομο', others: ['Το πάρκινγκ', 'Τη βενζίνη'] },
+        slip: { value: (n - 1) * entry + park + fuel, what: 'Την είσοδο ενός ατόμου', others: ['Το πάρκινγκ του αυτοκινήτου', 'Τη βενζίνη του ταξιδιού'] },
       };
     },
     noise: r => `Το πάρκο έχει ${extra(`${r.int(25, 60)} παιχνίδια`)}.`,
@@ -86,7 +86,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fmt(n * t * 2)} + ${fmt(n * mus)}`, value: n * t * 2 + n * mus },
         ],
         perPerson: true,
-        slip: { value: n * t + n * mus, what: 'Τα εισιτήρια της επιστροφής', others: ['Το μουσείο', 'Ένα άτομο στο μουσείο'] },
+        slip: { value: n * t + n * mus, what: 'Τα εισιτήρια του γυρισμού', others: ['Τα εισιτήρια του μουσείου', 'Ένα άτομο στο μουσείο'] },
       };
     },
     noise: r => `Το τρένο φεύγει ${extra(`στις ${r.int(6, 9)} το πρωί`)}.`,
@@ -103,7 +103,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fmt(n * pass * days)} + ${fuel}`, value: n * pass * days + fuel },
         ],
         perPerson: true,
-        slip: { value: n * pass + fuel, what: `Ότι θα κάνουν σκι ${days} ημέρες, όχι μία`, others: ['Τη βενζίνη', 'Ένα άτομο'] },
+        slip: { value: n * pass + fuel, what: `Ότι κάνουν σκι ${days} ημέρες`, others: ['Τη βενζίνη του ταξιδιού', 'Το πάσο ενός ατόμου'] },
       };
     },
     noise: r => `Το βουνό έχει ύψος ${extra(`${fmt(r.step(1700, 2400, 10))} μέτρα`)}.`,

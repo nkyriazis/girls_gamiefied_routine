@@ -34,8 +34,8 @@ export const equalize: Family = {
       + `${sought(`${HowMany(t)} ${t.manyAcc} έχει ${other.nom}`)};`;
     const steps = [
       b.tag(undefined, 'Το «θα έχουν τον ίδιο αριθμό» είναι κι αυτό κάτι που ξέρουμε.'),
-      b.choice('plan', 'Ποια στρατηγική ταιριάζει;', 'Εργάζομαι αντίστροφα: από το τέλος (ίδιος αριθμός) πίσω στην αρχή',
-        ['Αναζητώ ένα μοτίβο', `Προσθέτω ${fmt(has)} + ${fmt(give)} και αυτή είναι η απάντηση`],
+      b.choice('plan', 'Ποια στρατηγική ταιριάζει;', 'Εργάζομαι αντίστροφα: από το τέλος',
+        ['Αναζητώ ένα μοτίβο στους αριθμούς', `Προσθέτω ${fmt(has)} + ${fmt(give)} και τελειώνω εκεί`],
         'Ξέρουμε τι γίνεται στο τέλος. Από εκεί γυρίζουμε πίσω.'),
       b.numbers('solve', 'Πηγαίνουμε αντίστροφα.', [
         { label: `${a.Nom} μετά`, answer: after },
@@ -47,7 +47,12 @@ export const equalize: Family = {
       b.choice('check', 'Πώς ελέγχουμε;',
         toA ? `${fmt(otherHas)} − ${fmt(give)} = ${fmt(after)} και ${fmt(has)} + ${fmt(give)} = ${fmt(after)}`
           : `${fmt(otherHas)} + ${fmt(give)} = ${fmt(after)} και ${fmt(has)} − ${fmt(give)} = ${fmt(after)}`,
-        [`${fmt(otherHas)} + ${fmt(has)} = ${fmt(otherHas + has)}`, `${fmt(Math.max(otherHas, has))} − ${fmt(Math.min(otherHas, has))} = ${fmt(Math.abs(otherHas - has))}, άρα λάθος`],
+        // the giving the other way round (both sides, as the right one), the two added, their difference
+        // (or, where that would go below zero, added to both)
+        [toA && has > give ? `${fmt(otherHas)} + ${fmt(give)} = ${fmt(otherHas + give)} και ${fmt(has)} − ${fmt(give)} = ${fmt(has - give)}`
+          : !toA && otherHas > give ? `${fmt(otherHas)} − ${fmt(give)} = ${fmt(otherHas - give)} και ${fmt(has)} + ${fmt(give)} = ${fmt(has + give)}`
+            : `${fmt(otherHas)} + ${fmt(give)} = ${fmt(otherHas + give)} και ${fmt(has)} + ${fmt(give)} = ${fmt(has + give)}`,
+        `${fmt(otherHas)} + ${fmt(has)} = ${fmt(otherHas + has)}`, `${fmt(Math.max(otherHas, has))} − ${fmt(Math.min(otherHas, has))} = ${fmt(Math.abs(otherHas - has))}, άρα λάθος`],
         'Ξαναπαίζουμε την ιστορία με την απάντησή μας: έχουν στο τέλος τον ίδιο αριθμό;'),
     ];
     return { title: r.pick([`Οι συλλογές`, 'Ίδιος αριθμός', 'Δώσε και πάρε']), story, steps };

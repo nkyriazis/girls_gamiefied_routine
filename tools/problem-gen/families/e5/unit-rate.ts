@@ -81,8 +81,9 @@ export const unitRate: Family = {
     const round = Math.round(many / 10) * 10;
     const steps = [
       b.tag(undefined, 'Χρειαζόμαστε ό,τι αλλάζει την ποσότητα. Τα υπόλοιπα τα αφήνουμε.'),
-      ...(r.chance(0.7) ? [b.choice('plan', 'Ποιο σχέδιο δουλεύει;', 'Βρίσκω πρώτα πόσο είναι για 1 και μετά για όλα',
-        [`${fmt(many)} × ${fmt(few * per)}`, `${fmt(many)} + ${fmt(few * per)} + ${few}`],
+      // As bare as the wrong ones: first for 1, then for all; × for :, or every number added
+      ...(r.chance(0.7) ? [b.choice('plan', 'Ποιο σχέδιο δουλεύει;', `(${fmt(few * per)} : ${few}) × ${fmt(many)}`,
+        [`(${fmt(few * per)} × ${few}) × ${fmt(many)}`, `${fmt(many)} × ${fmt(few * per)}`, `${fmt(many)} + ${fmt(few * per)} + ${few}`],
         `Τα ${fmt(few * per)} είναι για ${few}, όχι για 1.`)] : []),
       b.numbers('solve', 'Λύνουμε.', [
         { label: s.one, answer: per },

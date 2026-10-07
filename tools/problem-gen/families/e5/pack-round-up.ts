@@ -123,8 +123,8 @@ export const packRoundUp: Family = {
       ], 'Πρώτα όλα μαζί, μετά η διαίρεση.'));
     } else if (r.chance(0.5)) {
       steps.push(b.choice('plan', `Με ποια πράξη βρίσκουμε ${howMany2(bx)} ${bx.t.many} γεμίζουν;`,
-        `Διαιρώ ${the(item)} ${fmt(n)} ${item.manyAcc} με το ${k}`,
-        [`Πολλαπλασιάζω ${fmt(n)} × ${k}`, `Αφαιρώ ${fmt(n)} − ${k}`, ...(twoDays ? [`Διαιρώ μόνο ${the(item)} ${fmt(x)} με το ${k}`] : [])],
+        `Κάνω ${fmt(n)} : ${k}`,
+        [`Κάνω ${fmt(n)} × ${k}`, `Κάνω ${fmt(n)} − ${k}`, ...(twoDays ? [`Κάνω ${fmt(x)} : ${k}`] : [])],
         `Σε κάθε ${bx.t.one} μπαίνουν ${k}: πόσες φορές χωράει το ${k} στο ${fmt(n)};`));
     }
 
@@ -152,7 +152,7 @@ export const packRoundUp: Family = {
         'Δ = δ × π + υ: διαιρέτης επί πηλίκο, συν το υπόλοιπο.'));
     } else {
       steps.push(b.choice('check', 'Πώς ελέγχουμε τη διαίρεση;', `${k} × ${q} + ${rest} = ${fmt(n)}`,
-        [`${k} × ${q} = ${fmt(n)}`, `${fmt(n)} + ${k} = ${fmt(n + k)}`, `${q} + ${rest} = ${fmt(q + rest)}`].filter(o => o !== `${k} × ${q} + ${rest} = ${fmt(n)}`),
+        [`${k} × ${q} = ${fmt(n)}`, `${k} × ${q} − ${rest} = ${fmt(k * q - rest)}`, `${fmt(n)} + ${k} = ${fmt(n + k)}`].filter(o => o !== `${k} × ${q} + ${rest} = ${fmt(n)}`),
         'Το υπόλοιπο δεν το ξεχνάμε.'));
     }
     return { title: r.pick(s.title), story, steps };
