@@ -20,19 +20,36 @@
 //     points at one person named before it, no two sentences in a row open with the same
 //     name, nothing changes after «Τώρα», the question names someone when two people are
 //     subjects, a gift counts on both sides, world checks have 3 options, prices fit the item
-//     and «πληρώνει με» is real notes.
+//     and «πληρώνει με» is real notes;
+//   - no choice gives its answer away by length (lib.ts, lengthTell): no option stands out (the
+//     longest at most 30 % or 5 code points longer than the next), the right one is never the only
+//     longest, and among options that are all numbers never the only one with the most digits;
+//   - every step has a hint of its own;
+//   - a check step's numbers don't ask for a number its prompt already states («βγαίνουν όλα
+//     μαζί 390;» with a row whose answer is 390);
+//   - no number is compared with itself («Γιατί το 3 είναι μεγαλύτερο από το 3»);
+//   - «÷» nowhere in any pool (the books write «:»);
+//   - a generated family (not the world pool) never repeats a problem's known numbers (its
+//     [..|known] marks): the same calculation in another story;
+//   - check-gender's words in a hint or an option where the pools had none (gender-baseline.json:
+//     family, place and word as they were before #50 part 5a; the ones already there are listed as
+//     a warning).
 // Warnings: a family with little variety (few distinct story skeletons), a story without
-// a question, very long stories.
+// a question, very long stories, check-gender's words already in the pools (one line per
+// family and place).
+//
+//   node tools/problem-gen/audit.ts --gender-baseline   write gender-baseline.json from the pools as they are
 //
 // The generated plain maths items (maths/gen-maths.ts) are audited by maths/check.ts, here too:
 // each is re-solved from its own text (see the top of that file for what it checks). The plain
 // language items (language/gen-language.ts) by language/check.ts: each key derived again from
 // the lexicon and its skill's rule. --all-language puts every language item in the sample.
 
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { Exercise, ProblemExercise } from '../../shared/types.ts';
-import { PEOPLE, rng } from './lib.ts';
+import { genderedWords } from '../../frontend/scripts/gendered.mjs';
+import { lengthTell, PEOPLE, rng } from './lib.ts';
 import { auditMaths, mathsSample } from './maths/check.ts';
 import { auditLanguage, languageSample } from './language/check.ts';
 import { checkStory } from './story-check.ts';
@@ -49,6 +66,11 @@ const pools: Pool[] = readdirSync(POOLS).filter(f => f.endsWith('.json')).sort()
 const errors: string[] = [];
 const warnings: string[] = [];
 const err = (ex: ProblemExercise, msg: string) => errors.push(`${ex.id}: ${msg}`);
+
+// The books write «:» for division, never «÷», in every pool and every type of exercise
+for (const pool of pools) for (const ex of pool.exercises) {
+  if (JSON.stringify(ex).includes('÷')) errors.push(`${ex.id}: «÷» (${pool.file}): the books write «56 : 8»`);
+}
 
 const MARK = /\[([^\]|]+)\|(known|sought|extra)\]/g;
 const plain = (story: string) => story.replace(MARK, '$1');
@@ -85,6 +107,14 @@ function hygiene(ex: ProblemExercise, where: string, text: string) {
 
 const stories = new Map<string, string>();
 const ids = new Set<string>();
+const knownSets = new Map<string, string>();
+// «το 3 είναι μεγαλύτερο από το 3», «το υπόλοιπο 5 είναι μικρότερο από τον διαιρέτη 5»
+const SELF_COMPARE = new RegExp(String.raw`(${NUM})(\s+\S+){0,3}?\s+(?:μεγαλύτερ|μικρότερ|ίσ)\S*\s+(?:από|με)\s+(?:\S+\s+){0,3}?(${NUM})(?![\d.]*\d)`, 'g');
+// check-gender's words as the pools had them: family, place (hint, option, story…) and word
+const BASELINE_FILE = path.join(import.meta.dirname, 'gender-baseline.json');
+const genderBaseline = new Set<string>(existsSync(BASELINE_FILE) ? JSON.parse(readFileSync(BASELINE_FILE, 'utf-8')) : []);
+const genderHits: string[] = [];
+const gendered = new Map<string, string[]>();
 const families = new Map<string, { grade: number; skeletons: Set<string>; n: number; steps: number }>();
 const kinds = new Map<string, number>();
 
@@ -178,6 +208,7 @@ for (const pool of pools) {
         step.quantities.forEach(x => hygiene(ex, `${at} label`, x.label));
       }
       kinds.set(step.kind, (kinds.get(step.kind) ?? 0) + 1);
+      if (!step.hint?.trim()) err(ex, `${at}: no hint (a wrong try would say only «Διάβασε ξανά την ιστορία»)`);
       hygiene(ex, `${at} prompt`, step.prompt);
       checkEquations(ex, `${at} prompt`, step.prompt);
       if (step.hint) { hygiene(ex, `${at} hint`, step.hint); checkEquations(ex, `${at} hint`, step.hint); }
@@ -189,8 +220,15 @@ for (const pool of pools) {
         else checkEquations(ex, `${at} right option`, opts[step.correctIndex]);
         opts.forEach(o => hygiene(ex, `${at} option`, o));
         if (opts.length < 2 || opts.length > 5) err(ex, `${at}: ${opts.length} options`);
+        const tell = step.correctIndex >= 0 && step.correctIndex < opts.length ? lengthTell(opts, step.correctIndex) : null;
+        if (tell) err(ex, `${at}: gives its answer away by length: ${tell}`);
       }
       if (step.kind === 'numbers') {
+        // A check that states the number it asks for: she types it back
+        if (step.phase === 'check') {
+          const said = new Set((step.prompt.match(new RegExp(NUM, 'g')) ?? []).map(toNumber));
+          step.rows.forEach((row, j) => { if (said.has(row.answer)) err(ex, `${at} row ${j}: the prompt «${step.prompt}» states its answer ${row.answer}`); });
+        }
         step.rows.forEach((row, j) => {
           if (!Number.isInteger(row.answer) || row.answer < 0) err(ex, `${at} row ${j}: answer ${row.answer} is not a whole number`);
           if (row.answer > MAX_ANSWER[grade]) err(ex, `${at} row ${j}: answer ${row.answer} beyond the grade's range`);
@@ -207,6 +245,35 @@ for (const pool of pools) {
 
     // Family ids are unique within a grade (Γ΄ and Ε΄ both have a missing-info)
     const fam = `${grade}:${(ex.generatorParams as { family?: string } | undefined)?.family ?? `(curated ${pool.file})`}`;
+
+    // Everything she reads, by where it is
+    const read: [string, string][] = [['title', ex.title], ['story', plain(ex.story)], ...ex.steps.flatMap((st, i): [string, string][] => [
+      ['prompt', st.prompt], ...(st.hint ? [['hint', st.hint] as [string, string]] : []), ...(st.story ? [['story', st.story] as [string, string]] : []),
+      ...(st.kind === 'choice' ? st.options.map(o => ['option', o] as [string, string]) : []),
+      ...(st.kind === 'order' ? st.items.map(o => ['item', o] as [string, string]) : []),
+      ...(st.kind === 'numbers' ? st.rows.map(r => ['row', r.label] as [string, string]) : []),
+    ].map(([w, t]): [string, string] => [`step ${i} ${w}`, t]))];
+    for (const [where, text] of read) {
+      // «το 3 είναι μεγαλύτερο από το 3»: a comparison of a number with itself is never what a step means
+      for (const m of text.matchAll(SELF_COMPARE)) if (m[1] === m[3]) err(ex, `${where}: «${m[0]}» compares ${m[1]} with itself`);
+      // check-gender's words: a hint or an option the pools didn't have is an error, the rest a warning
+      const words = genderedWords(text);
+      if (!words.length) continue;
+      // Keyed by family, place and word: a regenerated story is the same template in other words
+      const place = where.replace(/^step \d+ /, '');
+      const fresh = words.filter(w => !genderBaseline.has(`${fam}|${place}|${w}`));
+      for (const w of words) genderHits.push(`${fam}|${place}|${w}`);
+      if ((place === 'hint' || place === 'option') && fresh.length) err(ex, `${where}: «${text}» says «${fresh.join('», «')}»: say it the same way to every child`);
+      else gendered.set(`${fam} ${place}`, [...(gendered.get(`${fam} ${place}`) ?? []), ...words]);
+    }
+    // The same known numbers twice in a generated family: the same calculation in another story
+    const params2 = ex.generatorParams as { family?: string } | undefined;
+    if (params2?.family) {
+      const nums = [...ex.story.matchAll(/\[([^\]|]+)\|known\]/g)].flatMap(m => m[1].match(new RegExp(NUM, 'g')) ?? []).map(x => x.replace(/\./g, '')).sort().join(',');
+      const seen = knownSets.get(`${fam}:${nums}`);
+      if (nums && seen) err(ex, `the same known numbers (${nums}) as ${seen}`);
+      else if (nums) knownSets.set(`${fam}:${nums}`, ex.id);
+    }
     const f = families.get(fam) ?? { grade, skeletons: new Set<string>(), n: 0, steps: 0 };
     f.n++;
     f.steps += ex.steps.length;
@@ -218,6 +285,12 @@ for (const pool of pools) {
 for (const [key, f] of families) {
   const id = key.slice(2);
   if (!id.startsWith('(') && f.skeletons.size < Math.min(Math.max(5, Math.ceil(f.n / 3)), f.n)) warnings.push(`family ${id}: only ${f.skeletons.size} different story shapes in ${f.n} problems`);
+}
+
+for (const [where, words] of gendered) warnings.push(`${where}: check-gender's words already in the pools: ${[...new Set(words)].join(', ')} (${words.length})`);
+if (process.argv.includes('--gender-baseline')) {
+  writeFileSync(BASELINE_FILE, JSON.stringify([...new Set(genderHits)].sort(), null, 1) + '\n');
+  console.log(`wrote ${new Set(genderHits).size} entries to ${path.relative(process.cwd(), BASELINE_FILE)}`);
 }
 
 // Report
