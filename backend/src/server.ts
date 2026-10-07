@@ -9,14 +9,14 @@ import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
-import { StateSnapshot } from '../../shared/types';
+import { CONFIG_SAVE_SOURCES, StateSnapshot } from '../../shared/types';
 
 // Import shared database layer
 import {
   store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, expireAlarms, dismissAlarm, history,
   readLastLogs, MAX_LOGS, awardStars, takeStars, buyReward, resolveSpending, createGift, resolveGift, StarsError, UPLOADS_DIR, getChoresWithInstances, claimChore,
-  attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
-  writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
+  attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories,
+  writeRawExercises, writeRawConfig, ConfigConflict, type ConfigSave, startExerciseSession, submitExerciseAnswer,
   closeExerciseSession, gameResultsLeaving, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
   logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
   stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
@@ -437,8 +437,10 @@ server.get('/api/debug/schedule', async (request, reply) => {
 });
 
 // Admin: Get raw data.json
-server.get('/api/admin/data', async () => {
-  return readRawConfig();
+server.get('/api/admin/data', async (request, reply) => {
+  const { value, version } = dataConfig.current();
+  reply.header('X-Config-Version', version);
+  return value;
 });
 
 // Admin: Validate config against schema
@@ -474,9 +476,28 @@ server.post('/api/admin/validate-exercises', async (request, reply) => {
   }
 });
 
+// How a screen saves a config file (ConfigSave in db.ts):
 // `?replace=1`: replace the file even though it is invalid on disk (the Advanced
 // JSON editor only; the invalid file is kept beside). See ConfigFile.save.
-const replacing = (request: { query: unknown }) => (request.query as { replace?: string }).replace === '1';
+// `?version=`: the version it edited (AppState.configVersion, or the GET's
+// X-Config-Version); a newer live one makes it a 409 that writes nothing (#33).
+// `?source=`: which screen (form, advanced, advanced-fix), for the log; else 'api'.
+function configSave(request: { query: unknown }, route: string): ConfigSave {
+  const { replace, version, source } = request.query as { replace?: string; version?: string; source?: string };
+  return {
+    replace: replace === '1',
+    version: version || undefined,
+    source: CONFIG_SAVE_SOURCES.find(s => s === source) ?? 'api',
+    route,
+  };
+}
+
+/** A refused config save: 409 { error, conflict } when another save came first, else 400 { error }. */
+function refusedSave(reply: FastifyReply, error: unknown) {
+  return error instanceof ConfigConflict
+    ? reply.code(409).send({ error: error.message, conflict: true })
+    : reply.code(400).send({ error: (error as Error).message });
+}
 
 // Admin: data.json's text as it is on disk, to fix a file the server couldn't read
 server.get('/api/admin/data/text', async (request, reply) => {
@@ -491,12 +512,12 @@ server.post('/api/admin/data', async (request, reply) => {
     return reply.code(400).send({ error: error.message, errors: error.errors });
   }
   try {
-    writeRawConfig(request.body, { replace: replacing(request) });
-    return { success: true };
+    return { success: true, version: writeRawConfig(request.body, configSave(request, 'POST /api/admin/data')) };
   } catch (error) {
-    // Refused while data.json on disk is invalid (or the write failed)
-    request.log.error(error);
-    return reply.code(400).send({ error: (error as Error).message });
+    // Stale (another save came first: logged as CONFIG_SAVE_STALE), refused while data.json on disk
+    // is invalid, or the write failed
+    if (!(error instanceof ConfigConflict)) request.log.error(error);
+    return refusedSave(reply, error);
   }
 });
 
@@ -554,8 +575,11 @@ server.get('/api/exercises/schema', async (request, reply) => {
 });
 
 // Admin: Raw exercises CRUD
+// The document and, in X-Config-Version, the version it is: the one to send back with ?version=
 server.get('/api/admin/exercises', async (request, reply) => {
-  return readRawExercises();
+  const { value, version } = exercisesConfig.current();
+  reply.header('X-Config-Version', version);
+  return value;
 });
 
 server.get('/api/admin/exercises/text', async (request, reply) => {
@@ -565,10 +589,9 @@ server.get('/api/admin/exercises/text', async (request, reply) => {
 
 server.post('/api/admin/exercises', async (request, reply) => {
   try {
-    writeRawExercises(request.body, { replace: replacing(request) });
-    return { success: true };
+    return { success: true, version: writeRawExercises(request.body, configSave(request, 'POST /api/admin/exercises')) };
   } catch (error) {
-    return reply.code(400).send({ error: (error as Error).message });
+    return refusedSave(reply, error);
   }
 });
 
