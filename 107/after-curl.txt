@@ -1,0 +1,21 @@
+# Issue #107 after the fix: the refusals with curl, no page in the way (no pre-check).
+# 11 000 000 bytes is over the 10 MiB limit and under nginx's 11m for the upload; 12 000 000 is over both.
+
+$ curl -F file=@long-song.mp3 (11000000 bytes) http://127.0.0.1:3000/api/admin/upload   # backend :3000 direct
+HTTP 413, application/json; charset=utf-8
+{"error":"long-song.mp3: πάνω από 10 MB, δεν ανέβηκε. Μίκρυνέ το (για ήχο: λιγότερα δευτερόλεπτα ή 128 kbps) και ξαναδοκίμασε."}
+
+$ curl -F file=@long-song.mp3 (11000000 bytes) http://127.0.0.1:18080/api/admin/upload   # behind nginx :18080
+HTTP 413, application/json; charset=utf-8
+{"error":"long-song.mp3: πάνω από 10 MB, δεν ανέβηκε. Μίκρυνέ το (για ήχο: λιγότερα δευτερόλεπτα ή 128 kbps) και ξαναδοκίμασε."}
+
+$ curl -F file=@huge-song.mp3 (12000000 bytes) http://127.0.0.1:18080/api/admin/upload   # behind nginx :18080
+HTTP 413, text/html
+<html> <head><title>413 Request Entity Too Large</title></head> <body> <center><h1>413 Request Entity Too Large</h1></center> <hr><center>nginx/1.31.6</center> </body> </html> 
+
+$ ls backend/uploads   # nothing kept
+
+# Every other request keeps nginx's 1m guard: a 2 000 000-byte POST to another /api route
+$ curl -X POST --data-binary @body2m.json -H "content-type: application/json" http://127.0.0.1:18080/api/admin/validate
+HTTP 413, text/html
+<html> <head><title>413 Request Entity Too Large</title></head> <body> <center><h1>413 Request Entity Too Large</h1></center> <hr><center>nginx/1.31.6</center> </body> </html> 

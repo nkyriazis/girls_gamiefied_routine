@@ -1,0 +1,12 @@
+# Issue #107 (after): the upload route's own errors, with curl to the dev backend :3000.
+
+$ curl -F note=hello http://127.0.0.1:3000/api/admin/upload   # a form with no file
+{"error":"Δεν ήρθε αρχείο: διάλεξε ένα και ξαναδοκίμασε."}
+HTTP 400, application/json; charset=utf-8
+
+$ curl --data-binary @cut.bin (a multipart body that stops after 300 000 bytes of cut-song.mp3, no closing boundary) http://127.0.0.1:3000/api/admin/upload
+{"error":"cut-song.mp3: το ανέβασμα απέτυχε στον server, δεν κρατήθηκε τίποτα. Ξαναδοκίμασε· αν ξαναγίνει, ίσως γέμισε ο δίσκος του Pi."}
+HTTP 500, application/json; charset=utf-8
+
+$ ls -l uploads/   # in the backend container
+(empty: nothing kept)

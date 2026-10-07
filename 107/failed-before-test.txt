@@ -1,0 +1,25 @@
+# Issue #107 review, before: the new backend tests against the upload route as it was (server.ts at 65b4615).
+$ backend: node --require ts-node/register --test test/uploads.test.ts
+✔ a file of exactly the limit is kept, byte for byte (287.304844ms)
+✔ a file one byte over the limit is refused with 413 and a message, and nothing of it is kept (255.550134ms)
+✖ a request with no file is still a 400, in Greek (3.246161ms)
+✖ a body that stops mid-file is a 500 that names the file, and the cut part is not kept (10.925894ms)
+✖ a write that fails (no room in uploads/) is a 500 that names the file (1.403678ms)
+ℹ tests 5
+ℹ pass 2
+ℹ fail 3
+
+# Why each fails (actual +, expected -):
+✖ a request with no file is still a 400, in Greek (3.246161ms)
+  + 'No file uploaded'
+  - 'Δεν ήρθε αρχείο: διάλεξε ένα και ξαναδοκίμασε.'
+✖ a body that stops mid-file is a 500 that names the file, and the cut part is not kept (10.925894ms)
+  + 'Upload failed'
+  - 'cut-song.mp3: το ανέβασμα απέτυχε στον server, δεν κρατήθηκε τίποτα. Ξαναδοκίμασε· αν ξαναγίνει, ίσως γέμισε ο δίσκος του Pi.'
+✖ a write that fails (no room in uploads/) is a 500 that names the file (1.403678ms)
+  + 'Upload failed'
+  - 'full-disk.mp3: το ανέβασμα απέτυχε στον server, δεν κρατήθηκε τίποτα. Ξαναδοκίμασε· αν ξαναγίνει, ίσως γέμισε ο δίσκος του Pi.'
+
+# And what the page made of the backend's 500 then (uploadFailed at 65b4615, passed the backend's body):
+$ uploadFailed('song.mp3', { status: 500, error: 'Upload failed' })
+"Upload failed"

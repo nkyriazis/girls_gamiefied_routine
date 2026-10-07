@@ -1,0 +1,20 @@
+# Issue #107 review, after: the whole backend suite, then the frontend suite, on the dev stack.
+$ backend: npm test   (uploads.test.ts below; the rest only as counts)
+✔ a file of exactly the limit is kept, byte for byte (298.778517ms)
+✔ a file one byte over the limit is refused with 413 and a message, and nothing of it is kept (265.148212ms)
+✔ a request with no file is still a 400, in Greek (1.097143ms)
+✔ a body that stops mid-file is a 500 that names the file, and the cut part is not kept (12.618425ms)
+✔ a write that fails (no room in uploads/) is a 500 that names the file (1.202259ms)
+ℹ tests 165
+ℹ pass 165
+ℹ fail 0
+
+$ frontend: npm test   (uploadLimit.test.ts below)
+✔ the upload has its own location in nginx.conf, proxied to the backend (0.603264ms)
+✔ nginx lets a file of the limit through, with room for the multipart headers (0.180158ms)
+✔ no other request gets the bigger body: client_max_body_size is set only for the upload (0.093646ms)
+✔ a failed upload reads the same from the backend, from nginx and from a lost connection (0.110418ms)
+✔ the backend's own failure (500: a body cut mid-file, a full disk) reads in Greek with the file's name (0.100259ms)
+ℹ tests 82
+ℹ pass 82
+ℹ fail 0

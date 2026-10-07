@@ -1,0 +1,46 @@
+✖ a file of exactly the limit is kept, byte for byte (283.39262ms)
+✖ a file one byte over the limit is refused with 413 and a message, and nothing of it is kept (253.520402ms)
+✔ a request with no file is still a 400 (1.517081ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1769.272194
+
+✖ failing tests:
+
+test at test/uploads.test.ts:52:22
+✖ a file of exactly the limit is kept, byte for byte (283.39262ms)
+  AssertionError [ERR_ASSERTION]: the stored file is the one sent
+      at TestContext.<anonymous> (/app/test/uploads.test.ts:59:10)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test/uploads.test.ts:60:22
+✖ a file one byte over the limit is refused with 413 and a message, and nothing of it is kept (253.520402ms)
+  AssertionError [ERR_ASSERTION]: {"success":true,"url":"http://localhost/uploads/1791410049193-long-song.mp3","filename":"1791410049193-long-song.mp3"}
+  
+  200 !== 413
+  
+      at TestContext.<anonymous> (/app/test/uploads.test.ts:65:10)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 413,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
