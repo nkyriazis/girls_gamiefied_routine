@@ -19,12 +19,14 @@ export const uploadNoFile = 'Δεν ήρθε αρχείο: διάλεξε ένα
 export const uploadBroke = (name?: string) =>
   `${name ? `${name}: το` : 'Το'} ανέβασμα απέτυχε στον server, δεν κρατήθηκε τίποτα. Ξαναδοκίμασε· αν ξαναγίνει, ίσως γέμισε ο δίσκος του Pi.`;
 
-/** What the parents' page says when an upload fails (api.ts): the backend's own message when it sent one
- *  (JSON { error }); the limit's message for nginx's 413, which is an HTML page; a word about the connection
- *  when no answer came at all (fetch threw: Wi-Fi gone, or the backend down). */
-export function uploadFailed(name: string, answer: { status: number; error?: unknown } | 'no answer'): string {
+/** What the parents' page says when an upload fails (api.ts), always in Greek and naming the file: the
+ *  backend's two failures and every 413 (the backend's JSON one or nginx's HTML page) read as the backend
+ *  words them, from these same functions; any other status (502 when the backend is down behind nginx…)
+ *  gets its number; no answer at all (fetch threw: Wi-Fi gone, or the backend down) gets a word about the
+ *  connection. The backend's own text is never shown as it came, so an English or HTML answer never shows. */
+export function uploadFailed(name: string, answer: { status: number } | 'no answer'): string {
   if (answer === 'no answer') return `${name}: δεν ανέβηκε, δεν ήρθε απάντηση. Έλεγξε τη σύνδεση και ξαναδοκίμασε.`;
-  if (typeof answer.error === 'string' && answer.error) return answer.error;
   if (answer.status === 413) return uploadTooBig(name);
+  if (answer.status === 500) return uploadBroke(name);
   return `${name}: το ανέβασμα απέτυχε (HTTP ${answer.status}).`;
 }

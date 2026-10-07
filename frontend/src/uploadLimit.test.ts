@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { UPLOAD_MAX_BYTES, uploadFailed, uploadTooBig } from '../../shared/uploads.ts';
+import { UPLOAD_MAX_BYTES, uploadBroke, uploadFailed, uploadTooBig } from '../../shared/uploads.ts';
 
 const conf = readFileSync(new URL('../nginx.conf', import.meta.url), 'utf8').replace(/#.*$/gm, '');
 
@@ -34,12 +34,18 @@ test('no other request gets the bigger body: client_max_body_size is set only fo
   assert.equal(conf.match(/client_max_body_size/g)?.length, 1, 'client_max_body_size appears outside the upload location');
 });
 
-// What the page says (api.ts uploadFile → uploadFailed), for each way an upload can fail
+// What the page says (api.ts uploadFile → uploadFailed), for each way an upload can fail: always Greek, always the file
 test('a failed upload reads the same from the backend, from nginx and from a lost connection', () => {
   const backend413 = uploadTooBig('song.mp3');
-  assert.equal(uploadFailed('song.mp3', { status: 413, error: backend413 }), backend413, "the backend's own message");
-  assert.equal(uploadFailed('song.mp3', { status: 413 }), backend413, "nginx's HTML 413 gets the limit's message");
+  assert.equal(uploadFailed('song.mp3', { status: 413 }), backend413, "the backend's 413 and nginx's HTML one read the same");
   assert.match(backend413, /^song\.mp3: πάνω από 10 MB, δεν ανέβηκε\./);
   assert.match(uploadFailed('song.mp3', 'no answer'), /^song\.mp3: δεν ανέβηκε, δεν ήρθε απάντηση\. Έλεγξε τη σύνδεση/);
   assert.equal(uploadFailed('song.mp3', { status: 502 }), 'song.mp3: το ανέβασμα απέτυχε (HTTP 502).');
+});
+
+test("the backend's own failure (500: a body cut mid-file, a full disk) reads in Greek with the file's name", () => {
+  const failed = uploadFailed('song.mp3', { status: 500 });
+  assert.equal(failed, uploadBroke('song.mp3'), 'the same words the backend sends');
+  assert.match(failed, /^song\.mp3: το ανέβασμα απέτυχε στον server, δεν κρατήθηκε τίποτα\. Ξαναδοκίμασε/);
+  assert.match(uploadBroke(), /^Το ανέβασμα απέτυχε στον server/, 'with no name, it still reads');
 });
