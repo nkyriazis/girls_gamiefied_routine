@@ -12,6 +12,7 @@ import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { cronMatchesAt } from './cron';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
+import { summarize } from './schemas';
 import { Store, Table } from './store';
 import { Sync } from './sync';
 
@@ -157,7 +158,7 @@ export function readRawConfig(): DataConfig {
  */
 export function writeRawConfig(data: unknown, options: { replace?: boolean } = {}): void {
   const error = dataConfig.save(data, options);
-  if (error) throw new Error(error.errors.length ? `Validation failed: ${JSON.stringify(error.errors)}` : error.message);
+  if (error) throw new Error(error.errors.length ? `Validation failed: ${summarize(error.errors)}` : error.message);
   sync.changed();
 }
 
@@ -167,7 +168,7 @@ export function readRawExercises(): ExercisesConfig {
 
 export function writeRawExercises(data: unknown, options: { replace?: boolean } = {}): void {
   const error = exercisesConfig.save(data, options);
-  if (error) throw new Error(error.errors.length ? `Exercises validation failed: ${JSON.stringify(error.errors)}` : error.message);
+  if (error) throw new Error(error.errors.length ? `Exercises validation failed: ${summarize(error.errors)}` : error.message);
   sync.changed();
 }
 

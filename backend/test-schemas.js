@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Don't validate formats strictly (date-time format is not critical for our test)
-const ajv = new Ajv({ allErrors: true, validateFormats: false });
+const ajv = new Ajv({ allErrors: true, validateFormats: false, discriminator: true });
 
 console.log('Testing JSON schemas against existing files...\n');
 

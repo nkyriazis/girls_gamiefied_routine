@@ -93,6 +93,8 @@
     "exercises": {
       "type": "array",
       "items": {
+        "type": "object",
+        "discriminator": { "propertyName": "type" },
         "oneOf": [
           {
             "title": "Multiple Choice",

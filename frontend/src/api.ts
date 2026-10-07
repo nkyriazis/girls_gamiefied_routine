@@ -99,6 +99,7 @@ export const api = {
   validateState: (data: unknown) => post<ValidationResult>('/admin/validate-state', data, 'Failed to validate state'),
   getRawExercises: () => get<unknown>('/admin/exercises', 'Failed to fetch exercises'),
   saveRawExercises: (data: unknown) => post('/admin/exercises?replace=1', data, 'Failed to save exercises'),
+  validateExercises: (data: unknown) => post<ValidationResult>('/admin/validate-exercises', data, 'Failed to validate exercises'),
   getExercisesText: () => get<{ text: string }>('/admin/exercises/text', 'Failed to read exercises.json').then(r => r.text),
   getSchema: (name: 'data' | 'state') => get<object>(`/admin/schema/${name}`, 'Failed to fetch schema'),
   getExerciseSchema: () => get<object>('/exercises/schema', 'Failed to fetch exercise schema'),

@@ -7,29 +7,32 @@ import { useFeedback } from '../useFeedback';
 // Without this the loader fetches the version it names itself (0.55.1 in loader 1.7.0).
 loader.config({ paths: { vs: `https://cdn.jsdelivr.net/npm/monaco-editor@${__MONACO_VERSION__}/min/vs` } });
 
+/** A schema as Monaco gets it: under its file name, so a relative $ref ("data.schema.json#…") resolves. */
+export interface SchemaFile { file: string; schema: object }
+
 interface Props {
     initial?: unknown; // the document, when it is already at hand...
     load?: () => Promise<unknown>; // ...or how to fetch it
     loadText?: () => Promise<string>; // ...or the file's own text, when it doesn't parse
     save: (data: unknown) => Promise<unknown>;
-    schema?: () => Promise<object>;
+    schemas?: () => Promise<SchemaFile[]>; // the document's schema first, then the ones it $refs
     validate?: (data: unknown) => Promise<ValidationResult>;
     warning?: string;
 }
 
 // Raw JSON editing, for what the forms don't cover. The text is loaded once
 // when the editor opens and doesn't follow later changes while you edit.
-export function JsonEditor({ initial, load, loadText, save, schema, validate, warning }: Props) {
+export function JsonEditor({ initial, load, loadText, save, schemas, validate, warning }: Props) {
     const { run } = useFeedback();
     const [text, setText] = useState<string | null>(() => (initial === undefined ? null : JSON.stringify(initial, null, 2)));
     const [errors, setErrors] = useState<string[]>([]);
-    const [schemaJson, setSchemaJson] = useState<object | null>(null);
+    const [schemaFiles, setSchemaFiles] = useState<SchemaFile[] | null>(null);
 
     useEffect(() => {
         load?.().then(data => setText(JSON.stringify(data, null, 2)), err => setErrors([(err as Error).message]));
         loadText?.().then(setText, err => setErrors([(err as Error).message]));
-        schema?.().then(setSchemaJson, () => undefined);
-    }, [load, loadText, schema]);
+        schemas?.().then(setSchemaFiles, () => undefined);
+    }, [load, loadText, schemas]);
 
     // A file loaded as text is there to be fixed: open it at its first error (a phone shows ~15 lines)
     const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
@@ -42,11 +45,15 @@ export function JsonEditor({ initial, load, loadText, save, schema, validate, wa
         editorRef.current.setPosition({ lineNumber: first.startLineNumber, column: first.startColumn });
     };
 
+    // Each schema at internal://schemas/<file>, the document's own matching every model. Monaco resolves a
+    // $ref against the schema's URI, so exercises.schema.json's "data.schema.json#…" finds data's schema there
+    // (at internal://data.schema.json it would look for internal:/data.schema.json and fail).
     const beforeMount: BeforeMount = monaco => {
-        if (schemaJson) {
+        if (schemaFiles) {
             monaco.json.jsonDefaults.setDiagnosticsOptions({
                 validate: true,
-                schemas: [{ uri: 'internal://schema.json', fileMatch: ['*'], schema: schemaJson }],
+                schemas: schemaFiles.map(({ file, schema }, i) =>
+                    ({ uri: `internal://schemas/${file}`, ...(i === 0 ? { fileMatch: ['*'] } : {}), schema })),
             });
         }
     };
@@ -70,7 +77,7 @@ export function JsonEditor({ initial, load, loadText, save, schema, validate, wa
 
     if (text === null) return <p className="p-empty">{errors[0] ?? 'Φόρτωση…'}</p>;
     // Wait for the schema so the editor validates from the start.
-    if (schema && !schemaJson) return <p className="p-empty">Φόρτωση…</p>;
+    if (schemas && !schemaFiles) return <p className="p-empty">Φόρτωση…</p>;
     return (
         <div className="p-json">
             {warning && <p className="p-warning">{warning}</p>}

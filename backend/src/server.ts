@@ -463,6 +463,17 @@ server.post('/api/admin/validate-state', async (request, reply) => {
   }
 });
 
+// Admin: Validate exercises.json against schema
+server.post('/api/admin/validate-exercises', async (request, reply) => {
+  try {
+    const error = check(exercisesSchema, request.body, 'Invalid exercises');
+    return error ? { valid: false, errors: error.errors } : { valid: true };
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
+  }
+});
+
 // `?replace=1`: replace the file even though it is invalid on disk (the Advanced
 // JSON editor only; the invalid file is kept beside). See ConfigFile.save.
 const replacing = (request: { query: unknown }) => (request.query as { replace?: string }).replace === '1';
