@@ -1,5 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import type { AppState, Chore, Flow, Reward, ServerEvent, ServerMessage } from '@shared/types';
+import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { AppState, ServerMessage } from '@shared/types';
+import { GameContext, type EventListener } from './GameContext';
 
 // The server is the source of truth. It sends the whole AppState on connect and
 // after every change; we replace ours with it. Reconnecting (after a network
@@ -27,29 +28,6 @@ const EMPTY_STATE: AppState = {
     flowRuns: [],
     routineRuns: [],
     helpSeen: []
-};
-
-type EventListener = (event: ServerEvent) => void;
-
-interface GameState extends AppState {
-    flows: Flow[];
-    rewards: Reward[];
-    chores: Chore[];
-    isConnected: boolean;
-    // The first STATE has arrived. Until then the state is EMPTY_STATE, which no
-    // screen may save back: a config editor or form must wait for this.
-    hasState: boolean;
-    subscribe: (listener: EventListener) => () => void; // returns unsubscribe
-}
-
-const GameContext = createContext<GameState | undefined>(undefined);
-
-export const useGame = () => {
-    const context = useContext(GameContext);
-    if (!context) {
-        throw new Error('useGame must be used within a GameProvider');
-    }
-    return context;
 };
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
