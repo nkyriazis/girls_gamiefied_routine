@@ -343,39 +343,13 @@ server.post('/api/admin/upload', async (request, reply) => {
   }
 });
 
-// Push hook endpoint
+// Push hook («Ξεκίνα τώρα», /?push=<id>): start exactly this routine assignment, flow or 'alarm', now.
+// It answers triggerAction's result ({ skipped, runningId } when the kid is already in a routine).
+// Simulating a minute, every schedule due in it, is POST /api/debug/time.
 server.post<{ Body: PushBody }>('/api/hooks/push', { schema: { body: pushBody } }, async (request, reply) => {
-  try {
-    const { id } = request.body;
-
-    logAction('PUSH_HOOK', { id });
-
-    const { schedules, settings } = config();
-
-    const schedule = schedules.find(s => s.targetId === id);
-
-    if (schedule) {
-      const timezone = settings?.timezone || 'Europe/Athens';
-      const nextTime = nextCronRun(schedule.cron, timezone);
-      
-      request.log.info(`[Hook] Found schedule for ${id}: ${schedule.cron}. Simulating time: ${nextTime.toISOString()}`);
-      
-      await checkSchedules(nextTime);
-      
-      return { success: true, type: 'schedule_simulation', simulatedTime: nextTime, targetId: id };
-    }
-
-    const result = triggerAction(id, 'push_hook');
-
-    if (result) {
-      return result;
-    }
-
-    return reply.code(404).send({ error: 'Entity not found' });
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
-  }
+  const { id } = request.body;
+  logAction('PUSH_HOOK', { id });
+  return triggerAction(id, 'push_hook') ?? reply.code(404).send({ error: 'Entity not found' });
 });
 
 // What kids do on a running routine or flow (see "ROUTINES AND FLOWS ON SCREEN" in db.ts).

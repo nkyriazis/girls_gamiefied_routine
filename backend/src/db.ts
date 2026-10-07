@@ -673,7 +673,7 @@ function choreDue(chore: Chore, now: Date, timezone: string): boolean {
 }
 
 // Generate chore instances when their cron names this minute (cron.ts, settings.timezone). Always the real
-// clock: /api/debug/time and the schedule simulation of /api/hooks/push don't make chores.
+// clock: /api/debug/time doesn't make chores.
 export function generateChoreInstances(): ChoreInstance[] {
   const { chores = [], settings } = config();
   const timezone = settings?.timezone || 'Europe/Athens';
