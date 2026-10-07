@@ -41,9 +41,9 @@ export const NOTES = [5, 10, 20, 50, 100, 200];
 /**
  * What she hands over for a price: a sum of up to `most` notes of `notes`, more than the
  * price, that needs every note (without the smallest the rest wouldn't pay: 20 + 20 for
- * 37 €, not 100 + 10). One of the possible sums, each as likely.
+ * 37 €, not 100 + 10). One of the possible sums, each as likely; null when there is none.
  */
-export function payWith(r: Rng, price: number, notes: number[], most = 3): number {
+export function payWith(r: Rng, price: number, notes: number[], most = 3): number | null {
   const sums = new Set<number>();
   // notes from the largest down, so the last one added is the smallest
   const desc = [...notes].sort((a, b) => b - a);
@@ -54,6 +54,6 @@ export function payWith(r: Rng, price: number, notes: number[], most = 3): numbe
   };
   walk(0, most, 0, 0);
   const all = [...sums].sort((a, b) => a - b);
-  if (!all.length) throw new Error(`no notes pay ${price} €`);
-  return r.pick(all);
+  // 200 € with 50, 100 and 200 notes: every sum above it has a note to spare
+  return all.length ? r.pick(all) : null;
 }

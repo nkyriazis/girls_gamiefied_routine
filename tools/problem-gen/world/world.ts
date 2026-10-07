@@ -580,6 +580,7 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
   } else {
     steps.push(b.numbers('solve', 'Λύνουμε.', derivation.map(d => ({
       label: w.qs.get(d.target)!.label, answer: val(d.target), unit: w.qs.get(d.target)!.unit.many,
+      eq: `${fmt(val(d.x))} ${d.op} ${fmt(val(d.y))}`,
     }))));
   }
   // Checking a change in her stock: the answer back in the story, from the start to now
@@ -612,7 +613,8 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
     ].filter(o => valid(o.v) && o.text !== right).map(o => o.text);
     const unique = [...new Set(wrongs)];
     if (unique.length >= 2) {
-      steps.push(b.choice('check', 'Πώς ελέγχουμε; Βάλε την απάντηση μέσα στην ιστορία.', right, unique.slice(0, CHECK_WRONGS)));
+      steps.push(b.choice('check', 'Πώς ελέγχουμε; Βάλε την απάντηση μέσα στην ιστορία.', right, unique.slice(0, CHECK_WRONGS),
+        'Βάζουμε την απάντηση στη θέση της και κάνουμε τις αλλαγές με τη σειρά της ιστορίας.'));
       return { world: w, sought, stated, needed: used, pieces, story, steps, derivation };
     }
   }
@@ -633,7 +635,8 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
     .filter(o => o !== checkRight);
   const unique = [...new Set(wrongChecks)];
   if (unique.length < 2) return null;
-  steps.push(b.choice('check', 'Πώς ελέγχουμε;', checkRight, unique));
+  steps.push(b.choice('check', 'Πώς ελέγχουμε;', checkRight, unique,
+    'Κάνουμε την αντίθετη πράξη: από την απάντηση πρέπει να γυρίσουμε σε έναν αριθμό της ιστορίας.'));
   return { world: w, sought, stated, needed: used, pieces, story, steps, derivation };
 }
 

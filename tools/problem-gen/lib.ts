@@ -173,33 +173,236 @@ export function the(t: Thing, acc = true): string {
 export const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 // ---------------------------------------------------------------------------
+// Options that don't give the answer away. The screen shuffles them, so their length is the
+// only tell left: no option stands out by length (the longest at most 30 % longer than the next,
+// in code points, or at most 5 longer: «Δεν τους χρειαζόμαστε» beside «Τους προσθέτουμε» doesn't
+// show), and the right one is never the only longest. Options that are all numbers
+// («12», «1.229 €») are compared by their digits instead: the right one is never the only one
+// with the most digits. builder.choice flags a choice that breaks this, gen.ts drops the draft,
+// and audit.ts fails it in every pool.
+
+export const STAND_OUT = 1.3;
+const STAND_OUT_MIN = 6;
+const NUMERIC_OPTION = /^\d{1,3}(?:\.\d{3})*(?:\s+[^\d\s]+){0,2}$/;
+const codePoints = (s: string) => [...s].length;
+
+/** What gives the right option away by its length, or null. */
+export function lengthTell(options: string[], correctIndex: number): string | null {
+  const opts = options.map(o => o.trim());
+  if (opts.every(o => NUMERIC_OPTION.test(o))) {
+    const d = opts.map(o => o.replace(/\D/g, '').length);
+    return d.every((x, j) => j === correctIndex || x < d[correctIndex])
+      ? `the right number «${opts[correctIndex]}» is the only one with ${d[correctIndex]} digits` : null;
+  }
+  const L = opts.map(codePoints);
+  const others = L.filter((_, j) => j !== correctIndex);
+  if (others.every(x => x < L[correctIndex])) return `the right option «${opts[correctIndex]}» is the only longest (${L[correctIndex]} code points, the next ${Math.max(...others)})`;
+  const [first, second] = [...L].sort((a, b) => b - a);
+  if (first > STAND_OUT * second && first - second >= STAND_OUT_MIN) return `«${opts[L.indexOf(first)]}» stands out by its length (${first} code points, the next ${second})`;
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Hints that fit their numbers: how to start a calculation, without its result. b.numbers
+// writes one from its rows when the family gives none (a row's equation is its label's
+// «76 − 35 =», or `eq` for a row that only names its quantity).
+
+const NUMBER = String.raw`\d{1,3}(?:\.\d{3})+|\d+`;
+const EXPRESSION = new RegExp(String.raw`\(?(?:${NUMBER})\)?(?:\s+[+−×:]\s+\(?(?:${NUMBER})\)?)+`);
+const toNumber = (s: string) => Number(s.replace(/\./g, ''));
+/** 368 → [300, 68]; 2.900 → [2.000, 900] */
+const topSplit = (n: number): [number, number] => {
+  const p = 10 ** (String(n).length - 1);
+  return [Math.floor(n / p) * p, n % p];
+};
+const PLACES = ['μονάδες', 'δεκάδες', 'εκατοντάδες', 'χιλιάδες'];
+const PLACE = ['μονάδα', 'δεκάδα', 'εκατοντάδα', 'χιλιάδα'];
+/** 300 → «3 εκατοντάδες», 1.000 → «1 χιλιάδα»; null unless one digit and zeros (and below 10.000) */
+const roundPart = (n: number): string | null => {
+  const [hi, rest] = topSplit(n);
+  const place = String(n).length - 1;
+  if (rest || n < 10 || place > 3) return null;
+  const d = hi / 10 ** place;
+  return `${d} ${d === 1 ? PLACE[place] : PLACES[place]}`;
+};
+const trailingZeros = (n: number) => { let z = 0; while (n && n % 10 === 0) { n /= 10; z++; } return z; };
+const zeros = (z: number) => (z === 1 ? 'το μηδενικό' : `τα ${z} μηδενικά`);
+
+function addHint(a: number, b: number): string {
+  const [big, small] = a >= b ? [a, b] : [b, a];
+  if (big > 9_999) {
+    const s = (a % 10) + (b % 10);
+    return `Ξεκινάμε από τις μονάδες: ${a % 10} + ${b % 10} = ${s}${s >= 10 ? `, γράφουμε ${s % 10} και κρατάμε 1` : ''}.`;
+  }
+  if (big < 10) {
+    return big + small > 10 ? `${big} + ${10 - big} = 10, και μετά ${small - (10 - big)} ακόμα.` : `Ξεκινάμε από το ${big} και μετράμε ${small} ακόμα.`;
+  }
+  if (small < 10) {
+    const u = big % 10;
+    if (!u) return `Στο ${fmt(big)} βάζουμε ${small} ${small === 1 ? 'μονάδα' : 'μονάδες'}.`;
+    return u + small > 10 ? `${fmt(big)} + ${10 - u} = ${fmt(big + 10 - u)}, και μετά ${small - (10 - u)} ακόμα.`
+      : `Προσθέτουμε τις μονάδες: ${u} + ${small}.`;
+  }
+  // A round number: «Στο 250 βάζουμε 1 εκατοντάδα»; else split the second: 27 + 36 is 27 + 30 and 6 more
+  for (const [x, y] of [[a, b], [b, a]]) if (roundPart(y)) return `Στο ${fmt(x)} βάζουμε ${roundPart(y)}.`;
+  for (const [x, y] of [[a, b], [b, a]]) {
+    const [hi, rest] = topSplit(y);
+    if (rest) return `${fmt(x)} + ${fmt(hi)} = ${fmt(x + hi)}, και μετά ${fmt(rest)} ακόμα.`;
+  }
+  const [pa, pb] = [String(big).length - 1, String(small).length - 1];
+  return pa === pb ? `Προσθέτουμε μόνο τις ${PLACES[pa] ?? 'μεγάλες θέσεις'}: ${big / 10 ** pa} + ${small / 10 ** pb}.`
+    : `Γράφουμε το ${fmt(small)} στη θέση των ${PLACES[pb]} του ${fmt(big)}.`;
+}
+
+function subHint(a: number, b: number): string {
+  if (a > 9_999) {
+    const [au, bu] = [a % 10, b % 10];
+    return au >= bu ? `Ξεκινάμε από τις μονάδες: ${au} − ${bu} = ${au - bu}.`
+      : `Ξεκινάμε από τις μονάδες: ${au} − ${bu} δεν γίνεται, άρα δανειζόμαστε μια δεκάδα: ${au + 10} − ${bu} = ${au + 10 - bu}.`;
+  }
+  if (b < 10 && a >= 10) {
+    const au = a % 10;
+    return au >= b ? `Από τις μονάδες: ${au} − ${b}.` : `${fmt(a)} − ${au} = ${fmt(a - au)}, και μετά βγάζουμε ${b - au} ακόμα.`;
+  }
+  if (roundPart(b)) return `Από το ${fmt(a)} βγάζουμε ${roundPart(b)}.`;
+  const [hi, rest] = topSplit(b);
+  if (b >= 10 && rest && hi) return `${fmt(a)} − ${fmt(hi)} = ${fmt(a - hi)}, και μετά βγάζουμε ${fmt(rest)} ακόμα.`;
+  // A round number taken away: count up from it, to the next round number and then to the other
+  const p = 10 ** String(b).length;
+  const next = Math.ceil((b + 1) / p) * p;
+  if (b >= 10 && next < a) return `Μετράμε από το ${fmt(b)} ως το ${fmt(a)}: πρώτα ως το ${fmt(next)}, και μετά ως το ${fmt(a)}.`;
+  return `Πόσα λείπουν από το ${fmt(b)} για να φτάσουμε στο ${fmt(a)};`;
+}
+
+function mulHint(a: number, b: number): string {
+  const [k, m] = a <= b ? [a, b] : [b, a];
+  const first = (x: number, y: number) => (a <= b ? `${fmt(x)} × ${fmt(y)}` : `${fmt(y)} × ${fmt(x)}`);
+  if (m <= 10) {
+    if (k === 1) return `Μία φορά το ${m}.`;
+    if (k <= 3) return `${fmt(a)} × ${fmt(b)} είναι ${Array(k).fill(m).join(' + ')}.`;
+    return `Μετράμε ανά ${m}: ${m}, ${2 * m}, ${3 * m}, …`;
+  }
+  if (k <= 10) {
+    const [hi, rest] = topSplit(m);
+    if (rest) return `${first(k, hi)} = ${fmt(k * hi)}, και μετά ${first(k, rest)}.`;
+    const z = trailingZeros(m);
+    return `${first(k, m / 10 ** z)} = ${fmt(k * m / 10 ** z)}, και μετά βάζουμε ${zeros(z)}.`;
+  }
+  const [za, zb] = [trailingZeros(a), trailingZeros(b)];
+  if (za + zb) return `${fmt(a / 10 ** za)} × ${fmt(b / 10 ** zb)} = ${fmt((a / 10 ** za) * (b / 10 ** zb))}, και μετά βάζουμε ${zeros(za + zb)}.`;
+  const [hi, rest] = topSplit(k);
+  return `${first(hi, m)} = ${fmt(hi * m)}, και μετά ${first(rest, m)}.`;
+}
+
+function divHint(a: number, b: number): string {
+  const ask = `Πόσες φορές χωράει το ${fmt(b)} στο ${fmt(a)};`;
+  if (a <= 100 && b <= 10) return `${ask} Σκεφτόμαστε την προπαίδεια του ${b}.`;
+  const q = Math.floor(a / b);
+  const t = q >= 10 ? topSplit(q)[0] : q === 5 ? 4 : 5;
+  return `${ask} Δοκιμάζουμε ${fmt(b)} × ${fmt(t)} = ${fmt(b * t)}.`;
+}
+
+/**
+ * How to start working out `expr` («27 + 36», «2.900 × 40», «(146 : 2) − 35», «14 + 32 + 32»), fitted
+ * to its numbers, without its result: a sub-calculation at most. Null when it isn't arithmetic.
+ */
+export function workHint(expr: string): string | null {
+  const m = expr.match(EXPRESSION);
+  if (!m) return null;
+  const tokens = m[0].replace(/[()]/g, '').trim().split(/\s+/);
+  const nums = tokens.filter((_, i) => i % 2 === 0).map(toNumber);
+  const ops = tokens.filter((_, i) => i % 2 === 1);
+  if (nums.some(n => !Number.isFinite(n))) return null;
+  if (ops.length === 1) {
+    const [a, b] = nums;
+    return ops[0] === '+' ? addHint(a, b) : ops[0] === '−' ? subHint(a, b) : ops[0] === '×' ? mulHint(a, b) : divHint(a, b);
+  }
+  // Several: the first operation the order of operations asks for (inside a parenthesis, or a × or :), then the rest
+  const paren = m[0].match(/\(([^)]+)\)/);
+  const firstIdx = paren ? -1 : ops.findIndex(o => o === '×' || o === ':');
+  if (paren) return `Πρώτα κάνουμε την πράξη μέσα στην παρένθεση: ${paren[1].trim()}.`;
+  if (firstIdx >= 0 && ops.some(o => o === '+' || o === '−')) {
+    return `Πρώτα ${fmt(nums[firstIdx])} ${ops[firstIdx]} ${fmt(nums[firstIdx + 1])}, και μετά ${ops.filter((_, i) => i !== firstIdx).map((o, i) => `${o} ${fmt(nums.filter((_, j) => j !== firstIdx && j !== firstIdx + 1)[i])}`).join(' ')}.`;
+  }
+  return chainHints(nums, ops)[0];
+}
+
+/** For a chain «14 + 32 + 32»: the first step worked out, or (when that partial is a row's answer) only named. */
+function chainHints(nums: number[], ops: string[]): string[] {
+  const value = (o: string, x: number, y: number) => (o === '+' ? x + y : o === '−' ? x - y : o === '×' ? x * y : x / y);
+  const v = value(ops[0], nums[0], nums[1]);
+  const rest = nums.slice(2);
+  const then = ops[1] === '+' ? 'βάζουμε' : ops[1] === '−' ? 'βγάζουμε' : ops[1] === '×' ? 'πολλαπλασιάζουμε με' : 'διαιρούμε με';
+  const list = rest.length === 1 ? `και το ${fmt(rest[0])}` : `και τα ${rest.slice(0, -1).map(fmt).join(', ')} και ${fmt(rest[rest.length - 1])}`;
+  return [
+    `Πρώτα ${fmt(nums[0])} ${ops[0]} ${fmt(nums[1])} = ${fmt(v)}, και μετά ${then} ${list}.`,
+    `Με τη σειρά: πρώτα ${fmt(nums[0])} ${ops[0]} ${fmt(nums[1])}, και μετά ${then} ${list}.`,
+  ];
+}
+
+/** Every hint workHint could give for `expr`, the preferred first (rowsHint takes the first that keeps the answers back). */
+function workHints(expr: string): string[] {
+  const h = workHint(expr);
+  if (!h) return [];
+  const m = expr.match(EXPRESSION)!;
+  const tokens = m[0].replace(/[()]/g, '').trim().split(/\s+/);
+  const ops = tokens.filter((_, i) => i % 2 === 1);
+  if (ops.length > 1 && !/\(/.test(m[0]) && !(ops.some(o => o === '×' || o === ':') && ops.some(o => o === '+' || o === '−'))) {
+    return chainHints(tokens.filter((_, i) => i % 2 === 0).map(toNumber), ops);
+  }
+  return [h];
+}
+
+/** The hint b.numbers writes from its rows: how to start the first row it can say something about. */
+export function rowsHint(rows: { label: string; answer: number; eq?: string }[]): string | null {
+  const answers = new Set(rows.map(r => r.answer));
+  // A hint that states a row's answer gives it away
+  const fair = (h: string) => ![...h.matchAll(new RegExp(String.raw`=\s*(${NUMBER})`, 'g'))].some(x => answers.has(toNumber(x[1])));
+  const hints = rows.map(r => workHints(r.eq ?? r.label).find(fair)).filter((h): h is string => !!h);
+  return hints[0] ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // Steps. Choices are shuffled here, so a family lists the right answer first.
+
+export interface Row { label: string; answer: number; unit?: string; /** how it is worked out («27 + 36»), when the label doesn't say */ eq?: string }
 
 export interface Builder {
   tag(prompt?: string, hint?: string): ProblemTagStep;
   choice(phase: ProblemPhase, prompt: string, right: string, wrong: string[], hint?: string, story?: string): ProblemChoiceStep;
-  numbers(phase: ProblemPhase, prompt: string, rows: { label: string; answer: number; unit?: string }[], hint?: string): ProblemNumbersStep;
+  /** Without `hint`, one is written from the rows' equations (rowsHint); a step it can't write one for throws. */
+  numbers(phase: ProblemPhase, prompt: string, rows: Row[], hint?: string): ProblemNumbersStep;
   order(phase: ProblemPhase, prompt: string, items: string[], hint?: string): ProblemOrderStep;
+  /** What the choices give away (lengthTell), or options repeated: gen.ts drops such a draft. */
+  tells: string[];
 }
 
 export const READ_PROMPT_G3 = 'Τι ξέρουμε και τι ψάχνουμε;';
 export const READ_PROMPT_E5 = 'Τι προσπαθούμε να βρούμε; Τι γνωρίζουμε;';
 
 export function builder(r: Rng, readPrompt: string): Builder {
+  const tells: string[] = [];
   return {
+    tells,
     tag: (prompt = readPrompt, hint) => ({ kind: 'tag', phase: 'read', prompt, ...(hint ? { hint } : {}) }),
     choice: (phase, prompt, right, wrong, hint, story) => {
       const options = r.shuffle([right, ...wrong]);
+      const tell = new Set(options).size !== options.length ? `repeated options ${JSON.stringify(options)}` : lengthTell(options, options.indexOf(right));
+      if (tell) tells.push(`${prompt} ${tell}`);
       return {
         kind: 'choice', phase, prompt, options, correctIndex: options.indexOf(right),
         ...(hint ? { hint } : {}), ...(story ? { story } : {}),
       };
     },
-    numbers: (phase, prompt, rows, hint) => ({
-      kind: 'numbers', phase, prompt,
-      rows: rows.map(row => ({ label: row.label, answer: row.answer, ...(row.unit ? { unit: row.unit } : {}) })),
-      ...(hint ? { hint } : {}),
-    }),
+    numbers: (phase, prompt, rows, hint) => {
+      const h = hint ?? rowsHint(rows);
+      if (!h) throw new Error(`numbers step «${prompt}» (${rows.map(row => row.label).join(' | ')}): no hint, and no equation to write one from`);
+      return {
+        kind: 'numbers', phase, prompt,
+        rows: rows.map(row => ({ label: row.label, answer: row.answer, ...(row.unit ? { unit: row.unit } : {}) })),
+        hint: h,
+      };
+    },
     order: (phase, prompt, items, hint) => ({ kind: 'order', phase, prompt, items, ...(hint ? { hint } : {}) }),
   };
 }
