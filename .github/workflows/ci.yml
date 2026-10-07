@@ -1,0 +1,125 @@
+# Checks: what a change must pass before it reaches master or an image (#40).
+# Runs on every PR, every push to master, by hand, and first thing in the image build
+# (docker-build.yml calls it, and builds nothing unless it passes).
+# No GPU here: it checks the committed voice clips, sounds and generated pools; it never makes them.
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  # When called, github.workflow is the caller's name, so the image build never cancels a PR's checks.
+  group: checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # The same major as the images (backend/Dockerfile, frontend/Dockerfile: node:24-alpine).
+  NODE_VERSION: 24
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Type-check (tsc)
+        run: npm run build
+      - name: Tests
+        run: npm test
+      # Fails only when test-schemas exits non-zero; CLAUDE.md «CI» says when it does.
+      - name: Config schemas (test-schemas)
+        run: npm run test-schemas
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Tests
+        run: npm test
+      - name: Lint (check-help, check-voice, check-sound, check-gender, eslint)
+        run: npm run lint
+      - name: Build (tsc -b, vite build)
+        run: npm run build
+
+  problem-gen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install backend (its tsc and @types)
+        run: npm ci --no-audit --no-fund
+        working-directory: backend
+      - name: Type-check (tsc)
+        run: backend/node_modules/.bin/tsc -p tools/problem-gen
+      - name: Tests
+        run: node --test tools/problem-gen/*.test.ts
+      # The generated pools must be exactly what the generators write: this fails on a hand edit of a
+      # *-generated.json, or a family changed without rerunning its generator. Numbers are written with
+      # toLocaleString('el-GR') (ICU/CLDR data bundled with Node): if a Node update changes that formatting,
+      # this step fails on master too; regenerate the pools and commit them in their own PR.
+      - name: Regenerate the pools
+        run: |
+          node tools/problem-gen/gen.ts
+          node tools/problem-gen/maths/gen-maths.ts
+          node tools/problem-gen/language/gen-language.ts
+          node tools/problem-gen/world/gen-world.ts
+      - name: The committed pools are what the generators write
+        run: git diff --exit-code --stat -- backend/exercise-pools
+      - name: Audit (errors fail, warnings pass)
+        run: node tools/problem-gen/audit.ts
+
+  # Both images still build (a Dockerfile-only break shows here, not on build.sh). linux/amd64 only and
+  # nothing pushed; the image build itself does arm64 and the push. Not when called from the image build.
+  docker:
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: docker build ${{ matrix.service }} (linux/amd64, no push)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.service }}/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: |
+            type=gha,scope=checks-${{ matrix.service }}
+            type=gha,scope=${{ matrix.service }}-linux/amd64
+          cache-to: type=gha,mode=max,scope=checks-${{ matrix.service }}
