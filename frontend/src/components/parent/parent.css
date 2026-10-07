@@ -206,8 +206,9 @@ select.p-input { appearance: auto; }
 
 /* Toasts */
 .p-toasts { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 8px; width: min(92vw, 420px); pointer-events: none; }
-/* A toast lasts 3 s and is a summary: at most four lines, so a long server error (a 400 listing a whole file's
-   problems) can't cover the screen. The full list belongs under the editor that caused it. */
-.p-toast { padding: 12px 16px; border-radius: 1rem; background: #2a2a4a; border: 1px solid var(--color-success); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); font-weight: 600; }
-.p-toast-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; overflow-wrap: anywhere; }
+/* A toast never covers the screen and never loses its text: past six lines (the longest refusal, on a phone,
+   is five) it scrolls, and it takes touches (scroll, tap to close) while the column between toasts doesn't.
+   Its life grows with its length (feedback.tsx). A list of errors belongs under the editor that caused it. */
+.p-toast { padding: 12px 16px; border-radius: 1rem; background: #2a2a4a; border: 1px solid var(--color-success); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); font-weight: 600; pointer-events: auto; cursor: pointer; }
+.p-toast-text { display: block; line-height: 1.5; max-height: 9em; overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; }
 .p-toast.error { border-color: var(--color-danger); }
