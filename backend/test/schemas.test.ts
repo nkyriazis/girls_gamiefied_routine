@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'fs';
 import path from 'path';
-import { check, dataSchema, exercisePoolSchema, exercisesSchema } from '../src/schemas';
+import { check, dataSchema, exercisePoolSchema, exercisesSchema, summarize } from '../src/schemas';
 
 // Issue #31: a tagged oneOf (an exercise's `type`, a flow step's, a parallel action's) reports the
 // mistake in the branch its tag names, once, not one error per branch AJV tried.
@@ -58,4 +58,13 @@ test('the shipped files and every pool still validate', () => {
   const pools = readdirSync(path.join(backend, 'exercise-pools')).filter(f => f.endsWith('.json'));
   assert.ok(pools.length > 0);
   for (const file of pools) assert.deepEqual(lines(exercisePoolSchema, read(`exercise-pools/${file}`)), [], file);
+});
+
+test("a save's 400 is a short line a toast can show: the first three errors, then how many more", () => {
+  const exercises = [0, 1, 2, 3, 4].map(i => ({ ...exercise(), id: `e${i}`, stars: 'πέντε' }));
+  assert.equal(summarize(check(exercisesSchema, { exercises: exercises.slice(0, 1) }, 'invalid')!.errors),
+    '/exercises/0/stars must be integer');
+  assert.equal(summarize(check(exercisesSchema, { exercises }, 'invalid')!.errors),
+    '/exercises/0/stars must be integer; /exercises/1/stars must be integer; /exercises/2/stars must be integer (+2 more)');
+  assert.equal(summarize(check(exercisesSchema, [], 'invalid')!.errors), '/ must be object');
 });

@@ -36,3 +36,13 @@ export function check(
 ): ValidationError | null {
   return validate(value) ? null : { message, errors: validate.errors ?? [] };
 }
+
+/**
+ * The errors as one short line, for a refusal a parent reads in a toast: `<path> <message>` for the
+ * first `max`, then how many more. The full list is what the editors' pre-checks show under the editor.
+ */
+export function summarize(errors: ErrorObject[], max = 3): string {
+  const shown = errors.slice(0, max).map(e => `${e.instancePath || '/'} ${e.message}`);
+  const more = errors.length - shown.length;
+  return shown.join('; ') + (more > 0 ? ` (+${more} more)` : '');
+}

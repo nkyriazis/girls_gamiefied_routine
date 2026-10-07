@@ -218,3 +218,12 @@ test("the exercises editor's pre-check (#31) names the one mistake and saves not
   assert.deepEqual((await call('POST', '/api/admin/validate-exercises', JSON.stringify({ exercises }))).body, { valid: true });
   assert.equal(readFileSync(process.env.EXERCISES_FILE!, 'utf-8'), file);
 });
+
+test("a refused exercises save says what is wrong in a line, not AJV's JSON (#31)", async () => {
+  const file = readFileSync(process.env.EXERCISES_FILE!, 'utf-8');
+  const bad = { exercises: [{ ...exercises[0], correctIndex: 'δεύτερο' }] };
+  const res = await call('POST', '/api/admin/exercises', JSON.stringify(bad));
+  assert.equal(res.status, 400);
+  assert.equal(res.body.error, 'Exercises validation failed: /exercises/0/correctIndex must be integer');
+  assert.equal(readFileSync(process.env.EXERCISES_FILE!, 'utf-8'), file);
+});
