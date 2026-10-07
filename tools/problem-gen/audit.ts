@@ -19,13 +19,16 @@
 // a question, very long stories.
 //
 // The generated plain maths items (maths/gen-maths.ts) are audited by maths/check.ts, here too:
-// each is re-solved from its own text (see the top of that file for what it checks).
+// each is re-solved from its own text (see the top of that file for what it checks). The plain
+// language items (language/gen-language.ts) by language/check.ts: each key derived again from
+// the lexicon and its skill's rule. --all-language puts every language item in the sample.
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { Exercise, ProblemExercise } from '../../shared/types.ts';
 import { PEOPLE, rng } from './lib.ts';
 import { auditMaths, mathsSample } from './maths/check.ts';
+import { auditLanguage, languageSample } from './language/check.ts';
 
 // --dir DIR audits another folder (e.g. gen.ts --out DIR while trying out families)
 const dirAt = process.argv.indexOf('--dir');
@@ -209,11 +212,22 @@ for (const grade of [3, 5]) {
 }
 console.log(`\nSteps by kind: ${[...kinds].map(([k, n]) => `${k} ${n}`).join(', ')}`);
 
-// The plain maths items, re-solved from their text
+// The plain maths items, re-solved from their text; the language items, keys derived again from the lexicon
 const maths = auditMaths(pools);
-errors.push(...maths.errors);
-warnings.push(...maths.warnings);
-for (const line of maths.report) console.log(line);
+const language = auditLanguage(pools);
+for (const a of [maths, language]) {
+  errors.push(...a.errors);
+  warnings.push(...a.warnings);
+  for (const line of a.report) console.log(line);
+}
+// A generated plain item belongs to one of the two audits
+for (const pool of pools) {
+  for (const ex of pool.exercises) {
+    if (ex.type !== 'problem' && typeof ex.generatorParams?.skill === 'string' && !['Μαθηματικά', 'Γλώσσα'].includes(ex.category)) {
+      errors.push(`${ex.id}: a generated plain item in category «${ex.category}»: neither audit reads it`);
+    }
+  }
+}
 console.log(`\n${errors.length} errors, ${warnings.length} warnings`);
 for (const e of errors.slice(0, 80)) console.log(`  ✘ ${e}`);
 if (errors.length > 80) console.log(`  … and ${errors.length - 80} more`);
@@ -241,6 +255,7 @@ if (at > 0) {
     }
   }
   md += mathsSample(pools, r, n);
+  md += languageSample(pools, r, process.argv.includes('--all-language') ? Infinity : n);
   writeFileSync(file, md);
   console.log(`\nwrote a sample to ${file}`);
 }
