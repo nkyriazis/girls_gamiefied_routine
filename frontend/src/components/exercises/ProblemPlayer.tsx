@@ -161,7 +161,9 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
   const wrong = lastWrong?.step === stepIndex ? lastWrong : null;
   const [draft, setDraft] = useState<Draft | null>(null);
   const typed = draft?.step === stepIndex ? draft.value : initialValue(kind, step, marks, words.length);
-  const setValue = (v: unknown) => { setDraft({ step: stepIndex, value: v }); setLastWrong(null); setNote(null); };
+  // A painting's verdict and its frames stay up while she paints and erases, until the next
+  // check: they say what the checked painting got wrong, and she fixes it while she sees them.
+  const setValue = (v: unknown) => { setDraft({ step: stepIndex, value: v }); if (kind !== 'paint') setLastWrong(null); setNote(null); };
   // Working it out: what the last calculation found, said in the hint slot
   const [note, setNoteState] = useState<{ step: number; note: CalcNote } | null>(null);
   const calcNote = note?.step === stepIndex ? note.note : null;
