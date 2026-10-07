@@ -184,6 +184,25 @@ select.p-input { appearance: auto; }
 .p-icon-field .p-input { flex: 1; min-width: 0; }
 .p-icon-preview { width: 48px; height: 48px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 0.9rem; background: var(--p-raised); }
 .p-when { display: flex; flex-direction: column; gap: 8px; }
+.p-field > .p-label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted); }
+.p-chip:disabled { opacity: 0.6; }
+
+/* A routine's tasks, in order: icon, name, minutes, ↑ ↓ ✕ */
+.p-steps { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.p-step {
+  display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 10px;
+  background: var(--p-card); border: 1px solid var(--p-line); border-radius: 0.9rem;
+}
+.p-step.missing { border-color: var(--color-warning); }
+.p-step-title { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; line-height: 1.2; }
+.p-minutes { display: inline-flex; align-items: center; gap: 2px; flex: none; color: var(--color-text-muted); }
+.p-minutes .p-input { width: 3.6em; min-height: 40px; padding: 0 8px; text-align: right; }
+.p-minutes .p-input[aria-invalid] { border-color: var(--color-danger); }
+.p-step-btn {
+  width: 34px; height: 34px; flex: none; border-radius: 50%;
+  background: var(--glass-bg); color: inherit; font-size: 0.95rem;
+}
+.p-step-btn:disabled { opacity: 0.3; }
 
 /* Advanced */
 @media (max-width: 599px) {
