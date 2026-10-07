@@ -375,7 +375,7 @@ export function closeRoutine(runId: string, by: 'kid' | 'parent' = 'kid'): boole
     if (run) endRoutine(run, 'ROUTINE_CLOSED');
     return run;
   });
-  if (run && by === 'parent') sync.notify({ type: 'ROUTINE_ENDED_BY_PARENT', payload: { runId, userId: run.userId, routineId: run.routineId } });
+  if (run && by === 'parent' && !run.finishedAt) sync.notify({ type: 'ROUTINE_ENDED_BY_PARENT', payload: { runId, userId: run.userId, routineId: run.routineId } });
   return !!run;
 }
 

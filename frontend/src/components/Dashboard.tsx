@@ -106,7 +106,8 @@ export const Dashboard: React.FC = () => {
       setTimeout(() => setEnded(prev => prev.filter(e => e.runId !== runId)), ENDED_MS);
       return;
     }
-    // A chore was confirmed, rejected or expired
+    // A chore was confirmed, rejected or expired. An event this bundle doesn't know shows nothing
+    if (!(event.type in CHORE_TOAST_TYPE)) return;
     const { instanceId, choreTitle, userId } = event.payload;
     const notification: ChoreNotification = {
       id: `${event.type}-${instanceId}`,
