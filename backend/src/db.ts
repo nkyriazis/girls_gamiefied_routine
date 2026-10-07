@@ -9,6 +9,7 @@ import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMa
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
+import { cronMatchesAt } from './cron';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
@@ -619,61 +620,36 @@ export function replaceState(state: StateSnapshot): void {
 // CHORES SYSTEM
 // ============================================
 
-// Helper to parse cron expression and check if it matches current time
-function cronMatches(cronExpr: string, date: Date): boolean {
-  const parts = cronExpr.split(' ');
-  if (parts.length !== 5) return false;
-  
-  const [minuteExpr, hourExpr, dayOfMonthExpr, monthExpr, dayOfWeekExpr] = parts;
-  
-  const minute = date.getMinutes();
-  const hour = date.getHours();
-  const dayOfMonth = date.getDate();
-  const month = date.getMonth() + 1;
-  const dayOfWeek = date.getDay(); // 0 = Sunday
-  
-  const matchField = (expr: string, value: number, _max: number): boolean => {
-    if (expr === '*') return true;
-    
-    // Handle ranges (e.g., 1-5)
-    if (expr.includes('-')) {
-      const [start, end] = expr.split('-').map(Number);
-      return value >= start && value <= end;
+// A chore whose cron can't be read is logged once (per chore and cron, until it changes or the server
+// restarts), not every minute: the action log isn't pruned.
+const choreCronErrors = new Map<string, string>();
+
+function choreDue(chore: Chore, now: Date, timezone: string): boolean {
+  try {
+    const due = cronMatchesAt(chore.availabilityCron, now, timezone);
+    choreCronErrors.delete(chore.id);
+    return due;
+  } catch (err) {
+    const error = (err as Error).message;
+    const key = `${chore.availabilityCron}\n${error}`;
+    if (choreCronErrors.get(chore.id) !== key) {
+      choreCronErrors.set(chore.id, key);
+      logAction('CHORE_CRON_ERROR', { choreId: chore.id, cron: chore.availabilityCron, error });
     }
-    
-    // Handle lists (e.g., 1,3,5)
-    if (expr.includes(',')) {
-      return expr.split(',').map(Number).includes(value);
-    }
-    
-    // Handle step values (e.g., */5)
-    if (expr.includes('/')) {
-      const [range, step] = expr.split('/');
-      const stepNum = parseInt(step, 10);
-      if (range === '*') return value % stepNum === 0;
-      return false;
-    }
-    
-    return parseInt(expr, 10) === value;
-  };
-  
-  return (
-    matchField(minuteExpr, minute, 59) &&
-    matchField(hourExpr, hour, 23) &&
-    matchField(dayOfMonthExpr, dayOfMonth, 31) &&
-    matchField(monthExpr, month, 12) &&
-    matchField(dayOfWeekExpr, dayOfWeek, 6)
-  );
+    return false;
+  }
 }
 
-// Generate chore instances when cron matches
+// Generate chore instances when their cron names this minute (cron.ts, settings.timezone). Always the real
+// clock: /api/debug/time and the schedule simulation of /api/hooks/push don't make chores.
 export function generateChoreInstances(): ChoreInstance[] {
-  const chores = config().chores ?? [];
+  const { chores = [], settings } = config();
+  const timezone = settings?.timezone || 'Europe/Athens';
   const now = new Date();
   const newInstances: ChoreInstance[] = [];
 
   for (const chore of chores) {
-    if (!cronMatches(chore.availabilityCron, now)) continue;
+    if (!choreDue(chore, now, timezone)) continue;
 
     // Any instance of this chore still within its window (regardless of status)
     // prevents respawning after claim/reject/confirm/expire.
