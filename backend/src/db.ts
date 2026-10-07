@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import {
   AppState, Chore, ChoreInstance, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
   ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
-  ProblemExercise, ProblemReading, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, User
+  ProblemExercise, ProblemReading, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
 import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
@@ -179,10 +179,6 @@ export function writeRawExercises(data: unknown, options: { replace?: boolean } 
 // A flow step is an alarm (it waits to be dismissed) or starts routines and
 // sub-flows (it waits until they have all closed). After the last step the run
 // ends and, if a parallel step of another run started it, that run moves on.
-
-export type TriggerResult =
-  | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
-  | { success: true; type: 'assignment' | 'flow'; id: string };
 
 const ALARM_ONLY: FlowStep[] = [{ type: 'alarm', props: { sound: 'melody' } }];
 
@@ -673,7 +669,7 @@ function choreDue(chore: Chore, now: Date, timezone: string): boolean {
 }
 
 // Generate chore instances when their cron names this minute (cron.ts, settings.timezone). Always the real
-// clock: /api/debug/time and the schedule simulation of /api/hooks/push don't make chores.
+// clock: /api/debug/time doesn't make chores.
 export function generateChoreInstances(): ChoreInstance[] {
   const { chores = [], settings } = config();
   const timezone = settings?.timezone || 'Europe/Athens';

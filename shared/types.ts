@@ -86,6 +86,12 @@ export interface RoutineRun {
   totalStars?: number; // stars earned so far (from the execution; not stored on the run)
 }
 
+// What starting a routine assignment, a flow or 'alarm' answers (POST /api/hooks/push, «Ξεκίνα τώρα»).
+// A kid already in a routine keeps it: skipped, with the run on screen (runningId, a RoutineRun id).
+export type TriggerResult =
+  | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
+  | { success: true; type: 'assignment' | 'flow'; id: string };
+
 export interface Reward {
   id: string;
   title: string;

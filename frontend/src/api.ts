@@ -1,6 +1,6 @@
 import type {
   ActionLog, ChoreInstance, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
-  ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot
+  ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot, TriggerResult
 } from '@shared/types';
 
 // REST calls. They report what someone did; the resulting state arrives over
@@ -56,7 +56,7 @@ const put = <T>(path: string, body: unknown, error?: string) => request<T>('PUT'
 const get = <T>(path: string, error?: string) => request<T>('GET', path, undefined, error);
 
 export const api = {
-  pushNow: (id: string) => post('/hooks/push', { id }, 'Failed to push'),
+  pushNow: (id: string) => post<TriggerResult>('/hooks/push', { id }, 'Failed to push'),
 
   // Running routines and flows: report what the kid did; the server moves them on.
   completeTask: (executionId: string, taskId: string) =>
