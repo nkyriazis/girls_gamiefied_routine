@@ -1582,6 +1582,41 @@
   "lufs": -16.2
  },
  {
+  "say": "Τελείωσες; Διάβασε την πρόταση. Αν είναι σωστή, πάτα εδώ.",
+  "where": [
+   "exercise-fill-blank/answer.blank-check",
+   "exercise-fill-blank/answer.blank-check",
+   "exercise-show/answer.blank-check",
+   "game-fill-blank/answer.blank-check"
+  ],
+  "id": "be1f450cfd5a",
+  "ok": true,
+  "takes": 3,
+  "tried": 3,
+  "seed": 3,
+  "heard": "Τελείωσες. Διάβασε την πρόταση. Αν είναι σωστή, πάτα εδώ.",
+  "cer": 0.0,
+  "language": "el",
+  "greek": 0.9946,
+  "f0": 218,
+  "lively": 5.74,
+  "secs": 4.79,
+  "peak": 0.661,
+  "rate": 11.9,
+  "clean": {
+   "pesq": 4.23,
+   "stoi": 0.999,
+   "si_sdr": 25.9,
+   "outlier": false
+  },
+  "same_voice": 0.91,
+  "clip": "help-voice/be1f450cfd5a.mp3",
+  "shipped_cer": 0.0,
+  "shipped_heard": "Τελείωσες. Διάβασε την πρόταση. Αν είναι σωστή, πάτα εδώ.",
+  "kb": 38.0,
+  "lufs": -16.4
+ },
+ {
   "say": "Η απάντησή σου. Εδώ φαίνεται ο αριθμός που γράφεις.",
   "where": [
    "exercise-number-input/answer.number",
