@@ -30,8 +30,10 @@ export interface Relation { out: string; op: Op; a: string; b: string }
 
 /** Text, or the words stating a quantity (core: the words a painting must cover). */
 export type Piece = string | { q: string; text: string; core?: string };
-/** What the story has said just before a sentence: whose sentence it was, and who else it named. */
-export interface Told { prev?: Person; prevOthers: Person[] }
+/** What the story has said just before a sentence: whose sentence it was, and who else it named;
+ * and whether «του/της» would point at one person alone (one of that gender in the sentence before,
+ * or the only one so far, siblings and relatives too; `besides`: the clitic sentence's own subject). */
+export interface Told { prev?: Person; prevOthers: Person[]; clear?: (p: Person, besides?: string) => boolean }
 export interface Sentence {
   /** The words, given the subject: '' when it stays out (the sentence before was about the
    * same person and named no one else), «Ο Νίκος», or «Μετά ο Νίκος» for a change right
@@ -193,7 +195,7 @@ export function stockWorld(r: Rng): World | null {
   const cl = P.his; // "της" as an indirect object: "της χάρισε"
   // «της χάρισε» only right after a sentence about her that named no one else; otherwise
   // the receiver by name: «Ο Αλέξης χάρισε 12 κάρτες στην Κατερίνα»
-  const toHer = (t: Told) => t.prev === P && !t.prevOthers.length;
+  const toHer = (t: Told, giver?: Person) => t.prev === P && !t.prevOthers.length && (t.clear?.(P, giver?.bare) ?? true);
   const Things = cap(T.many);
   const sentences: ((stated: Set<string>) => Sentence | null)[] = [];
   const late = new Set<string>();
@@ -273,8 +275,8 @@ export function stockWorld(r: Rng): World | null {
           const some = `μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} ${T.manyAcc}`;
           sentences.push(st => st.has(e) ? (form
             ? { at, subj: P, states: [e], change: true, say: S => [say(S), 'πήρε ', n(e), ` από ${F.acc}.`] }
-            : { at, subj: F, states: [e], change: true, say: (S, t) => (toHer(t) ? [say(S), `${cl} χάρισε `, n(e), '.'] : [say(S), 'χάρισε ', n(e), ` σ${P.acc}.`]) })
-            : { at, subj: F, states: [], change: true, say: (S, t) => [say(S), toHer(t) ? `${cl} χάρισε ${some}.` : `χάρισε ${some} σ${P.acc}.`] });
+            : { at, subj: F, states: [e], change: true, say: (S, t) => (toHer(t, F) ? [say(S), `${cl} χάρισε `, n(e), '.'] : [say(S), 'χάρισε ', n(e), ` σ${P.acc}.`]) })
+            : { at, subj: F, states: [], change: true, say: (S, t) => [say(S), toHer(t, F) ? `${cl} χάρισε ${some}.` : `χάρισε ${some} σ${P.acc}.`] });
           asks.set(e, S => (S ? `${pos(T)} ${T.manyAcc} χάρισε ${F.nom} σ${P.acc}` : `${pos(T)} ${T.manyAcc} ${cl} χάρισε ${F.nom}`));
           late.add(e);
           friendStock(e, '−', at);
@@ -429,7 +431,7 @@ export function stockWorld(r: Rng): World | null {
         say: S => kind === 'age' ? [say(S), 'είναι ', piece, '.']
           : kind === 'shelf' ? ['Στο ράφι του μαγαζιού υπήρχαν ', piece, '.']
             : kind === 'hour' ? ['Το μαγαζί άνοιγε στις ', { q: 'x', text: `${v} το πρωί`, core: v }, '.']
-              : kind === 'pages' ? [`Το άλμπουμ ${P.gen} έχει `, piece, '.']
+              : kind === 'pages' ? [st.has('s0') && coll.where === 'στο άλμπουμ' ? 'Το άλμπουμ έχει ' : `Το άλμπουμ ${P.gen} έχει `, piece, '.']
                 : [`Στην τάξη ${P.gen} είναι `, piece, '.'],
       } : null);
     }
@@ -498,9 +500,30 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
   const names = (text: string) => w.people.filter(p => forms(p).some(f => new RegExp(`(?<!\\p{L})${f}(?!\\p{L})`, 'u').test(text)));
   const textOf = (ps: Piece[]) => ps.map(p => (typeof p === 'string' ? p : p.text)).join('').trim();
   let told: Told = { prevOthers: [] };
+  // A relative named in the sentence before («από τον θείο του», «στην αδερφή της») is someone else too
+  const KIN = new RegExp(`(?<!\\p{L})(?:${[...RELATIVES, ...SIBLINGS].flatMap(f => f.map(x => x.split(' ')[1])).join('|')})(?!\\p{L})`, 'u');
+  let prevKin = false;
+  // Everyone named so far, children and kin («την αδερφή» is a she), for whom «του/της» could mean
+  const kinIn = (text: string) => [...RELATIVES, ...SIBLINGS].map(([acc]) => ({ word: acc.split(' ')[1], female: !acc.startsWith('τον') }))
+    .filter(k => new RegExp(`(?<!\\p{L})${k.word}(?!\\p{L})`, 'u').test(text));
+  const seen = new Set<Person>();
+  const seenKin: { word: string; female: boolean }[] = [];
   const openers: (Person | undefined)[] = [];
   const said = (text: string, subj: Person | undefined) => {
-    told = { prev: subj, prevOthers: names(text).filter(p => p !== subj) };
+    const ns = names(text), kin = kinIn(text);
+    ns.forEach(p => seen.add(p));
+    seenKin.push(...kin);
+    const of = (ps: Iterable<Person>, ks: typeof kin, p: Person, besides?: string) => [
+      ...[...ps].filter(x => x.female === p.female && x.bare !== besides).map(x => x.bare),
+      ...ks.filter(k => k.female === p.female && !besides?.startsWith(k.word)).map(k => k.word)];
+    told = {
+      prev: subj, prevOthers: ns.filter(p => p !== subj),
+      clear: (p, besides) => {
+        const inPrev = of(ns, kin, p, besides);
+        return (inPrev.length ? inPrev : [...new Set(of(seen, seenKin, p, besides))]).every(x => x === p.bare);
+      },
+    };
+    prevKin = KIN.test(text);
     openers.push(w.people.find(p => text.startsWith(`${p.Nom} `)));
   };
   const push = (ps: Piece[]) => {
@@ -528,14 +551,19 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
     said(textOf(ps), s.subj);
     if (where === 'wonder' && i === 0) {
       const q = ask('');
-      out.push({ text: told.prev === hero ? 'Αναρωτιέται ' : `${hero.Nom} αναρωτιέται ` }, soughtPiece(q), { text: '. ' });
+      // «Αναρωτιέται» alone right after her sentence with no one else in it; after one that names
+      // someone else too, «Αναρωτιέται η Σοφία…» (not opening with her name twice in a row)
+      const alone = !told.prevOthers.length && !prevKin;
+      out.push({ text: told.prev === hero ? (alone ? 'Αναρωτιέται ' : `Αναρωτιέται ${hero.nom} `) : `${hero.Nom} αναρωτιέται ` }, soughtPiece(q), { text: '. ' });
       said(q, hero);
     }
   });
   // The question names her unless the story is about her alone and the sentence before
   // was hers and named no one else
   const others = sents.some(s => s.subj && s.subj !== hero);
-  const asked = told.prev === hero && !told.prevOthers.length && !others ? '' : hero.nom;
+  // (and when its «του/της» could mean someone else too: «Πόσα ευρώ της έδωσε η γιαγιά της;» after «στην αδερφή της»)
+  const own = ask('').match(/(?<!\p{L})(?:του|της) (?:έδωσε|χάρισε) (?:ο|η) (\p{L}+)/u);
+  const asked = told.prev === hero && !told.prevOthers.length && !others && (!own || told.clear!(hero, own[1])) ? '' : hero.nom;
   if (where === 'end') out.push(soughtPiece(cap(ask(asked))), { text: ';' });
   if (where === 'end-imp') out.push({ text: 'Να βρεις ' }, soughtPiece(ask(asked)), { text: '.' });
   // No two sentences in a row open with the same name (a sentence that can't open with
