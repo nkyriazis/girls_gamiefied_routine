@@ -64,7 +64,7 @@ jobs:
         run: npm test
       - name: Lint (check-help, check-voice, check-sound, check-gender, eslint)
         run: npm run lint
-      - name: Build (tsc -b, vite build)
+      - name: Build (tsc -b, vite build, check-bundle)
         run: npm run build
 
   problem-gen:
