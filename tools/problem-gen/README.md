@@ -23,8 +23,10 @@ $N node tools/problem-gen/audit.ts --dir tools/problem-gen/.out/me --sample tool
 The output is the same on every run (each problem is seeded by its family and number, so a
 dropped draft changes only its own problem, not the ones after it), and a diff of the pool files
 shows exactly what a change did. Never edit the generated JSON by hand. `gen.ts` prints, per
-family, how many drafts it dropped and why; `--tells` also shows what the dropped choices gave away.
+family, how many drafts it dropped and why; `--tells` also shows what the dropped choices gave away,
+and `--places` the prompts whose wordings can't spread the right option evenly by length (see «Steps»).
 `npm test` in the backend also loads every pool and solves every step.
+The builder's own pieces have tests that run with Node alone: `$N node --test tools/problem-gen/*.test.ts`.
 
 ## Writing a family
 
@@ -97,28 +99,54 @@ The audit can't read Greek; you must. The traps the generator has already hit:
   builder shuffles. Wrong options are the **typical mistakes** (the wrong operation,
   forgetting oneself in «ο Φώτης και οι 3 φίλοι του», ignoring the remainder, adding every
   number in the story), all different from each other and from the right one.
-- **No option gives the answer away by its length** (#50 part 5a). The screen shuffles the
-  options, so length is the only tell left. At both ends no option stands out (the longest at most
-  30 % or 5 code points longer than the next, the shortest at most 30 % or 5 shorter than the
-  next), the right one is never the only longest, and among options that are all numbers («12»,
-  «1.229 €») never the only one with the most digits (`lengthTell` in lib.ts). `b.choice` flags
-  such a choice (and repeated options), `gen.ts` drops the draft, the audit fails it in every pool,
-  curated ones too. The short end is also a rule per family: the audit fails a prompt (numbers and
-  names aside, from 3 choices on) whose right option is the only shortest in more than half its
-  choices (`onlyShortest`), since a fixed wording puts the right one at the same place every time.
-  Aim for the middle, or a tie: a «not wrong» option as short as the reason beside it («Κανένα
-  λάθος, είναι σωστό»), a shorter slip («Τους αγνοούμε» beside «Τους αφαιρούμε»), a check that
-  checks nothing with a smaller result («48 − 46 = 2» beside «46 + 48 = 94»). A wrong option never
-  shows a number she works out later (the audit fails it): «30 − 21» above «9 + 3 + 9 = 21» gives
-  the sum away; the money less the prices, «30 − 3 − 9», doesn't. Write them so drops stay rare: shorten the right
-  option toward the book's bare wording («Εργάζομαι αντίστροφα: από το τέλος», «47 : 5», «Γιατί
-  10 × 4 + 8 = 48»), give a wrong one only its typical mistake («Όχι, πρέπει να είναι 40: όλα
-  μαζί», «7, όσα γεμίζουν· τα άλλα περιμένουν»), never a strategy that would also work (a valid
-  «Δοκιμάζω και ελέγχω» is not a wrong option), and give equations as many terms as the right one
-  («9 × 5 − 2» beside «9 × 5 + 2»). Two answers that differ by a word of other length are told
-  the same way («πάνω από / κάτω από 120 εκατοστά», not «μεγαλύτερο / μικρότερο»); names that
-  are options (teams, lists, places) have one length. A false comparison in a wrong option may
-  stay (judging it is the skill: «Ναι, γιατί 410 < 300»), but never a number compared with itself.
+- **No option gives the answer away by its length** (#50 parts 5a and 5c). The screen shuffles the
+  options, so length is the only tell left, and it has two sides.
+  - *In one choice* (`lengthTell` in lib.ts): no option stands out at either end (the longest at
+    most 30 % or 5 code points longer than the next, the shortest at most 30 % or 5 shorter than the
+    next), and among options that are all numbers («12», «1.229 €») the right one is never the only
+    one with the most digits. `b.choice` flags such a choice (and repeated options), `gen.ts` drops the
+    draft, the audit fails it in every pool, curated ones too.
+  - *Across a prompt* (the place rule, #50 part 5c): one fixed wording puts the right option at the same
+    place by length in every problem, and a child who taps «the middle one» without reading wins (before
+    5c, 76.5 % of Ε΄ three-option choices). So an option may come in **several wordings**
+    (`Wording`, a list, the usual one first): `b.choice(phase, prompt, [right, shorter], [[wrong, longer,
+    shorter], …])`. `b.choice` works out the places by length the valid combinations give the right
+    option, mixes them so every place is as near to 1/n as they allow, and the problem's seed (`placeSeed`,
+    from its id: a dropped draft still changes only its own problem) picks one. The only random draw is
+    still the order on screen, so stories, numbers and slots stay when wordings are added. The audit
+    counts the places per family, prompt (`promptKey`: names with their article and numbers aside;
+    `SAME_PROMPT` merges prompts that ask the same with the same options) and number of options, with
+    options **within 2 code points counted as the same length** (the eye can't tell them apart; ties
+    split): a prompt from 6 choices on fails where one place wins more than a fair die would (`placeLimit`,
+    over it in under 1 prompt in 100), from 3 to 5 choices that is a warning, and a prompt over its share
+    and one in 8 is a warning too. Its summary prints, per pool, how often each place is right.
+    `gen.ts --places` lists the prompts whose wordings can't spread the right option evenly, and how far
+    they get.
+  - **How to write a variant.** A wrong option's variant is the *same typical mistake in other words*,
+    shorter or longer («Προσθέτω τους αριθμούς του προβλήματος» / «Προσθέτω τους αριθμούς»; «Όχι, πρέπει
+    να είναι πάνω από 36 ευρώ» / «Όχι, θα είναι πάνω από 36 ευρώ»). A right option's variant comes **only
+    from the book's own wording** (the strategies by their names in Ε΄ κεφ. 1.3: «Παρουσιάζω το πρόβλημα
+    με σχέδιο» / «Παρουσιάζω το πρόβλημα», `STRATEGY` in lib.ts; «Το Ε.Κ.Π. των 9 και 10» / «Το Ε.Κ.Π.
+    τους»; «6 + 6 + 6 + 6 = 24» / «6 × 4 = 24»), never new content. `b.choice` never takes a variant
+    longer than the longest first wording (nothing new wraps), so give the shortest option a longer
+    variant and the longest a shorter one. The «not wrong» options are shared (`NO_MISTAKE`,
+    `NOTHING_FORGOTTEN`). Every variant says it the same way to every child: no «όλους/όλες» (check-gender
+    in the audit fails a new one in an option). A prompt whose right option sits at the cap with nothing
+    shorter in the book (a yes/no check, an equation as long as its wrong twin) can't be spread without
+    new content: the audit lists it as a warning.
+  - Aim for wrong options that are typical mistakes of every length: a «not wrong» option as short as
+    the reason beside it, a shorter slip («Τους αγνοούμε» beside «Τους αφαιρούμε»), a check that checks
+    nothing with a smaller result («48 − 46 = 2» beside «46 + 48 = 94»). A wrong option never shows a
+    number she works out later (the audit fails it): «30 − 21» above «9 + 3 + 9 = 21» gives the sum away;
+    the money less the prices, «30 − 3 − 9», doesn't. Never a strategy that would also work (a valid
+    «Δοκιμάζω και ελέγχω» is not a wrong option), and give equations as many terms as the right one
+    («9 × 5 − 2» beside «9 × 5 + 2»). Two answers that differ by a word of other length are told the
+    same way («πάνω από / κάτω από 120 εκατοστά», not «μεγαλύτερο / μικρότερο»); names that are options
+    (teams, lists, places) have one length. A false comparison in a wrong option may stay (judging it is
+    the skill: «Ναι, γιατί 410 < 300»), but never a number compared with itself.
+  - The curated pools (`*-problems.json`) have no prompt asked 6 times: they keep 5a's rules per choice
+    and per prompt instead (the right one never the only longest; nor the only shortest in more than
+    half a prompt's choices, `onlyShortest`).
 - `b.numbers(phase, prompt, rows, hint)`: one row per intermediate quantity, from the
   knowns to the unknown. That chain is the point of the whole exercise.
 - **Every step has a hint of its own** (the audit fails one without). Without `hint`,
