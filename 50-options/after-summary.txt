@@ -1,0 +1,55 @@
+e-dimotikou-generated: 500 problems, 603 choices, 1951 steps
+  right option strictly the longest   0/603 (0%)
+  tapping the longest wins every choice 0/414 (0%)
+  right option strictly the shortest  19/603 (3%)
+  tap the shortest wins 12.0%, the longest 14.7%, at random 29.9%
+  of 354 three-option choices, tapping the middle length wins 59.3%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 0 of 64, in all: 0
+  win rate never tapping the only longest 38.8%, at random 29.9%
+  steps with no hint                  0 {}
+  check prompts stating their answer  0
+  repeated known numbers              0
+e-dimotikou-problems: 8 problems, 16 choices, 34 steps
+  right option strictly the longest   0/16 (0%)
+  tapping the longest wins every choice 0/8 (0%)
+  right option strictly the shortest  5/16 (31%)
+  tap the shortest wins 34.4%, the longest 15.6%, at random 32.3%
+  of 14 three-option choices, tapping the middle length wins 28.6%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 0 of 0, in all: 0
+  win rate never tapping the only longest 41.7%, at random 32.3%
+  steps with no hint                  0 {}
+  check prompts stating their answer  0
+  repeated known numbers              0
+g-dimotikou-generated: 500 problems, 835 choices, 1965 steps
+  right option strictly the longest   0/835 (0%)
+  tapping the longest wins every choice 0/491 (0%)
+  right option strictly the shortest  47/835 (6%)
+  tap the shortest wins 26.4%, the longest 15.1%, at random 32.3%
+  of 684 three-option choices, tapping the middle length wins 34.9%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 0 of 80, in all: 0
+  win rate never tapping the only longest 41.1%, at random 32.3%
+  steps with no hint                  0 {}
+  check prompts stating their answer  0
+  repeated known numbers              0
+g-dimotikou-problems: 8 problems, 15 choices, 32 steps
+  right option strictly the longest   0/15 (0%)
+  tapping the longest wins every choice 0/7 (0%)
+  right option strictly the shortest  2/15 (13%)
+  tap the shortest wins 32.8%, the longest 13.9%, at random 30.6%
+  of 10 three-option choices, tapping the middle length wins 20.0%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 0 of 2, in all: 0
+  win rate never tapping the only longest 38.3%, at random 30.6%
+  steps with no hint                  0 {}
+  check prompts stating their answer  0
+  repeated known numbers              0
+g-dimotikou-world: 200 problems, 200 choices, 600 steps
+  right option strictly the longest   0/200 (0%)
+  tapping the longest wins every choice 0/200 (0%)
+  right option strictly the shortest  19/200 (10%)
+  tap the shortest wins 34.5%, the longest 17.8%, at random 30.0%
+  of 119 three-option choices, tapping the middle length wins 9.2%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 0 of 2, in all: 0
+  win rate never tapping the only longest 34.5%, at random 30.0%
+  steps with no hint                  0 {}
+  check prompts stating their answer  0
+  repeated known numbers              0

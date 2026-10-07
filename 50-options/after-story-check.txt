@@ -1,0 +1,208 @@
+176 errors in 152 problems
+
+By family:
+  35  cheaper-option
+  23  total-cost
+  18  round-table
+  17  division-remainder
+  12  together-again
+  12  order-the-plan
+  11  buy-and-change
+   9  double-half
+   7  missing-info
+   6  two-purchases
+   5  two-digit-times
+   5  pages-per-day
+   4  sum-difference
+   4  start-unknown
+   4  estimate-first
+   2  coins
+   2  (curated g-dimotikou-problems.json)
+
+By kind:
+  88  a price for something the audit has no range for: «…»  (g3-gen-two-purchases-005 g3-gen-two-purchases-009 g3-gen-two-purchases-013 g3-gen-two-purchases-016 …)
+  54  the question names no one, and … … are subjects: «…»  (e5-gen-round-table-001 e5-gen-round-table-002 e5-gen-round-table-003 e5-gen-round-table-004 …)
+   9  a price for something the audit has no range for: «…» τ… κοσ  (g3-gen-division-remainder-002 g3-gen-division-remainder-003 g3-gen-division-remainder-009 g3-gen-division-remainder-010 …)
+   8  a price for something the audit has no range for: «…» … κοστ  (g3-gen-division-remainder-004 g3-gen-division-remainder-005 g3-gen-division-remainder-006 g3-gen-division-remainder-007 …)
+   7  «…» before anyone it could mean is named: «…»  (g3-gen-order-the-plan-002 g3-gen-order-the-plan-004 g3-gen-order-the-plan-008 g3-gen-order-the-plan-010 …)
+   4  the question names no one, and … … … are subjects: «…»  (e5-gen-together-again-007 e5-gen-together-again-007 e5-gen-together-again-012 e5-gen-together-again-012)
+   4  a change after «…»: «…»  (g3-gen-start-unknown-016 g3-gen-start-unknown-018 g3-gen-start-unknown-019 g3-gen-start-unknown-020)
+   1  two sentences in a row open with «…»: «…»  (e5-gen-sum-difference-019)
+   1  # € for επιτραπέζι… €): «…»  (g3-gen-two-purchases-019)
+
+e5-gen-round-table-001: the question names no one, and ο Νίκος, ο Θοδωρής are subjects: «Πόσα παιδιά κάθονται γύρω από το στρογγυλό τραπέζι της τάξης;»
+e5-gen-round-table-002: the question names no one, and η Αγγελική, ο Θοδωρής are subjects: «Πόσα παιδιά είναι στον κύκλο;»
+e5-gen-round-table-003: the question names no one, and η Ζωή, ο Θοδωρής are subjects: «Πόσα αλογάκια έχει το καρουζέλ;»
+e5-gen-round-table-004: the question names no one, and η Σοφία, ο Νίκος are subjects: «Πόσοι φανοστάτες είναι γύρω από την πλατεία;»
+e5-gen-round-table-005: the question names no one, and ο Αντρέι, ο Μιχάλης are subjects: «Πόσοι φανοστάτες είναι γύρω από την πλατεία;»
+e5-gen-round-table-007: the question names no one, and η Κατερίνα, ο Μάρκος are subjects: «Πόσα παιδιά είναι στον κύκλο;»
+e5-gen-round-table-008: the question names no one, and ο Αλέξης, η Χαρά are subjects: «Πόσες καμπίνες έχει η ρόδα;»
+e5-gen-round-table-009: the question names no one, and ο Πέτρος, ο Στέλιος are subjects: «Πόσα παιδιά είναι στον κύκλο;»
+e5-gen-round-table-010: the question names no one, and ο Φώτης, ο Στέλιος are subjects: «Πόσα παιδιά είναι στον κύκλο;»
+e5-gen-round-table-011: the question names no one, and η Μυρτώ, η Ζωή are subjects: «Πόσες καμπίνες έχει η ρόδα;»
+e5-gen-round-table-013: the question names no one, and η Κορίνα, ο Νίκος are subjects: «Πόσα παιδιά είναι στον κύκλο;»
+e5-gen-round-table-014: the question names no one, and η Αγγελική, η Μαρίνα are subjects: «Πόσα αλογάκια έχει το καρουζέλ;»
+e5-gen-round-table-015: the question names no one, and η Ζωή, ο Θοδωρής are subjects: «Πόσα αλογάκια έχει το καρουζέλ;»
+e5-gen-round-table-016: the question names no one, and η Χαρά, η Μυρτώ are subjects: «Πόσα αλογάκια έχει το καρουζέλ;»
+e5-gen-round-table-017: the question names no one, and η Ζωή, ο Πέτρος are subjects: «Πόσες καμπίνες έχει η ρόδα;»
+e5-gen-round-table-018: the question names no one, and η Αγγελική, ο Φώτης are subjects: «Πόσες καμπίνες έχει η ρόδα;»
+e5-gen-round-table-019: the question names no one, and ο Φώτης, ο Αντρέι are subjects: «Πόσα αλογάκια έχει το καρουζέλ;»
+e5-gen-round-table-020: the question names no one, and η Κατερίνα, ο Φώτης are subjects: «Πόσα αλογάκια έχει το καρουζέλ;»
+e5-gen-sum-difference-004: the question names no one, and η Δανάη, ο Πυθαγόρας are subjects: «Πόσα γραμματόσημα έχει ο καθένας;»
+e5-gen-sum-difference-006: the question names no one, and η Ελένη, ο Πέτρος are subjects: «Πόσα € έχει ο καθένας;»
+e5-gen-sum-difference-019: two sentences in a row open with «Η Χαρά»: «Η Χαρά και ο Νίκος έχουν μαζέψει μαζί 363 €. Η Χαρά έχει 51 € περισσότερα από τον Νίκο.»
+e5-gen-sum-difference-019: the question names no one, and η Χαρά, ο Νίκος are subjects: «Πόσα € έχει ο καθένας;»
+e5-gen-together-again-002: the question names no one, and η Ζωή, ο Φώτης are subjects: «Μετά από πόσα λεπτά θα περάσουν πάλι μαζί από την είσοδο;»
+e5-gen-together-again-003: the question names no one, and η Χαρά, ο Αλέξης are subjects: «Σε πόσες ημέρες θα ξανασυναντηθούν στη βιβλιοθήκη;»
+e5-gen-together-again-007: the question names no one, and η Σοφία, ο Μιχάλης, η Άννα are subjects: «Έχει δίκιο;»
+e5-gen-together-again-007: the question names no one, and η Σοφία, ο Μιχάλης, η Άννα are subjects: «Σε πόσα λεπτά θα ξαναβρεθούν μαζί στην είσοδο;»
+e5-gen-together-again-008: the question names no one, and η Άννα, ο Γιώργος are subjects: «Σε πόσα λεπτά θα ξαναβρεθούν μαζί στην είσοδο;»
+e5-gen-together-again-009: the question names no one, and η Χαρά, ο Πυθαγόρας are subjects: «Μετά από πόσες ημέρες θα βρεθούν πάλι εκεί την ίδια ημέρα;»
+e5-gen-together-again-010: the question names no one, and η Ελένη, ο Μάρκος are subjects: «Μετά από πόσες ημέρες θα βρεθούν πάλι εκεί την ίδια ημέρα;»
+e5-gen-together-again-012: the question names no one, and ο Πέτρος, ο Πυθαγόρας, ο Γιώργος are subjects: «Έχει δίκιο;»
+e5-gen-together-again-012: the question names no one, and ο Πέτρος, ο Πυθαγόρας, ο Γιώργος are subjects: «Σε πόσες ημέρες θα ξανασυναντηθούν στη βιβλιοθήκη;»
+e5-gen-together-again-013: the question names no one, and ο Θοδωρής, ο Πυθαγόρας are subjects: «Σε πόσα λεπτά θα ξαναβρεθούν μαζί στην είσοδο;»
+e5-gen-together-again-018: the question names no one, and ο Αντρέι, ο Πυθαγόρας are subjects: «Σε πόσα λεπτά θα ξαναβρεθούν μαζί στην είσοδο;»
+e5-gen-together-again-020: the question names no one, and ο Θοδωρής, ο Μιχάλης are subjects: «Μετά από πόσα λεπτά θα περάσουν πάλι μαζί από την είσοδο;»
+g3-gen-division-remainder-002: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» το λουλούδι κοστίζει 9 ευρώ.»
+g3-gen-division-remainder-003: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» το λουλούδι κοστίζει 9 ευρώ.»
+g3-gen-division-remainder-004: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» η κορδέλα κοστίζει 2 ευρώ.»
+g3-gen-division-remainder-005: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» ο φακός κοστίζει 7 ευρώ.»
+g3-gen-division-remainder-006: a price for something the audit has no range for: «Στο μαγαζί «Η γωνιά» η κορδέλα κοστίζει 5 ευρώ.»
+g3-gen-division-remainder-007: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» η κορδέλα κοστίζει 5 ευρώ.»
+g3-gen-division-remainder-008: a price for something the audit has no range for: «Στο μαγαζί «Το αστέρι» η σοκολάτα κοστίζει 6 ευρώ.»
+g3-gen-division-remainder-009: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» το λουλούδι κοστίζει 5 ευρώ.»
+g3-gen-division-remainder-010: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» το τετράδιο κοστίζει 9 ευρώ.»
+g3-gen-division-remainder-011: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» το τετράδιο κοστίζει 5 ευρώ.»
+g3-gen-division-remainder-013: a price for something the audit has no range for: «Στο μαγαζί «Η φτήνια» το τετράδιο κοστίζει 7 ευρώ.»
+g3-gen-division-remainder-014: a price for something the audit has no range for: «Στο μαγαζί «Το αστέρι» η σοκολάτα κοστίζει 8 ευρώ.»
+g3-gen-division-remainder-015: a price for something the audit has no range for: «Στο μαγαζί «Η γωνιά» ο φακός κοστίζει 9 ευρώ.»
+g3-gen-division-remainder-016: a price for something the audit has no range for: «Στο μαγαζί «Η γωνιά» η σοκολάτα κοστίζει 6 ευρώ.»
+g3-gen-division-remainder-017: a price for something the audit has no range for: «Στο μαγαζί «Το αστέρι» το μπαλόνι κοστίζει 3 ευρώ.»
+g3-gen-division-remainder-019: a price for something the audit has no range for: «Στο μαγαζί «Η γωνιά» το μπαλόνι κοστίζει 4 ευρώ.»
+g3-gen-division-remainder-020: a price for something the audit has no range for: «Στο μαγαζί «Η γωνιά» το τετράδιο κοστίζει 6 ευρώ.»
+g3-gen-two-purchases-005: a price for something the audit has no range for: «Στο αθλητικό κατάστημα ξόδεψε 9 ευρώ για ένα ζευγάρι κάλτσες και 5 ευρώ για ένα σκοινάκι.»
+g3-gen-two-purchases-009: a price for something the audit has no range for: «Πρώτα αγοράζει μια τούρτα που κοστίζει 30 ευρώ και μετά ένα κουτί κουλουράκια που κοστίζει 6 ευρώ.»
+g3-gen-two-purchases-013: a price for something the audit has no range for: «Στο βιβλιοπωλείο ξόδεψε 7 ευρώ για ένα ημερολόγιο και 7 ευρώ για ένα κουτί μαρκαδόρους.»
+g3-gen-two-purchases-016: a price for something the audit has no range for: «Στο λούνα παρκ ξόδεψε 10 ευρώ για ένα λούτρινο αρκουδάκι και 4 ευρώ για ένα μαλλί της γριάς.»
+g3-gen-two-purchases-019: 3 € for επιτραπέζιο (10–50 €): «Στο κατάστημα παιχνιδιών ξόδεψε 3 ευρώ για ένα γιογιό και 21 ευρώ για ένα επιτραπέζιο παιχνίδι.»
+g3-gen-two-purchases-020: a price for something the audit has no range for: «Πρώτα αγοράζει ένα μαλλί της γριάς που κοστίζει 2 ευρώ και μετά ένα εισιτήριο για τη ρόδα που κοστίζει 5 ευρώ.»
+g3-gen-total-cost-001: a price for something the audit has no range for: «Η τούρτα κοστίζει 25 ευρώ.»
+g3-gen-total-cost-003: a price for something the audit has no range for: «Το παγούρι κοστίζει 7 ευρώ.»
+g3-gen-total-cost-003: a price for something the audit has no range for: «Η φόρμα κοστίζει 36 ευρώ.»
+g3-gen-total-cost-004: a price for something the audit has no range for: «Η τούρτα κοστίζει 20 ευρώ.»
+g3-gen-total-cost-005: a price for something the audit has no range for: «Το χαρτί περιτυλίγματος κοστίζει 2 ευρώ.»
+g3-gen-total-cost-006: a price for something the audit has no range for: «Η κάρτα με τις ευχές κοστίζει 3 ευρώ.»
+g3-gen-total-cost-007: a price for something the audit has no range for: «Η κάρτα με τις ευχές κοστίζει 3 ευρώ.»
+g3-gen-total-cost-007: a price for something the audit has no range for: «Το χαρτί περιτυλίγματος κοστίζει 4 ευρώ.»
+g3-gen-total-cost-008: a price for something the audit has no range for: «Το λεξικό κοστίζει 14 ευρώ.»
+g3-gen-total-cost-008: a price for something the audit has no range for: «Το κουτί με τις ξυλομπογιές κοστίζει 10 ευρώ.»
+g3-gen-total-cost-009: a price for something the audit has no range for: «Η τούρτα κοστίζει 31 ευρώ.»
+g3-gen-total-cost-010: a price for something the audit has no range for: «Το παγούρι κοστίζει 8 ευρώ.»
+g3-gen-total-cost-011: a price for something the audit has no range for: «Η τούρτα κοστίζει 32 ευρώ.»
+g3-gen-total-cost-012: a price for something the audit has no range for: «Στο αθλητικό κατάστημα της γειτονιάς το παγούρι κοστίζει 10 ευρώ.»
+g3-gen-total-cost-012: a price for something the audit has no range for: «Η φόρμα κοστίζει 32 ευρώ.»
+g3-gen-total-cost-013: a price for something the audit has no range for: «Η τούρτα κοστίζει 24 ευρώ.»
+g3-gen-total-cost-015: a price for something the audit has no range for: «Το λεξικό κοστίζει 20 ευρώ.»
+g3-gen-total-cost-016: a price for something the audit has no range for: «Το καλαθάκι κοστίζει 21 ευρώ.»
+g3-gen-total-cost-016: a price for something the audit has no range for: «Το κουδούνι κοστίζει 6 ευρώ.»
+g3-gen-total-cost-017: a price for something the audit has no range for: «Η κάρτα με τις ευχές κοστίζει 5 ευρώ.»
+g3-gen-total-cost-018: a price for something the audit has no range for: «Στο κατάστημα παιχνιδιών της γειτονιάς η κάρτα με τις ευχές κοστίζει 2 ευρώ.»
+g3-gen-total-cost-020: a price for something the audit has no range for: «Η κλειδαριά κοστίζει 16 ευρώ.»
+g3-gen-total-cost-020: a price for something the audit has no range for: «Το καλαθάκι κοστίζει 22 ευρώ.»
+g3-gen-start-unknown-016: a change after «Τώρα η Κατερίνα έχει 115 αυτοκόλλητα.»: «Νωρίτερα, αγόρασε άλλα 39 αυτοκόλλητα από το περίπτερο.»
+g3-gen-start-unknown-018: a change after «Τώρα η Ελένη έχει 100 κάρτες.»: «Νωρίτερα, χάρισε 65 κάρτες στον Φώτη.»
+g3-gen-start-unknown-019: a change after «Τώρα ο Αλέξης έχει 158 ευρώ.»: «Νωρίτερα, πήρε 52 ευρώ από τη γιαγιά του.»
+g3-gen-start-unknown-020: a change after «Τώρα ο Θοδωρής έχει 15 βόλους.»: «Νωρίτερα, στο διάλειμμα έχασε 16 βόλους στο παιχνίδι.»
+g3-gen-two-digit-times-007: a price for something the audit has no range for: «Ένα εισιτήριο κοστίζει 14 ευρώ.»
+g3-gen-two-digit-times-008: a price for something the audit has no range for: «Ένα εισιτήριο κοστίζει 16 ευρώ.»
+g3-gen-two-digit-times-009: a price for something the audit has no range for: «Ένα εισιτήριο κοστίζει 19 ευρώ.»
+g3-gen-two-digit-times-010: a price for something the audit has no range for: «Ένα εισιτήριο κοστίζει 19 ευρώ.»
+g3-gen-two-digit-times-014: a price for something the audit has no range for: «Ένα εισιτήριο κοστίζει 15 ευρώ.»
+g3-gen-double-half-001: the question names no one, and η Κορίνα, η Ελένη are subjects: «Πόσους πόντους μάζεψαν και οι δύο μαζί;»
+g3-gen-double-half-002: the question names no one, and η Ελένη, ο Μάρκος are subjects: «Πόσα αυτοκόλλητα έχουν και οι δύο μαζί;»
+g3-gen-double-half-012: the question names no one, and ο Γιώργος, ο Αντρέι are subjects: «Πόσες κάρτες έχουν και οι δύο μαζί;»
+g3-gen-double-half-013: the question names no one, and η Δανάη, η Άννα are subjects: «Πόσους πόντους μάζεψαν και οι δύο μαζί;»
+g3-gen-double-half-014: the question names no one, and η Ελένη, ο Θοδωρής are subjects: «Πόσους πόντους μάζεψαν και οι δύο μαζί;»
+g3-gen-double-half-015: the question names no one, and η Σοφία, ο Μάρκος are subjects: «Πόσους βόλους έχουν και οι δύο μαζί;»
+g3-gen-double-half-016: the question names no one, and η Μαρίνα, η Κορίνα are subjects: «Πόσα αυτοκόλλητα έχουν και οι δύο μαζί;»
+g3-gen-double-half-018: the question names no one, and η Κορίνα, η Υπατία are subjects: «Πόσες κάρτες έχουν και οι δύο μαζί;»
+g3-gen-double-half-020: the question names no one, and ο Άρης, η Κατερίνα are subjects: «Πόσες κάρτες έχουν και οι δύο μαζί;»
+g3-gen-pages-per-day-003: a price for something the audit has no range for: «Στο βιβλιοπωλείο κοστίζει 9 ευρώ.»
+g3-gen-pages-per-day-004: a price for something the audit has no range for: «Στο βιβλιοπωλείο κοστίζει 8 ευρώ.»
+g3-gen-pages-per-day-008: a price for something the audit has no range for: «Στο βιβλιοπωλείο κοστίζει 7 ευρώ.»
+g3-gen-pages-per-day-010: a price for something the audit has no range for: «Στο βιβλιοπωλείο κοστίζει 10 ευρώ.»
+g3-gen-pages-per-day-016: a price for something the audit has no range for: «Στο βιβλιοπωλείο κοστίζει 13 ευρώ.»
+g3-gen-buy-and-change-006: a price for something the audit has no range for: «Ένα εισιτήριο κοστίζει 6 ευρώ.»
+g3-gen-buy-and-change-007: a price for something the audit has no range for: «Στη λαϊκή αγορά, ένα κιλό κεράσια κοστίζει 8 ευρώ.»
+g3-gen-buy-and-change-008: a price for something the audit has no range for: «Κάθε γλάστρα με βασιλικό κοστίζει 5 ευρώ.»
+g3-gen-buy-and-change-010: a price for something the audit has no range for: «Ένα εισιτήριο κοστίζει 8 ευρώ.»
+g3-gen-buy-and-change-011: a price for something the audit has no range for: «Ένα εισιτήριο κοστίζει 6 ευρώ.»
+g3-gen-buy-and-change-012: a price for something the audit has no range for: «Ένα τοστ κοστίζει 2 ευρώ.»
+g3-gen-buy-and-change-014: a price for something the audit has no range for: «Κάθε τοστ κοστίζει 4 ευρώ.»
+g3-gen-buy-and-change-015: a price for something the audit has no range for: «Στη λαϊκή αγορά, ένα κιλό κεράσια κοστίζει 8 ευρώ.»
+g3-gen-buy-and-change-016: a price for something the audit has no range for: «Στο χαρτοπωλείο, ένας μαρκαδόρος κοστίζει 2 ευρώ.»
+g3-gen-buy-and-change-018: a price for something the audit has no range for: «Κάθε τετράδιο κοστίζει 4 ευρώ.»
+g3-gen-buy-and-change-019: a price for something the audit has no range for: «Κάθε μαρκαδόρος κοστίζει 3 ευρώ.»
+g3-gen-coins-008: a price for something the audit has no range for: «Ο Θοδωρής αγόρασε ένα περιοδικό με κόμικ που κόστιζε 2 ευρώ και 5 λεπτά.»
+g3-gen-coins-019: a price for something the audit has no range for: «Ο Άρης αγόρασε ένα περιοδικό με κόμικ που κόστιζε 4 ευρώ και 5 λεπτά.»
+g3-gen-estimate-first-004: a price for something the audit has no range for: «Κάθε γλάστρα κοστίζει 3 ευρώ.»
+g3-gen-estimate-first-005: a price for something the audit has no range for: «Κάθε γλάστρα κοστίζει 6 ευρώ.»
+g3-gen-estimate-first-016: a price for something the audit has no range for: «Το εισιτήριο κοστίζει 18 ευρώ.»
+g3-gen-estimate-first-019: a price for something the audit has no range for: «Κάθε γλάστρα κοστίζει 3 ευρώ.»
+g3-gen-order-the-plan-002: «της έμειναν» before anyone it could mean is named: «Πόσα ευρώ της έμειναν;»
+g3-gen-order-the-plan-003: a price for something the audit has no range for: «Θέλει να αγοράσει ένα πατίνι που κοστίζει 87 ευρώ.»
+g3-gen-order-the-plan-004: «της έμειναν» before anyone it could mean is named: «Πόσα ευρώ της έμειναν;»
+g3-gen-order-the-plan-006: a price for something the audit has no range for: «Το εισιτήριο κοστίζει 6 ευρώ για κάθε παιδί.»
+g3-gen-order-the-plan-008: «της έμειναν» before anyone it could mean is named: «Πόσα ευρώ της έμειναν;»
+g3-gen-order-the-plan-009: a price for something the audit has no range for: «Το εισιτήριο κοστίζει 8 ευρώ για κάθε παιδί.»
+g3-gen-order-the-plan-010: «της έμειναν» before anyone it could mean is named: «Πόσα ευρώ της έμειναν;»
+g3-gen-order-the-plan-013: «της έμειναν» before anyone it could mean is named: «Πόσα ευρώ της έμειναν;»
+g3-gen-order-the-plan-014: «του έμειναν» before anyone it could mean is named: «Πόσα ευρώ του έμειναν;»
+g3-gen-order-the-plan-015: a price for something the audit has no range for: «Το εισιτήριο κοστίζει 8 ευρώ για κάθε παιδί.»
+g3-gen-order-the-plan-018: a price for something the audit has no range for: «Το εισιτήριο κοστίζει 7 ευρώ για κάθε παιδί.»
+g3-gen-order-the-plan-019: «της έμειναν» before anyone it could mean is named: «Πόσα ευρώ της έμειναν;»
+g3-gen-missing-info-002: a price for something the audit has no range for: «Κάθε μαρκαδόρος κοστίζει 3 ευρώ.»
+g3-gen-missing-info-004: a price for something the audit has no range for: «Αγόρασε ένα κουτί μαρκαδόρους που κόστιζε 11 ευρώ.»
+g3-gen-missing-info-006: a price for something the audit has no range for: «Κάθε τριαντάφυλλο κοστίζει 2 ευρώ.»
+g3-gen-missing-info-011: a price for something the audit has no range for: «Κάθε μαρκαδόρος κοστίζει 3 ευρώ.»
+g3-gen-missing-info-013: a price for something the audit has no range for: «Αγόρασε ένα κουτί μαρκαδόρους που κόστιζε 7 ευρώ.»
+g3-gen-missing-info-016: a price for something the audit has no range for: «Αγόρασε ένα κουτί μαρκαδόρους που κόστιζε 7 ευρώ.»
+g3-gen-missing-info-019: a price for something the audit has no range for: «Αγόρασε ένα κουτί μαρκαδόρους που κόστιζε 11 ευρώ.»
+g3-gen-cheaper-option-001: the question names no one, and η Δανάη, ο Μιχάλης are subjects: «Ποιο παιδί πλήρωσε λιγότερα;»
+g3-gen-cheaper-option-001: the question names no one, and η Δανάη, ο Μιχάλης are subjects: «Πόσα ευρώ λιγότερα;»
+g3-gen-cheaper-option-002: a price for something the audit has no range for: «Στο περίπτερο, ένα πακέτο με 12 μπουκάλια νερό κοστίζει 5 ευρώ.»
+g3-gen-cheaper-option-002: a price for something the audit has no range for: «Στο σούπερ μάρκετ, ένα πακέτο με 6 μπουκάλια νερό κοστίζει 2 ευρώ.»
+g3-gen-cheaper-option-003: a price for something the audit has no range for: «Στο σούπερ μάρκετ, ένα κουτί με 12 μαρκαδόρους κοστίζει 7 ευρώ και ένα κουτί με 6 μαρκαδόρους κοστίζει 5 ευρώ.»
+g3-gen-cheaper-option-004: a price for something the audit has no range for: «Στο κατάστημα της πλατείας, ένα κουτί με 4 μπαλάκια του τένις κοστίζει 8 ευρώ.»
+g3-gen-cheaper-option-004: a price for something the audit has no range for: «Στο κατάστημα της παραλίας, ένα κουτί με 3 μπαλάκια του τένις κοστίζει 7 ευρώ.»
+g3-gen-cheaper-option-005: the question names no one, and ο Αλέξης, ο Νίκος are subjects: «Ποιο παιδί πλήρωσε λιγότερα;»
+g3-gen-cheaper-option-005: the question names no one, and ο Αλέξης, ο Νίκος are subjects: «Πόσα ευρώ λιγότερα;»
+g3-gen-cheaper-option-006: the question names no one, and ο Θοδωρής, ο Αντρέι are subjects: «Ποιο παιδί πλήρωσε λιγότερα;»
+g3-gen-cheaper-option-006: the question names no one, and ο Θοδωρής, ο Αντρέι are subjects: «Πόσα ευρώ λιγότερα;»
+g3-gen-cheaper-option-007: a price for something the audit has no range for: «Στο σούπερ μάρκετ, ένα κουτί με 12 μαρκαδόρους κοστίζει 9 ευρώ και ένα κουτί με 6 μαρκαδόρους κοστίζει 3 ευρώ.»
+g3-gen-cheaper-option-008: a price for something the audit has no range for: «Στο σούπερ μάρκετ, ένα πακέτο με 3 γιαούρτια κοστίζει 3 ευρώ και ένα πακέτο με 4 γιαούρτια κοστίζει 5 ευρώ.»
+g3-gen-cheaper-option-009: a price for something the audit has no range for: «Στο περίπτερο, μια συσκευασία με 2 μπαταρίες κοστίζει 4 ευρώ.»
+g3-gen-cheaper-option-009: a price for something the audit has no range for: «Στο σούπερ μάρκετ, μια συσκευασία με 4 μπαταρίες κοστίζει 6 ευρώ.»
+g3-gen-cheaper-option-010: a price for something the audit has no range for: «Στο βιβλιοπωλείο, ένα κουτί με 10 μολύβια κοστίζει 6 ευρώ.»
+g3-gen-cheaper-option-010: a price for something the audit has no range for: «Στο χαρτοπωλείο, ένα κουτί με 5 μολύβια κοστίζει 2 ευρώ.»
+g3-gen-cheaper-option-011: the question names no one, and ο Αλέξης, η Κατερίνα are subjects: «Ποιο παιδί πλήρωσε λιγότερα;»
+g3-gen-cheaper-option-011: the question names no one, and ο Αλέξης, η Κατερίνα are subjects: «Πόσα ευρώ λιγότερα;»
+g3-gen-cheaper-option-012: a price for something the audit has no range for: «Στο κατάστημα της πλατείας, ένα κουτί με 4 μπαλάκια του τένις κοστίζει 7 ευρώ.»
+g3-gen-cheaper-option-012: a price for something the audit has no range for: «Στο κατάστημα της παραλίας, ένα κουτί με 3 μπαλάκια του τένις κοστίζει 6 ευρώ.»
+g3-gen-cheaper-option-013: a price for something the audit has no range for: «Στο σούπερ μάρκετ, ένα κουτί με 4 μπαλάκια του τένις κοστίζει 9 ευρώ και ένα κουτί με 3 μπαλάκια του τένις κοστίζει 5 ευρώ.»
+g3-gen-cheaper-option-014: a price for something the audit has no range for: «Στο μπακάλικο, μια θήκη με 6 αυγά κοστίζει 2 ευρώ.»
+g3-gen-cheaper-option-014: a price for something the audit has no range for: «Στο σούπερ μάρκετ, μια θήκη με 10 αυγά κοστίζει 4 ευρώ.»
+g3-gen-cheaper-option-015: a price for something the audit has no range for: «Στο περίπτερο, μια συσκευασία με 4 μπαταρίες κοστίζει 6 ευρώ.»
+g3-gen-cheaper-option-015: a price for something the audit has no range for: «Στο σούπερ μάρκετ, μια συσκευασία με 2 μπαταρίες κοστίζει 2 ευρώ.»
+g3-gen-cheaper-option-016: the question names no one, and η Σοφία, ο Πέτρος are subjects: «Ποιο παιδί πλήρωσε λιγότερα;»
+g3-gen-cheaper-option-016: the question names no one, and η Σοφία, ο Πέτρος are subjects: «Πόσα ευρώ λιγότερα;»
+g3-gen-cheaper-option-017: a price for something the audit has no range for: «Στο σούπερ μάρκετ, ένα κουτί με 6 μαρκαδόρους κοστίζει 4 ευρώ και ένα κουτί με 12 μαρκαδόρους κοστίζει 7 ευρώ.»
+g3-gen-cheaper-option-018: the question names no one, and η Μαρίνα, η Ελένη are subjects: «Ποιο παιδί πλήρωσε λιγότερα;»
+g3-gen-cheaper-option-018: the question names no one, and η Μαρίνα, η Ελένη are subjects: «Πόσα ευρώ λιγότερα;»
+g3-gen-cheaper-option-019: the question names no one, and η Κατερίνα, ο Αντρέι are subjects: «Ποιο παιδί πλήρωσε λιγότερα;»
+g3-gen-cheaper-option-019: the question names no one, and η Κατερίνα, ο Αντρέι are subjects: «Πόσα ευρώ λιγότερα;»
+g3-gen-cheaper-option-020: the question names no one, and ο Αλέξης, η Ζωή are subjects: «Ποιο παιδί πλήρωσε λιγότερα;»
+g3-gen-cheaper-option-020: the question names no one, and ο Αλέξης, η Ζωή are subjects: «Πόσα ευρώ λιγότερα;»
+g3-problem-balloons: a price for something the audit has no range for: «Κάθε μπαλόνι κοστίζει 3 ευρώ.»
+g3-problem-stickers: a price for something the audit has no range for: «Κάθε πακέτο κοστίζει 2 ευρώ.»

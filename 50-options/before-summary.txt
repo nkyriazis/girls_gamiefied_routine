@@ -1,0 +1,55 @@
+e-dimotikou-generated: 500 problems, 642 choices, 1980 steps
+  right option strictly the longest   362/642 (56%)
+  tapping the longest wins every choice 190/436 (44%)
+  right option strictly the shortest  55/642 (9%)
+  tap the shortest wins 12.6%, the longest 62.7%, at random 30.7%
+  of 433 three-option choices, tapping the middle length wins 11.3%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 5 of 69, in all: 4 (unit-rate Είναι λογική η απάντηση; 20/20; coins-notes Πόσα € είναι τα # κέρματα των # λεπτών 3/4; growth-chain Ποιο εργαλείο μας βοηθά; 6/6; growth-chain Πώς οργανώνουμε τη λύση; 5/5; arrange-rows Τι ψάχνουμε στην ουσία; 13/13)
+  win rate never tapping the only longest 16.3%, at random 30.7%
+  steps with no hint                  115 {"numbers":115}
+  check prompts stating their answer  21
+  repeated known numbers              11
+e-dimotikou-problems: 8 problems, 16 choices, 34 steps
+  right option strictly the longest   13/16 (81%)
+  tapping the longest wins every choice 5/8 (63%)
+  right option strictly the shortest  1/16 (6%)
+  tap the shortest wins 9.4%, the longest 81.3%, at random 32.8%
+  of 15 three-option choices, tapping the middle length wins 0.0%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 0 of 0, in all: 0
+  win rate never tapping the only longest 7.8%, at random 32.8%
+  steps with no hint                  1 {"numbers":1}
+  check prompts stating their answer  1
+  repeated known numbers              0
+g-dimotikou-generated: 500 problems, 792 choices, 1938 steps
+  right option strictly the longest   246/792 (31%)
+  tapping the longest wins every choice 114/490 (23%)
+  right option strictly the shortest  59/792 (7%)
+  tap the shortest wins 24.1%, the longest 41.9%, at random 32.3%
+  of 667 three-option choices, tapping the middle length wins 11.2%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 4 of 78, in all: 2 (total-cost Φτάνουν τα # ευρώ; 9/14; bus-stops Τι κάνουμε με όσους κατεβαίνουν; 8/8; table-reading Πώς ελέγχουμε τη δεύτερη απάντηση; 2/3; length-cm Τι κάνουμε πρώτα; 3/3)
+  win rate never tapping the only longest 27.5%, at random 32.3%
+  steps with no hint                  115 {"numbers":105,"choice":10}
+  check prompts stating their answer  0
+  repeated known numbers              23
+g-dimotikou-problems: 8 problems, 15 choices, 32 steps
+  right option strictly the longest   6/15 (40%)
+  tapping the longest wins every choice 2/7 (29%)
+  right option strictly the shortest  0/15 (0%)
+  tap the shortest wins 17.8%, the longest 48.9%, at random 30.6%
+  of 10 three-option choices, tapping the middle length wins 0.0%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 0 of 2, in all: 0
+  win rate never tapping the only longest 22.2%, at random 30.6%
+  steps with no hint                  0 {}
+  check prompts stating their answer  0
+  repeated known numbers              0
+g-dimotikou-world: 200 problems, 200 choices, 600 steps
+  right option strictly the longest   0/200 (0%)
+  tapping the longest wins every choice 0/200 (0%)
+  right option strictly the shortest  19/200 (10%)
+  tap the shortest wins 34.5%, the longest 17.8%, at random 30.0%
+  of 119 three-option choices, tapping the middle length wins 9.2%, at random 33.3%
+  prompts whose right option is the only shortest in more than half: 0 of 2, in all: 0
+  win rate never tapping the only longest 34.5%, at random 30.0%
+  steps with no hint                  200 {"choice":200}
+  check prompts stating their answer  0
+  repeated known numbers              0

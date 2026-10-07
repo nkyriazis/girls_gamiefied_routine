@@ -1,0 +1,56 @@
+
+g3: 500/500 problems from 25 families
+    change-left                       20 (share 20)
+    share-equally                     20 (share 20)  dropped: 4 same numbers
+    division-remainder                20 (share 20)
+    two-purchases                     20 (share 20)
+    total-cost                        20 (share 20)  dropped: 1 options that tell
+    compare-difference                20 (share 20)
+    start-unknown                     20 (share 20)
+    bus-stops                         20 (share 20)
+    equal-groups                      20 (share 20)  dropped: 13 same numbers
+    two-digit-times                   20 (share 20)  dropped: 1 same numbers, 1 options that tell
+    table-reading                     20 (share 20)
+    length-cm                         20 (share 20)
+    numberless                        20 (share 20)  dropped: 1 options that tell
+    double-half                       20 (share 20)  dropped: 2 same numbers
+    pages-per-day                     20 (share 20)
+    buy-and-change                    20 (share 20)  dropped: 2 same numbers, 2 options that tell
+    ages                              20 (share 20)  dropped: 1 same numbers
+    coins                             20 (share 20)  dropped: 1 same numbers, 1 options that tell
+    estimate-first                    20 (share 20)
+    collection-goal                   20 (share 20)
+    order-the-plan                    20 (share 20)
+    missing-info                      20 (share 20)  dropped: 1 same numbers, 1 options that tell
+    cheaper-option                    20 (share 20)  dropped: 1 same numbers
+    days-to-goal                      20 (share 20)
+    exchange-rate                     20 (share 20)  dropped: 1 same numbers, 1 options that tell
+  wrote backend/exercise-pools/g-dimotikou-generated.json
+
+e5: 500/500 problems from 25 families
+    parts-ratio                       20 (share 20)
+    unit-rate                         20 (share 20)
+    equalize-by-giving                20 (share 20)
+    big-table                         20 (share 20)
+    round-estimate                    20 (share 20)  dropped: 1 options that tell
+    pattern-sum                       20 (share 20)
+    round-table                       20 (share 20)
+    coins-notes                       20 (share 20)  dropped: 1 options that tell
+    growth-chain                      20 (share 20)  dropped: 1 same numbers
+    budget                            20 (share 20)
+    place-value                       20 (share 20)  dropped: 2 options that tell
+    backwards-money                   20 (share 20)  dropped: 1 same numbers
+    sum-difference                    20 (share 20)
+    missing-info                      20 (share 20)  dropped: 2 options that tell
+    together-again                    20 (share 20)  dropped: 5 same numbers
+    pack-round-up                     20 (share 20)
+    buses-needed                      20 (share 20)
+    arrange-rows                      20 (share 20)  dropped: 2 same numbers
+    production                        20 (share 20)
+    trip-costs                        20 (share 20)
+    division-check                    20 (share 20)
+    distance-time                     20 (share 20)  dropped: 1 same numbers
+    compare-offers                    20 (share 20)
+    divisibility                      20 (share 20)
+    group-tickets                     20 (share 20)  dropped: 2 same numbers
+  wrote backend/exercise-pools/e-dimotikou-generated.json

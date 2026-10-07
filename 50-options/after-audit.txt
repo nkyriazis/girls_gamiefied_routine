@@ -1,0 +1,252 @@
+
+Grade 3: 708 problems in 27 families
+  change-left                               20 problems,  20 story shapes, 3.7 steps
+  share-equally                             20 problems,  20 story shapes, 4.5 steps
+  division-remainder                        20 problems,  18 story shapes, 3.9 steps
+  two-purchases                             20 problems,  20 story shapes, 3.6 steps
+  total-cost                                20 problems,  20 story shapes, 4.5 steps
+  compare-difference                        20 problems,  19 story shapes, 4.1 steps
+  start-unknown                             20 problems,  17 story shapes, 4.7 steps
+  bus-stops                                 20 problems,  19 story shapes, 3.5 steps
+  equal-groups                              20 problems,  13 story shapes, 4.2 steps
+  two-digit-times                           20 problems,  12 story shapes, 4.0 steps
+  table-reading                             20 problems,  20 story shapes, 3.9 steps
+  length-cm                                 20 problems,  18 story shapes, 3.6 steps
+  numberless                                20 problems,  18 story shapes, 4.6 steps
+  double-half                               20 problems,  19 story shapes, 3.8 steps
+  pages-per-day                             20 problems,  20 story shapes, 4.0 steps
+  buy-and-change                            20 problems,  19 story shapes, 3.5 steps
+  ages                                      20 problems,  20 story shapes, 3.8 steps
+  coins                                     20 problems,  19 story shapes, 3.5 steps
+  estimate-first                            20 problems,  16 story shapes, 4.0 steps
+  collection-goal                           20 problems,  20 story shapes, 3.5 steps
+  order-the-plan                            20 problems,  20 story shapes, 3.8 steps
+  missing-info                              20 problems,  15 story shapes, 3.5 steps
+  cheaper-option                            20 problems,  18 story shapes, 4.6 steps
+  days-to-goal                              20 problems,  15 story shapes, 4.3 steps
+  exchange-rate                             20 problems,  17 story shapes, 3.5 steps
+  (curated g-dimotikou-problems.json)        8 problems,   8 story shapes, 4.0 steps
+  (curated g-dimotikou-world.json)         200 problems, 200 story shapes, 3.0 steps
+
+Grade 5: 508 problems in 26 families
+  parts-ratio                               20 problems,  12 story shapes, 4.0 steps
+  unit-rate                                 20 problems,   9 story shapes, 3.9 steps
+  equalize-by-giving                        20 problems,  17 story shapes, 4.0 steps
+  big-table                                 20 problems,  19 story shapes, 3.5 steps
+  round-estimate                            20 problems,  20 story shapes, 4.3 steps
+  pattern-sum                               20 problems,  14 story shapes, 3.5 steps
+  round-table                               20 problems,  15 story shapes, 3.9 steps
+  coins-notes                               20 problems,  20 story shapes, 4.0 steps
+  growth-chain                              20 problems,  20 story shapes, 3.5 steps
+  budget                                    20 problems,  20 story shapes, 5.0 steps
+  place-value                               20 problems,  16 story shapes, 4.0 steps
+  backwards-money                           20 problems,  20 story shapes, 3.6 steps
+  sum-difference                            20 problems,  16 story shapes, 3.6 steps
+  missing-info                              20 problems,  11 story shapes, 4.0 steps
+  together-again                            20 problems,  19 story shapes, 4.0 steps
+  pack-round-up                             20 problems,  18 story shapes, 4.0 steps
+  buses-needed                              20 problems,  20 story shapes, 3.8 steps
+  arrange-rows                              20 problems,  13 story shapes, 4.2 steps
+  production                                20 problems,  20 story shapes, 3.4 steps
+  trip-costs                                20 problems,  16 story shapes, 3.4 steps
+  division-check                            20 problems,  13 story shapes, 4.0 steps
+  distance-time                             20 problems,  17 story shapes, 3.4 steps
+  compare-offers                            20 problems,  15 story shapes, 4.5 steps
+  divisibility                              20 problems,  11 story shapes, 4.1 steps
+  group-tickets                             20 problems,  19 story shapes, 4.0 steps
+  (curated e-dimotikou-problems.json)        8 problems,   8 story shapes, 4.3 steps
+
+Steps by kind: tag 1016, choice 1669, numbers 1435, order 62, paint 200, calc 200
+
+Grade 3 maths: 120 items in 26 families; multiple-choice 27, number-input 70, match-pairs 10, fill-blank 5, true-false 4, ordering 4; true-false «Σωστό» 2/4
+  words-places             5 items  κεφ. 1     multiple-choice
+  tens-in                  5 items  κεφ. 1     number-input
+  add-mental               5 items  κεφ. 2     number-input
+  money                    5 items  κεφ. 2     number-input
+  tables-match-a           5 items  κεφ. 4     match-pairs
+  tables-match-b           5 items  κεφ. 5     match-pairs
+  table-gap                5 items  κεφ. 6     fill-blank
+  divide                   5 items  κεφ. 6     number-input
+  fact-family              5 items  κεφ. 6     multiple-choice
+  length                   5 items  κεφ. 8     number-input
+  subtract                 5 items  κεφ. 10    number-input
+  times-2x1                5 items  κεφ. 11    number-input
+  table-11                 5 items  κεφ. 11    number-input
+  words-digits             5 items  κεφ. 14    multiple-choice
+  neighbours               5 items  κεφ. 14    number-input
+  hundreds-in              5 items  κεφ. 14    number-input
+  digit-value              4 items  κεφ. 14    number-input
+  digits-extreme           4 items  κεφ. 14    number-input
+  compare                  4 items  κεφ. 14    true-false
+  order                    4 items  κεφ. 14    ordering
+  expanded                 4 items  κεφ. 14    number-input
+  count-by                 4 items  κεφ. 14    number-input
+  add-sub-choice           4 items  κεφ. 15    multiple-choice
+  add                      4 items  κεφ. 15    number-input
+  times-choice             4 items  κεφ. 17    multiple-choice
+  divide-remainder         4 items  κεφ. 18    multiple-choice
+
+Grade 5 maths: 120 items in 24 families; multiple-choice 70, true-false 9, ordering 6, number-input 30, fill-blank 5; true-false «Σωστό» 5/9
+  words-digits             6 items  κεφ. 1.4   multiple-choice
+  words-places             6 items  κεφ. 1.4   multiple-choice
+  digit-value              6 items  κεφ. 1.5   multiple-choice
+  neighbours               6 items  κεφ. 1.6   multiple-choice
+  compare                  3 items  κεφ. 1.6   true-false
+  largest                  6 items  κεφ. 1.6   multiple-choice
+  order                    6 items  κεφ. 1.6   ordering
+  count-by                 5 items  κεφ. 1.6   multiple-choice
+  round                    5 items  κεφ. 1.7   multiple-choice
+  round-small              5 items  κεφ. 1.7   number-input
+  add-sub                  5 items  κεφ. 2.8   number-input
+  add-sub-big              5 items  κεφ. 2.8   multiple-choice
+  times-10                 5 items  κεφ. 2.9   multiple-choice
+  times-2d                 5 items  κεφ. 2.9   number-input
+  times-3x2                5 items  κεφ. 2.9   multiple-choice
+  multiples                5 items  κεφ. 2.10  multiple-choice
+  lcm                      5 items  κεφ. 2.10  number-input
+  divisible                3 items  κεφ. 2.11  true-false
+  divisible-choice         5 items  κεφ. 2.11  multiple-choice
+  division                 5 items  κεφ. 2.12  number-input
+  dividend                 5 items  κεφ. 2.12  number-input
+  euclid-gap               5 items  κεφ. 2.12  fill-blank
+  bad-remainder            5 items  κεφ. 2.12  multiple-choice
+  division-check           3 items  κεφ. 2.12  true-false
+
+Grade 3 language: 80 items in 22 families; multiple-choice 41, true-false 7, ordering 5, fill-blank 27; true-false «Σωστό» 3/7
+  rimata-ousiastika        5 items  pos       unit 1        multiple-choice, true-false
+  genos                    3 items  gender    unit 1        multiple-choice
+  arithmos                 3 items  agree     unit 1        multiple-choice
+  alfavitiki               4 items  alpha     unit 1, 3     ordering
+  evdomada                 1 items  week      unit 2        ordering
+  kyria-onomata            6 items  capital   unit 2        fill-blank, true-false
+  eimai                    3 items  person    unit 2        fill-blank
+  rimata-o-mai             4 items  person    unit 2        fill-blank
+  antitheta                3 items  opposite  unit 2        multiple-choice
+  fraseis                  5 items  meaning   unit 2, 3     true-false, multiple-choice
+  geniki                   3 items  agree     unit 2        fill-blank
+  epitheta                 3 items  agree     unit 2        multiple-choice
+  geitonia                 2 items  agree     unit 2        fill-blank
+  oikogeneies              3 items  family    unit 1, 2, 3  multiple-choice
+  aitiatiki                2 items  agree     unit 3        multiple-choice
+  aoristo-arthro           2 items  agree     unit 3        multiple-choice
+  tis-tis                  6 items  agree     unit 3        fill-blank
+  stixi                    5 items  punct     unit 1, 3     fill-blank
+  paromoiosis              6 items  saying    unit 1, 3     multiple-choice
+  san                      2 items  san       unit 3        multiple-choice
+  synonyma                 3 items  synonym   unit 3        multiple-choice
+  orthografia              6 items  spell     unit 1, 2     multiple-choice
+
+Grade 5 language: 68 items in 15 families; multiple-choice 49, fill-blank 19; true-false «Σωστό» 0/0
+  xronoi                   6 items  tense     unit 1        multiple-choice
+  allagi-xronou            5 items  retense   unit 1        multiple-choice
+  xronos                   6 items  time      unit 1        multiple-choice
+  tai-te                   4 items  person    unit 1        fill-blank
+  syntheta                 5 items  compound  unit 1, 2     multiple-choice
+  paroimies                3 items  saying    unit 1        multiple-choice
+  arnisi                   5 items  negation  unit 1, 2     fill-blank
+  egkliseis                4 items  mood      unit 2        multiple-choice
+  prostaktiki              3 items  spell     unit 2        multiple-choice
+  thilyka-os               5 items  agree     unit 2        fill-blank
+  epitheta-is-es           5 items  agree     unit 2        fill-blank
+  arithmitika              5 items  numeral   unit 2        multiple-choice
+  epirrimata               4 items  adverb    unit 2        multiple-choice
+  oikogeneies              3 items  family    unit 1, 2     multiple-choice
+  orismoi                  5 items  define    unit 1, 2     multiple-choice
+
+0 errors, 96 warnings
+  ! parts-ratio numbers hint: 20 show an answer still to work out (e.g. e5-gen-parts-ratio-001 step 2: «785 − 340 = 445. Κάθε ομάδα έχει 5: 445 : 5 = 89.» shows 445)
+  ! unit-rate numbers hint: 17 show an answer still to work out (e.g. e5-gen-unit-rate-001 step 2: «198 : 9 = 22. Μετά 521 × 22.» shows 22)
+  ! equalize-by-giving numbers hint: 20 show an answer still to work out (e.g. e5-gen-equalize-by-giving-001 step 2: «345 + 27 = 372. Τότε ο Αλέξης έχει κι αυτός 372· πριν δώσει είχε 27 περισσότερα.» shows 372)
+  ! pattern-sum numbers hint: 3 show an answer still to work out (e.g. e5-gen-pattern-sum-014 step 1: «Κάθε φορά προσθέτουμε όσα έχει το καινούργιο σκαλοπάτι. Για τα 11 σκαλοπάτια: φτιάχνουμε ζευγάρια: 1 + 10 = 11, 2 + 9 = 11, … και στο τέλος προσθέτουμε και το 11.» shows 10)
+  ! coins-notes numbers hint: 7 show an answer still to work out (e.g. e5-gen-coins-notes-002 step 2: «Από όλα τα χρήματα, τα 65 €, βγάζουμε όσα κοστίζουν η μπλούζα και το παντελόνι.» shows 65)
+  ! sum-difference choice hint: 12 show an answer still to work out (e.g. e5-gen-sum-difference-001 step 1: «Αν βγάλουμε τη διαφορά, τα 11.700 κιλά που μένουν μοιράζονται στα δύο εξίσου.» shows 11700)
+  ! missing-info numbers hint: 11 show an answer still to work out (e.g. e5-gen-missing-info-001 step 2: «Διαίρεση με υπόλοιπο: 1.071 = 53 × 20 + 11. Και όσα περισσεύουν θέλουν κουτί.» shows 1071)
+  ! together-again numbers hint: 12 show an answer still to work out (e.g. e5-gen-together-again-002 step 2: «Διαιρείται το 20 με το 4; Αν όχι, πάμε στο επόμενο.» shows 20)
+  ! pack-round-up numbers hint: 20 show an answer still to work out (e.g. e5-gen-pack-round-up-001 step 2: «298 + 357 = 655. 10 × 65 = 650.» shows 655)
+  ! pack-round-up choice hint: 1 show an answer still to work out (e.g. e5-gen-pack-round-up-012 step 1: «Σε κάθε κούτα μπαίνουν 20: πόσες φορές χωράει το 20 στο 2.556;» shows 2556)
+  ! buses-needed numbers hint: 20 show an answer still to work out (e.g. e5-gen-buses-needed-001 step 1: «332 + 15 = 347. 60 × 5 = 300, άρα περισσεύουν 47.» shows 347)
+  ! arrange-rows choice hint: 3 show an answer still to work out (e.g. e5-gen-arrange-rows-006 step 1: «Δοκιμάζουμε έναν έναν: 96 : 3 = 32, τέλεια διαίρεση.» shows 32)
+  ! production numbers hint: 20 show an answer still to work out (e.g. e5-gen-production-001 step 1: «150 × 6 = 900.» shows 900)
+  ! trip-costs numbers hint: 18 show an answer still to work out (e.g. e5-gen-trip-costs-001 step 2: «5 × 30 = 150.» shows 150)
+  ! division-check numbers hint: 20 show an answer still to work out (e.g. e5-gen-division-check-001 step 2: «17 × 28 = 476.» shows 476)
+  ! distance-time numbers hint: 9 show an answer still to work out (e.g. e5-gen-distance-time-001 step 2: «31 × 6 = 186.» shows 186)
+  ! compare-offers numbers hint: 1 show an answer still to work out (e.g. e5-gen-compare-offers-010 step 2: «30 : 6 = 5, άρα 5 κουτιά των 6.» shows 30)
+  ! divisibility numbers hint: 4 show an answer still to work out (e.g. e5-gen-divisibility-003 step 2: «Το 16 δεν διαιρείται με το 3: ό,τι περισσεύει από το 16, περισσεύει και από το 2.167.» shows 16)
+  ! group-tickets numbers hint: 6 show an answer still to work out (e.g. e5-gen-group-tickets-002 step 2: «54 × 12 = 648.» shows 648)
+  ! (curated e-dimotikou-problems.json) numbers hint: 7 show an answer still to work out (e.g. e5-problem-balls step 2: «200 − 80 = 120. Κάθε ομάδα έχει 3 μπάλες: πόσες τριάδες χωράνε στις 120;» shows 120)
+  ! change-left numbers hint: 11 show an answer still to work out (e.g. g3-gen-change-left-003 step 2: «Αφαιρούμε πρώτα 20 και μετά 9: 66 − 20 = 46, 46 − 9 = 37.» shows 37)
+  ! division-remainder numbers hint: 2 show an answer still to work out (e.g. g3-gen-division-remainder-014 step 2: «8 × 10 = 80. Πόσο μένει ως το 81;» shows 10)
+  ! equal-groups numbers hint: 7 show an answer still to work out (e.g. g3-gen-equal-groups-001 step 2: «Μετράμε ανά 10: 10, 20, 30, 40» shows 40)
+  ! table-reading numbers hint: 1 show an answer still to work out (e.g. g3-gen-table-reading-010 step 1: «23 − 10 = 13, και μετά βγάζουμε 3 ακόμα.» shows 10)
+  ! length-cm choice hint: 3 show an answer still to work out (e.g. g3-gen-length-cm-001 step 1: «Δεν αφαιρούμε εκατοστά από μέτρα. 3 μέτρα δεν είναι 3 εκατοστά αλλά 300.» shows 300)
+  ! length-cm numbers hint: 7 show an answer still to work out (e.g. g3-gen-length-cm-001 step 2: «1 μέτρο = 100 εκατοστά. Μετά: 121 + 53 = 174.» shows 174)
+  ! ages choice hint: 1 show an answer still to work out (e.g. g3-gen-ages-015 step 2: «Σε 7 χρόνια: 12 + 7 = 19 και 78 + 7 = 85.» shows 19)
+  ! estimate-first numbers hint: 5 show an answer still to work out (e.g. g3-gen-estimate-first-003 step 1: «Το 519 είναι ανάμεσα στο 500 και στο 600. Σε ποιο είναι πιο κοντά;» shows 500)
+  ! (curated g-dimotikou-problems.json) numbers hint: 1 show an answer still to work out (e.g. g3-problem-rally-car step 1: «Αφαιρούμε πρώτα τις δεκάδες και μετά τις μονάδες: 76 − 30 = 46, 46 − 5 = 41.» shows 41)
+  ! 5:round-table story: check-gender's words already in the pools: ολες, καθενας (4)
+  ! 5:growth-chain story: check-gender's words already in the pools: ολες (12)
+  ! 5:growth-chain row: check-gender's words already in the pools: ολες (20)
+  ! 5:growth-chain prompt: check-gender's words already in the pools: ολες (10)
+  ! 5:budget item: check-gender's words already in the pools: ολες (7)
+  ! 5:place-value story: check-gender's words already in the pools: ποιος, ολες, καθεμια (10)
+  ! 5:place-value prompt: check-gender's words already in the pools: ποιος (6)
+  ! 5:backwards-money story: check-gender's words already in the pools: φιλη (5)
+  ! 5:backwards-money row: check-gender's words already in the pools: φιλη (1)
+  ! 5:sum-difference story: check-gender's words already in the pools: ολες, καθενας (7)
+  ! 5:missing-info row: check-gender's words already in the pools: ολοι (7)
+  ! 5:missing-info story: check-gender's words already in the pools: ολοι, καθενας (8)
+  ! 5:pack-round-up story: check-gender's words already in the pools: καθεμια (9)
+  ! 5:pack-round-up hint: check-gender's words already in the pools: ολες (2)
+  ! 5:pack-round-up item: check-gender's words already in the pools: ολες (2)
+  ! 5:buses-needed story: check-gender's words already in the pools: ολοι (8)
+  ! 5:buses-needed row: check-gender's words already in the pools: ολοι (11)
+  ! 5:buses-needed prompt: check-gender's words already in the pools: ολοι (14)
+  ! 5:buses-needed hint: check-gender's words already in the pools: ολοι, καθενας (18)
+  ! 5:arrange-rows hint: check-gender's words already in the pools: ολες, ολους (23)
+  ! 5:arrange-rows prompt: check-gender's words already in the pools: ολες (4)
+  ! 5:trip-costs hint: check-gender's words already in the pools: ολους (12)
+  ! 5:trip-costs story: check-gender's words already in the pools: αδερφες, αδερφη, καθενας (8)
+  ! 5:trip-costs row: check-gender's words already in the pools: ολους (2)
+  ! 5:trip-costs prompt: check-gender's words already in the pools: ολοι (1)
+  ! 5:group-tickets row: check-gender's words already in the pools: ολοι (14)
+  ! 5:group-tickets option: check-gender's words already in the pools: ολοι (6)
+  ! 5:group-tickets story: check-gender's words already in the pools: ολοι, αδερφος (9)
+  ! 5:(curated e-dimotikou-problems.json) hint: check-gender's words already in the pools: ολοι, καθεμια (2)
+  ! 5:(curated e-dimotikou-problems.json) story: check-gender's words already in the pools: ολες, καθεμια (2)
+  ! 3:share-equally hint: check-gender's words already in the pools: ποιος (20)
+  ! 3:division-remainder story: check-gender's words already in the pools: ολοι (1)
+  ! 3:division-remainder title: check-gender's words already in the pools: ολοι (2)
+  ! 3:total-cost hint: check-gender's words already in the pools: ολες (15)
+  ! 3:total-cost story: check-gender's words already in the pools: φιλη, φιλος (5)
+  ! 3:compare-difference hint: check-gender's words already in the pools: καθενας (20)
+  ! 3:compare-difference title: check-gender's words already in the pools: ποιος (6)
+  ! 3:compare-difference prompt: check-gender's words already in the pools: ποιος (8)
+  ! 3:start-unknown option: check-gender's words already in the pools: ολους (7)
+  ! 3:bus-stops option: check-gender's words already in the pools: ολοι (20)
+  ! 3:equal-groups hint: check-gender's words already in the pools: καθεμια, ολες (21)
+  ! 3:table-reading hint: check-gender's words already in the pools: ολους (20)
+  ! 3:table-reading prompt: check-gender's words already in the pools: ποιος (4)
+  ! 3:length-cm title: check-gender's words already in the pools: ποιος (1)
+  ! 3:double-half hint: check-gender's words already in the pools: ποιος (3)
+  ! 3:pages-per-day hint: check-gender's words already in the pools: ολες, ποιος (18)
+  ! 3:buy-and-change story: check-gender's words already in the pools: καθενας, αδερφη, καθεμια (7)
+  ! 3:buy-and-change prompt: check-gender's words already in the pools: ολοι, ολες (5)
+  ! 3:ages hint: check-gender's words already in the pools: καθενας (3)
+  ! 3:ages story: check-gender's words already in the pools: αδερφη, αδερφος (7)
+  ! 3:ages row: check-gender's words already in the pools: αδερφη, αδερφος (3)
+  ! 3:coins story: check-gender's words already in the pools: αδερφη, αδερφος, φιλη, φιλος (6)
+  ! 3:estimate-first option: check-gender's words already in the pools: μονος (2)
+  ! 3:collection-goal title: check-gender's words already in the pools: ολοι (3)
+  ! 3:order-the-plan story: check-gender's words already in the pools: ολους (4)
+  ! 3:missing-info hint: check-gender's words already in the pools: ποιος (20)
+  ! 3:missing-info title: check-gender's words already in the pools: ποιος (4)
+  ! 3:cheaper-option story: check-gender's words already in the pools: καθεμια (4)
+  ! 3:cheaper-option hint: check-gender's words already in the pools: καθεμια (2)
+  ! 3:cheaper-option prompt: check-gender's words already in the pools: ποιος (12)
+  ! 3:days-to-goal hint: check-gender's words already in the pools: ποιος (7)
+  ! 3:days-to-goal story: check-gender's words already in the pools: φιλος, φιλη (2)
+  ! 3:exchange-rate story: check-gender's words already in the pools: ολους (1)
+  ! 3:exchange-rate prompt: check-gender's words already in the pools: οποιος (5)
+  ! 3:exchange-rate hint: check-gender's words already in the pools: ποιος (7)
+  ! 3:(curated g-dimotikou-problems.json) hint: check-gender's words already in the pools: ποιος, ολους (4)
+  ! 3:(curated g-dimotikou-world.json) story: check-gender's words already in the pools: ολες, αδερφη (21)
