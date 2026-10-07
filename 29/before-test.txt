@@ -1,0 +1,149 @@
+{"level":30,"time":1791394409013,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-1","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"a1"}
+{"level":30,"time":1791394409034,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-1","msg":"[Hook] Found schedule for a1: 0 20 * * *. Simulating time: 2026-10-08T17:00:00.000Z"}
+Checking schedules for: 2026-10-08 20:00:00 (Europe/Athens)
+Triggering schedule s1 for target a1
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s1","targetId":"a1","cron":"0 20 * * *","time":"2026-10-08 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"schedule:s1","runId":"3e3d86c3-3a45-415e-a4c0-41bf96216f72"}
+Triggering schedule s2 for target a2
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s2","targetId":"a2","cron":"0 20 * * *","time":"2026-10-08 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"schedule:s2","runId":"a876b240-9c4a-44df-a866-dc31380a1a50"}
+✖ push starts the routine named, and not the other kid’s routine due at the same minute (88.791198ms)
+{"level":30,"time":1791394409077,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-1","res":{"statusCode":200},"responseTime":63.77191599999992,"msg":"request completed"}
+{"level":30,"time":1791394409085,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-2","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"a2"}
+Checking schedules for: 2026-10-12 07:30:00 (Europe/Athens)
+Triggering schedule s3 for target a2
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s3","targetId":"a2","cron":"30 7 * * 1","time":"2026-10-12 07:30:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"schedule:s3","runId":"30075fdd-a592-45d6-854c-37a47b0670fc"}
+✖ push starts its target now, whatever its schedule says: no simulated time, no SCHEDULE_MATCH (13.493621ms)
+{"level":30,"time":1791394409089,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-2","msg":"[Hook] Found schedule for a2: 30 7 * * 1. Simulating time: 2026-10-12T04:30:00.000Z"}
+{"level":30,"time":1791394409093,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-2","res":{"statusCode":200},"responseTime":8.074515999999903,"msg":"request completed"}
+{"level":30,"time":1791394409097,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-3","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"a1"}
+Checking schedules for: 2026-10-08 20:00:00 (Europe/Athens)
+Triggering schedule s1 for target a1
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s1","targetId":"a1","cron":"0 20 * * *","time":"2026-10-08 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"schedule:s1","runId":"7920882e-a38a-4895-91ae-1d2c6a6ae2a1"}
+Triggering schedule s2 for target a2
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s2","targetId":"a2","cron":"0 20 * * *","time":"2026-10-08 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"schedule:s2","runId":"bd9888e1-8c5d-4b8a-828d-aeeef5b33904"}
+{"level":30,"time":1791394409100,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-3","msg":"[Hook] Found schedule for a1: 0 20 * * *. Simulating time: 2026-10-08T17:00:00.000Z"}
+{"level":30,"time":1791394409106,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-3","res":{"statusCode":200},"responseTime":9.62224399999991,"msg":"request completed"}
+{"level":30,"time":1791394409106,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-4","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"a1"}
+Checking schedules for: 2026-10-08 20:00:00 (Europe/Athens)
+Triggering schedule s1 for target a1
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s1","targetId":"a1","cron":"0 20 * * *","time":"2026-10-08 20:00:00"}
+[ACTION:TRIGGER_ROUTINE_SKIPPED] {"id":"a1","source":"schedule:s1","runId":"7920882e-a38a-4895-91ae-1d2c6a6ae2a1"}
+Triggering schedule s2 for target a2
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s2","targetId":"a2","cron":"0 20 * * *","time":"2026-10-08 20:00:00"}
+[ACTION:TRIGGER_ROUTINE_SKIPPED] {"id":"a2","source":"schedule:s2","runId":"bd9888e1-8c5d-4b8a-828d-aeeef5b33904"}
+✖ a kid already in a routine keeps it: the push answers skipped, with the run on screen (23.092692ms)
+{"level":30,"time":1791394409110,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-4","msg":"[Hook] Found schedule for a1: 0 20 * * *. Simulating time: 2026-10-08T17:00:00.000Z"}
+{"level":30,"time":1791394409116,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-4","res":{"statusCode":200},"responseTime":9.957104000000072,"msg":"request completed"}
+{"level":30,"time":1791394409120,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-5","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"nope"}
+[ACTION:TRIGGER_FAILED] {"id":"nope","source":"push_hook","reason":"Not found"}
+✔ an unknown id is a 404 and starts nothing (6.237343ms)
+{"level":30,"time":1791394409123,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-5","res":{"statusCode":404},"responseTime":3.179585999999972,"msg":"request completed"}
+{"level":30,"time":1791394409125,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-6","req":{"method":"POST","url":"/api/debug/time","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+Checking schedules for: 2026-10-07 20:00:00 (Europe/Athens)
+Triggering schedule s1 for target a1
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s1","targetId":"a1","cron":"0 20 * * *","time":"2026-10-07 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"schedule:s1","runId":"1ca44463-8b72-4b5f-b79e-81da656d82c0"}
+Triggering schedule s2 for target a2
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s2","targetId":"a2","cron":"0 20 * * *","time":"2026-10-07 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"schedule:s2","runId":"041ad5a5-5955-4c28-8035-c064f116f701"}
+✔ debug/time still simulates the whole minute: every schedule due at 20:00 starts (8.822271ms)
+{"level":30,"time":1791394409132,"pid":4616,"hostname":"c448ec00e9de","reqId":"req-6","res":{"statusCode":200},"responseTime":6.993224000000055,"msg":"request completed"}
+ℹ tests 5
+ℹ suites 0
+ℹ pass 2
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1399.02867
+
+✖ failing tests:
+
+test at test/push.test.ts:55:22
+✖ push starts the routine named, and not the other kid’s routine due at the same minute (88.791198ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   simulatedTime: '2026-10-08T17:00:00.000Z',
+  -   id: 'a1',
+      success: true,
+  +   targetId: 'a1',
+  +   type: 'schedule_simulation'
+  -   type: 'assignment'
+    }
+  
+      at TestContext.<anonymous> (/app/test/push.test.ts:56:10)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { success: true, type: 'schedule_simulation', simulatedTime: '2026-10-08T17:00:00.000Z', targetId: 'a1' },
+    expected: { success: true, type: 'assignment', id: 'a1' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/push.test.ts:67:22
+✖ push starts its target now, whatever its schedule says: no simulated time, no SCHEDULE_MATCH (13.493621ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   simulatedTime: '2026-10-12T04:30:00.000Z',
+  -   id: 'a2',
+      success: true,
+  +   targetId: 'a2',
+  +   type: 'schedule_simulation'
+  -   type: 'assignment'
+    }
+  
+      at TestContext.<anonymous> (/app/test/push.test.ts:73:12)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { success: true, type: 'schedule_simulation', simulatedTime: '2026-10-12T04:30:00.000Z', targetId: 'a2' },
+    expected: { success: true, type: 'assignment', id: 'a2' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/push.test.ts:83:22
+✖ a kid already in a routine keeps it: the push answers skipped, with the run on screen (23.092692ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   simulatedTime: '2026-10-08T17:00:00.000Z',
+  -   id: 'a1',
+  -   runningId: '7920882e-a38a-4895-91ae-1d2c6a6ae2a1',
+  -   skipped: true,
+      success: true,
+  +   targetId: 'a1',
+  +   type: 'schedule_simulation'
+  -   type: 'assignment'
+    }
+  
+      at TestContext.<anonymous> (/app/test/push.test.ts:87:10)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { success: true, type: 'schedule_simulation', simulatedTime: '2026-10-08T17:00:00.000Z', targetId: 'a1' },
+    expected: { success: true, skipped: true, type: 'assignment', id: 'a1', runningId: '7920882e-a38a-4895-91ae-1d2c6a6ae2a1' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

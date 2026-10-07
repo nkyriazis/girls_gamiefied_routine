@@ -1,0 +1,42 @@
+{"level":30,"time":1791394548897,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-1","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"a1"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"push_hook","runId":"4252df6c-fa00-4fa5-94d7-daab363839a1"}
+{"level":30,"time":1791394548915,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-1","res":{"statusCode":200},"responseTime":17.616459000000077,"msg":"request completed"}
+✔ push starts the routine named, and not the other kid’s routine due at the same minute (39.960784ms)
+{"level":30,"time":1791394548919,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-2","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"a2"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"push_hook","runId":"7e27b958-fc79-48a8-9236-5722f00a3d24"}
+✔ push starts its target now, whatever its schedule says: no simulated time, no SCHEDULE_MATCH (7.578904ms)
+{"level":30,"time":1791394548924,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-2","res":{"statusCode":200},"responseTime":4.37687700000015,"msg":"request completed"}
+{"level":30,"time":1791394548927,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-3","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"a1"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"push_hook","runId":"fa8c6979-a8a6-4db3-811c-359dbae4e580"}
+{"level":30,"time":1791394548930,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-3","res":{"statusCode":200},"responseTime":3.4901700000000346,"msg":"request completed"}
+{"level":30,"time":1791394548930,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-4","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"a1"}
+[ACTION:TRIGGER_ROUTINE_SKIPPED] {"id":"a1","source":"push_hook","runId":"fa8c6979-a8a6-4db3-811c-359dbae4e580"}
+✔ a kid already in a routine keeps it: the push answers skipped, with the run on screen (10.056551ms)
+{"level":30,"time":1791394548934,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-4","res":{"statusCode":200},"responseTime":3.4302170000000842,"msg":"request completed"}
+{"level":30,"time":1791394548937,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-5","req":{"method":"POST","url":"/api/hooks/push","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+[ACTION:PUSH_HOOK] {"id":"nope"}
+[ACTION:TRIGGER_FAILED] {"id":"nope","source":"push_hook","reason":"Not found"}
+✔ an unknown id is a 404 and starts nothing (6.204091ms)
+{"level":30,"time":1791394548940,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-5","res":{"statusCode":404},"responseTime":3.223447999999962,"msg":"request completed"}
+{"level":30,"time":1791394548942,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-6","req":{"method":"POST","url":"/api/debug/time","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+Checking schedules for: 2026-10-07 20:00:00 (Europe/Athens)
+Triggering schedule s1 for target a1
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s1","targetId":"a1","cron":"0 20 * * *","time":"2026-10-07 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"schedule:s1","runId":"d0e91987-864d-43d5-b7a3-28ae9c3efe08"}
+Triggering schedule s2 for target a2
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s2","targetId":"a2","cron":"0 20 * * *","time":"2026-10-07 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"schedule:s2","runId":"9b1a49a6-60e7-46fd-b1a7-9f953e45aeeb"}
+✔ debug/time still simulates the whole minute: every schedule due at 20:00 starts (46.019892ms)
+{"level":30,"time":1791394548986,"pid":4958,"hostname":"c448ec00e9de","reqId":"req-6","res":{"statusCode":200},"responseTime":44.28003199999989,"msg":"request completed"}
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1325.607318

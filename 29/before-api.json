@@ -1,0 +1,60 @@
+{
+ "response": {
+  "success": true,
+  "type": "schedule_simulation",
+  "simulatedTime": "2026-10-08T17:00:00.000Z",
+  "targetId": "u1-assign-evening"
+ },
+ "logs": [
+  {
+   "id": "6b98480c-efe2-4ada-909d-68552b2c546b",
+   "timestamp": "2026-10-07T17:28:13.917Z",
+   "type": "TRIGGER_ROUTINE",
+   "details": {
+    "id": "u2-assign-evening",
+    "source": "schedule:sch-evening-u2",
+    "runId": "3ace511c-d8a9-49b4-8f15-775a5cfcea21"
+   }
+  },
+  {
+   "id": "7b081254-b1cf-4ccb-8fee-27a10344fef9",
+   "timestamp": "2026-10-07T17:28:13.916Z",
+   "type": "SCHEDULE_MATCH",
+   "details": {
+    "scheduleId": "sch-evening-u2",
+    "targetId": "u2-assign-evening",
+    "cron": "0 20 * * *",
+    "time": "2026-10-08 20:00:00"
+   }
+  },
+  {
+   "id": "fe20c6a4-f3aa-4686-ae92-d1e95f66780c",
+   "timestamp": "2026-10-07T17:28:13.914Z",
+   "type": "TRIGGER_ROUTINE",
+   "details": {
+    "id": "u1-assign-evening",
+    "source": "schedule:sch-evening",
+    "runId": "4c167bfe-d914-4df4-919b-429be743ec59"
+   }
+  },
+  {
+   "id": "dc275bf5-5a4f-4bb7-804a-140b0d15a4e7",
+   "timestamp": "2026-10-07T17:28:13.912Z",
+   "type": "SCHEDULE_MATCH",
+   "details": {
+    "scheduleId": "sch-evening",
+    "targetId": "u1-assign-evening",
+    "cron": "0 20 * * *",
+    "time": "2026-10-08 20:00:00"
+   }
+  },
+  {
+   "id": "7fbfa378-a6eb-46f5-8a4b-eb34e70a399e",
+   "timestamp": "2026-10-07T17:28:13.877Z",
+   "type": "PUSH_HOOK",
+   "details": {
+    "id": "u1-assign-evening"
+   }
+  }
+ ]
+}

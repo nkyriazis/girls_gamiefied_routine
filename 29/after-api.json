@@ -1,0 +1,52 @@
+{
+ "response": {
+  "success": true,
+  "type": "assignment",
+  "id": "u1-assign-evening"
+ },
+ "skippedResponse": {
+  "success": true,
+  "skipped": true,
+  "type": "assignment",
+  "id": "u1-assign-morning",
+  "runningId": "b621cc73-9d40-40ed-8711-77db86c3566b"
+ },
+ "logs": [
+  {
+   "id": "4dfb5d10-3208-4c27-8e6e-c7e7fd3e8dad",
+   "timestamp": "2026-10-07T17:35:17.163Z",
+   "type": "TRIGGER_ROUTINE_SKIPPED",
+   "details": {
+    "id": "u1-assign-morning",
+    "source": "push_hook",
+    "runId": "b621cc73-9d40-40ed-8711-77db86c3566b"
+   }
+  },
+  {
+   "id": "eb19d08f-49f9-429e-ba56-6a7392dfe129",
+   "timestamp": "2026-10-07T17:35:17.157Z",
+   "type": "PUSH_HOOK",
+   "details": {
+    "id": "u1-assign-morning"
+   }
+  },
+  {
+   "id": "33030c2d-066d-476e-a5a5-fd6c543e9345",
+   "timestamp": "2026-10-07T17:35:13.748Z",
+   "type": "TRIGGER_ROUTINE",
+   "details": {
+    "id": "u1-assign-evening",
+    "source": "push_hook",
+    "runId": "b621cc73-9d40-40ed-8711-77db86c3566b"
+   }
+  },
+  {
+   "id": "4d9ea0c7-eb7f-4ab5-9485-7c7a32307930",
+   "timestamp": "2026-10-07T17:35:13.743Z",
+   "type": "PUSH_HOOK",
+   "details": {
+    "id": "u1-assign-evening"
+   }
+  }
+ ]
+}

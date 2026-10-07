@@ -1,0 +1,68 @@
+[ACTION:PUSH_HOOK] {"id":"a1"}
+Checking schedules for: 2026-10-08 20:00:00 (Europe/Athens)
+Triggering schedule s1 for target a1
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s1","targetId":"a1","cron":"0 20 * * *","time":"2026-10-08 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"schedule:s1","runId":"bd600630-3f01-4121-bf55-3aac992597c8"}
+Triggering schedule s2 for target a2
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s2","targetId":"a2","cron":"0 20 * * *","time":"2026-10-08 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"schedule:s2","runId":"b8869b7a-f026-466f-bccd-ae4f057ca832"}
+✖ push starts the routine named, and not the other kid’s routine due at the same minute (87.824783ms)
+[ACTION:PUSH_HOOK] {"id":"a2"}
+✖ push starts its target even when the target’s schedule has a cron that can’t be read (9.792768ms)
+[ACTION:PUSH_HOOK] {"id":"nope"}
+[ACTION:TRIGGER_FAILED] {"id":"nope","source":"push_hook","reason":"Not found"}
+✔ an unknown id is a 404 and starts nothing (5.126436ms)
+Checking schedules for: 2026-10-07 20:00:00 (Europe/Athens)
+Triggering schedule s1 for target a1
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s1","targetId":"a1","cron":"0 20 * * *","time":"2026-10-07 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"schedule:s1","runId":"427b258a-c1d0-4a1b-8176-36e7a696d934"}
+Triggering schedule s2 for target a2
+[ACTION:SCHEDULE_MATCH] {"scheduleId":"s2","targetId":"a2","cron":"0 20 * * *","time":"2026-10-07 20:00:00"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"schedule:s2","runId":"6b2af565-018b-48e0-a5b6-9e9592738476"}
+✔ debug/time still simulates the whole minute: every schedule due at 20:00 starts (8.922872ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 2
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1319.494491
+
+✖ failing tests:
+
+test at test/push.test.ts:55:22
+✖ push starts the routine named, and not the other kid’s routine due at the same minute (87.824783ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   simulatedTime: '2026-10-08T17:00:00.000Z',
+  -   id: 'a1',
+      success: true,
+  +   targetId: 'a1',
+  +   type: 'schedule_simulation'
+  -   type: 'assignment'
+    }
+  
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { success: true, type: 'schedule_simulation', simulatedTime: '2026-10-08T17:00:00.000Z', targetId: 'a1' },
+    expected: { success: true, type: 'assignment', id: 'a1' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/push.test.ts:63:22
+✖ push starts its target even when the target’s schedule has a cron that can’t be read (9.792768ms)
+  AssertionError [ERR_ASSERTION]: {"error":"Internal Server Error","details":"Constraint error, got value 99 expected range 0-59"}
+  
+  500 !== 200
+  
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
