@@ -1,0 +1,114 @@
+
+> app@0.0.0 lint
+> node scripts/check-help.mjs && node scripts/help-lines.mjs --check && node scripts/check-sound.mjs && node scripts/check-gender.mjs && eslint .
+
+check-help: 75 anchors, all placed and explained; every screen has help and a layer on the scale
+check-voice: 85 lines, all recorded
+check-sound: 75 things to touch, all of them sound
+check-gender: 411 Greek texts, none says girl or boy
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+/app/dev-dist/workbox-f87553f6.js
+    52:7   error    Definition for rule '@typescript-eslint/ban-types' was not found                @typescript-eslint/ban-types
+   419:5   error    Definition for rule '@typescript-eslint/ban-types' was not found                @typescript-eslint/ban-types
+   435:5   warning  Unused eslint-disable directive (no problems were reported)
+   752:11  error    Definition for rule '@typescript-eslint/no-unsafe-member-access' was not found  @typescript-eslint/no-unsafe-member-access
+   754:13  error    Definition for rule '@typescript-eslint/no-unsafe-assignment' was not found     @typescript-eslint/no-unsafe-assignment
+   948:11  error    Definition for rule '@typescript-eslint/no-unsafe-assignment' was not found     @typescript-eslint/no-unsafe-assignment
+   964:13  error    Definition for rule '@typescript-eslint/no-unsafe-assignment' was not found     @typescript-eslint/no-unsafe-assignment
+   970:13  warning  Unused eslint-disable directive (no problems were reported)
+  1257:5   error    Definition for rule '@typescript-eslint/ban-types' was not found                @typescript-eslint/ban-types
+  1275:5   error    Definition for rule '@typescript-eslint/ban-types' was not found                @typescript-eslint/ban-types
+  2603:35  warning  Unused eslint-disable directive (no problems were reported)
+  3497:11  warning  Unused eslint-disable directive (no problems were reported)
+  4017:9   error    Definition for rule '@typescript-eslint/no-unsafe-return' was not found         @typescript-eslint/no-unsafe-return
+  4064:9   error    Definition for rule '@typescript-eslint/no-unsafe-return' was not found         @typescript-eslint/no-unsafe-return
+
+/app/src/components/AssignmentPlayer.tsx
+  52:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/src/components/ExerciseGame.tsx
+   75:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  157:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  161:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  165:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/src/components/ExerciseSetup.tsx
+  19:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/src/components/RewardOverlay.tsx
+  13:8   error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/app/src/components/RewardOverlay.tsx:13:8
+  11 |   const particles = Array.from({ length: 20 }).map((_, i) => ({
+  12 |     id: i,
+> 13 |     x: Math.random() * 100 - 50,
+     |        ^^^^^^^^^^^^^ Cannot call impure function
+  14 |     y: Math.random() * 100 - 50,
+  15 |     scale: Math.random() * 0.5 + 0.5,
+  16 |   }));  react-hooks/purity
+  14:8   error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/app/src/components/RewardOverlay.tsx:14:8
+  12 |     id: i,
+  13 |     x: Math.random() * 100 - 50,
+> 14 |     y: Math.random() * 100 - 50,
+     |        ^^^^^^^^^^^^^ Cannot call impure function
+  15 |     scale: Math.random() * 0.5 + 0.5,
+  16 |   }));
+  17 |                                                                  react-hooks/purity
+  15:12  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/app/src/components/RewardOverlay.tsx:15:12
+  13 |     x: Math.random() * 100 - 50,
+  14 |     y: Math.random() * 100 - 50,
+> 15 |     scale: Math.random() * 0.5 + 0.5,
+     |            ^^^^^^^^^^^^^ Cannot call impure function
+  16 |   }));
+  17 |
+  18 |   return (                                                             react-hooks/purity
+
+/app/src/context/GameContext.tsx
+  47:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/app/src/hooks/useAppSounds.ts
+  20:72  error    Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+  55:6   warning  React Hook useCallback has a missing dependency: 'playTone'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  58:35  error    Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+
+/app/src/hooks/useTouchDevice.ts
+  10:41  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+  12:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/app/src/hooks/useTouchDevice.ts:12:5
+  10 |                           (navigator as any).msMaxTouchPoints > 0;
+  11 |     
+> 12 |     setIsTouchDevice(hasTouchScreen);
+     |     ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  13 |   }, []);
+  14 |
+  15 |   return isTouchDevice;  react-hooks/set-state-in-effect
+
+/app/src/types.ts
+  36:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 35 problems (30 errors, 5 warnings)
+  0 errors and 4 warnings potentially fixable with the `--fix` option.
+

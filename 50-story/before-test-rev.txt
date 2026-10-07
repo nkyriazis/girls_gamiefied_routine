@@ -1,0 +1,117 @@
+✔ relatives and friends are people (191.676765ms)
+✔ the worst case: a question with no subject right after someone else's sentence (11.512324ms)
+✖ the worst case counts the grown-ups at work too: a driver, a teacher, a coach (0.881598ms)
+✖ a child's name is never written in lowercase (0.83475ms)
+✔ questions that pass: their own subject, a plural verb, a verbless follow-up (5.765845ms)
+✔ a neuter phrase is the question's subject only where it can't be the object (2.280068ms)
+✔ «Έχει δίκιο;» after three children names the one who claims (1.489972ms)
+✔ «Αναρωτιέται»: whoever wonders is clear (1.27079ms)
+✔ time: «Νωρίτερα» after «Τώρα» tells what came before (1.637961ms)
+✔ the same genitive in two sentences in a row (1.399572ms)
+✔ prices: each with its own item, in every phrasing (3.67382ms)
+✖ prices: «αγόρασε X με N ευρώ», past or present, accent or none (0.747807ms)
+✖ prices: «θέλει να πάρει N € για X», and «για X» after a price is X's, not the item before (0.365257ms)
+✔ prices: a pack is divided by its count, a total by the count in front (2.218884ms)
+✔ prices: not a price, and a price with no item (0.707511ms)
+✔ prices: cents, notes and coins (1.004259ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 12
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 312.796079
+
+✖ failing tests:
+
+test at tools/problem-gen/story-check.test.ts:35:1
+✖ the worst case counts the grown-ups at work too: a driver, a teacher, a coach (0.881598ms)
+  AssertionError [ERR_ASSERTION]: expected /reads as about η δασκάλα/ for «Η Σοφία έχει 20 ευρώ. Η δασκάλα της έχει 25 μαθητές. Πόσα ευρώ έχει;», got []
+      at fails (file:///w/tools/problem-gen/story-check.test.ts:13:10)
+      at TestContext.<anonymous> (file:///w/tools/problem-gen/story-check.test.ts:36:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tools/problem-gen/story-check.test.ts:46:1
+✖ a child's name is never written in lowercase (0.83475ms)
+  AssertionError [ERR_ASSERTION]: expected /lowercase.*μάρκου/ for «Η γιαγιά του Μάρκου έχει στο μπαλκόνι της δύο γλάστρες. Μετά από πόσες ημέρες θα ξαναποτίσει η γιαγιά του μάρκου και τις δύο γλάστρες μαζί;», got []
+      at fails (file:///w/tools/problem-gen/story-check.test.ts:13:10)
+      at TestContext.<anonymous> (file:///w/tools/problem-gen/story-check.test.ts:47:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tools/problem-gen/story-check.test.ts:108:1
+✖ prices: «αγόρασε X με N ευρώ», past or present, accent or none (0.747807ms)
+  AssertionError [ERR_ASSERTION]: Στο λούνα παρκ αγόρασε ένα λούτρινο αρκουδάκι με 12 ευρώ και ένα εισιτήριο για τη ρόδα με 4 ευρώ.
+  + actual - expected
+  
+  + []
+  - [
+  -   'λούτρινο αρκουδάκι 12',
+  -   'ρόδα 4'
+  - ]
+  
+      at reads (file:///w/tools/problem-gen/story-check.test.ts:17:60)
+      at TestContext.<anonymous> (file:///w/tools/problem-gen/story-check.test.ts:110:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'λούτρινο αρκουδάκι 12', 'ρόδα 4' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tools/problem-gen/story-check.test.ts:117:1
+✖ prices: «θέλει να πάρει N € για X», and «για X» after a price is X's, not the item before (0.365257ms)
+  AssertionError [ERR_ASSERTION]: Ο προπονητής θέλει να πάρει 685 € για το λεωφορείο για τους αγώνες και στρώματα γυμναστικής αξίας 330 €.
+  + actual - expected
+  
+    [
+  -   'λεωφορείο για τους αγώνες 685',
+      'στρώματα γυμναστικής 330'
+    ]
+  
+      at reads (file:///w/tools/problem-gen/story-check.test.ts:17:60)
+      at TestContext.<anonymous> (file:///w/tools/problem-gen/story-check.test.ts:119:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'στρώματα γυμναστικής 330' ],
+    expected: [ 'λεωφορείο για τους αγώνες 685', 'στρώματα γυμναστικής 330' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

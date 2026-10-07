@@ -1,0 +1,96 @@
+54 errors in 53 problems
+
+By family:
+  10  buses-needed
+   8  division-remainder
+   5  pages-per-day
+   5  world
+   4  buy-and-change
+   4  coins
+   3  missing-info
+   2  backwards-money
+   2  together-again
+   2  order-the-plan
+   2  days-to-goal
+   1  round-estimate
+   1  sum-difference
+   1  distance-time
+   1  group-tickets
+   1  (curated e-dimotikou-problems.json)
+   1  total-cost
+   1  start-unknown
+
+By kind:
+  16  a price that names no item in its sentence (or one the audit  (e5-gen-buses-needed-001 e5-gen-buses-needed-002 e5-gen-buses-needed-003 e5-gen-buses-needed-010 …)
+   4  the question names no one, and … … are subjects; it reads as  (e5-gen-round-estimate-009 g3-gen-buy-and-change-016 g3-gen-coins-007 g3-gen-coins-010)
+   4  the question names no one, and … … are subjects: «…»  (g3-gen-total-cost-005 g3-gen-buy-and-change-006 g3-gen-buy-and-change-010 g3-gen-buy-and-change-020)
+   3  # € for κουτί (#.#–# €): «…»  (e5-gen-missing-info-001 e5-gen-missing-info-012 e5-gen-missing-info-016)
+   3  # € for σοκολάτα (#.#–# €): «…» … κοστίζει # ευρώ.»  (g3-gen-division-remainder-008 g3-gen-division-remainder-014 g3-gen-division-remainder-016)
+   3  # € for τετράδι… €): «…» τ… κοστίζει # ευρώ.»  (g3-gen-division-remainder-010 g3-gen-division-remainder-013 g3-gen-division-remainder-020)
+   3  «…» could mean more than one person: «…»  (g3-gen-coins-010 g3-gen-order-the-plan-003 g3-gen-order-the-plan-011)
+   3  the question names no one, and … is the subject; it reads as  (g3-gen-coins-017 g3-gen-days-to-goal-003 g3-gen-days-to-goal-015)
+   3  «…»: more than one person it could mean before it: «…»  (g3-world-052 g3-world-065 g3-world-173)
+   2  the question names no one, and … … … are subjects; it reads   (e5-gen-together-again-007 e5-gen-together-again-012)
+   2  # € for λουλούδι (#.#–# €): «…» τ… κοστίζει # ευρώ.»  (g3-gen-division-remainder-002 g3-gen-division-remainder-003)
+   2  «…» in two sentences in a row: «…»  (g3-world-017 g3-world-130)
+   1  # € for αυγά (#–# €): «…»  (e5-gen-backwards-money-001)
+   1  # € for λουκουμάδες (#–# €): «…»  (e5-gen-backwards-money-007)
+   1  two sentences in a row open with «…»: «…»  (e5-gen-sum-difference-019)
+   1  the question names no one; it reads as about … the sentence   (e5-gen-distance-time-003)
+   1  # € for κινηματογράφου (#–# €): «…»  (e5-gen-group-tickets-006)
+   1  # € for βιβλί… €): «…»  (g3-gen-start-unknown-002)
+
+e5-gen-round-estimate-009: the question names no one, and ο πατέρας, ο Στέλιος are subjects; it reads as about ο Στέλιος, the sentence before: «Έχει δίκιο;»
+e5-gen-backwards-money-001: 21 € for αυγά (1–10 €): «Πρώτα έδωσε 21 € για αυγά και μετά έδωσε για ψάρια τα μισά από όσα της είχαν μείνει.»
+e5-gen-backwards-money-007: 24 € for λουκουμάδες (3–15 €): «Πρώτα αγόρασε ένα βιβλίο των 16 €, μετά ξόδεψε σε παιχνίδια τα μισά από όσα της είχαν μείνει και στο τέλος πλήρωσε 24 € για λουκουμάδες.»
+e5-gen-sum-difference-019: two sentences in a row open with «Η Χαρά»: «Η Χαρά και ο Νίκος έχουν μαζέψει μαζί 363 €. Η Χαρά έχει 51 € περισσότερα από τον Νίκο.»
+e5-gen-missing-info-001: 11 € for κουτί (0.2–5 €): «Κάθε κουτί κοστίζει 11 €.»
+e5-gen-missing-info-012: 13 € for κουτί (0.2–5 €): «Κάθε κουτί κοστίζει 13 €.»
+e5-gen-missing-info-016: 15 € for κουτί (0.2–5 €): «Κάθε κουτί κοστίζει 15 €.»
+e5-gen-together-again-007: the question names no one, and η Σοφία, ο Μιχάλης, η Άννα are subjects; it reads as about η Άννα, the sentence before: «Έχει δίκιο;»
+e5-gen-together-again-012: the question names no one, and ο Πέτρος, ο Πυθαγόρας, ο Γιώργος are subjects; it reads as about ο Γιώργος, the sentence before: «Έχει δίκιο;»
+e5-gen-buses-needed-001: a price that names no item in its sentence (or one the audit has no range for): 550 €: «Το καθένα κοστίζει 550 €.»
+e5-gen-buses-needed-002: a price that names no item in its sentence (or one the audit has no range for): 350 €: «Το καθένα κοστίζει 350 €.»
+e5-gen-buses-needed-003: a price that names no item in its sentence (or one the audit has no range for): 330 €: «Το καθένα κοστίζει 330 €.»
+e5-gen-buses-needed-010: a price that names no item in its sentence (or one the audit has no range for): 590 €: «Το καθένα κοστίζει 590 €.»
+e5-gen-buses-needed-011: a price that names no item in its sentence (or one the audit has no range for): 430 €: «Το καθένα κοστίζει 430 €.»
+e5-gen-buses-needed-013: a price that names no item in its sentence (or one the audit has no range for): 280 €: «Το καθένα κοστίζει 280 €.»
+e5-gen-buses-needed-014: a price that names no item in its sentence (or one the audit has no range for): 330 €: «Το καθένα κοστίζει 330 €.»
+e5-gen-buses-needed-015: a price that names no item in its sentence (or one the audit has no range for): 300 €: «Το καθένα κοστίζει 300 €.»
+e5-gen-buses-needed-016: a price that names no item in its sentence (or one the audit has no range for): 370 €: «Το καθένα κοστίζει 370 €.»
+e5-gen-buses-needed-020: a price that names no item in its sentence (or one the audit has no range for): 360 €: «Το καθένα κοστίζει 360 €.»
+e5-gen-distance-time-003: the question names no one; it reads as about ο οδηγός, the sentence before: «Πόσα χιλιόμετρα διάνυσε συνολικά;»
+e5-gen-group-tickets-006: 3 € for κινηματογράφου (4–14 €): «Το εισιτήριο του κινηματογράφου κοστίζει 3 € για κάθε μαθητή και 8 € για κάθε ενήλικα, αλλά για κάθε 10 μαθητές ένας εκπαιδευτικός μπαίνει δωρεάν.»
+e5-problem-parking: a price that names no item in its sentence (or one the audit has no range for): 3 €: «Κοστίζει 3 € την ώρα.»
+g3-gen-division-remainder-002: 9 € for λουλούδι (0.5–6 €): «Στο μαγαζί «Η φτήνια» το λουλούδι κοστίζει 9 ευρώ.»
+g3-gen-division-remainder-003: 9 € for λουλούδι (0.5–6 €): «Στο μαγαζί «Η φτήνια» το λουλούδι κοστίζει 9 ευρώ.»
+g3-gen-division-remainder-008: 6 € for σοκολάτα (0.5–5 €): «Στο μαγαζί «Το αστέρι» η σοκολάτα κοστίζει 6 ευρώ.»
+g3-gen-division-remainder-010: 9 € for τετράδιο (0.5–5 €): «Στο μαγαζί «Η φτήνια» το τετράδιο κοστίζει 9 ευρώ.»
+g3-gen-division-remainder-013: 7 € for τετράδιο (0.5–5 €): «Στο μαγαζί «Η φτήνια» το τετράδιο κοστίζει 7 ευρώ.»
+g3-gen-division-remainder-014: 8 € for σοκολάτα (0.5–5 €): «Στο μαγαζί «Το αστέρι» η σοκολάτα κοστίζει 8 ευρώ.»
+g3-gen-division-remainder-016: 6 € for σοκολάτα (0.5–5 €): «Στο μαγαζί «Η γωνιά» η σοκολάτα κοστίζει 6 ευρώ.»
+g3-gen-division-remainder-020: 6 € for τετράδιο (0.5–5 €): «Στο μαγαζί «Η γωνιά» το τετράδιο κοστίζει 6 ευρώ.»
+g3-gen-total-cost-005: the question names no one, and η Μαρίνα, η φίλη are subjects: «Πόσα ευρώ θα δώσει στο ταμείο;»
+g3-gen-start-unknown-002: 60 € for βιβλίο (3–30 €): «Έβγαλε 60 ευρώ για να αγοράσει ένα βιβλίο.»
+g3-gen-pages-per-day-003: a price that names no item in its sentence (or one the audit has no range for): 9 €: «Στο βιβλιοπωλείο κοστίζει 9 ευρώ.»
+g3-gen-pages-per-day-004: a price that names no item in its sentence (or one the audit has no range for): 8 €: «Στο βιβλιοπωλείο κοστίζει 8 ευρώ.»
+g3-gen-pages-per-day-008: a price that names no item in its sentence (or one the audit has no range for): 7 €: «Στο βιβλιοπωλείο κοστίζει 7 ευρώ.»
+g3-gen-pages-per-day-010: a price that names no item in its sentence (or one the audit has no range for): 10 €: «Στο βιβλιοπωλείο κοστίζει 10 ευρώ.»
+g3-gen-pages-per-day-016: a price that names no item in its sentence (or one the audit has no range for): 13 €: «Στο βιβλιοπωλείο κοστίζει 13 ευρώ.»
+g3-gen-buy-and-change-006: the question names no one, and ο Φώτης, η αδερφή are subjects: «Πόσα ρέστα θα πάρει;»
+g3-gen-buy-and-change-010: the question names no one, and ο Στέλιος, η αδερφή are subjects: «Πόσα ρέστα θα πάρει;»
+g3-gen-buy-and-change-016: the question names no one, and η Σοφία, η αδερφή are subjects; it reads as about η αδερφή, the sentence before: «Πόσα ευρώ θα πάρει πίσω;»
+g3-gen-buy-and-change-020: the question names no one, and η Σοφία, η αδερφή are subjects: «Πόσα ρέστα θα πάρει;»
+g3-gen-coins-007: the question names no one, and η Άννα, ο παππούς are subjects; it reads as about ο παππούς, the sentence before: «Πόσα λεπτά έχει;»
+g3-gen-coins-010: «της περισσέψουν» could mean more than one person: «Πόσα λεπτά θα της περισσέψουν;»
+g3-gen-coins-010: the question names no one, and η Άννα, η αδερφή are subjects; it reads as about η αδερφή, the sentence before: «Πόσα λεπτά έχει;»
+g3-gen-coins-017: the question names no one, and η φίλη is the subject; it reads as about η φίλη, the sentence before: «Πόσα λεπτά έχει;»
+g3-gen-order-the-plan-003: «της λείπουν» could mean more than one person: «Πόσα ευρώ της λείπουν ακόμη;»
+g3-gen-order-the-plan-011: «της λείπουν» could mean more than one person: «Πόσα ευρώ της λείπουν ακόμη;»
+g3-gen-days-to-goal-003: the question names no one, and ο φίλος is the subject; it reads as about ο φίλος, the sentence before: «Σε πόσες μέρες θα γεμίσει το άλμπουμ;»
+g3-gen-days-to-goal-015: the question names no one, and η φίλη is the subject; it reads as about η φίλη, the sentence before: «Σε πόσες μέρες θα γεμίσει το άλμπουμ;»
+g3-world-017: «άλμπουμ του Στέλιου» in two sentences in a row: «Στο άλμπουμ του Στέλιου υπήρχαν 89 αυτοκόλλητα. Το άλμπουμ του Στέλιου έχει 40 σελίδες.»
+g3-world-052: «Αναρωτιέται»: more than one person it could mean before it: «Αναρωτιέται πόσους βόλους είχε στην αρχή.»
+g3-world-065: «Αναρωτιέται»: more than one person it could mean before it: «Αναρωτιέται πόσα ευρώ είχε στην αρχή.»
+g3-world-130: «άλμπουμ του Στέλιου» in two sentences in a row: «Στο άλμπουμ του Στέλιου υπήρχαν 80 αυτοκόλλητα. Το άλμπουμ του Στέλιου έχει 26 σελίδες.»
+g3-world-173: «Αναρωτιέται»: more than one person it could mean before it: «Αναρωτιέται πόσα ευρώ είχε στην αρχή.»

@@ -1,0 +1,39 @@
+#50 part 5b: the 176 story-check findings on master's pools (before-story-check.txt, all families), read one by one.
+The audit runs story-check.ts on the world pool and change-left only, so it reports 0 errors (before-audit.txt).
+
+Kind (count)                                   Families                              Verdict
+---------------------------------------------  ------------------------------------  ---------------------------------------------
+price for an item the audit has no range (105) total-cost 23, division-remainder 17,  Checker gap: every price read is realistic for
+                                               cheaper-option 19, buy-and-change 11,  its item (tickets 6-19, τούρτα 20-32, κουτί
+                                               missing-info 7, two-purchases 5,       μαρκαδόρους 7-11, πατίνι 87, ...). The table
+                                               two-digit-times 5, pages-per-day 5,    knows 14 items. 5 in pages-per-day name no
+                                               order-the-plan 5, estimate-first 4,    item («Στο βιβλιοπωλείο κοστίζει 9 ευρώ»):
+                                               coins 2, curated Γ΄ 2                  the generator should say «το βιβλίο».
+3 € for επιτραπέζιο (1)                        two-purchases-019                      Checker bug: «3 ευρώ για ένα γιογιό και 21
+                                                                                      ευρώ για ένα επιτραπέζιο» pairs 3 € with the
+                                                                                      wrong item (one price per sentence).
+question names no one (58)                     round-table 18, cheaper-option 16,     56 fine Greek: own subject («Πόσες καμπίνες
+                                               together-again 12, double-half 9,      έχει η ρόδα;», «Ποιο παιδί πλήρωσε
+                                               sum-difference 3                       λιγότερα;», «ο καθένας»), a plural verb for
+                                                                                      the group («μάζεψαν και οι δύο μαζί», «θα
+                                                                                      ξαναβρεθούν μαζί»), a verbless follow-up
+                                                                                      («Πόσα ευρώ λιγότερα;»). 2 «Έχει δίκιο;» after
+                                                                                      three children (together-again-007, -012):
+                                                                                      name her, «Έχει δίκιο η Άννα;».
+«της/του έμειναν» before anyone is named (7)   order-the-plan                         Checker gap: «Η γιαγιά / Ο μπαμπάς πήγε στη
+                                                                                      λαϊκή … Πόσα ευρώ της έμειναν;»: relatives
+                                                                                      aren't people to the checker.
+a change after «Τώρα» (4)                      start-unknown                          The family's backward telling: «Τώρα η
+                                                                                      Κατερίνα έχει 115. Νωρίτερα, αγόρασε άλλα
+                                                                                      39.» «Νωρίτερα» places it before; fine. Drop
+                                                                                      the comma; the checker accepts «Νωρίτερα».
+two sentences open with one name (1)           sum-difference-019                     Real: «Η Χαρά και ο Νίκος έχουν… Η Χαρά
+                                                                                      έχει…». Name the other first.
+
+Not read by the checker yet:
+- «Αναρωτιέται» (25 world, 9 compare-offers): skipped. All have one person before them (or their own subject);
+  no finding expected under the clitic rule (the one person of the sentence before, or the only one so far).
+- The same genitive twice (2 world: g3-world-017, -130): «Στο άλμπουμ του Στέλιου … Το άλμπουμ του Στέλιου
+  έχει 40 σελίδες».
+- Prices in other phrasings (about 880 more money mentions, most of them amounts, not prices): «για 4 ευρώ»,
+  «των 23 €», «2 ευρώ το κιλό», «στα 2 ευρώ την καθεμία», «Το καθένα κοστίζει 550 €», and Ε΄'s «€».

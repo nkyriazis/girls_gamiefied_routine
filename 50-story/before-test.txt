@@ -1,0 +1,32 @@
+✖ relatives and friends are people (45.917657ms)
+✖ the worst case: a question with no subject right after someone else's sentence (0.573629ms)
+✖ questions that pass: their own subject, a plural verb, a verbless follow-up (0.424839ms)
+✖ a neuter phrase is the question's subject only where it can't be the object (0.26047ms)
+✔ «Έχει δίκιο;» after three children names the one who claims (0.501303ms)
+✖ «Αναρωτιέται»: whoever wonders is clear (0.309272ms)
+✖ time: «Νωρίτερα» after «Τώρα» tells what came before (0.26608ms)
+✖ the same genitive in two sentences in a row (0.168537ms)
+✖ prices: each with its own item, in every phrasing (0.220024ms)
+✖ prices: a pack is divided by its count, a total by the count in front (0.221717ms)
+✖ prices: not a price, and a price with no item (0.213432ms)
+✖ prices: cents, notes and coins (0.182774ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 1
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137.261185
+✖ failing tests:
+✖ relatives and friends are people (45.917657ms)
+✖ the worst case: a question with no subject right after someone else's sentence (0.573629ms)
+✖ questions that pass: their own subject, a plural verb, a verbless follow-up (0.424839ms)
+✖ a neuter phrase is the question's subject only where it can't be the object (0.26047ms)
+✖ «Αναρωτιέται»: whoever wonders is clear (0.309272ms)
+✖ time: «Νωρίτερα» after «Τώρα» tells what came before (0.26608ms)
+✖ the same genitive in two sentences in a row (0.168537ms)
+✖ prices: each with its own item, in every phrasing (0.220024ms)
+✖ prices: a pack is divided by its count, a total by the count in front (0.221717ms)
+✖ prices: not a price, and a price with no item (0.213432ms)
+✖ prices: cents, notes and coins (0.182774ms)

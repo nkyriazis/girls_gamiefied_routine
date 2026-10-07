@@ -1,0 +1,52 @@
+#50 part 5b: the findings, classified, before and after.
+
+                                         master's pools        master's pools        new pools
+                                         old check (part 1     final check           final check
+                                         rules, all families)  (this PR)             (this PR)
+-----------------------------------------------------------------------------------------------------
+Findings                                 176 in 152 problems   53 in 52 problems     0
+  gaps in the check (fine stories)       168                   0                     -
+  stories that read wrong                8                     53                    0
+The audit                                0 errors (it ran the  -                     0 errors, 95 warnings
+                                         check on 2 families)                        (96 before: one hint
+                                                                                     warning fewer, redrawn)
+10000 generated per grade + 2000 world   -                     -                     0 (not shipped: what the
+                                                                                     families can make)
+
+The 168 gaps closed in the check: 105 prices of items it had no range for (now about 150 items), 1 price
+paired with the wrong item (one price per sentence), 56 questions that are fine Greek (plural verb, their
+own subject, no verb), 7 «της έμειναν» about η γιαγιά/ο μπαμπάς (relatives now people), 4 start-unknown
+«Νωρίτερα» after «Τώρα».
+
+The 53 the final check finds on master, read one by one: every one reads wrong. Fixed in its family.
+Kind (count)                                           Families (ids)                      Fix
+-----------------------------------------------------  ----------------------------------  -------------------------------------------
+a price with no item in its sentence (16)              buses-needed 10 («Το καθένα         «Η ενοικίαση ενός λεωφορείου κοστίζει»,
+                                                       κοστίζει 550 €»), pages-per-day 5   «το βιβλίο κοστίζει», «Η στάθμευση
+                                                       («Στο βιβλιοπωλείο κοστίζει»),      κοστίζει» (curated, by hand)
+                                                       e5-problem-parking («Κοστίζει 3 €
+                                                       την ώρα»)
+a price out of its item's range (15)                   division-remainder 8 (σοκολάτα      a most per thing (redrawn); a box 1–4 €;
+                                                       6–8 €, τετράδιο 6–9 €, λουλούδι     eggs ≤ 10 €, λουκουμάδες ≤ 15 €; a pupil's
+                                                       9 €), missing-info 3 (an empty      cinema ticket from 4 €; 60 € buys a board
+                                                       box 11–15 €), backwards-money 2     game
+                                                       (eggs 21 €, λουκουμάδες 24 €),
+                                                       group-tickets 1 (cinema 3 €),
+                                                       start-unknown 1 (a 60 € book)
+a nameless question after someone else (13)            buy-and-change 4 and coins 3 (a     the question names the hero
+                                                       sister, a friend, the grandfather
+                                                       in the noise), days-to-goal 2,
+                                                       total-cost 1, together-again 2
+                                                       and round-estimate 1 («Έχει
+                                                       δίκιο;»)
+«του/της» that fits two people (3)                     coins 1, order-the-plan 2 (the      the hero named
+                                                       νονά or θεία who gave)
+«Αναρωτιέται» after two people (3)                     world 052, 065, 173                 «Αναρωτιέται η Σοφία…»
+the same genitive twice (2)                            world 017, 130                      «Το άλμπουμ έχει 40 σελίδες»
+two sentences open with one name (1)                   sum-difference 019                  «Ο Νίκος και η Χαρά… Η Χαρά έχει…»
+                                                                                           (the other first)
+
+Also fixed with no finding: start-unknown's comma after «Νωρίτερα» (10 stories); and what the shipped pools
+don't hold yet but the families can make (found in the 10000 + 2000): 16 more items in the table (ψυγείο,
+οθόνη, γόμα, κουλούρι, σκέιτμπορντ…), coins' giver of the hero's gender, days-to-goal's sister, the
+watering grandparent in together-again, and the world's «του/της» after a sibling.

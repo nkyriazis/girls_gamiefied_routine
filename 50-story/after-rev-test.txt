@@ -1,0 +1,24 @@
+✔ relatives and friends are people (235.370379ms)
+✔ the worst case: a question with no subject right after someone else's sentence (14.212964ms)
+✔ the worst case counts the grown-ups at work too: a driver, a teacher, a coach (6.017388ms)
+✔ a child's name is never written in lowercase (3.023808ms)
+✔ questions that pass: their own subject, a plural verb, a verbless follow-up (5.558395ms)
+✔ a neuter phrase is the question's subject only where it can't be the object (2.914041ms)
+✔ «Έχει δίκιο;» after three children names the one who claims (4.014861ms)
+✔ «Αναρωτιέται»: whoever wonders is clear (3.191984ms)
+✔ time: «Νωρίτερα» after «Τώρα» tells what came before (3.38142ms)
+✔ the same genitive in two sentences in a row (2.288164ms)
+✔ prices: each with its own item, in every phrasing (3.268437ms)
+✔ prices: «αγόρασε X με N ευρώ», past or present, accent or none (1.428597ms)
+✔ prices: «θέλει να πάρει N € για X», and «για X» after a price is X's, not the item before (2.407238ms)
+✔ prices: a pack is divided by its count, a total by the count in front (2.022624ms)
+✔ prices: not a price, and a price with no item (0.751524ms)
+✔ prices: cents, notes and coins (1.176633ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 378.610801
