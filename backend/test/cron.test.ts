@@ -26,6 +26,16 @@ test('Sunday is 0 and 7; day of month or day of week, either one', () => {
   assert.equal(matches('0 9 1 * 1', '2026-10-06T06:00:00Z'), false); // Tuesday the 6th
 });
 
+test('a step counts from the start of its field: day of month and month start at 1', () => {
+  // Master's chore matcher read */n as value % n === 0 (the 7th, 14th...); cron counts from 1 (the 1st, 8th...).
+  assert.equal(matches('0 9 */7 * *', '2026-10-08T06:00:00Z'), true); // Thursday the 8th
+  assert.equal(matches('0 9 */7 * *', '2026-10-07T06:00:00Z'), false); // Wednesday the 7th
+  assert.equal(matches('0 9 */2 * *', '2026-10-07T06:00:00Z'), true); // the 7th: odd days
+  assert.equal(matches('0 9 1 */2 *', '2026-11-01T07:00:00Z'), true); // November: odd months
+  assert.equal(matches('0 9 1 */2 *', '2026-12-01T07:00:00Z'), false);
+  assert.equal(matches('0 9 * * 5-7', '2026-10-11T06:00:00Z'), true); // a range ending in 7 includes Sunday
+});
+
 test('any instant inside the minute matches: a late tick still counts', () => {
   assert.equal(matches('0 18 * * *', '2026-10-07T15:00:00.000Z'), true);
   assert.equal(matches('0 18 * * *', '2026-10-07T15:00:01.500Z'), true);

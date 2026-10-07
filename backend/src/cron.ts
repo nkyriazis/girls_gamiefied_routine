@@ -6,7 +6,9 @@ import { CronExpressionParser } from 'cron-parser';
 //
 // The rules are cron-parser's, i.e. standard cron:
 // - a field is a list of values, ranges and steps: "1-3,5", "0-30/10", "5/10", "*/15";
-// - day of week 0 and 7 are both Sunday;
+// - a step counts from the start of its field: "*/7" on day of month is the 1st, 8th, 15th..., "*/2" on
+//   month is January, March...;
+// - day of week 0 and 7 are both Sunday ("5-7" is Friday to Sunday);
 // - when both day of month and day of week are restricted, either one matching is enough ("0 9 1 * 1" is
 //   the 1st of the month and every Monday).
 // Daylight saving time, in the zone given: a time inside the skipped hour never happens that night
