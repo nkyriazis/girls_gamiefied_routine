@@ -15,17 +15,18 @@ interface Props<T extends { id: string }> {
     create: () => T;
     row: (item: T) => { icon: IconValue; title: string; sub: ReactNode };
     Form: (props: FormProps<T>) => ReactNode;
-    isValid: (item: T) => boolean;
+    isValid: (item: T, isNew: boolean) => boolean;
     save: (items: T[], options: SaveOptions) => Promise<SaveOutcome>;
+    removable?: boolean; // false: the sheet has no Διαγραφή (the kids: their stars and history hang on the id)
 }
 
 const ADD_STALE = 'Οι ρυθμίσεις άλλαξαν στο μεταξύ από άλλη οθόνη. Πάτα ξανά Αποθήκευση για να προστεθεί.';
 
-// A config list (rewards, schedules, chores): rows, and a sheet to add, edit or delete one.
+// A config list (rewards, schedules, chores, kids): rows, and a sheet to add, edit or delete one.
 // The sheet copies the item when it opens, so it saves with the version of data.json it opened
 // with (#33): if another screen saved since, the server refuses (409) and the sheet reloads, an
 // edited item with its current values (the parent makes the change again), a new one as typed.
-export function CollectionEditor<T extends { id: string }>({ title, addLabel, empty, items, create, row, Form, isValid, save }: Props<T>) {
+export function CollectionEditor<T extends { id: string }>({ title, addLabel, empty, items, create, row, Form, isValid, save, removable = true }: Props<T>) {
     const { configVersion } = useGame();
     const [editing, setEditing] = useState<{ item: T; isNew: boolean; title: string; version: string } | null>(null);
     const close = () => setEditing(null);
@@ -81,8 +82,8 @@ export function CollectionEditor<T extends { id: string }>({ title, addLabel, em
                     <form className="p-form" onSubmit={e => { e.preventDefault(); submit(); }}>
                         <Form value={editing.item} onChange={item => setEditing({ ...editing, item })} />
                         <div className="p-actions">
-                            {!editing.isNew && <ConfirmButton onConfirm={() => remove(editing.item.id)}>Διαγραφή</ConfirmButton>}
-                            <button type="submit" className="p-btn primary" disabled={!isValid(editing.item)}>Αποθήκευση</button>
+                            {removable && !editing.isNew && <ConfirmButton onConfirm={() => remove(editing.item.id)}>Διαγραφή</ConfirmButton>}
+                            <button type="submit" className="p-btn primary" disabled={!isValid(editing.item, editing.isNew)}>Αποθήκευση</button>
                         </div>
                     </form>
                 </Sheet>

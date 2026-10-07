@@ -111,6 +111,14 @@ button.p-row:active { background: var(--p-raised); }
   color: var(--color-text-main); font-size: 0.95rem; font-weight: 600;
 }
 .p-chip.on { background: var(--color-primary); color: var(--p-ink); border-color: transparent; }
+/* A kid's colour: a dot of it, and a white ring on the chosen one (a cyan fill would hide the cyan dot) */
+.p-swatch { display: inline-flex; align-items: center; gap: 8px; padding-left: 10px; }
+.p-swatch.on { background: var(--p-raised); color: var(--color-text-main); border: 2px solid var(--color-text-main); }
+.p-swatch-dot {
+  display: inline-block; width: 18px; height: 18px; flex: none; border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--p-line); vertical-align: -3px; margin-right: 6px;
+}
+.p-swatch .p-swatch-dot { margin-right: 0; }
 
 /* Today: kids */
 .p-kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
