@@ -17,7 +17,7 @@ import {
   readLastLogs, MAX_LOGS, awardStars, takeStars, buyReward, resolveSpending, createGift, resolveGift, StarsError, UPLOADS_DIR, getChoresWithInstances, claimChore,
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
-  cancelExerciseSession, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
+  closeExerciseSession, gameResultsLeaving, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
   logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
   stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
 } from './db';
@@ -635,7 +635,7 @@ server.post('/api/exercises/sessions/:id/answer', async (request, reply) => {
 server.delete('/api/exercises/sessions/:id', async (request, reply) => {
   try {
     const { id } = request.params as { id: string };
-    cancelExerciseSession(id);
+    closeExerciseSession(id);
     return { success: true };
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -774,8 +774,13 @@ const start = async () => {
     setInterval(() => sync.heartbeat(), HEARTBEAT_MS);
 
     // Start the real scheduler (checks every minute)
+    let gamesCheckedAt = new Date();
     cron.schedule('* * * * *', () => {
-      checkSchedules(new Date());
+      const now = new Date();
+      checkSchedules(now);
+      // A finished game's results leave the screens when their window ends: nothing is written, so say so
+      if (gameResultsLeaving(gamesCheckedAt, now).length > 0) sync.changed();
+      gamesCheckedAt = now;
     });
     console.log('Scheduler started');
     // The daily backup, in a child process (backupSchedule.ts)

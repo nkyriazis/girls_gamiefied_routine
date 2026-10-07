@@ -91,6 +91,10 @@ const MIGRATIONS: string[] = [
   // When a flow run entered its current step (an alarm rings only for so long)
   `
   ALTER TABLE flow_runs ADD COLUMN stepStartedAt TEXT;
+  `,
+  // A finished group game closed with «Επιστροφή»: kept, but no longer on the screens
+  `
+  ALTER TABLE exercise_sessions ADD COLUMN dismissedAt TEXT;
   `
 ];
 
@@ -228,7 +232,7 @@ export class Store {
     this.exerciseSessions = new Table<ExerciseSession>(db, 'exercise_sessions', onChange, {
       id: 'text', playerIds: 'json', categories: 'json', totalRounds: 'int', currentRound: 'int',
       questionsPerRound: 'int', currentQuestionIndex: 'int', exerciseIds: 'json', answers: 'json',
-      startedAt: 'text', completedAt: 'text', totalStarsEarned: 'json'
+      startedAt: 'text', completedAt: 'text', totalStarsEarned: 'json', dismissedAt: 'text'
     });
     this.exerciseAssignments = new Table<ExerciseAssignment>(db, 'exercise_assignments', onChange, {
       id: 'text', userId: 'text', exerciseId: 'text', date: 'text', status: 'text', attempts: 'int',

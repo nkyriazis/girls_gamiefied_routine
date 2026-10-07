@@ -17,6 +17,7 @@ import { OrderingRenderer } from './exercises/OrderingRenderer';
 import { FillBlankRenderer } from './exercises/FillBlankRenderer';
 import { NumberInputRenderer } from './exercises/NumberInputRenderer';
 import { sfx, sound } from '../sound/sfx';
+import { currentQuestion, playerOnTurn } from '@shared/groupGame';
 
 interface ExerciseGameProps {
   session: ExerciseSession;
@@ -35,7 +36,8 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [submittingUser, setSubmittingUser] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{ userId: string, correct: boolean } | null>(null);
+  // What the server said about the answer just sent: its stars, not the next question's
+  const [feedback, setFeedback] = useState<{ userId: string, correct: boolean, stars: number } | null>(null);
 
   // Load all exercises needed for this session
   useEffect(() => {
@@ -55,22 +57,17 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
     loadExercises();
   }, [currentSession.exerciseIds]);
 
-  const currentExerciseIndex = (currentSession.currentRound - 1) * currentSession.questionsPerRound + currentSession.currentQuestionIndex;
-  const currentExercise = exercises[currentExerciseIndex];
+  // Overall question index (answers accumulate across rounds). Past the end once the last answer
+  // is in: the last question stays under its feedback until the results show.
+  const overallQuestionIndex = currentQuestion(currentSession);
+  const currentExercise = exercises[Math.min(overallQuestionIndex, exercises.length - 1)];
   
   const players = useMemo(() => 
     currentSession.playerIds.map((id: string) => users.find(u => u.id === id)).filter(Boolean) as User[],
   [currentSession.playerIds, users]);
 
-  // Overall question index (answers accumulate across rounds)
-  const overallQuestionIndex = (currentSession.currentRound - 1) * currentSession.questionsPerRound + currentSession.currentQuestionIndex;
-
-  const nextPlayerId = useMemo(() => {
-    return currentSession.playerIds.find(pid => {
-      const answers = currentSession.answers[pid] || [];
-      return answers.length <= overallQuestionIndex;
-    }) || currentSession.playerIds[0];
-  }, [currentSession, overallQuestionIndex]);
+  // The server takes an answer only from this player (shared/groupGame.ts)
+  const nextPlayerId = playerOnTurn(currentSession, players.map(p => p.id)) ?? currentSession.playerIds[0];
 
   const handleAnswer = async (answer: any) => {
     if (submittingUser || feedback) return;
@@ -79,7 +76,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
     try {
       const result = await api.submitExerciseAnswer(currentSession.id, nextPlayerId, currentExercise.id, answer);
       
-      setFeedback({ userId: nextPlayerId, correct: result.correct });
+      setFeedback({ userId: nextPlayerId, correct: result.correct, stars: result.earnedStars });
       if (result.correct) {
         playSuccess();
         sfx('stars', { delay: 350 });
@@ -87,27 +84,28 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
         playError();
       }
 
-      // Clear feedback after 1.5s
+      // Clear feedback after 1.5s; the last answer's then gives way to the results
       setTimeout(() => {
         setFeedback(null);
         setSubmittingUser(null);
-        // Note: we use result.correct here because feedback state might have changed
-        if (currentSession.completedAt) {
+        if (result.session.completedAt) {
           playComplete();
         }
       }, 1500);
 
     } catch (err) {
+      // Refused (another screen answered first, or it isn't this question any more): say nothing,
+      // the next STATE shows where the game is
       console.error('Answer submission failed:', err);
       setSubmittingUser(null);
     }
   };
 
-  if (isLoading) return <div className="game-loading">Προετοιμασία ερωτήσεων...</div>;
+  if (isLoading) return <div className="game-loading">Προετοιμασία ερωτήσεων...<style>{styles}</style></div>;
   if (!currentExercise && !currentSession.completedAt) return <div className="game-error">Σφάλμα φόρτωσης άσκησης.</div>;
 
-  // Final Results Screen
-  if (currentSession.completedAt) {
+  // Final Results Screen, once the last answer's «+⭐» has shown
+  if (currentSession.completedAt && !feedback) {
     return (
       <HelpScreen tour={gameResultsTour()}>
       <motion.div 
@@ -144,26 +142,29 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
             Επιστροφή στο Ταμπλό
           </motion.button>
         </div>
+        <style>{styles}</style>
       </motion.div>
       </HelpScreen>
     );
   }
 
+  // Keyed on the question and the player: each player meets the question fresh (pairs to match,
+  // the first order, empty gaps and digits), not as the last player left it
+  const turnKey = `${overallQuestionIndex}:${nextPlayerId}`;
   const renderExercise = () => {
     switch (currentExercise.type) {
       case 'multiple-choice':
-        return <MultipleChoiceRenderer exercise={currentExercise as any} onAnswer={(ans: number) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <MultipleChoiceRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: number) => handleAnswer(ans)} disabled={!!submittingUser} />;
       case 'true-false':
-        return <TrueFalseRenderer exercise={currentExercise as any} onAnswer={(ans: boolean) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <TrueFalseRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: boolean) => handleAnswer(ans)} disabled={!!submittingUser} />;
       case 'match-pairs':
-        return <MatchPairsRenderer exercise={currentExercise as any} onAnswer={(ans: any[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <MatchPairsRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: any[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
       case 'ordering':
-        return <OrderingRenderer exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <OrderingRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
       case 'fill-blank':
-        // Keyed on the player: the next one starts with empty gaps, not one tap from checking the last one's sentence
-        return <FillBlankRenderer key={nextPlayerId} exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <FillBlankRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
       case 'number-input':
-        return <NumberInputRenderer exercise={currentExercise as any} onAnswer={(ans: number) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <NumberInputRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: number) => handleAnswer(ans)} disabled={!!submittingUser} />;
       default:
         return <div>Τύπος άσκησης μη διαθέσιμος</div>;
     }
@@ -176,12 +177,12 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
       <div className="game-header">
         <div className="game-progress" {...help('game.progress')}>
           <div className="round-indicator">Γύρος {currentSession.currentRound} / {currentSession.totalRounds}</div>
-          <div className="question-indicator">Ερώτηση {currentSession.currentQuestionIndex + 1} / {currentSession.questionsPerRound}</div>
+          <div className="question-indicator">Ερώτηση {Math.min(currentSession.currentQuestionIndex + 1, currentSession.questionsPerRound)} / {currentSession.questionsPerRound}</div>
         </div>
         
         <div className="players-scores" {...help('game.turn')}>
           {players.map((player: User) => (
-            <div key={player.id} className={`player-puck ${nextPlayerId === player.id ? 'active-turn' : ''}`}>
+            <div key={player.id} className={`player-puck ${!currentSession.completedAt && nextPlayerId === player.id ? 'active-turn' : ''}`}>
               <span className="player-puck-name">{player.name}</span>
               <span className="player-puck-stars">⭐ {currentSession.totalStarsEarned[player.id] || 0}</span>
             </div>
@@ -229,21 +230,29 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
         {feedback && (
           <motion.div 
             className={`feedback-overlay ${feedback.correct ? 'correct' : 'incorrect'}`}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1.5, opacity: 0 }}
+            // Centred by Framer's x/y: its scale replaces a CSS transform
+            initial={{ scale: 0.5, opacity: 0, x: '-50%', y: '-50%' }}
+            animate={{ scale: 1, opacity: 1, x: '-50%', y: '-50%' }}
+            exit={{ scale: 1.5, opacity: 0, x: '-50%', y: '-50%' }}
           >
             <div className="feedback-icon">
               {feedback.correct ? '✨' : '❌'}
             </div>
             <div className="feedback-text">
-              {feedback.correct ? '+⭐' + currentExercise.stars : 'Προσπάθησε ξανά!'}
+              {feedback.correct ? '+⭐' + feedback.stars : 'Προσπάθησε ξανά!'}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <style>{`
+      <style>{styles}</style>
+    </div>
+    </HelpScreen>
+  );
+};
+
+// Both the game and its results screen mount these
+const styles = `
         .game-container {
           position: fixed;
           top: 0;
@@ -498,12 +507,26 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           cursor: pointer;
         }
 
+        /* On a phone the card fits the width: less padding, smaller avatars and title */
+        @media (max-width: 600px) {
+          .results-card {
+            box-sizing: border-box;
+            max-width: calc(100vw - 32px);
+            padding: 2rem 1.25rem;
+            border-radius: 2rem;
+            gap: 1.25rem;
+          }
+          .results-card h1 { font-size: 2.6rem; }
+          .final-scores { gap: 1.5rem; margin: 0.5rem 0; flex-wrap: wrap; justify-content: center; }
+          .player-result .player-avatar { width: 88px; height: 88px; font-size: 3.5rem; }
+          .finish-btn { padding: 1rem 2rem; }
+        }
+
         /* Feedback Overlay */
         .feedback-overlay {
           position: fixed;
           top: 50%;
           left: 50%;
-          transform: translate(-50%, -50%);
           z-index: calc(var(--z-player) + 10);
           padding: 3rem 5rem;
           border-radius: 2rem;
@@ -548,8 +571,4 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
           color: white;
           z-index: var(--z-player);
         }
-      `}</style>
-    </div>
-    </HelpScreen>
-  );
-};
+`;

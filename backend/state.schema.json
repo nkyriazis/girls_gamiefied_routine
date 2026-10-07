@@ -43,7 +43,8 @@
           "totalStarsEarned": {
             "type": "object",
             "additionalProperties": { "type": "integer", "minimum": 0 }
-          }
+          },
+          "dismissedAt": { "type": "string", "description": "A finished game closed with «Επιστροφή»: kept, no longer on the screens" }
         }
       }
     },

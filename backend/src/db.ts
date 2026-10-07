@@ -8,6 +8,7 @@ import {
 import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
+import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { Store } from './store';
@@ -50,7 +51,7 @@ export async function appState(): Promise<AppState> {
     spendings: getEnrichedSpendings(),
     starTransfers: getEnrichedTransfers(),
     choreInstances: getChoresWithInstances().instances,
-    exerciseSessions: activeExerciseSessions(),
+    exerciseSessions: exerciseSessionsOnScreen(),
     exerciseAssignments: await todaysAssignments(),
     flowRuns: flowRunsView(),
     routineRuns: routineRunsView(),
@@ -949,8 +950,29 @@ export function checkProblemStep(
   }
 }
 
-export function activeExerciseSessions(): ExerciseSession[] {
-  return store.exerciseSessions.all('completedAt IS NULL');
+/** How long a finished group game stays on the screens with its results, unless «Επιστροφή» closes it first. */
+export const GAME_RESULTS_MINUTES = 30;
+const resultsSince = (now: Date) => new Date(now.getTime() - GAME_RESULTS_MINUTES * 60_000).toISOString();
+
+/**
+ * The group games on screen: the running ones, then those finished in the last GAME_RESULTS_MINUTES
+ * and not closed, newest first. Older finished games are kept but never shown again.
+ */
+export function exerciseSessionsOnScreen(now = new Date()): ExerciseSession[] {
+  const finished = store.exerciseSessions.all('completedAt > ? AND dismissedAt IS NULL', resultsSince(now));
+  return [
+    ...store.exerciseSessions.all('completedAt IS NULL'),
+    ...finished.sort((a, b) => b.completedAt!.localeCompare(a.completedAt!))
+  ];
+}
+
+/**
+ * The finished games whose results window ended in (since, now]: the minute check sends a STATE
+ * when there are any, so the results leave the screens on time.
+ */
+export function gameResultsLeaving(since: Date, now: Date): ExerciseSession[] {
+  return store.exerciseSessions.all('completedAt > ? AND completedAt <= ? AND dismissedAt IS NULL',
+    resultsSince(since), resultsSince(now));
 }
 
 export function getExerciseSession(sessionId: string): ExerciseSession | undefined {
@@ -1010,8 +1032,15 @@ export function startExerciseSession(
   return session;
 }
 
-export function cancelExerciseSession(sessionId: string): void {
-  store.exerciseSessions.deleteWhere('id = ?', sessionId);
+/**
+ * «Έξοδος» / «Επιστροφή στο Ταμπλό»: a running game is cancelled (deleted); a finished one is only
+ * taken off the screens (dismissedAt), so its record stays.
+ */
+export function closeExerciseSession(sessionId: string): void {
+  const session = store.exerciseSessions.get(sessionId);
+  if (!session) return;
+  if (!session.completedAt) store.exerciseSessions.deleteWhere('id = ?', sessionId);
+  else if (!session.dismissedAt) store.exerciseSessions.put({ ...session, dismissedAt: new Date().toISOString() });
 }
 
 export function submitExerciseAnswer(
@@ -1029,8 +1058,13 @@ export function submitExerciseAnswer(
   const exercise = readExercises().find(e => e.id === exerciseId);
   if (!exercise) throw new Error('Exercise not found');
 
-  // Absolute question index (answers accumulate across rounds)
-  const overallQuestionIndex = (session.currentRound - 1) * session.questionsPerRound + session.currentQuestionIndex;
+  // An answer counts once, for the question on screen, from the player on turn. Anything else (the
+  // same answer again from a second screen or a repeated request) is refused: nothing paid or stored.
+  const overallQuestionIndex = currentQuestion(session);
+  const existingUserIds = config().users.map(u => u.id);
+  const relevantPlayerIds = session.playerIds.filter(pid => existingUserIds.includes(pid));
+  if (exerciseId !== session.exerciseIds[overallQuestionIndex]) throw new Error('Not the current question');
+  if (userId !== playerOnTurn(session, relevantPlayerIds)) throw new Error("Not this player's turn");
 
   const isCorrect = checkExerciseAnswer(exercise, answer);
   const earnedStars = isCorrect ? exercise.stars : 0;
@@ -1050,9 +1084,6 @@ export function submitExerciseAnswer(
   }
 
   // Advance question index if all players answered this overall question
-  const existingUserIds = config().users.map(u => u.id);
-  const relevantPlayerIds = session.playerIds.filter(pid => existingUserIds.includes(pid));
-
   const allAnsweredCurrent = relevantPlayerIds.every(pid =>
     session.answers[pid] && session.answers[pid].length > overallQuestionIndex
   );

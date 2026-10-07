@@ -116,7 +116,8 @@ export const api = {
     post<ExerciseSession>('/exercises/sessions', { playerIds, categories, totalRounds, questionsPerRound }, 'Failed to start exercise session'),
   submitExerciseAnswer: (sessionId: string, userId: string, exerciseId: string, answer: unknown) =>
     post<{ correct: boolean, earnedStars: number, session: ExerciseSession }>(`/exercises/sessions/${sessionId}/answer`, { userId, exerciseId, answer }, 'Failed to submit answer'),
-  cancelExerciseSession: (sessionId: string) => request<void>('DELETE', `/exercises/sessions/${sessionId}`, undefined, 'Failed to cancel exercise session'),
+  // A running game is cancelled; a finished one is taken off the screens (its record stays)
+  closeExerciseSession: (sessionId: string) => request<void>('DELETE', `/exercises/sessions/${sessionId}`, undefined, 'Failed to close exercise session'),
   startExtraProblem: (userId: string) =>
     post<ExerciseAssignmentWithExercise>('/exercise-assignments/extra', { userId }, 'Failed to start a problem'),
   // Help tours played (the owl stops offering them), and letting it offer again
