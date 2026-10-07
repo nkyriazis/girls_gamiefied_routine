@@ -1,0 +1,25 @@
+✖ failing tests:
+
+test at test/bodies.test.ts:208:22
+✖ a refused exercises save says what is wrong in a line, not AJV's JSON (#31) (1.966326ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Exercises validation failed: [{"instancePath":"/exercises/0/correctIndex","schemaPath":"#/properties/exercises/items/oneOf/0/properties/correctIndex/type","keyword":"type","params":{"type":"integer"},"message":"must be integer"}]'
+  - 'Exercises validation failed: /exercises/0/correctIndex must be integer'
+  
+      at TestContext.<anonymous> (/app/test/bodies.test.ts:227:10)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Exercises validation failed: [{"instancePath":"/exercises/0/correctIndex","schemaPath":"#/properties/exercises/items/oneOf/0/properties/correctIndex/type","keyword":"type","params":{"type":"integer"},"message":"must be integer"}]',
+    expected: 'Exercises validation failed: /exercises/0/correctIndex must be integer',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/schemas.test.ts:1:1
+✖ test/schemas.test.ts (1406.925889ms)
+  'test failed'

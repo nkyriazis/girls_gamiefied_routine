@@ -1,0 +1,6 @@
+# 1. The empty config over a live one (POST /api/admin/data, no replace), dev server
+{"error":"Refused: this would replace data.json with the empty config, which has nothing in it. A screen that saved before it had loaded the config sends exactly that; reload the page and try again."}
+# 2. data.json on disk broken (cut after its first line), then a form's save of the live config, dev server
+{"error":"data.json on disk is not valid, so saving is off: it would replace the file being fixed. Fix the file, or replace it from Γονείς → Προχωρημένα. (data.json is not valid JSON: Unexpected end of JSON input)"}
+# 3. data.json unreadable at startup, then a form's save (the live empty config plus one list, no replace): ConfigFile.save in the backend container, on a broken copy in /tmp
+{"error":"data.json was never loaded (it could not be read at startup), so saving would replace it with what is live, the empty config. Fix the file itself (Γονείς → Προχωρημένα shows its text) or restore it from a backup."}

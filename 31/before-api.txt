@@ -1,0 +1,43 @@
+$ curl -X POST localhost:3000/api/admin/validate  (data.json, a reward cost "δέκα")
+{"valid":false,"errors":[{"instancePath":"/rewards/0/cost","schemaPath":"#/properties/rewards/items/properties/cost/type","keyword":"type","params":{"type":"integer"},"message":"must be integer"}]}
+HTTP 200
+
+$ curl -X POST localhost:3000/api/admin/validate-exercises  (exercises.json, correctIndex "δεύτερο")
+{"message":"Route POST:/api/admin/validate-exercises not found","error":"Not Found","statusCode":404}
+HTTP 404
+
+$ curl -X POST localhost:3000/api/admin/exercises  (the same document, saved)
+Exercises validation failed: [{"instancePath":"/exercises/0/correctIndex","schemaPath":"#/properties/exercises/items/oneOf/0/properties/correctIndex/type","keyw…
+31 AJV errors for one mistake:
+   /exercises/0/correctIndex must be integer
+   /exercises/0 must have required property 'pairs'
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0/type must be equal to constant
+   /exercises/0 must have required property 'items'
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0/type must be equal to constant
+   /exercises/0 must have required property 'correctValue'
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0/type must be equal to constant
+   /exercises/0 must have required property 'textWithGaps'
+   /exercises/0 must have required property 'correctAnswers'
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0/type must be equal to constant
+   /exercises/0 must have required property 'correctValue'
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0/type must be equal to constant
+   /exercises/0 must have required property 'story'
+   /exercises/0 must have required property 'steps'
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0 must NOT have additional properties
+   /exercises/0/type must be equal to constant
+   /exercises/0 must match exactly one schema in oneOf
+HTTP 400

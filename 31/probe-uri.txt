@@ -1,0 +1,4 @@
+== issue (internal://data.schema.json) 
+line 1: Problems loading reference 'internal:/data.schema.json#/properties/tasks/items/properties/icon': Unable to load schema from 'internal:/data.schema.json'. No schema request service available
+== paths (internal://schemas/…) 
+line 15: Incorrect type. Expected "integer".

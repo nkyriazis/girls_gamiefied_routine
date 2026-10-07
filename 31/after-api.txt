@@ -1,0 +1,23 @@
+$ curl -X POST localhost:3000/api/admin/validate-exercises  (exercises.json, correctIndex "δεύτερο")
+{"valid":false,"errors":[{"instancePath":"/exercises/0/correctIndex","schemaPath":"#/properties/exercises/items/oneOf/0/properties/correctIndex/type","keyword":"type","params":{"type":"integer"},"message":"must be integer"}]}
+HTTP 200
+
+$ curl -X POST localhost:3000/api/admin/exercises  (the same document, saved past the pre-check)
+{"error":"Exercises validation failed: /exercises/0/correctIndex must be integer"}
+HTTP 400
+
+$ curl -X POST localhost:3000/api/admin/exercises  (five mistakes: that correctIndex, and four exercises' stars "πέντε")
+{"error":"Exercises validation failed: /exercises/0/correctIndex must be integer; /exercises/0/stars must be integer; /exercises/1/stars must be integer (+2 more)"}
+HTTP 400
+
+$ curl -X POST localhost:3000/api/admin/validate-exercises  (the first exercise type "multiple-choise")
+{"valid":false,"errors":[{"instancePath":"/exercises/0","schemaPath":"#/properties/exercises/items/discriminator","keyword":"discriminator","params":{"error":"mapping","tag":"type","tagValue":"multiple-choise"},"message":"value of tag \"type\" must be in oneOf"}]}
+HTTP 200
+
+$ curl -X POST localhost:3000/api/admin/validate  (data.json, a reward cost "δέκα"), unchanged
+{"valid":false,"errors":[{"instancePath":"/rewards/0/cost","schemaPath":"#/properties/rewards/items/properties/cost/type","keyword":"type","params":{"type":"integer"},"message":"must be integer"}]}
+HTTP 200
+
+$ curl -X POST localhost:3000/api/admin/validate-exercises  (exercises.json as it is)
+{"valid":true}
+HTTP 200
