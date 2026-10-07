@@ -24,6 +24,8 @@ Closes #
 
 ## Checks
 
+<!-- The Checks workflow (.github/workflows/ci.yml) runs the first two on this PR; tick them as it reports. The last one is yours. -->
+
 - [ ] backend `npm test`
 - [ ] frontend `npm run lint` (check-help, check-voice, check-sound, check-gender) and `npm run build`
 - [ ] The decision is recorded where the next agent looks (CLAUDE.md or the tool's README)

@@ -108,6 +108,8 @@ See [GITHUB_TOKEN.md](GITHUB_TOKEN.md) to create and save your GitHub token.
 # Wait ~5-10 minutes for build to complete
 ```
 
+The build first runs the same Checks as every PR (`.github/workflows/ci.yml`: backend, frontend and problem-gen tests, lint and builds). If one fails, no image is built or pushed. Each build is tagged `:latest` and `:sha-<first 7 of the commit>`, so an older build can be pulled back by its commit.
+
 **On your Raspberry Pi:**
 ```bash
 # First time setup
