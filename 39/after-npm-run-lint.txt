@@ -1,0 +1,9 @@
+
+> app@0.0.0 lint
+> node scripts/check-help.mjs && node scripts/help-lines.mjs --check && node scripts/check-sound.mjs && node scripts/check-gender.mjs && eslint . --max-warnings 0
+
+check-help: 76 anchors, all placed and explained; every screen has help and a layer on the scale
+check-voice: 86 lines, all recorded
+check-sound: 76 things to touch, all of them sound
+check-gender: 449 Greek texts, none says girl or boy
+EXIT=0

@@ -1,0 +1,2 @@
+touch (hasTouch: true): ontouchstart=true maxTouchPoints=1  dock-item transform at rest: none  hovered: none
+mouse (hasTouch: false): ontouchstart=false maxTouchPoints=0  dock-item transform at rest: none  hovered: matrix(1.05, 0, 0, 1.05, 0, -5)
