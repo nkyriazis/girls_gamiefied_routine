@@ -1,6 +1,6 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { ChoreInstance, DataConfig, Exercise } from '../../shared/types';
 import { tempDir, uuid } from './helpers';
@@ -205,4 +205,16 @@ test('every body the screens send still passes (api.ts), and unknown fields are 
   await ok('POST', '/api/help/reset', {});
   await ok('POST', '/api/help/reset'); // no body at all: every tour
   assert.equal(store.helpSeen.count(), 0);
+});
+
+test("the exercises editor's pre-check (#31) names the one mistake and saves nothing", async () => {
+  const file = readFileSync(process.env.EXERCISES_FILE!, 'utf-8');
+  const bad = { exercises: [{ ...exercises[0], correctIndex: 'δεύτερο' }] };
+  const res = await call('POST', '/api/admin/validate-exercises', JSON.stringify(bad));
+  assert.equal(res.status, 200);
+  assert.equal(res.body.valid, false);
+  assert.deepEqual((res.body.errors as { instancePath: string; message: string }[]).map(e => `${e.instancePath} ${e.message}`),
+    ['/exercises/0/correctIndex must be integer']);
+  assert.deepEqual((await call('POST', '/api/admin/validate-exercises', JSON.stringify({ exercises }))).body, { valid: true });
+  assert.equal(readFileSync(process.env.EXERCISES_FILE!, 'utf-8'), file);
 });
