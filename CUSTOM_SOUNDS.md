@@ -9,12 +9,18 @@ On the parents' page (`/parent`): **Προχωρημένα → Αρχεία → 
 saves it under a new name, the time in milliseconds in front of yours (`1764012149103-rooster.mp3`), and the list
 under the button shows every uploaded file by that full name. Note it down; you type it in step 2.
 
+The file must be under 1 MB (see «The file» below). On the Pi a bigger one fails with «Failed to upload file»; on
+the dev stack it says «Ανέβηκε» but keeps only the first 1 MiB, so the alarm stops short or doesn't play.
+
 From a shell, the same upload (dev stack shown; on the Pi use `http://<pi>/api/admin/upload`):
 
 ```bash
 curl -F "file=@your-alarm.mp3" http://localhost:3000/api/admin/upload
 # {"success":true,"url":"http://localhost/uploads/1791407741143-your-alarm.mp3","filename":"1791407741143-your-alarm.mp3"}
 ```
+
+Check the size first (`ls -l your-alarm.mp3`): over 1 MiB (1048576 bytes), the Pi's nginx refuses it with
+`413 Request Entity Too Large`, and the backend on :3000 still answers `success` but keeps only the first 1 MiB.
 
 ## 2. Put it in the flow's alarm step
 
@@ -61,5 +67,7 @@ flow doesn't match a file in Αρχεία.
 ## The file
 
 - Any audio the kiosk's browser plays: MP3 is the safe choice.
-- 30 to 60 seconds is enough; it loops. Keep it under a few MB, since every screen loads it from the Pi.
+- Under 1 MB: that is the upload limit. 30 to 60 seconds is enough, since it loops; at 128 kbps that is 0.5 to
+  1 MB. A longer or higher-bitrate file (60 s at 192 kbps is about 1.4 MB) has to be shortened or re-encoded first,
+  for example `ffmpeg -i song.mp3 -t 45 -b:a 128k alarm.mp3`.
 - It plays at 70% volume: normalise it so it is neither too loud nor too quiet.
