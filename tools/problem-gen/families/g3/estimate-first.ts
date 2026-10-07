@@ -135,7 +135,8 @@ export const estimateFirst: Family = {
         .filter(([v]) => v !== est).map(([, t]) => t).slice(0, 2);
       if (wrongs.length < 2) return null;
       steps.push(b.choice('plan', `Πόσο είναι περίπου; Στρογγυλοποιούμε στην πιο κοντινή ${place}.`, `${opText(ra, rc)} = ${fmt(est)}`, wrongs,
-        `Το ${fmt(a)} γίνεται ${fmt(ra)} και το ${fmt(c)} γίνεται ${fmt(rc)}.`));
+        // The rule, not the rounded numbers: they are the right option's (owner decision 3, #50 part 5d)
+        `Κοιτάμε το ψηφίο των ${to === 100 ? 'δεκάδων' : 'μονάδων'} του ${fmt(a)} και του ${fmt(c)}: από 5 και πάνω, πάμε στην επόμενη ${place}, αλλιώς μένουμε στην ίδια.`));
     }
     steps.push(b.numbers('solve', 'Τώρα υπολογίζουμε κανονικά.', [{ label: `${opText(a, c)} =`, answer: exact, unit: s.unit }],
       s.op === '+' ? 'Προσθέτουμε μονάδες, δεκάδες, εκατοντάδες. Μην ξεχάσεις τα κρατούμενα!' : 'Αφαιρούμε μονάδες, δεκάδες, εκατοντάδες. Όταν δεν φτάνουν, δανειζόμαστε μία δεκάδα ή μία εκατοντάδα.'));

@@ -91,7 +91,8 @@ export const unitRate: Family = {
       ], `Πρώτα για ένα: ${fmt(few * per)} : ${few}. Μετά πολλαπλασιάζουμε με το ${fmt(many)}.`),
       b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: είναι περίπου ${fmt(round)} × ${per} = ${fmt(round * per)}`,
         [`Όχι: πρέπει να είναι κάτω από ${fmt(many)}`, `Όχι: πρέπει να είναι περίπου ${fmt(round * per * 10)}`],
-        `Στρογγυλοποιούμε το ${fmt(many)} στο ${fmt(round)}.`),
+        // The rule, not the rounded number: it is the right option's
+        `Στρογγυλοποιούμε το ${fmt(many)} στην πιο κοντινή δεκάδα: κοιτάμε το ψηφίο των μονάδων, από 5 και πάνω πάμε στην επόμενη.`),
     ];
     return { title: s.title, story, steps };
   },
