@@ -10,7 +10,8 @@
 //   - a story with a tag step marks every number it has, and has at least one known,
 //     one sought and one extra phrase (a painted one needs no extra); paint targets
 //     are their marks, as words; in a calc step every relation holds by its numbers
-//     and the answer can be reached from what the story gives;
+//     and the answer can be reached from what the story gives, and every × has one factor
+//     with the product's unit and the other (how many times) at most 10;
 //   - options are distinct, indexes in range, order items distinct, answers whole numbers
 //     within the grade's range;
 //   - no leftover template text, doubled spaces, spaces before punctuation, unbalanced marks;
@@ -155,6 +156,15 @@ for (const pool of pools) {
           if (ops[r.op](q.get(r.a)!, q.get(r.b)!) !== q.get(r.out)) err(ex, `${at}: ${r.out} = ${r.a} ${r.op} ${r.b} is false (${q.get(r.a)} ${r.op} ${q.get(r.b)} ≠ ${q.get(r.out)})`);
         }
         for (const x of step.quantities) if (!Number.isInteger(x.value) || x.value <= 0) err(ex, `${at}: ${x.id} = ${x.value}`);
+        // A × is read back done as a run too (readLines: the same quantity added again and again): one
+        // factor has the product's unit (the each, the stock) and the other, how many times, is at most 10
+        const byId = new Map(step.quantities.map(x => [x.id, x]));
+        for (const r of step.relations.filter(r => r.op === '×' && [r.out, r.a, r.b].every(id => byId.has(id)))) {
+          const [P, a, b] = [r.out, r.a, r.b].map(id => byId.get(id)!);
+          const same = [a, b].filter(f => f.unit !== undefined && f.unit === P.unit);
+          if (same.length !== 1) err(ex, `${at}: ${r.out} = ${r.a} × ${r.b}: ${same.length} factors have the product's unit «${P.unit}», not one`);
+          else if ((same[0] === a ? b : a).value > 10) err(ex, `${at}: ${r.out} = ${r.a} × ${r.b}: ${(same[0] === a ? b : a).value} times is more than 10`);
+        }
         const known = new Set(step.given);
         for (let grew = true; grew;) {
           grew = false;
