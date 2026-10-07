@@ -95,6 +95,10 @@ const MIGRATIONS: string[] = [
   // A finished group game closed with «Επιστροφή»: kept, but no longer on the screens
   `
   ALTER TABLE exercise_sessions ADD COLUMN dismissedAt TEXT;
+  `,
+  // When a parent gave or revoked a purchase (STATE keeps the recently decided ones, #34)
+  `
+  ALTER TABLE spendings ADD COLUMN resolvedAt TEXT;
   `
 ];
 
@@ -220,7 +224,7 @@ export class Store {
       id: 'text', executionId: 'text', taskId: 'text', duration: 'int', isOnTime: 'bool', completedAt: 'text'
     });
     this.spendings = new Table<StoredSpending>(db, 'spendings', onChange, {
-      id: 'text', userId: 'text', rewardId: 'text', cost: 'int', createdAt: 'text', status: 'text'
+      id: 'text', userId: 'text', rewardId: 'text', cost: 'int', createdAt: 'text', status: 'text', resolvedAt: 'text'
     });
     this.starTransfers = new Table<StoredStarTransfer>(db, 'star_transfers', onChange, {
       id: 'text', fromUserId: 'text', toUserId: 'text', amount: 'int', createdAt: 'text', status: 'text', resolvedAt: 'text'

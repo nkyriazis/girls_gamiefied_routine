@@ -292,6 +292,10 @@
             "type": "string",
             "enum": ["pending", "done", "revoked"],
             "description": "Current status of the spending"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "description": "ISO timestamp when the reward was given or revoked"
           }
         }
       }

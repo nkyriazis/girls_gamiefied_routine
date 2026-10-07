@@ -103,6 +103,7 @@ export interface Spending {
   cost: number;
   createdAt: string;
   status: 'pending' | 'done' | 'revoked';
+  resolvedAt?: string; // when a parent gave it or revoked it (absent on purchases resolved before #34)
   user?: UserSummary;
   reward?: Reward;
 }

@@ -546,7 +546,7 @@ export function resolveSpending(id: string, status: Spending['status']): Spendin
   if (!spending) throw new StarsError(404, 'Spending not found');
   if (status !== 'done' && status !== 'revoked') throw new StarsError(400, 'Invalid status');
   if (spending.status === 'revoked') throw new StarsError(400, 'Spending is already revoked');
-  const updated = { ...spending, status };
+  const updated: Spending = { ...spending, status, resolvedAt: new Date().toISOString() };
   store.transaction(() => {
     if (status === 'revoked' && findUser(spending.userId)) addStars(spending.userId, spending.cost);
     store.spendings.put(updated);
