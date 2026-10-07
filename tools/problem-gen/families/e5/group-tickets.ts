@@ -11,16 +11,18 @@ interface Venue {
   /** "στην παράσταση" */
   go: string;
   adult: [number, number];
+  /** The least a child's or a pupil's ticket costs there (a school group's price included) */
+  child: number;
   noise: (r: Rng) => string;
 }
 
 const VENUES: Venue[] = [
-  { title: ['Στο θέατρο', 'Η θεατρική παράσταση'], ticket: 'Το εισιτήριο μιας θεατρικής παράστασης', go: 'στην παράσταση', adult: [12, 20], noise: r => `Η παράσταση διαρκεί ${extra(`${r.step(70, 120, 10)} λεπτά`)}.` },
-  { title: ['Ο ζωολογικός κήπος', 'Μια μέρα με τα ζώα'], ticket: 'Το εισιτήριο του ζωολογικού κήπου', go: 'στον ζωολογικό κήπο', adult: [14, 22], noise: r => `Ο κήπος έχει ${extra(`${r.int(80, 250)} είδη ζώων`)}.` },
-  { title: ['Το ενυδρείο', 'Στο ενυδρείο'], ticket: 'Το εισιτήριο του ενυδρείου', go: 'στο ενυδρείο', adult: [10, 18], noise: r => `Το ενυδρείο έχει ${extra(`${r.int(40, 90)} δεξαμενές`)}.` },
-  { title: ['Στον κινηματογράφο', 'Η ταινία'], ticket: 'Το εισιτήριο του κινηματογράφου', go: 'στον κινηματογράφο', adult: [8, 12], noise: r => `Η ταινία αρχίζει ${extra(`στις ${r.int(5, 7)} το απόγευμα`)}.` },
-  { title: ['Το πλανητάριο', 'Ταξίδι στα αστέρια'], ticket: 'Το εισιτήριο του πλανηταρίου', go: 'στο πλανητάριο', adult: [8, 14], noise: r => `Ο θόλος του πλανηταρίου έχει διάμετρο ${extra(`${r.int(15, 25)} μέτρα`)}.` },
-  { title: ['Το μουσείο', 'Επίσκεψη στο μουσείο'], ticket: 'Το εισιτήριο του μουσείου φυσικής ιστορίας', go: 'στο μουσείο', adult: [6, 12], noise: r => `Το μουσείο έχει ${extra(`${r.int(8, 20)} αίθουσες`)}.` },
+  { title: ['Στο θέατρο', 'Η θεατρική παράσταση'], ticket: 'Το εισιτήριο μιας θεατρικής παράστασης', go: 'στην παράσταση', adult: [12, 20], child: 5, noise: r => `Η παράσταση διαρκεί ${extra(`${r.step(70, 120, 10)} λεπτά`)}.` },
+  { title: ['Ο ζωολογικός κήπος', 'Μια μέρα με τα ζώα'], ticket: 'Το εισιτήριο του ζωολογικού κήπου', go: 'στον ζωολογικό κήπο', adult: [14, 22], child: 6, noise: r => `Ο κήπος έχει ${extra(`${r.int(80, 250)} είδη ζώων`)}.` },
+  { title: ['Το ενυδρείο', 'Στο ενυδρείο'], ticket: 'Το εισιτήριο του ενυδρείου', go: 'στο ενυδρείο', adult: [10, 18], child: 5, noise: r => `Το ενυδρείο έχει ${extra(`${r.int(40, 90)} δεξαμενές`)}.` },
+  { title: ['Στον κινηματογράφο', 'Η ταινία'], ticket: 'Το εισιτήριο του κινηματογράφου', go: 'στον κινηματογράφο', adult: [8, 12], child: 4, noise: r => `Η ταινία αρχίζει ${extra(`στις ${r.int(5, 7)} το απόγευμα`)}.` },
+  { title: ['Το πλανητάριο', 'Ταξίδι στα αστέρια'], ticket: 'Το εισιτήριο του πλανηταρίου', go: 'στο πλανητάριο', adult: [8, 14], child: 4, noise: r => `Ο θόλος του πλανηταρίου έχει διάμετρο ${extra(`${r.int(15, 25)} μέτρα`)}.` },
+  { title: ['Το μουσείο', 'Επίσκεψη στο μουσείο'], ticket: 'Το εισιτήριο του μουσείου φυσικής ιστορίας', go: 'στο μουσείο', adult: [6, 12], child: 3, noise: r => `Το μουσείο έχει ${extra(`${r.int(8, 20)} αίθουσες`)}.` },
 ];
 
 const WORDS = ['', 'ένα', 'δύο', 'τρία', 'τέσσερα'];
@@ -66,7 +68,7 @@ export const groupTickets: Family = {
       const C = A - less;
       const total = f.adults * A + f.kids * C;
       const note = NOTES.find(n => n > total);
-      if (!note || C < 3) return null;
+      if (!note || C < Math.max(3, v.child)) return null;
       const pays = r.chance(0.6);
       const intro = `${v.ticket} κοστίζει ${known(`${A} € για τους ενήλικες`)} και ${known(`για τα παιδιά ${less} € λιγότερα`)}.`;
       // "Μια οικογένεια με τρία παιδιά" has no digit; the others name the people
@@ -101,6 +103,7 @@ export const groupTickets: Family = {
     const free = Math.floor(pupils / 10);
     const teachers = free + r.int(1, 3);
     const C = r.int(3, Math.max(4, A - 4));
+    if (C < v.child) return null;
     const payT = teachers - free;
     const total = pupils * C + payT * A;
     const note = r.chance(0.5) ? NOTES.find(n => n > total) : undefined;

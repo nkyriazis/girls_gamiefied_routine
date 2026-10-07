@@ -101,10 +101,13 @@ export const sumDifference: Family = {
     const small = (T - d) / 2, big = small + d;
     const [bigName, smallName] = s.names(p, q);
 
-    const rel = r.chance(0.6) ? s.more(p, q, fmt(d)) : s.less(p, q, fmt(d));
-    const together = s.together(p, q, known(withUnit(s, T)));
+    const more = r.chance(0.6);
+    const rel = more ? s.more(p, q, fmt(d)) : s.less(p, q, fmt(d));
     const noise = extra(s.noise(r.int(2, 9)));
     const t = r.int(0, 2);
+    // «Η Χαρά και ο Νίκος έχουν… Η Χαρά έχει…»: when the relation (about p) comes next, the sum
+    // names the other first, so two sentences in a row don't open with one name
+    const together = t === 0 && more ? s.together(q, p, known(withUnit(s, T))) : s.together(p, q, known(withUnit(s, T)));
     const story = t === 0
       ? `${together}. ${known(rel)}. ${noise}. ${sought(s.ask(p, q))};`
       : t === 1

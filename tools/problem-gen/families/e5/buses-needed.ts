@@ -79,8 +79,8 @@ export const busesNeeded: Family = {
     const travel = `${s.goes} ${who.length > 1 ? `${who[0]} και ${who[1]}` : who[0]}.`;
     const bus = `Κάθε λεωφορείο έχει ${known(`${seats} θέσεις`)} για επιβάτες.`;
     const costLine = ask === 'cost'
-      ? ` Το καθένα κοστίζει ${known(`${fmt(price)} €`)}.`
-      : r.chance(0.3) ? ` Το καθένα κοστίζει ${extra(`${fmt(price)} €`)}.` : '';
+      ? ` Η ενοικίαση ενός λεωφορείου κοστίζει ${known(`${fmt(price)} €`)}.`
+      : r.chance(0.3) ? ` Η ενοικίαση ενός λεωφορείου κοστίζει ${extra(`${fmt(price)} €`)}.` : '';
     const noise = costLine && ask !== 'cost' && r.chance(0.5) ? '' : ` ${s.noise(r)}`;
     const question = ask === 'buses'
       ? sought('Πόσα λεωφορεία χρειάζονται, για να πάνε όλοι')

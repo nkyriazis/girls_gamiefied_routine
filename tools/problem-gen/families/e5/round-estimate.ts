@@ -87,8 +87,10 @@ export const roundEstimate: Family = {
     const question = add ? s.sum : s.diff(p);
     const intro = s.intro(known(s.a1(fmt(a))), known(fmt(c)), p, q);
     const noise = `${extra(s.noise(() => r.int(3, 9)))}.`;
+    // «Ο πατέρας της Σοφίας οδηγεί φορτηγό… Ο Στέλιος στρογγυλοποίησε…»: two subjects, so the claim's question names him
+    const father = /^Ο πατέρας/.test(intro);
     const story = claimTelling
-      ? `${intro} ${noise} ${k.Nom} στρογγυλοποίησε ${place} και ${known(`υπολόγισε ότι ${add ? 'μαζί είναι' : 'η διαφορά είναι'} περίπου ${fmt(claim)}`)}. ${sought('Έχει δίκιο')}; ${sought(add ? 'Ποιο είναι ακριβώς το άθροισμα' : 'Ποια είναι ακριβώς η διαφορά')};`
+      ? `${intro} ${noise} ${k.Nom} στρογγυλοποίησε ${place} και ${known(`υπολόγισε ότι ${add ? 'μαζί είναι' : 'η διαφορά είναι'} περίπου ${fmt(claim)}`)}. ${sought(`Έχει δίκιο${father ? ` ${k.nom}` : ''}`)}; ${sought(add ? 'Ποιο είναι ακριβώς το άθροισμα' : 'Ποια είναι ακριβώς η διαφορά')};`
       : r.chance(0.5)
         ? `${intro} ${noise} ${sought(question)}, αν στρογγυλοποιήσουμε ${place}; ${sought(s.exact)};`
         : `${sought(question)}, αν στρογγυλοποιήσουμε ${place}; ${sought(s.exact)}; ${intro} ${noise}`;
