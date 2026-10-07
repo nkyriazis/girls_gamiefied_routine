@@ -42,6 +42,6 @@ export function KidsEditor() {
                 sub: <><span className="p-swatch-dot" style={{ background: u.color }} aria-hidden />{gradeLabel(u.grade)}</>,
             })}
             isValid={(u, isNew) => kidIsValid(u, config.users, isNew)}
-            save={(items, options) => save('users', items.map(tidyUser), options)} />
+            save={(items, options) => save('users', items.map(u => (config.users.includes(u) ? u : tidyUser(u))), options)} />
     );
 }
