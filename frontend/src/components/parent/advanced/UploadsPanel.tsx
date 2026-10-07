@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { UPLOAD_MAX_MB } from '@shared/uploads';
 import { api } from '../../../api';
+import { copyText } from '../copyText';
 import { useFeedback } from '../useFeedback';
 import { Empty } from '../ui';
 
@@ -14,7 +15,11 @@ export function UploadsPanel() {
     const upload = async (file?: File) => {
         if (file && await run(() => api.uploadFile(file), `Ανέβηκε: ${file.name}`)) refresh();
     };
-    const copy = (name: string) => navigator.clipboard.writeText(name).then(() => notify(`Αντιγράφηκε: ${name}`), () => notify(name));
+    // The toast says what happened; when the browser refused, the name is there to read (#108)
+    const copy = async (name: string) => {
+        if (await copyText(name)) notify(`Αντιγράφηκε: ${name}`);
+        else notify(`Δεν αντιγράφηκε. Το όνομα: ${name}`, 'error');
+    };
 
     return (
         <div className="p-uploads">

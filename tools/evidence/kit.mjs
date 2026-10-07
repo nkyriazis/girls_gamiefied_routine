@@ -6,18 +6,26 @@
 //   const { page, caption, tap, pause, listen, finish } = await start('before-calc');
 //   ...
 //   await finish();
-import { chromium } from 'playwright';
+import { chromium, webkit, devices } from 'playwright';
 import fs from 'fs';
 
 export const pause = ms => new Promise(r => setTimeout(r, ms));
 export const APP = process.env.APP ?? 'http://localhost:5173';
 export const API = process.env.API ?? 'http://localhost:3000';
 
-// out: the file name without extension; size: the kiosk (1280×800) unless the change affects another
-export async function start(out, { size = { width: 1280, height: 800 }, touch = true, video = true } = {}) {
+// out: the file name without extension; size: the kiosk (1280×800) unless the change affects another.
+// browser: 'chromium' (the kiosk's) or 'webkit' (Safari's engine, as on an iPhone); device: a
+// Playwright device name ('iPhone 13') for its user agent, mobile viewport and touch, at scale 1.
+// Linux WebKit only approximates iOS Safari: a real phone is still the last word.
+export async function start(out, { size, touch = true, video = true, browser: engine = 'chromium', device } = {}) {
   const log = (...a) => console.log(`[${out}]`, ...a);
-  const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+  const like = device ? devices[device] : undefined;
+  if (device && !like) throw new Error(`no Playwright device «${device}»`);
+  size ??= like?.viewport ?? { width: 1280, height: 800 };
+  const browser = engine === 'webkit' ? await webkit.launch()
+    : await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
   const context = await browser.newContext({
+    ...(like ? { userAgent: like.userAgent, isMobile: like.isMobile } : {}),
     viewport: size, deviceScaleFactor: 1, hasTouch: touch, timezoneId: 'Europe/Athens', locale: 'el-GR',
     ...(video ? { recordVideo: { dir: `video-${out}`, size } } : {}),
   });

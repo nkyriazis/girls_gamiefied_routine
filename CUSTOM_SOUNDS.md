@@ -7,7 +7,9 @@ for each child.
 
 On the parents' page (`/parent`): **Προχωρημένα → Αρχεία → «Ανέβασμα εικόνας ή ήχου»**, and pick the file. The server
 saves it under a new name, the time in milliseconds in front of yours (`1764012149103-rooster.mp3`), and the list
-under the button shows every uploaded file by that full name. Note it down; you type it in step 2.
+under the button shows every uploaded file by that full name. Tap the file to copy its name («Αντιγράφηκε: …») and
+paste it in step 2. This works on the Pi's plain `http://<pi>/` too. If the browser refuses to copy, the message says
+so and shows the name to type: «Δεν αντιγράφηκε. Το όνομα: …».
 
 The file may be up to 10 MB (the line under the button says so; see «The file» below). A bigger one is refused, on
 the Pi and on the dev stack alike, and nothing of it is kept: «<file>: πάνω από 10 MB, δεν ανέβηκε. Μίκρυνέ το (για
