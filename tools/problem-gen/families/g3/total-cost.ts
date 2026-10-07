@@ -123,10 +123,11 @@ export const totalCost: Family = {
     const [hi, lo] = prices[0] >= prices[1] ? [prices[0], prices[1]] : [prices[1], prices[0]];
     if (r.chance(0.5)) {
       // As many terms as the right one: an item forgotten, × for +, or straight to the change
+      // (the money less the prices, never less the total: that is the next step's answer)
       steps.push(b.choice('plan', 'Ποια πράξη μας δίνει το κόστος;', sum,
         n === 3
-          ? [`${prices[0]} + ${prices[1]}`, `${prices[0]} × ${prices[1]} + ${prices[2]}`, ...(mode === 'total' ? [] : [`${fmt(money)} − ${total}`])]
-          : [...(hi > lo ? [`${hi} − ${lo}`] : []), `${prices[0]} × ${prices[1]}`, ...(mode === 'total' ? [] : [`${fmt(money)} − ${prices[0]}`])],
+          ? [`${prices[0]} + ${prices[1]}`, `${prices[0]} × ${prices[1]} + ${prices[2]}`, ...(mode === 'total' || money <= forgot ? [] : [`${fmt(money)} − ${prices[0]} − ${prices[1]}`])]
+          : [...(hi > lo ? [`${hi} − ${lo}`] : []), `${prices[0]} × ${prices[1]}`, ...(mode === 'total' || money <= prices[0] ? [] : [`${fmt(money)} − ${prices[0]}`])],
         'Όταν αγοράζουμε πολλά πράγματα, πληρώνουμε όλες τις τιμές μαζί.'));
     }
     // The hint follows the digits: two one-digit prices make ten first, a one-digit one is added
@@ -141,7 +142,9 @@ export const totalCost: Family = {
       steps.push(r.chance(0.5)
         ? b.choice('check', 'Πώς ελέγχουμε;', `${[...prices].reverse().join(' + ')} = ${total}`,
           n === 3
-            ? [`${prices[0]} + ${prices[1]} = ${forgot}`, `${prices[2]} + ${prices[1]} + ${prices[1]} = ${prices[2] + 2 * prices[1]}`].filter(o => !o.startsWith(`${[...prices].reverse().join(' + ')} =`))
+            // An item forgotten, or a price counted twice in place of another: one of the two is as long as the right one
+            ? [`${prices[0]} + ${prices[1]} = ${forgot}`, `${prices[2]} + ${prices[1]} + ${prices[1]} = ${prices[2] + 2 * prices[1]}`,
+              `${prices[2]} + ${prices[0]} + ${prices[0]} = ${prices[2] + 2 * prices[0]}`].filter(o => !o.startsWith(`${[...prices].reverse().join(' + ')} =`))
             : [`${hi} − ${lo} = ${hi - lo}`, `${total} + ${prices[0]} = ${total + prices[0]}`],
           'Προσθέτουμε τις τιμές με άλλη σειρά. Πρέπει να βρούμε το ίδιο.')
         : b.choice('check', 'Είναι λογική η απάντηση;', 'Ναι, είναι περισσότερα από κάθε τιμή',
