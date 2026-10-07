@@ -1,0 +1,72 @@
+
+## Γ΄ generated: 500 problems
+  careful (each phrase, as the tests paint):  fails paint 0/500 (0%), paint-all 0/500 (0%)
+  whole sentences, split between the phrases in them, an unneeded fact inside left out (⚪ on paint-all): fails paint 302/500 (60%), paint-all 393/500 (79%)
+  the same, an unneeded fact inside painted with its sentence (must fail): fails paint 319/500 (64%), paint-all 407/500 (81%)
+  whole sentence, as the review counted (the question's colour wins a shared sentence, an unneeded fact inside painted too): fails paint 319/500 (64%), paint-all 407/500 (81%)
+     why on paint: {"too-much":280,"pass":181,"target+too-much":22,"target":17}; on paint-all: {"too-much":368,"pass":93,"target+too-much":25,"target":14}
+  whole story (green, the question yellow): passes paint on 0
+  whole story all green: passes on 0
+  stories with no unneeded fact 0; with an unneeded fact sharing a sentence with a needed one/the question 33; with a sentence holding no fact 124
+
+## Γ΄ world: 200 problems
+  careful (each phrase, as the tests paint):  fails paint 0/200 (0%), paint-all 0/200 (0%)
+  whole sentences, split between the phrases in them, an unneeded fact inside left out (⚪ on paint-all): fails paint 110/200 (55%), paint-all 163/200 (82%)
+  the same, an unneeded fact inside painted with its sentence (must fail): fails paint 110/200 (55%), paint-all 163/200 (82%)
+  whole sentence, as the review counted (the question's colour wins a shared sentence, an unneeded fact inside painted too): fails paint 110/200 (55%), paint-all 163/200 (82%)
+     why on paint: {"too-much":110,"pass":90}; on paint-all: {"too-much":163,"pass":37}
+  whole story (green, the question yellow): passes paint on 7 g3-world-015, g3-world-022, g3-world-031, g3-world-065, g3-world-080, g3-world-133, g3-world-139
+  whole story all green: passes on 0
+  stories with no unneeded fact 36; with an unneeded fact sharing a sentence with a needed one/the question 0; with a sentence holding no fact 62
+
+## Γ΄ curated: 8 problems
+  careful (each phrase, as the tests paint):  fails paint 0/8 (0%), paint-all 0/8 (0%)
+  whole sentences, split between the phrases in them, an unneeded fact inside left out (⚪ on paint-all): fails paint 2/8 (25%), paint-all 3/8 (38%)
+  the same, an unneeded fact inside painted with its sentence (must fail): fails paint 2/8 (25%), paint-all 3/8 (38%)
+  whole sentence, as the review counted (the question's colour wins a shared sentence, an unneeded fact inside painted too): fails paint 2/8 (25%), paint-all 3/8 (38%)
+     why on paint: {"pass":6,"too-much":2}; on paint-all: {"pass":5,"too-much":3}
+  whole story (green, the question yellow): passes paint on 0
+  whole story all green: passes on 0
+  stories with no unneeded fact 0; with an unneeded fact sharing a sentence with a needed one/the question 0; with a sentence holding no fact 2
+
+## Ε΄ generated: 500 problems
+  careful (each phrase, as the tests paint):  fails paint 0/500 (0%), paint-all 0/500 (0%)
+  whole sentences, split between the phrases in them, an unneeded fact inside left out (⚪ on paint-all): fails paint 328/500 (66%), paint-all 353/500 (71%)
+  the same, an unneeded fact inside painted with its sentence (must fail): fails paint 384/500 (77%), paint-all 409/500 (82%)
+  whole sentence, as the review counted (the question's colour wins a shared sentence, an unneeded fact inside painted too): fails paint 405/500 (81%), paint-all 425/500 (85%)
+     why on paint: {"target+too-much":187,"target":64,"too-much":154,"pass":95}; on paint-all: {"target+too-much":191,"target":60,"too-much":174,"pass":75}
+  whole story (green, the question yellow): passes paint on 0
+  whole story all green: passes on 0
+  stories with no unneeded fact 0; with an unneeded fact sharing a sentence with a needed one/the question 220; with a sentence holding no fact 119
+
+## Ε΄ curated: 8 problems
+  careful (each phrase, as the tests paint):  fails paint 0/8 (0%), paint-all 0/8 (0%)
+  whole sentences, split between the phrases in them, an unneeded fact inside left out (⚪ on paint-all): fails paint 6/8 (75%), paint-all 6/8 (75%)
+  the same, an unneeded fact inside painted with its sentence (must fail): fails paint 7/8 (88%), paint-all 7/8 (88%)
+  whole sentence, as the review counted (the question's colour wins a shared sentence, an unneeded fact inside painted too): fails paint 7/8 (88%), paint-all 7/8 (88%)
+     why on paint: {"target+too-much":6,"target":1,"pass":1}; on paint-all: {"target+too-much":6,"target":1,"pass":1}
+  whole story (green, the question yellow): passes paint on 0
+  whole story all green: passes on 0
+  stories with no unneeded fact 0; with an unneeded fact sharing a sentence with a needed one/the question 7; with a sentence holding no fact 2
+
+## first failing ids per pool, rung and reason
+  Γ΄ generated paint too-much: 280: g3-gen-change-left-001, g3-gen-change-left-002, g3-gen-change-left-003, g3-gen-change-left-005, g3-gen-change-left-006, g3-gen-change-left-007
+  Γ΄ generated paint-all too-much: 368: g3-gen-change-left-001, g3-gen-change-left-002, g3-gen-change-left-003, g3-gen-change-left-004, g3-gen-change-left-005, g3-gen-change-left-006
+  Γ΄ generated paint target+too-much: 22: g3-gen-equal-groups-002, g3-gen-equal-groups-007, g3-gen-equal-groups-008, g3-gen-equal-groups-009, g3-gen-equal-groups-011, g3-gen-equal-groups-019
+  Γ΄ generated paint-all target+too-much: 25: g3-gen-equal-groups-002, g3-gen-equal-groups-007, g3-gen-equal-groups-008, g3-gen-equal-groups-009, g3-gen-equal-groups-011, g3-gen-equal-groups-019
+  Γ΄ generated paint target: 17: g3-gen-table-reading-003, g3-gen-table-reading-006, g3-gen-table-reading-007, g3-gen-table-reading-010, g3-gen-table-reading-016, g3-gen-table-reading-017
+  Γ΄ generated paint-all target: 14: g3-gen-table-reading-003, g3-gen-table-reading-007, g3-gen-table-reading-017, g3-gen-table-reading-020, g3-gen-ages-003, g3-gen-ages-005
+  Γ΄ world paint too-much: 110: g3-world-001, g3-world-002, g3-world-003, g3-world-004, g3-world-005, g3-world-007
+  Γ΄ world paint-all too-much: 163: g3-world-001, g3-world-002, g3-world-003, g3-world-004, g3-world-005, g3-world-007
+  Γ΄ curated paint too-much: 2: g3-problem-rally-car, g3-problem-elections
+  Γ΄ curated paint-all too-much: 3: g3-problem-rally-car, g3-problem-cookies, g3-problem-elections
+  Ε΄ generated paint target+too-much: 187: e5-gen-parts-ratio-001, e5-gen-parts-ratio-002, e5-gen-parts-ratio-003, e5-gen-parts-ratio-004, e5-gen-parts-ratio-005, e5-gen-parts-ratio-006
+  Ε΄ generated paint-all target+too-much: 191: e5-gen-parts-ratio-001, e5-gen-parts-ratio-002, e5-gen-parts-ratio-003, e5-gen-parts-ratio-004, e5-gen-parts-ratio-005, e5-gen-parts-ratio-006
+  Ε΄ generated paint target: 64: e5-gen-unit-rate-001, e5-gen-unit-rate-002, e5-gen-unit-rate-003, e5-gen-unit-rate-005, e5-gen-unit-rate-008, e5-gen-unit-rate-009
+  Ε΄ generated paint-all target: 60: e5-gen-unit-rate-001, e5-gen-unit-rate-002, e5-gen-unit-rate-003, e5-gen-unit-rate-005, e5-gen-unit-rate-008, e5-gen-unit-rate-009
+  Ε΄ generated paint too-much: 154: e5-gen-round-estimate-001, e5-gen-round-estimate-004, e5-gen-round-estimate-005, e5-gen-round-estimate-006, e5-gen-round-estimate-008, e5-gen-round-estimate-009
+  Ε΄ generated paint-all too-much: 174: e5-gen-round-estimate-001, e5-gen-round-estimate-004, e5-gen-round-estimate-005, e5-gen-round-estimate-006, e5-gen-round-estimate-008, e5-gen-round-estimate-009
+  Ε΄ curated paint target+too-much: 6: e5-problem-balls, e5-problem-piggy-bank, e5-problem-chocolates, e5-problem-stamps, e5-problem-theatre, e5-problem-oranges
+  Ε΄ curated paint-all target+too-much: 6: e5-problem-balls, e5-problem-piggy-bank, e5-problem-chocolates, e5-problem-stamps, e5-problem-theatre, e5-problem-oranges
+  Ε΄ curated paint target: 1: e5-problem-apples
+  Ε΄ curated paint-all target: 1: e5-problem-apples

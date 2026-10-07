@@ -1,0 +1,6 @@
+⚪ sweep passes (phrases painted over / question sentence 🟡), per pool:
+  Γ΄ generated (500): master 0 / 0 · PR v1 (71ef651) 500 / 500 · now 0 / 0
+  Γ΄ world (200): master 0 / 0 · PR v1 (71ef651) 200 / 200 · now 1 / 1
+  Γ΄ curated (8): master 0 / 0 · PR v1 (71ef651) 8 / 8 · now 0 / 0
+  Ε΄ generated (500): master 26 / 31 · PR v1 (71ef651) 500 / 500 · now 27 / 40
+  Ε΄ curated (8): master 1 / 1 · PR v1 (71ef651) 8 / 8 · now 1 / 1
