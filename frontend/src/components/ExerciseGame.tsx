@@ -69,7 +69,7 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
   // The server takes an answer only from this player (shared/groupGame.ts)
   const nextPlayerId = playerOnTurn(currentSession, players.map(p => p.id)) ?? currentSession.playerIds[0];
 
-  const handleAnswer = async (answer: any) => {
+  const handleAnswer = async (answer: unknown) => {
     if (submittingUser || feedback) return;
     
     setSubmittingUser(nextPlayerId);
@@ -154,17 +154,17 @@ export const ExerciseGame: React.FC<ExerciseGameProps> = ({ session, onClose }) 
   const renderExercise = () => {
     switch (currentExercise.type) {
       case 'multiple-choice':
-        return <MultipleChoiceRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: number) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <MultipleChoiceRenderer key={turnKey} exercise={currentExercise} onAnswer={handleAnswer} disabled={!!submittingUser} />;
       case 'true-false':
-        return <TrueFalseRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: boolean) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <TrueFalseRenderer key={turnKey} exercise={currentExercise} onAnswer={handleAnswer} disabled={!!submittingUser} />;
       case 'match-pairs':
-        return <MatchPairsRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: any[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <MatchPairsRenderer key={turnKey} exercise={currentExercise} onAnswer={handleAnswer} disabled={!!submittingUser} />;
       case 'ordering':
-        return <OrderingRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <OrderingRenderer key={turnKey} exercise={currentExercise} onAnswer={handleAnswer} disabled={!!submittingUser} />;
       case 'fill-blank':
-        return <FillBlankRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: string[]) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <FillBlankRenderer key={turnKey} exercise={currentExercise} onAnswer={handleAnswer} disabled={!!submittingUser} />;
       case 'number-input':
-        return <NumberInputRenderer key={turnKey} exercise={currentExercise as any} onAnswer={(ans: number) => handleAnswer(ans)} disabled={!!submittingUser} />;
+        return <NumberInputRenderer key={turnKey} exercise={currentExercise} onAnswer={handleAnswer} disabled={!!submittingUser} />;
       default:
         return <div>Τύπος άσκησης μη διαθέσιμος</div>;
     }

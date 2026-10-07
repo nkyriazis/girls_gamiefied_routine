@@ -49,7 +49,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
   // A problem gets the whole stage as a fixed frame (title in the header), so nothing moves between its steps
   const isProblem = exercise.type === 'problem';
 
-  const handleAnswer = async (answer: any) => {
+  const handleAnswer = async (answer: unknown) => {
     if (submitting || feedback) return;
     setSubmitting(true);
     try {

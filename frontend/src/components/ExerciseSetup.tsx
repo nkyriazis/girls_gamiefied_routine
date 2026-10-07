@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartIcon } from './SmartIcon';
 import { api, ApiError } from '../api';
-import type { User } from '@shared/types';
+import type { ExerciseCategoryDef, User } from '@shared/types';
 import { help } from '../help/anchors';
 import { HelpScreen } from '../help/HelpProvider';
 import { gameSetupTour } from './ExerciseSetup.help';
@@ -16,7 +16,7 @@ interface ExerciseSetupProps {
 }
 
 export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, onStart }) => {
-  const [categories, setCategories] = useState<any[]>([]); // { id, label, icon? }
+  const [categories, setCategories] = useState<ExerciseCategoryDef[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // array of category IDs
   const [totalRounds, setTotalRounds] = useState(3);
@@ -31,7 +31,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
         const cats = await api.getExerciseCategories();
         setCategories(cats);
         // Initially select all categories
-        setSelectedCategories(cats.map((c: any) => c.id || c));
+        setSelectedCategories(cats.map(c => c.id));
       } catch (err) {
         console.error('Failed to fetch categories:', err);
       } finally {
@@ -119,12 +119,7 @@ export const ExerciseSetup: React.FC<ExerciseSetupProps> = ({ users, onClose, on
               <div className="loading-spinner">Φόρτωση...</div>
             ) : (
               <div className="categories-chips" {...help('game.subjects')}>
-                {categories.map(cat => {
-                  // handle both {id, label, icon} and fallback string
-                  const catId = cat.id || cat;
-                  const catLabel = cat.label || cat;
-                  const catIcon = cat.icon;
-
+                {categories.map(({ id: catId, label: catLabel, icon: catIcon }) => {
                   return (
                     <motion.button
                       key={catId}
