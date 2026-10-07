@@ -1,0 +1,8 @@
+Γ΄ world pool, 200 problems: the book way passes on 200.
+× on the book's way: 51. Done as a run instead (m + m … n times): passes on 0.
+The product put on a stock once: 35. The run straight from the stock (B ± m … n times): passes on 0.
+Examples:
+  g3-world-001: 88 − 4 = 84, 84 − 4 = 80, 80 − 4 = 76, 76 − 4 = 72, 72 − 4 = 68, 68 − 4 = 64, 71 − 64 = 7 → {"correct":false,"wrong":[0,1,2,3,4,5,6]}
+  g3-world-014: 72 − 2 = 70, 70 − 2 = 68, 68 − 2 = 66, 66 − 2 = 64, 64 − 2 = 62 → {"correct":false,"wrong":[0,1,2,3,4]}
+  g3-world-015: 30 + 6 = 36, 36 − 4 = 32, 32 − 4 = 28 → {"correct":false,"wrong":[1,2]}
+  g3-world-016: 95 + 9 = 104, 104 + 9 = 113, 113 + 9 = 122, 122 − 40 = 82 → {"correct":false,"wrong":[0,1,2,3]}

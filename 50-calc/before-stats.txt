@@ -1,0 +1,36 @@
+Γ΄ world pool: 200 problems, each with a calc step; the worked way passes checkCalc on all of them.
+× on the book's way (packs or weekly savings, count × each): 49 problems. Adding the "each" twice (m + m) reads back as meaning nothing in 49 of them, even with 2 packs where m + m is the whole product: readCalculation matches only the relation’s own operation.
+«διπλάσια» (× 2) on the way: 2 problems; s + s for s × 2 reads back as meaning nothing in all of them (see list).
+: on the way (an "each" or a count to find, or «τα μισά»): 24 problems. Repeated subtraction can't give these (the answer is how many times), only a trial number could.
+− on the way: 151 problems; the smaller first with the difference typed gives «Ξαναμέτρα» in 151 of them.
+
+Examples, × :
+  g3-world-001 6 × 4 = 24: 4 + 4 means nothing
+  g3-world-014 5 × 2 = 10: 2 + 2 means nothing
+  g3-world-015 2 × 4 = 8: 4 + 4 means nothing (2 of them: the whole product)
+  g3-world-016 3 × 9 = 27: 9 + 9 means nothing
+  g3-world-020 6 × 8 = 48: 8 + 8 means nothing
+  g3-world-022 4 × 9 = 36: 9 + 9 means nothing
+  g3-world-025 3 × 6 = 18: 6 + 6 means nothing
+  g3-world-030 2 × 10 = 20: 10 + 10 means nothing (2 of them: the whole product)
+
+«διπλάσια»:
+  g3-world-070 62 × 2 = 124: 62 + 62 means nothing
+  g3-world-188 38 × 2 = 76: 38 + 38 means nothing
+
+: on the way:
+  g3-world-009 55 − 37 = 18, 18 : 6 = 3
+  g3-world-023 35 − 27 = 8, 38 − 8 = 30, 30 : 5 = 6
+  g3-world-024 84 − 25 = 59, 79 − 59 = 20, 20 : 5 = 4
+  g3-world-027 47 − 33 = 14, 14 : 2 = 7
+  g3-world-050 33 + 16 = 49, 79 − 49 = 30, 30 : 6 = 5
+  g3-world-056 51 − 18 = 33, 41 − 33 = 8, 8 : 2 = 4
+  g3-world-059 44 + 41 = 85, 85 − 77 = 8, 8 : 2 = 4
+  g3-world-075 49 + 9 = 58, 73 − 58 = 15, 15 : 3 = 5
+
+− :
+  g3-world-001 88 − 24 = 64; 24 − 88 = 64 typed: applyOp gives -64, so «Ξαναμέτρα»
+  g3-world-002 70 − 18 = 52; 18 − 70 = 52 typed: applyOp gives -52, so «Ξαναμέτρα»
+  g3-world-004 52 − 22 = 30; 22 − 52 = 30 typed: applyOp gives -30, so «Ξαναμέτρα»
+  g3-world-005 78 − 2 = 76; 2 − 78 = 76 typed: applyOp gives -76, so «Ξαναμέτρα»
+  g3-world-007 83 − 59 = 24; 59 − 83 = 24 typed: applyOp gives -24, so «Ξαναμέτρα»

@@ -1,0 +1,14 @@
+g3-world-022 the book way: 9 × 4 = 36, 58 − 36 = 22 → {"correct":true}
+g3-world-022 an envelope at a time: 58 − 9 = 49, 49 − 9 = 40, 40 − 9 = 31, 31 − 9 = 22 → {"correct":false,"wrong":[0,1,2,3]}
+g3-world-022 the envelopes added up, then taken off: 9 + 9 = 18, 18 + 9 = 27, 27 + 9 = 36, 58 − 36 = 22 → {"correct":false,"wrong":[0,1,2,3]}
+g3-world-022 one envelope too many: 58 − 9 = 49, 49 − 9 = 40, 40 − 9 = 31, 31 − 9 = 22, 22 − 9 = 13 → {"correct":false,"wrong":[0,1,2,3,4]}
+g3-world-022 a number that is not hers: 58 − 10 = 48 → {"correct":false,"wrong":[0]}
+g3-world-022 two envelopes added, taken off at once, then one at a time: 9 + 9 = 18, 58 − 18 = 40, 40 − 9 = 31, 31 − 9 = 22 → {"correct":false,"wrong":[0,1,2,3]}
+g3-world-022 two envelopes added, taken off twice: 9 + 9 = 18, 58 − 18 = 40, 40 − 18 = 22 → {"correct":false,"wrong":[0,1,2]}
+g3-world-022 the count added (4 + 4: not a way): 4 + 4 = 8 → {"correct":false,"wrong":[0]}
+g3-world-022 the smaller number first (the screen never sends it): 9 × 4 = 36, 36 − 58 = 22 → {"correct":false,"wrong":[1]}
+g3-world-139 the book way: 2 × 8 = 16, 68 + 16 = 84 → {"correct":true}
+g3-world-139 the two packs added: 8 + 8 = 16, 68 + 16 = 84 → {"correct":false,"wrong":[0,1]}
+g3-world-139 a pack at a time: 68 + 8 = 76, 76 + 8 = 84 → {"correct":false,"wrong":[0,1]}
+g3-world-139 a third pack (one too many): 68 + 8 = 76, 76 + 8 = 84, 84 + 8 = 92 → {"correct":false,"wrong":[0,1,2]}
+g3-world-139 the count added twice (2 + 2: not a way): 2 + 2 = 4 → {"correct":false,"wrong":[0]}

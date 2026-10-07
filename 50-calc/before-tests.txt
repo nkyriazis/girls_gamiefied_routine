@@ -1,0 +1,8 @@
+The new tests (backend/test/problems.test.ts) run against master's checker, with readLines/smallerFirst/runLabel
+stubbed to the old behaviour (readCalculation only, never "smaller first"):
+✖ working it out: the same quantity taken away again and again reads back, up to the count (#50)
+✖ working it out: a pack at a time, the two packs added, «διπλάσια» (#50)
+✖ working it out: a run step that is also a quantity is read both ways (#50)
+✖ the smaller number first, in a subtraction or a division (#50)
+✖ every shipped world problem with a × on its way: the same way with the × done as a run passes (#50)
+With the fix: all five ✔.
