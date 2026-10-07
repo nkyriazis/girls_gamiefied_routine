@@ -16,7 +16,7 @@
 //   - a gendered word (check-gender's list), template leftovers, doubled spaces, space before punctuation;
 //     number words that don't agree (τρεις χιλιάδες, τρία εκατομμύρια, κέρμα/κέρματα);
 //   - a source that isn't a chapter of the committed TOC within the grade's units; stars other than 1;
-//     an id twice, not `<prefix>-math-<family>-NNN`, or with «-gen-»; category other than Μαθηματικά;
+//     an id twice, not `<prefix>-math-<family>-NNN`, or with «-gen-»;
 //   - per grade: fewer than 60 items; true-false or fill-blank over 10 % of them; true-false
 //     answered «Σωστό» outside 40–60 %.
 // Warnings: a family whose items share their answers, a family with fewer than 3 items.
@@ -364,9 +364,9 @@ export interface MathsAudit {
   report: string[];
 }
 
-/** The generated maths items of these pools: the ones with a skill. */
+/** The generated maths items of these pools: the ones in Μαθηματικά with a skill (language/check.ts audits the Γλώσσα ones). */
 export const generated = (pools: Pool[]) => pools.flatMap(p => p.exercises.map(ex => ({ pool: p, ex })))
-  .filter((x): x is { pool: Pool; ex: Plain } => x.ex.type !== 'problem' && typeof x.ex.generatorParams?.skill === 'string');
+  .filter((x): x is { pool: Pool; ex: Plain } => x.ex.type !== 'problem' && x.ex.category === 'Μαθηματικά' && typeof x.ex.generatorParams?.skill === 'string');
 
 export function auditMaths(pools: Pool[]): MathsAudit {
   const errors: string[] = [], warnings: string[] = [], report: string[] = [];
@@ -391,7 +391,6 @@ export function auditMaths(pools: Pool[]): MathsAudit {
       if ((allIds.get(ex.id) ?? 0) > 1) err('duplicate id');
       if (!new RegExp(`^${PREFIX[grade]}-math-${fam.replace(/[-]/g, '\\-')}-\\d{3}$`).test(ex.id)) err(`id is not ${PREFIX[grade]}-math-${fam}-NNN`);
       if (ex.id.includes('-gen-')) err('«-gen-» in the id (the evidence helpers read it as a problem)');
-      if (ex.category !== 'Μαθηματικά') err(`category ${ex.category}`);
       if (ex.stars !== 1) err(`⭐${ex.stars}: a maths item pays ⭐1`);
       const chapter = ex.source ? chapterOf(grade, ex.source) : undefined;
       if (!chapter) err(`source «${ex.source ?? ''}» is not a chapter of the ${c.label} book (curriculum.ts)`);

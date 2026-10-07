@@ -5,7 +5,8 @@ come from here. Each **family** is a kind of problem from the textbooks. It tell
 in several ways and settings, picks numbers within the grade's range, and computes every
 answer from those numbers. `gen.ts` writes 500 problems per grade into
 `backend/exercise-pools/*-generated.json`, and `audit.ts` checks them independently. The daily
-plain maths of Γ΄ and Ε΄ comes from `maths/` the same way (see «Plain maths» below).
+plain maths of Γ΄ and Ε΄ comes from `maths/` the same way (see «Plain maths» below), and the
+daily Γ΄ language from `language/`, written by hand and audited against a lexicon (see «Plain language»).
 
 It runs with Node 24 alone (no packages): in Docker, from the repo root:
 
@@ -184,7 +185,88 @@ agree with 1 («1 κέρμα του 1 λεπτού», «2 κέρματα των 
 Γ΄ money up to a few hundred euros, Ε΄ numbers into the millions.
 
 **Counts.** 120 per grade (four months of one a day); the audit fails under 60. `npm test`
-(dailyMix.test.ts) prints how many days pass before an item comes back and only warns under 30.
+(dailyMix.test.ts) prints how many days pass before an item comes back; for the grades the kids are
+in (`KIDS_GRADES`) a mix category under 30 days, or filled from revision, fails.
+
+## Plain language (`language/`)
+
+The daily language card of the Γ΄ kid (#49 part 3a; Ε΄ is part 3b): plain exercises in the existing
+types, no new widget. Unlike the maths, the items are **written by hand**, close to the book's own
+sentences, because templated Greek reads badly: `language/g3.ts` lists 80 of them from «Τα απίθανα
+μολύβια», units 1–3 (to about the end of October; later units come with #71's month gating), and
+`language/gen-language.ts` writes them to `backend/exercise-pools/g-dimotikou-language.json` with
+their ids, source and generatorParams, shuffling the options seeded by the id.
+
+```bash
+$N node tools/problem-gen/language/gen-language.ts    # write the pool (stops on an item that breaks a rule)
+$N node tools/problem-gen/audit.ts                    # audit everything (problems, maths, language)
+$N node tools/problem-gen/audit.ts --sample tools/problem-gen/.sample.md 20 --all-language   # every language item, to read
+```
+
+**Where each item comes from.** `language/curriculum.ts` holds the book's units and lessons with the
+pages each takes in the student book and the workbook (printed numbers, one less than the PDF's). An
+item names its place as `'2.2 τ23'` (unit 2, lesson 2, workbook page 23; lesson 0 is the unit's
+Λεξιλόγιο, `β` the student book); its `source` reads «Γλώσσα Γ΄, ενότητα 2: Στο σπίτι και στη γειτονιά,
+μάθημα 2: Η φίλη μας η Αργυρώ (τετράδιο εργασιών, σ. 23)». The audit fails a page outside the lesson
+or a unit the class hasn't reached (`units`).
+
+**The lexicon** (`language/lexicon/g3.ts`): the words the audit checks against, typed out of
+`materials/` at development time with the page each comes from: nouns with their forms by case and
+number, adjectives in three genders, verbs by person (as the book's tables: β86–87, τ22), the
+words of an exercise or a spelling list as the page prints them, opposites, synonyms, word families,
+the book's phrases with the meanings it offers (right and wrong), similes and proverbs. Every form is
+written out; nothing builds a form from a stem, and nothing reads `materials/` when the audit runs.
+Words on check-gender's list stay out (φίλος, όλοι, έτοιμος, μόνος…).
+
+**Skills and their wordings** (`generatorParams.skill`; the audit's solver reads the wording and
+derives the key again from the lexicon and the rule, written apart from the items):
+
+| skill | wording | rule |
+|---|---|---|
+| `pos` | «Κύκλωσε το ρήμα/ουσιαστικό της πρότασης: «…»», or «ένα ουσιαστικό» when the sentence has more than one; true-false «Στην πρόταση «…» η λέξη «…» είναι ρήμα.» | part of speech from the lexicon; options are words of the sentence; every word of the sentence is in the lexicon, and «το» means it has exactly one |
+| `gender` | «Κύκλωσε το αρσενικό/θηλυκό/ουδέτερο ουσιαστικό.» | the noun's gender |
+| `agree` | a gap ({0} or «…») after an article, or an article before a word | the article's gender, case and number (and the noun's after an adjective) |
+| `alpha` | ordering «Βάλε τις λέξεις σε αλφαβητική σειρά.» | Greek collation, accents ignored |
+| `week` | ordering «Βάλε τις μέρες της εβδομάδας στη σειρά, από τη Δευτέρα.» | Δευτέρα … Σάββατο |
+| `capital` | fill-blank of a proper noun; true-false «Η λέξη «…» γράφεται πάντα με κεφαλαίο.» | proper nouns of the lexicon; the rest are its slips (small letter, a misspelling) |
+| `person` | fill-blank «Εμείς {0} γείτονες.», «Ο Γιάννης {0} …», «Οι γονείς μας {0} …» | the verb form of the subject's person |
+| `opposite`, `synonym` | «Κύκλωσε το αντίθετο της λέξης «…».», «Κύκλωσε τη λέξη που σημαίνει το ίδιο με τη λέξη «…».» | the lexicon's pairs |
+| `family` | «… ανήκει στην οικογένεια της λέξης «…».», «… δεν ανήκει στην ίδια οικογένεια με τις άλλες.» | the lexicon's families |
+| `meaning` | true-false «Η φράση «…» σημαίνει «…».»; «Τι σημαίνει εδώ η φράση «…»;» with the sentence as body | the book's meanings, right and wrong |
+| `saying` | body «Συμπλήρωσε την παρομοίωση/παροιμία.», the saying with «…» | the lexicon's sayings |
+| `san` | «Τι σημαίνει το «σαν» στην πρόταση «…»;» | before a verb «όταν», before a noun «όπως» (τ44) |
+| `punct` | fill-blank with the gap right after a word, options «.», «;», «,» | a question word first: «;»; a small letter after: «,»; «.» only after a sentence with no verb («Πολλούς χαιρετισμούς από τη Μάνη», τ41): a Greek yes/no question is the statement with «;», so a sentence with a verb and no question word could take either |
+| `spell` | «Κύκλωσε τη λέξη που είναι γραμμένη σωστά.» | one spelling of the lexicon; the rest one or two slips of it (ι/η/υ/ει/οι, ο/ω, ε/αι, ευ/εφ, a double letter) |
+
+A wrong option may be a real word (another person, case or article: that is the point), but never
+one the rule also accepts: the audit fails an item with more than one acceptable option. A new
+wording needs its solver in `language/check.ts`.
+
+**Not giving the answer away.** At least 3 options; the right one never the only longest. The title names
+none of the options or all of them: «Της ή τις;» over τις · της · των rules «των» out before she reads the
+sentence, so the title is «Τα άρθρα της, τις, των». A spelling
+choice crosses two places a word is often misspelt, four spellings with one right (τηλεόραση,
+τιλεόραση, τηλεώραση, τιλεώραση): with each wrong spelling one slip from the right one, a vote letter
+by letter would find it, so the audit fails a right option that is the one closest to all the others.
+A fill-blank has one gap, a whole word (a punctuation mark right after one), never inside a word, so no
+last gap is left over by elimination; and its sentence fits one line with the gap (43 characters
+besides it at 1280×800: `FillBlankRenderer` lays the pieces between gaps out as blocks, so a long piece
+jumps whole to the next line). «Δείξε μου» at most 60 characters (a match 40), as for the maths.
+
+**Types.** True-false at most 10 % and «Σωστό» 40–60 % of the pool's true-false items; fill-blank at
+most 40 % (a gap in a sentence is the book's own «Συμπλήρωσε»); no number-input.
+
+**Greek.** The book's terms (ρήμα, ουσιαστικό, γενική πτώση, αόριστο άρθρο, κύρια ονόματα,
+παρομοίωση, συνώνυμα), its sentences and names where it has them. Speak to the child in the imperative
+(«Κύκλωσε», «Συμπλήρωσε», «Βάλε»), the same to every child: the audit fails check-gender's words
+anywhere she reads (title, body, question, options, items), so «όλες τις θάλασσες» became «Τα δελφίνια
+πλησιάζουν συχνά τις ακτές», and «Είμαι πολύ θυμωμένος» «Αγανακτώ, θυμώνω πολύ». Adjectives are cited
+in the masculine, as the book's word lists do. Every word of two or more syllables has its accent (the
+audit knows μια, για, πιο, δυο… as one syllable); no Latin letters. Read every item before committing
+(`--all-language`).
+
+**Counts.** 60–80 good items rather than padded ones; the audit fails under 60. Γ΄ has 80, so an item
+comes back after 80 days.
 
 ## Layout
 - `lib.ts`: randomness, names, counted nouns, step builders, `Family`.
@@ -192,6 +274,7 @@ agree with 1 («1 κέρμα του 1 λεπτού», «2 κέρματα των 
   `set-*.ts` group families written together).
 - `gen.ts`, `audit.ts`: see the top of each.
 - `maths/`: the plain maths (`curriculum.ts`, `grades.ts`, `lib.ts`, `g3.ts`, `e5.ts`, `gen-maths.ts`, `check.ts`).
+- `language/`: the plain language (`curriculum.ts`, `lexicon.ts` and `lexicon/g3.ts`, `lib.ts`, `g3.ts`, `gen-language.ts`, `check.ts`).
 
 ## World models (`world/`)
 
