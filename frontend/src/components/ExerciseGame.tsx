@@ -506,6 +506,21 @@ const styles = `
           cursor: pointer;
         }
 
+        /* On a phone the card fits the width: less padding, smaller avatars and title */
+        @media (max-width: 600px) {
+          .results-card {
+            box-sizing: border-box;
+            max-width: calc(100vw - 32px);
+            padding: 2rem 1.25rem;
+            border-radius: 2rem;
+            gap: 1.25rem;
+          }
+          .results-card h1 { font-size: 2.6rem; }
+          .final-scores { gap: 1.5rem; margin: 0.5rem 0; flex-wrap: wrap; justify-content: center; }
+          .player-result .player-avatar { width: 88px; height: 88px; font-size: 3.5rem; }
+          .finish-btn { padding: 1rem 2rem; }
+        }
+
         /* Feedback Overlay */
         .feedback-overlay {
           position: fixed;
