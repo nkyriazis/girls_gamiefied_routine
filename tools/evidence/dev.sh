@@ -5,7 +5,7 @@
 #   dev.sh plain                     today's plain exercises fresh again, both kids
 #   dev.sh clear-runs                no flow or routine on screen
 #   dev.sh stars u1 100 u2 20        set balances, clear their pending gifts and rewards
-#   dev.sh game u1,u2 math-mc-1,lang-tf-1  a group game running with these questions, one round
+#   dev.sh game u1,u2 math-mc-1,lang-tf-1  a group game running with these questions, one round, alone
 # Dev stack only: never against piserve.
 set -e
 repo=$(cd "$(dirname "$0")/../.." && pwd)
