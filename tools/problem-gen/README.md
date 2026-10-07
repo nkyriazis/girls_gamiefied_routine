@@ -163,6 +163,12 @@ The audit can't read Greek; you must. The traps the generator has already hit:
   29 × 30 = 870.») and never states a row's answer, after «=», as a trial (2.502 : 5 tries 5 × 400,
   not 5 × 500) or as a part of the calculation (23 − 13 is counted up, «Μετράμε από το 13 ως το 23 …»,
   since «23 − 10 = 13» names 10; a part that is an answer is only named, «Πρώτα 66 − 20, και μετά …»).
+  A product with zeros is asked, not worked: «Πόσο κάνει 5 × 3; Μετά βάζουμε το μηδενικό.» for
+  5 × 30, since «5 × 3 = 15» is 150 with its zero left off. A row worked from the answer of a row
+  above it gets no hint of its own: its hint would work on a number she hasn't found («200 × 2 = 400,
+  και μετά 60 × 2» for 260 × 2 under the row that asks 260) and help with a later row while she is
+  stuck on the first. So rowsHint hints an earlier row, by its digits if it must («Ξεκινάμε από τις
+  μονάδες: 4 × 5. Μετά οι δεκάδες, μαζί με τα κρατούμενα.»).
   A step it can't write a fair one for is listed in `b.hintless`, and `gen.ts` drops the draft.
 - **Nothing on a step shows an answer still to work out** (#50 part 5d, `hintShows` in lib.ts, shared
   by `gen.ts` and the audit). A hint shows after a wrong try, so one that works the row out is copied on
@@ -179,6 +185,13 @@ The audit can't read Greek; you must. The traps the generator has already hit:
     the two candidates (estimate-first: «Κοιτάμε το ψηφίο των δεκάδων του 519: από 5 και πάνω, …»), or
     the steps in words («Πρώτα βγάζουμε από τα 785 τα 340. Ό,τι μένει γίνεται ομάδες των 5 …»). Where the
     rows say it all, leave the hint out and give the rows `eq`: rowsHint writes one.
+  - *A choice's hint* doesn't point at its right option either: no number only the right option has
+    and the story doesn't give. A rounding choice gives the rule, not the rounded numbers («Το 176
+    γίνεται 180 και το 449 γίνεται 450» sat above «180 + 450 = 630»; now estimate-first's choice,
+    unit-rate's check and e5-problem-apples say how to round). hintShows reads numbers rows only, so
+    nothing checks this yet: 3 such hints remain, a small number each (coins-notes' «Τα κέρματα δεν
+    αξίζουν 1 € το καθένα.» above «Μέτρησε κάθε κέρμα σαν 1 €», twice, and place-value-012's «… με
+    το 0.» above «Γράφουμε 0»), left for a follow-up.
   - *A row label* names a row above by what it is, never by its number: «Ψωμιά σε 8 ημέρες: όσα την
     ημέρα × 8 =», «3η ημέρα: 2η − 9 =», «Περίπου: η διαφορά τους», «Στην αρχή: ό,τι βρήκαμε + 23 =»,
     with `eq` in numbers for rowsHint. Keep it short (it wraps to two lines at 1280×800 from about 50
