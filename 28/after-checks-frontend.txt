@@ -1,0 +1,30 @@
+# frontend checks on 884ba6e, 2026-10-07 18:23, dev frontend container
+$ npm test
+ℹ tests 38
+ℹ pass 38
+ℹ fail 0
+$ npm run lint
+check-help: 76 anchors, all placed and explained; every screen has help and a layer on the scale
+check-voice: 86 lines, all recorded
+check-sound: 76 things to touch, all of them sound
+check-gender: 449 Greek texts, none says girl or boy
+  eslint reports: dev-dist/workbox-caf3a6a6.js
+  eslint reports: dev-dist/workbox-f87553f6.js
+  eslint reports: src/components/AssignmentPlayer.tsx
+  eslint reports: src/components/ExerciseGame.tsx
+  eslint reports: src/components/ExerciseSetup.tsx
+  eslint reports: src/components/RewardOverlay.tsx
+  eslint reports: src/context/GameContext.tsx
+  eslint reports: src/hooks/useAppSounds.ts
+  eslint reports: src/hooks/useTouchDevice.ts
+  eslint reports: src/types.ts
+✖ 49 problems (40 errors, 9 warnings)
+npm run lint exit 1
+$ npx eslint src
+✖ 21 problems (20 errors, 1 warning)
+$ npm run build
+✓ built in 3.34s
+precache  123 entries (5179.89 KiB)
+$ grep monaco-editor@ dist/assets/*.js
+dist/assets/AdvancedView-6X703_vv.js:monaco-editor@0.55.1/min/vs
+dist/assets/AdvancedView-6X703_vv.js:monaco-editor@0.57.0/min/vs

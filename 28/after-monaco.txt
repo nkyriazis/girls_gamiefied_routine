@@ -1,0 +1,31 @@
+# What Προχωρημένα fetched from jsdelivr (the monaco build that runs), and the markers its JSON worker set
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/loader.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/editor/editor.main.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/html.worker-C1TNvQ72.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/ts.worker-BLYAhMkX.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/css.worker-BInK4lsP.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/monaco.contribution-C7tY_xnl.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/json.worker-Bp7U0-9w.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/nls.messages-loader.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/monaco.contribution-BuX2NvO2.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/monaco.contribution-CY2lwFI8.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/monaco.contribution-D1-wBxcq.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/index-DZH_zysX.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/basic-languages/monaco.contribution.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/toggleHighContrast-DuqAmExZ.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/editor-BdtEMBbM.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/editorWorkerHost-B_VpI68A.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/editor/editor.main.css
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/jsonMode-w7Q_ZLTt.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/workers-BeMslOxK.js
+worker blob:http://localhost:5173/199601c0-fae6-495f-be18-5774df042456
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/lspLanguageFeatures-Cog3rVVE.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/main-BEx-Fmlo.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/main-DsK8pnKg.js
+worker blob:http://localhost:5173/decb935c-9883-4a2b-9102-40a0885b5c76
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/assets/editor.worker-_vAIFJDs.js
+200 https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/assets/json.worker-Csf_TLih.js
+
+# markers after typing " oops" on line 1
+1:3 Property keys must be doublequoted
+2:3 Colon expected

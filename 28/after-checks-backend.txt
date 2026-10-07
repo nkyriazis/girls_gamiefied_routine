@@ -1,0 +1,9 @@
+# backend checks on 884ba6e, 2026-10-07 18:23, dev backend container
+$ npm run build
+  ok
+$ npm test
+ℹ tests 126
+ℹ pass 126
+ℹ fail 0
+$ npm audit --omit=dev
+found 0 vulnerabilities

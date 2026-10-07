@@ -1,0 +1,198 @@
+# workbox-build 7.4.1's new plugin vs the one it replaces (issue #28), 2026-10-07 18:21
+
+$ npm explain @trickfilm400/rollup-plugin-off-main-thread   (dev frontend container)
+  @trickfilm400/rollup-plugin-off-main-thread@3.0.0-pre1 dev
+  node_modules/@trickfilm400/rollup-plugin-off-main-thread
+    @trickfilm400/rollup-plugin-off-main-thread@"^3.0.0-pre1" from workbox-build@7.4.1
+    node_modules/workbox-build
+      workbox-build@"^7.3.0" from vite-plugin-pwa@1.1.0
+      node_modules/vite-plugin-pwa
+        dev vite-plugin-pwa@"^1.1.0" from the root project
+$ npm view @trickfilm400/rollup-plugin-off-main-thread maintainers dist-tags repository.url
+  maintainers = 'trickfilm400 <trickfilm400@gmail.com>'
+  dist-tags = { latest: '4.0.0', beta: '4.0.0-pre3' }
+  repository.url = 'git+https://github.com/Trickfilm400/rollup-plugin-off-main-thread.git'
+$ npm view @surma/rollup-plugin-off-main-thread maintainers time.modified
+  maintainers = [ 'rreverser <me@rreverser.com>', 'surma <surma@surma.link>' ]
+  time.modified = '2022-04-07T03:26:03.619Z'
+
+## Tarball integrity (npm pack) vs frontend/package-lock.json
+  downloaded: sha512-/67zpWDBLV+oYAEL682s1ktXL0HgqX76f6gaVGkGnVZlBbm1zd0v4Bz8MFF2GGhoX9rvfq3KSQHubFHwa6w6/Q==
+  lockfile:   sha512-/67zpWDBLV+oYAEL682s1ktXL0HgqX76f6gaVGkGnVZlBbm1zd0v4Bz8MFF2GGhoX9rvfq3KSQHubFHwa6w6/Q==
+  install scripts: {'fmt': "prettier --write 'tests/**/*.js' *.js *.md *.json", 'test': 'node ./run_tests.js'}  (no preinstall/install/postinstall)
+
+## diff -r --strip-trailing-cr @surma/...@2.2.3 @trickfilm400/...@3.0.0-pre1 (the fork's files have CRLF line endings)
+  Only in a/package: CODEOWNERS
+  Only in a/package: Dockerfile
+  diff -r --strip-trailing-cr a/package/index.js b/package/index.js
+  260c260
+  <           "OMT currently doesn’t work with `banner`. Feel free to submit a PR at https://github.com/surma/rollup-plugin-off-main-thread"
+  ---
+  >           "OMT currently doesn’t work with `banner`. Feel free to submit a PR at https://github.com/trickfilm400/rollup-plugin-off-main-thread"
+  diff -r --strip-trailing-cr a/package/package.json b/package/package.json
+  2,3c2,3
+  <   "name": "@surma/rollup-plugin-off-main-thread",
+  <   "version": "2.2.3",
+  ---
+  >   "name": "@trickfilm400/rollup-plugin-off-main-thread",
+  >   "version": "3.0.0-pre1",
+  10a11,13
+  >   "contributors": [
+  >     "trickfilm400 <trickfilm400@gmail.com>"
+  >   ],
+  13,15c16,18
+  <     "chai": "4.2.0",
+  <     "chalk": "^2.4.2",
+  <     "karma": "4.2.0",
+  ---
+  >     "chai": "4.5.0",
+  >     "chalk": "^4.1.2",
+  >     "karma": "^6.4.4",
+  17,19c20,22
+  <     "karma-chrome-launcher": "3.0.0",
+  <     "karma-firefox-launcher": "1.1.0",
+  <     "karma-mocha": "1.3.0",
+  ---
+  >     "karma-chrome-launcher": "3.2.0",
+  >     "karma-firefox-launcher": "^2.1.3",
+  >     "karma-mocha": "^2.0.1",
+  22,24c25,27
+  <     "mocha": "6.1.4",
+  <     "prettier": "1.18.2",
+  <     "rollup": "2.2.0"
+  ---
+  >     "mocha": "^11.7.5",
+  >     "prettier": "^3.7.3",
+  >     "rollup": "^4.53.3"
+  28c31
+  <     "url": "https://github.com/surma/rollup-plugin-off-main-thread"
+  ---
+  >     "url": "https://github.com/Trickfilm400/rollup-plugin-off-main-thread"
+  31,34c34,40
+  <     "ejs": "^3.1.6",
+  <     "json5": "^2.2.0",
+  <     "magic-string": "^0.25.0",
+  <     "string.prototype.matchall": "^4.0.6"
+  ---
+  >     "ejs": "^3.1.10",
+  >     "json5": "^2.2.3",
+  >     "magic-string": "^0.30.21",
+  >     "string.prototype.matchall": "^4.0.12"
+  >   },
+  >   "engines": {
+  >     "node": ">=12"
+  diff -r --strip-trailing-cr a/package/README.md b/package/README.md
+  6c6
+  < $ npm install --save @surma/rollup-plugin-off-main-thread
+  ---
+  > $ npm install --save @trickfilm400/rollup-plugin-off-main-thread
+  23c23
+  < import OMT from "@surma/rollup-plugin-off-main-thread";
+  ---
+  > import OMT from "@trickfilm400/rollup-plugin-off-main-thread";
+  Only in a/package: renovate.json
+  Only in b/package/tests/fixtures/amd-function-name/build: a-29701bae.js
+  Only in b/package/tests/fixtures/amd-function-name/build: a-bd62e735.js
+  Only in b/package/tests/fixtures/amd-function-name/build: a-REsyh-LW.js
+  Only in b/package/tests/fixtures/amd-function-name/build: entry.js
+  Only in b/package/tests/fixtures/assets-in-worker/build/assets: my-asset-8db90352.bin
+  Only in b/package/tests/fixtures/assets-in-worker/build/assets: my-asset-C4yNwep_.bin
+  Only in b/package/tests/fixtures/assets-in-worker/build: entry.js
+  Only in b/package/tests/fixtures/assets-in-worker/build: worker-2a7f7c23.js
+  Only in b/package/tests/fixtures/assets-in-worker/build: worker-5cc2068a.js
+  Only in b/package/tests/fixtures/assets-in-worker/build: worker-CtBAebZB.js
+  Only in b/package/tests/fixtures/dynamic-import/build: a-b9a1bf8d.js
+  Only in b/package/tests/fixtures/dynamic-import/build: a-Dqjf2iqw.js
+  Only in b/package/tests/fixtures/dynamic-import/build: a-f1483003.js
+  Only in b/package/tests/fixtures/dynamic-import/build: entry.js
+  Only in b/package/tests/fixtures/import-meta/build: a-115d949a.js
+  Only in b/package/tests/fixtures/import-meta/build: a-550898d2.js
+  Only in b/package/tests/fixtures/import-meta/build: a-BFYklafB.js
+  Only in b/package/tests/fixtures/import-meta/build: entry.js
+  Only in b/package/tests/fixtures/import-meta-worker/build: a-23c670a1.js
+  Only in b/package/tests/fixtures/import-meta-worker/build: a-9c89b629.js
+  Only in b/package/tests/fixtures/import-meta-worker/build: a-CrtsJ3Po.js
+  Only in b/package/tests/fixtures/import-meta-worker/build: a-e0498c05.js
+  Only in b/package/tests/fixtures/import-meta-worker/build: entry.js
+  Only in b/package/tests/fixtures/import-worker-url/build: b-64a9d830.js
+  Only in b/package/tests/fixtures/import-worker-url/build: b-725e92c1.js
+  Only in b/package/tests/fixtures/import-worker-url/build: entry.js
+  Only in b/package/tests/fixtures/import-worker-url/build: worker-Bq6uP7t8.js
+  Only in b/package/tests/fixtures/import-worker-url/build: worker-ef1d7c89.js
+  Only in b/package/tests/fixtures/import-worker-url/build: worker-f5690442.js
+  Only in b/package/tests/fixtures/import-worker-url-custom-scheme/build: b-725e92c1.js
+  Only in b/package/tests/fixtures/import-worker-url-custom-scheme/build: b-74a80c25.js
+  Only in b/package/tests/fixtures/import-worker-url-custom-scheme/build: entry.js
+  Only in b/package/tests/fixtures/import-worker-url-custom-scheme/build: worker-Bq6uP7t8.js
+  Only in b/package/tests/fixtures/import-worker-url-custom-scheme/build: worker-e37d535c.js
+  Only in b/package/tests/fixtures/import-worker-url-custom-scheme/build: worker-ef1d7c89.js
+  Only in b/package/tests/fixtures/module-worker/build: b-8d8ba280.js
+  Only in b/package/tests/fixtures/module-worker/build: b-f6cfc895.js
+  Only in b/package/tests/fixtures/module-worker/build: b-ZxqdL95j.js
+  Only in b/package/tests/fixtures/module-worker/build: entry.js
+  Only in b/package/tests/fixtures/module-worker/build: worker-41a1c649.js
+  Only in b/package/tests/fixtures/module-worker/build: worker-50885fe8.js
+  Only in b/package/tests/fixtures/module-worker/build: worker-9fb0618d.js
+  Only in b/package/tests/fixtures/module-worker/build: worker-DWbjHYfx.js
+  Only in b/package/tests/fixtures/more-workers/build: b-Dok_VKGN.js
+  Only in b/package/tests/fixtures/more-workers/build: b-e9bb9f94.js
+  Only in b/package/tests/fixtures/more-workers/build: b-f31d0f9f.js
+  Only in b/package/tests/fixtures/more-workers/build: entry.js
+  Only in b/package/tests/fixtures/more-workers/build: worker_a-25924b0d.js
+  Only in b/package/tests/fixtures/more-workers/build: worker_a-b8e0ca8d.js
+  Only in b/package/tests/fixtures/more-workers/build: worker_a-DtsyxKtN.js
+  Only in b/package/tests/fixtures/more-workers/build: worker_b-477edb2c.js
+  Only in b/package/tests/fixtures/more-workers/build: worker_b-60981e1f.js
+  Only in b/package/tests/fixtures/more-workers/build: worker_b-CG60Lcld.js
+  Only in b/package/tests/fixtures/public-path/build: a-1fb502b9.js
+  Only in b/package/tests/fixtures/public-path/build: a-b9a1bf8d.js
+  Only in b/package/tests/fixtures/public-path/build: a-Dqjf2iqw.js
+  Only in b/package/tests/fixtures/public-path/build: entry.js
+  Only in b/package/tests/fixtures/simple-bundle/build: entry.js
+  Only in b/package/tests/fixtures/single-default/build: entry.js
+  Only in b/package/tests/fixtures/url-import-meta-worker/build: b-258f8a6b.js
+  Only in b/package/tests/fixtures/url-import-meta-worker/build: b-8c5ed926.js
+  Only in b/package/tests/fixtures/url-import-meta-worker/build: b-CNJP1XvI.js
+  Only in b/package/tests/fixtures/url-import-meta-worker/build: entry.js
+  Only in b/package/tests/fixtures/url-import-meta-worker/build: worker-9a661671.js
+  Only in b/package/tests/fixtures/url-import-meta-worker/build: worker-e833ae5d.js
+  Only in b/package/tests/fixtures/url-import-meta-worker/build: worker-S2Vh56Q-.js
+  Only in b/package/tests/fixtures/worker/build: b-258f8a6b.js
+  Only in b/package/tests/fixtures/worker/build: b-a9f43d76.js
+  Only in b/package/tests/fixtures/worker/build: b-CNJP1XvI.js
+  Only in b/package/tests/fixtures/worker/build: entry.js
+  Only in b/package/tests/fixtures/worker/build: worker-b4897a54.js
+  Only in b/package/tests/fixtures/worker/build: worker-e833ae5d.js
+  Only in b/package/tests/fixtures/worker/build: worker-S2Vh56Q-.js
+
+  loader.ejs (the AMD loader written at the top of sw.js): identical
+
+## The service worker each one writes: vite build of master 6399b82 (scratch export, master's lockfile) vs the branch's frontend/dist (npm run build, 18:23)
+  sw.js AMD loader (the plugin's output, before define(...)): 570 vs 570 bytes, byte-identical
+  sw.js rest, with the precache manifest and the workbox file hash masked: identical
+  workbox runtime: workbox-78ef5c9b.js 22350 bytes vs workbox-6829fd8d.js 22339 bytes; every difference (split at ; , { }):
+    @@ -5 +5 @@
+    -self["workbox:core:7.3.0"]&&_()}
+    +self["workbox:core:7.4.0"]&&_()}
+    @@ -25 +25 @@
+    -self["workbox:routing:7.3.0"]&&_()}
+    +self["workbox:routing:7.4.0"]&&_()}
+    @@ -421 +421 @@
+    -self["workbox:expiration:7.3.0"]&&_()}
+    +self["workbox:expiration:7.4.0"]&&_()}
+    @@ -601 +601 @@
+    -self["workbox:strategies:7.3.0"]&&_()}
+    +self["workbox:strategies:7.4.0"]&&_()}
+    @@ -932 +932 @@
+    -self["workbox:precaching:7.3.0"]&&_()}
+    +self["workbox:precaching:7.4.0"]&&_()}
+    @@ -1026,2 +1026 @@
+    -a=e?e(r):r,
+    -o=function(){
+    +a=function(){
+    @@ -1038,2 +1037,2 @@
+    -return new Response(o,
+    -a)}
+    +return new Response(a,
+    +r)}
+  The version markers are workbox's own (7.4.0 ships 7.3.0 markers, 7.4.1 ships 7.4.0). The copyResponse lines are the same source (workbox-core/copyResponse.js:48 still applies a modifier); terser 1.0 (@rollup/plugin-terser 1.0) drops the modifier, which no caller in the bundle passes.

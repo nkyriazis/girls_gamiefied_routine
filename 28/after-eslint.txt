@@ -1,0 +1,55 @@
+# eslint, measured 2026-10-07 18:20 (issue #28)
+
+## master 6399b82, a clean export (git archive) with master's lockfile, npm ci in node:24-alpine
+eslint@9.39.1 typescript-eslint@8.47.0
+$ npx eslint src
+✖ 21 problems (20 errors, 1 warning)
+
+
+## branch 965cce1, dev frontend container
+eslint@9.39.1 typescript-eslint@8.71.1
+$ npx eslint src
+✖ 21 problems (20 errors, 1 warning)
+
+
+## src/ findings, file:line:col severity rule, master vs branch
+identical (21 lines each):
+  src/components/AssignmentPlayer.tsx:52:39 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseGame.tsx:72:39 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseGame.tsx:157:83 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseGame.tsx:159:78 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseGame.tsx:161:79 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseGame.tsx:161:100 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseGame.tsx:163:77 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseGame.tsx:165:78 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseGame.tsx:167:80 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseSetup.tsx:19:48 error @typescript-eslint/no-explicit-any
+  src/components/ExerciseSetup.tsx:34:44 error @typescript-eslint/no-explicit-any
+  src/components/RewardOverlay.tsx:13:8 error react-hooks/purity
+  src/components/RewardOverlay.tsx:14:8 error react-hooks/purity
+  src/components/RewardOverlay.tsx:15:12 error react-hooks/purity
+  src/context/GameContext.tsx:47:14 error react-refresh/only-export-components
+  src/hooks/useAppSounds.ts:20:72 error @typescript-eslint/no-explicit-any
+  src/hooks/useAppSounds.ts:55:6 warning react-hooks/exhaustive-deps
+  src/hooks/useAppSounds.ts:58:35 error @typescript-eslint/no-explicit-any
+  src/hooks/useTouchDevice.ts:10:41 error @typescript-eslint/no-explicit-any
+  src/hooks/useTouchDevice.ts:12:5 error react-hooks/set-state-in-effect
+  src/types.ts:36:10 error @typescript-eslint/no-explicit-any
+
+## branch, npx eslint . (the whole frontend dir, what npm run lint runs)
+  dev-dist/workbox-caf3a6a6.js: 10 errors, 4 warnings
+  dev-dist/workbox-f87553f6.js: 10 errors, 4 warnings
+  src/components/AssignmentPlayer.tsx: 1 errors, 0 warnings
+  src/components/ExerciseGame.tsx: 8 errors, 0 warnings
+  src/components/ExerciseSetup.tsx: 2 errors, 0 warnings
+  src/components/RewardOverlay.tsx: 3 errors, 0 warnings
+  src/context/GameContext.tsx: 1 errors, 0 warnings
+  src/hooks/useAppSounds.ts: 2 errors, 1 warnings
+  src/hooks/useTouchDevice.ts: 2 errors, 0 warnings
+  src/types.ts: 1 errors, 0 warnings
+  total: 49 problems (40 errors, 9 warnings)
+
+## frontend/dev-dist (git-ignored, written by the vite PWA dev plugin; eslint.config.js ignores only dist)
+  -rw-rw-r-- 1 kyriazis kyriazis   3312 2026-10-07 18:04 sw.js
+  -rw-r--r-- 1 root     root     176358 2026-10-07 18:04 workbox-caf3a6a6.js
+  -rw-rw-r-- 1 kyriazis kyriazis 176394 2026-10-06 22:21 workbox-f87553f6.js
