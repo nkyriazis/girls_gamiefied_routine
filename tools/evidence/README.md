@@ -15,7 +15,8 @@ for today, fresh; `exercise <kid> <exerciseId>` puts any pool item in the slot o
 `stars u1 100 u2 20` sets balances and clears those kids' pending gifts and rewards; `game u1,u2 math-mc-1,lang-tf-1`
 starts a group game (📚) with those questions in one round, alone: every other game, running or finished, is removed.
 `history 120` adds a busy family's purchases and gifts decided 31 to 120 days ago, older than STATE's window
-(ids `cafe0000-…`), and `history undo` removes exactly those.
+(ids `cafe0000-…`), and `history undo` removes exactly those. `chore u1 chore-dishes` puts a chore the kid
+claimed and did in front of a parent, waiting to be confirmed (id `c4073000-…`); `chore undo` removes it.
 
 A scenario is a short Playwright script (`scenarios/smoke.mjs` is the smallest, `scenarios/owl-tours.mjs`
 a long one). `kit.mjs` gives it `open()` (the kids' screen, past the start overlay), `tap`, `caption` (says on

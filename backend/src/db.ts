@@ -780,6 +780,7 @@ function getChoreInstance(instanceId: string): ChoreInstance {
 // Claim a chore instance
 export function claimChore(instanceId: string, userId: string): ChoreInstance {
   const instance = getChoreInstance(instanceId);
+  if (!findUser(userId)) throw new Error(`User not found: ${userId}`);
 
   if (instance.status !== 'available') {
     throw new Error(`Chore is not available (status: ${instance.status})`);
@@ -821,6 +822,10 @@ export function attemptChore(instanceId: string): ChoreInstance {
 
 // Confirm chore completion (parent approves)
 export function confirmChore(instanceId: string, starsOverride?: number): ChoreInstance {
+  // What it pays is stored as starsAwarded, so a parent's override is a whole number, 0 or more (state.schema.json)
+  if (starsOverride !== undefined && !(Number.isInteger(starsOverride) && starsOverride >= 0)) {
+    throw new StarsError(400, 'stars must be a whole number, 0 or more');
+  }
   const instance = getChoreInstance(instanceId);
 
   if (instance.status !== 'attempted') {
@@ -987,12 +992,23 @@ export function getExerciseSession(sessionId: string): ExerciseSession | undefin
   return store.exerciseSessions.get(sessionId);
 }
 
+/** A group game's size: what the setup screen offers (ExerciseSetup), and the route's schema (bodies.ts). */
+export const GAME_LIMITS = { players: 10, rounds: 5, questionsPerRound: 10 } as const;
+const oneTo = (n: number, max: number) => Number.isInteger(n) && n >= 1 && n <= max;
+
 export function startExerciseSession(
   playerIds: string[],
   categories: string[],
   totalRounds: number,
   questionsPerRound: number
 ): ExerciseSession {
+  const { players, rounds, questionsPerRound: perRound } = GAME_LIMITS;
+  if (!oneTo(playerIds.length, players) || !oneTo(totalRounds, rounds) || !oneTo(questionsPerRound, perRound)) {
+    throw new Error(`A game is 1-${players} players, 1-${rounds} rounds of 1-${perRound} questions`);
+  }
+  const unknown = playerIds.find(id => !findUser(id));
+  if (unknown) throw new Error(`Unknown player: ${unknown}`);
+
   // Filter exercises by categories
   let availableExercises = readExercises();
   // Problems are solved alone, step by step, not raced in a group game
