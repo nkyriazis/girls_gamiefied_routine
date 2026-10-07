@@ -174,23 +174,42 @@ export const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 // ---------------------------------------------------------------------------
 // Options that don't give the answer away. The screen shuffles them, so their length is the
-// only tell left. At both ends no option stands out by length: the longest at most 30 % longer
-// than the next, in code points, or at most 5 longer («Δεν τους χρειαζόμαστε» beside «Τους
-// προσθέτουμε» doesn't show), and the shortest at most 30 % or 5 shorter than the next. The right
-// one is never the only longest. Options that are all numbers («12», «1.229 €») are compared by
-// their digits instead: the right one is never the only one with the most digits. builder.choice
-// flags a choice that breaks this, gen.ts drops the draft, and audit.ts fails it in every pool.
-// The other end can't be a rule per choice (never the only longest nor the only shortest would
-// make the right one the middle one, every time): audit.ts fails a family whose right option is
-// the only shortest in more than half the choices of one prompt (onlyShortest).
+// only tell left, and it has two sides.
+//
+// In one choice (lengthTell): at both ends no option stands out by length, the longest at most
+// 30 % longer than the next, in code points, or at most 5 longer («Δεν τους χρειαζόμαστε» beside
+// «Τους προσθέτουμε» doesn't show), and the shortest at most 30 % or 5 shorter than the next.
+// Options that are all numbers («12», «1.229 €») are compared by their digits instead: the right
+// one is never the only one with the most digits. builder.choice flags a choice that breaks this,
+// gen.ts drops the draft, and audit.ts fails it in every pool.
+//
+// Across a prompt's choices (#50 part 5c, the place rule): a fixed wording puts the right option
+// at the same place by length in every problem, so a child who taps «the middle one» or «the
+// longest» without reading wins. A rule per choice can't fix that (never the only longest nor the
+// only shortest makes the right one the middle one, every time). So the place is a rule per
+// prompt. An option may list several wordings of itself (`Wording`: a wrong one, the same typical
+// mistake said shorter or longer; a right one, only the book's own shorter wording), never longer
+// than the longest first wording. builder.choice works out which places by length the valid
+// wordings can give the right option, mixes them so that every place is as near to 1/n as they
+// allow (evenest), and the problem's seed (placeSeed: from its id, so a dropped draft changes only
+// its own problem) picks one. The audit counts the places (places(): options within 2 code points
+// of each other look the same length, ties split) per family, prompt (promptKey) and number of
+// options, and fails a prompt from 6 choices on where one place wins more than a fair die would
+// (placeLimit), a warning from 3. `gen.ts --places` lists the prompts whose wordings can't spread
+// it evenly. The curated pools, whose prompts are asked too rarely for that, keep the rule per
+// choice that the right one is never the only longest, and the old per-prompt rule for the only
+// shortest (onlyShortest).
 
 export const STAND_OUT = 1.3;
 const STAND_OUT_MIN = 6;
 const NUMERIC_OPTION = /^\d{1,3}(?:\.\d{3})*(?:\s+[^\d\s]+){0,2}$/;
 const codePoints = (s: string) => [...s].length;
 
-/** What gives the right option away by its length, or null. */
-export function lengthTell(options: string[], correctIndex: number): string | null {
+/**
+ * What gives the right option away by its length in one choice, or null. With `onlyLongest` (the
+ * curated pools) also the right one being the only longest.
+ */
+export function lengthTell(options: string[], correctIndex: number, { onlyLongest = false } = {}): string | null {
   const opts = options.map(o => o.trim());
   if (opts.every(o => NUMERIC_OPTION.test(o))) {
     const d = opts.map(o => o.replace(/\D/g, '').length);
@@ -199,7 +218,7 @@ export function lengthTell(options: string[], correctIndex: number): string | nu
   }
   const L = opts.map(codePoints);
   const others = L.filter((_, j) => j !== correctIndex);
-  if (others.every(x => x < L[correctIndex])) return `the right option «${opts[correctIndex]}» is the only longest (${L[correctIndex]} code points, the next ${Math.max(...others)})`;
+  if (onlyLongest && others.every(x => x < L[correctIndex])) return `the right option «${opts[correctIndex]}» is the only longest (${L[correctIndex]} code points, the next ${Math.max(...others)})`;
   const [first, second] = [...L].sort((a, b) => b - a);
   if (first > STAND_OUT * second && first - second >= STAND_OUT_MIN) return `«${opts[L.indexOf(first)]}» stands out by its length (${first} code points, the next ${second})`;
   const [low, low2] = [...L].sort((a, b) => a - b);
@@ -207,16 +226,166 @@ export function lengthTell(options: string[], correctIndex: number): string | nu
   return null;
 }
 
-/** Whether the right option is the only shortest (code points): fine once, a tell when a family's prompt always does it. */
+/** Whether the right option is the only shortest (code points): the curated pools' per-prompt rule. */
 export function onlyShortest(options: string[], correctIndex: number): boolean {
   const L = options.map(o => codePoints(o.trim()));
   return L.every((x, j) => j === correctIndex || x > L[correctIndex]);
 }
 
-/** The most a family's prompt may have its right option as the only shortest: half its choices. */
+/** The most a curated prompt may have its right option as the only shortest: half its choices. */
 export const SHORTEST_SHARE = 0.5;
-/** A family's prompt counts from this many choices on. */
+/** A curated prompt counts from this many choices on. */
 export const SHORTEST_MIN_CHOICES = 3;
+
+/** Options within this many code points of each other look the same length (on a proportional font). */
+export const PLACE_TOLERANCE = 2;
+
+/**
+ * Where the right option sits by length, as the eye sees it: P[k] is the chance that it is the k-th
+ * shortest (k = 0 … n − 1) when the options within PLACE_TOLERANCE code points of it count as tied
+ * with it and ties are broken at random. Tapping «the k-th by length» wins P[k] of the choice.
+ */
+export function places(options: string[], correctIndex: number): number[] {
+  const L = options.map(o => codePoints(o.trim())), x = L[correctIndex];
+  const below = L.filter((y, j) => j !== correctIndex && y < x - PLACE_TOLERANCE).length;
+  const same = L.filter((y, j) => j !== correctIndex && Math.abs(y - x) <= PLACE_TOLERANCE).length + 1;
+  return L.map((_, k) => (k >= below && k < below + same ? 1 / same : 0));
+}
+
+/**
+ * The most choices of N that one place may win, with n options: a fair die (each place 1/n) goes over
+ * it in less than 1 prompt in 100 (the binomial tail). From PLACE_MIN_CHOICES choices a prompt over it
+ * fails the audit; from PLACE_WARN_CHOICES it is a warning.
+ */
+export function placeLimit(N: number, n: number): number {
+  const p = 1 / n;
+  const pmf: number[] = [];
+  for (let k = 0, c = 1; k <= N; c = (c * (N - k)) / (k + 1), k++) pmf.push(c * p ** k * (1 - p) ** (N - k));
+  let above = 0, c = N;
+  while (c > 0 && above + pmf[c] <= 0.01) above += pmf[c--];
+  return c;
+}
+export const PLACE_MIN_CHOICES = 6;
+export const PLACE_WARN_CHOICES = 3;
+
+// A prompt asked of many stories, with its names and numbers blanked out
+/** Every form of every name (Νίκος, Νίκου, Νίκο), longest first. */
+export const NAMES = new RegExp(`(${[...new Set(PEOPLE.flatMap(p => [p.bare, p.gen.split(' ')[1], p.acc.split(' ')[1]]))]
+  .sort((a, b) => b.length - a.length).join('|')})`, 'g');
+const NUMBERS = /\d{1,3}(?:\.\d{3})+|\d+/g;
+/** Prompts that ask the same thing with the same options, by the key of the first. */
+const SAME_PROMPT: Record<string, string> = {
+  'Πώς οργανώνουμε τη λύση;': 'Ποιο εργαλείο μας βοηθά;', // growth-chain's plan
+  'Κάτι λείπει από την ιστορία. Τι χρειαζόμαστε ακόμη;': 'Μπορούμε να απαντήσουμε; Τι μας λείπει;', // Γ΄ missing-info
+  'Τι γράφουμε στη θέση μιας συσκευασίας που δεν υπάρχει;': 'Τι γράφουμε στις θέσεις που δεν αναφέρονται;', // place-value
+};
+
+/** The key of a prompt for the place rule: names (with their article) as @, numbers as #, synonyms (SAME_PROMPT) as one. */
+export function promptKey(prompt: string): string {
+  const k = prompt.replace(NAMES, '@').replace(/(?<!\p{L})(?:[ΟοΗη]|τ(?:ου|ης|ον|ην|η)) @/gu, '@').replace(NUMBERS, '#');
+  return SAME_PROMPT[k] ?? k;
+}
+
+const GOLDEN = (Math.sqrt(5) - 1) / 2;
+/**
+ * Where a problem falls, in [0, 1), among the problems of its family that ask a prompt, from its id
+ * alone: a start for the family's prompt (a hash of the id's family part and the prompt key) plus the
+ * problem's number times the golden ratio. The problems of a family so walk through [0, 1) evenly
+ * (cut into n places, a prompt every problem asks gets every place about as often, within two), and
+ * a dropped draft changes only its own problem. builder.choice turns it into the wordings to take.
+ */
+export function placeSeed(id: string, key: string): number {
+  const m = id.match(/^(.*)-(\d+)$/);
+  const [base, k] = m ? [m[1], Number(m[2])] : [id, 0];
+  return (hash(`${base}|${key}`) / 2 ** 32 + k * GOLDEN) % 1;
+}
+
+/**
+ * One option, or the same option in several wordings of different lengths, the first the usual
+ * one. A wrong option's variant is the same typical mistake in other words; a right option's comes
+ * from the book's own wordings. builder.choice never takes a variant longer than the longest of the
+ * first wordings (nothing new wraps).
+ */
+export type Wording = string | readonly string[];
+
+// Wordings that recur across families. The Ε΄ book's strategies by their names in κεφ. 1.3
+// («Παρουσιάζω το πρόβλημα», «Εργάζομαι αντίστροφα», «Αναζητώ ένα μοτίβο», «Λύνω ένα πιο απλό
+// πρόβλημα»), first with what they mean here; and the «not wrong» options of a check that asks what
+// someone did wrong or forgot.
+export const STRATEGY = {
+  draw: ['Παρουσιάζω το πρόβλημα με σχέδιο', 'Παρουσιάζω το πρόβλημα'],
+  backwards: ['Εργάζομαι αντίστροφα: από το τέλος', 'Εργάζομαι αντίστροφα'],
+  pattern: ['Αναζητώ ένα μοτίβο στους αριθμούς', 'Αναζητώ ένα μοτίβο'],
+  simpler: ['Λύνω πρώτα ένα πιο απλό πρόβλημα', 'Λύνω ένα πιο απλό πρόβλημα'],
+} as const;
+/** «What did they do wrong?» — nothing. */
+export const NO_MISTAKE: readonly string[] = ['Κανένα λάθος, είναι σωστό', 'Κανένα λάθος', 'Δεν έκανε λάθος', 'Κανένα λάθος, όλα είναι σωστά', 'Δεν έκανε λάθος, είναι όλα σωστά', 'Δεν έκανε κανένα λάθος, είναι σωστό'];
+/** «What did they forget?» — nothing. */
+export const NOTHING_FORGOTTEN: readonly string[] = ['Τίποτα, η απάντηση στέκει', 'Τίποτα, στέκει', 'Δεν ξέχασε τίποτα', 'Τίποτα, η απάντηση είναι σωστή', 'Δεν ξέχασε τίποτα, η απάντηση στέκει'];
+
+/** At most this many combinations of wordings per choice. */
+const MAX_COMBINATIONS = 256;
+
+/**
+ * The weights over place vectors (each one choice's P, from places()) whose mix is closest to every
+ * place 1/n (the least sum of squares; Frank–Wolfe with exact line search).
+ */
+function evenest(V: number[][]): number[] {
+  const dot = (a: number[], b: number[]) => a.reduce((s, x, k) => s + x * b[k], 0);
+  let w: number[] = V.map((_, i) => (i === 0 ? 1 : 0));
+  let x = [...V[0]];
+  for (let t = 0; t < 1000; t++) {
+    const i = V.reduce((best, v, j) => (dot(x, v) < dot(x, V[best]) ? j : best), 0);
+    const d = V[i].map((v, k) => v - x[k]);
+    const dd = dot(d, d);
+    if (dd < 1e-12) break;
+    const g = Math.min(1, Math.max(0, -dot(x, d) / dd));
+    if (g < 1e-9) break;
+    w = w.map((y, j) => (1 - g) * y + (j === i ? g : 0));
+    x = x.map((y, k) => y + g * d[k]);
+  }
+  return w;
+}
+
+/**
+ * The wordings for a choice: `sets[i]` are option i's wordings (0 is the right one), `slot` the
+ * shuffled order (slot[j] is the option on screen at j). Valid: no repeats, no lengthTell, no variant
+ * longer than the longest first wording. Without a seed, the first valid one. With a seed in [0, 1)
+ * (placeSeed): the valid ones give the right option a few places by length (places()); the builder
+ * mixes them so that, over the problems of a prompt, every place is as near to 1/n as these wordings
+ * allow (evenest), and the seed picks one from that mix; among those that give the same places, the
+ * smallest spread of lengths, then the first wordings. `busiest`: the busiest place of that mix (1/n
+ * when the wordings can spread it evenly). Null when none is valid.
+ */
+function chooseWordings(sets: string[][], slot: number[], seed: number | undefined): { options: string[]; busiest: number } | null {
+  const total = sets.reduce((n, s) => n * s.length, 1);
+  if (total > MAX_COMBINATIONS) throw new Error(`${total} combinations of wordings (at most ${MAX_COMBINATIONS}): ${JSON.stringify(sets)}`);
+  const cap = Math.max(...sets.map(s => codePoints(s[0].trim())));
+  const correct = slot.indexOf(0);
+  const valid: { options: string[]; P: number[]; spread: number }[] = [];
+  for (let c = 0; c < total; c++) {
+    let rest = c;
+    // The last option's wordings vary fastest; combination 0 is every option's first wording
+    const pick = new Array<string>(sets.length);
+    for (let i = sets.length - 1; i >= 0; i--) { pick[i] = sets[i][rest % sets[i].length]; rest = Math.floor(rest / sets[i].length); }
+    const options = slot.map(i => pick[i]);
+    const L = options.map(o => codePoints(o.trim()));
+    if (new Set(options).size !== options.length || Math.max(...L) > cap || lengthTell(options, correct)) continue;
+    valid.push({ options, P: places(options, correct), spread: Math.max(...L) - Math.min(...L) });
+  }
+  if (!valid.length) return null;
+  if (seed === undefined || valid.length === 1) return { options: valid[0].options, busiest: Math.max(...valid[0].P) };
+  // The different place vectors, in the order first met, and the mix that spreads them most evenly
+  const key = (P: number[]) => P.map(p => p.toFixed(6)).join(',');
+  const vectors = [...new Map(valid.map(v => [key(v.P), v.P])).values()];
+  const w = evenest(vectors);
+  const mix = vectors[0].map((_, k) => vectors.reduce((s, v, i) => s + w[i] * v[k], 0));
+  let at = vectors.length - 1;
+  for (let i = 0, acc = 0; i < vectors.length; i++) if (seed < (acc += w[i])) { at = i; break; }
+  const want = key(vectors[at]);
+  const chosen = valid.filter(v => key(v.P) === want).reduce((a, v) => (v.spread < a.spread ? v : a));
+  return { options: chosen.options, busiest: Math.max(...mix) };
+}
 
 // ---------------------------------------------------------------------------
 // Hints that fit their numbers: how to start a calculation, without its result. b.numbers
@@ -395,28 +564,44 @@ export interface Row { label: string; answer: number; unit?: string; /** how it 
 
 export interface Builder {
   tag(prompt?: string, hint?: string): ProblemTagStep;
-  choice(phase: ProblemPhase, prompt: string, right: string, wrong: string[], hint?: string, story?: string): ProblemChoiceStep;
+  /** Each option one wording or several (Wording): the ones that put the right option at the problem's place for this prompt. */
+  choice(phase: ProblemPhase, prompt: string, right: Wording, wrong: Wording[], hint?: string, story?: string): ProblemChoiceStep;
   /** Without `hint`, one is written from the rows' equations (rowsHint); a step it can't write one for throws. */
   numbers(phase: ProblemPhase, prompt: string, rows: Row[], hint?: string): ProblemNumbersStep;
   order(phase: ProblemPhase, prompt: string, items: string[], hint?: string): ProblemOrderStep;
   /** What the choices give away (lengthTell), or options repeated: gen.ts drops such a draft. */
   tells: string[];
+  /** The prompts (promptKey) whose wordings can't spread the right option evenly over the places, with the busiest place's share: gen.ts --places lists them. */
+  uneven: { key: string; busiest: number }[];
 }
 
 export const READ_PROMPT_G3 = 'Τι ξέρουμε και τι ψάχνουμε;';
 export const READ_PROMPT_E5 = 'Τι προσπαθούμε να βρούμε; Τι γνωρίζουμε;';
 
-export function builder(r: Rng, readPrompt: string): Builder {
+/**
+ * `seedFor(key)`: where this problem falls among its family's problems for a prompt (placeSeed, from
+ * the problem's id); without it, each option's first valid wording.
+ */
+export function builder(r: Rng, readPrompt: string, seedFor?: (key: string) => number): Builder {
   const tells: string[] = [];
+  const uneven: { key: string; busiest: number }[] = [];
   return {
-    tells,
+    tells, uneven,
     tag: (prompt = readPrompt, hint) => ({ kind: 'tag', phase: 'read', prompt, ...(hint ? { hint } : {}) }),
     choice: (phase, prompt, right, wrong, hint, story) => {
-      const options = r.shuffle([right, ...wrong]);
-      const tell = new Set(options).size !== options.length ? `repeated options ${JSON.stringify(options)}` : lengthTell(options, options.indexOf(right));
-      if (tell) tells.push(`${prompt} ${tell}`);
+      const sets = [right, ...wrong].map(w => (typeof w === 'string' ? [w] : [...w]));
+      // The only draw: the order on screen (as before wordings, so stories and slots stay)
+      const slot = r.shuffle(sets.map((_, i) => i));
+      const correctIndex = slot.indexOf(0);
+      const chosen = chooseWordings(sets, slot, seedFor?.(promptKey(prompt)));
+      let options = chosen?.options;
+      if (chosen && seedFor && chosen.busiest > 1 / sets.length + 0.02) uneven.push({ key: promptKey(prompt), busiest: chosen.busiest });
+      if (!options) {
+        options = slot.map(i => sets[i][0]);
+        tells.push(`${prompt} ${new Set(options).size !== options.length ? `repeated options ${JSON.stringify(options)}` : lengthTell(options, correctIndex) ?? 'no wording fits'}`);
+      }
       return {
-        kind: 'choice', phase, prompt, options, correctIndex: options.indexOf(right),
+        kind: 'choice', phase, prompt, options, correctIndex,
         ...(hint ? { hint } : {}), ...(story ? { story } : {}),
       };
     },

@@ -12,7 +12,7 @@
 
 import type { ProblemStep } from '../../../shared/types.ts';
 import { plainStory } from '../../../shared/problems.ts';
-import { builder, cap, fmt, people, READ_PROMPT_G3, the, thing, type Person, type Rng, type Thing } from '../lib.ts';
+import { builder, cap, fmt, people, READ_PROMPT_G3, placeSeed, the, thing, type Person, type Rng, type Thing } from '../lib.ts';
 import { TOYS } from '../prices.ts';
 
 export type Op = '+' | '−' | '×' | ':';
@@ -468,7 +468,8 @@ export interface Made {
   derivation: Derivation[];
 }
 
-export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made | null {
+/** `opts.id`: the problem's id, for the wordings of its choices (lib.ts, placeSeed). */
+export function problem(r: Rng, w: World, opts: { calc?: boolean; id?: string } = {}): Made | null {
   const askable = [...w.asks.keys()];
   const sought = r.pick(askable);
   const stated = new Set(w.base.filter(q => q !== sought));
@@ -586,7 +587,7 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
   story = story.trim().replace(/ ([.;,])/g, '$1');
 
   // Steps: paint the story, work it out (her own way, or row by row), check the last calculation
-  const b = builder(r, READ_PROMPT_G3);
+  const b = builder(r, READ_PROMPT_G3, opts.id ? key => placeSeed(opts.id!, key) : undefined);
   const val = (id: string) => w.qs.get(id)!.value;
   const targets = paintTargets(story, pieces);
   const facts = targets.filter(t => t.role === 'known').length;

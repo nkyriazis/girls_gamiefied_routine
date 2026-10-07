@@ -11,11 +11,12 @@ const out: object[] = [];
 const seen = new Set<string>();
 for (let tries = 0; out.length < N && tries < N * 50; tries++) {
   const w = stockWorld(r);
-  const p = w && problem(r, w, { calc: true });
+  const id = `g3-world-${String(out.length + 1).padStart(3, '0')}`;
+  const p = w && problem(r, w, { calc: true, id });
   if (!p || seen.has(p.story)) continue;
   seen.add(p.story);
   out.push({
-    id: `g3-world-${String(out.length + 1).padStart(3, '0')}`, type: 'problem', category: 'Προβλήματα',
+    id, type: 'problem', category: 'Προβλήματα',
     title: w.title, source: 'Μαθηματικά Γ΄, ενότητες 1–3 (πρόσθεση, αφαίρεση, πολλαπλασιασμός)', story: p.story, steps: p.steps, stars: 3,
     generatorParams: { world: 'stock', sought: p.sought },
   });
