@@ -76,6 +76,8 @@ export const api = {
   completeTask: (executionId: string, taskId: string) =>
     post<{ success: boolean, starsAwarded: number }>(`/executions/${executionId}/tasks/${taskId}/complete`, {}, 'Failed to complete task'),
   closeRoutine: (executionId: string) => post(`/executions/${executionId}/close`, {}, 'Failed to close routine'),
+  // A parent's «Τέλος» on /parent (#63): the same close; the kids' screens hear it was a parent's
+  endRoutine: (executionId: string) => post(`/executions/${executionId}/close`, { by: 'parent' }, 'Failed to end routine'),
   dismissAlarm: (runId: string, stepIndex: number) => post(`/flow-runs/${runId}/steps/${stepIndex}/dismiss`, {}, 'Failed to dismiss alarm'),
 
   // Stars and rewards

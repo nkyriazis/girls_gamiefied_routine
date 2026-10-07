@@ -122,11 +122,17 @@ button.p-row:active { background: var(--p-raised); }
 
 /* Today: kids */
 .p-kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+/* The card; inside it, a button with the kid (opens the stars) and «Τέλος» under it while a routine runs */
 .p-kid {
-  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 12px;
-  background: var(--p-card); border: 1px solid var(--p-line); border-radius: var(--p-radius); color: inherit;
+  display: flex; flex-direction: column;
+  background: var(--p-card); border: 1px solid var(--p-line); border-radius: var(--p-radius); overflow: hidden;
 }
-.p-kid:active { background: var(--p-raised); }
+.p-kid-open {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 12px; width: 100%;
+  background: transparent; color: inherit;
+}
+.p-kid-open:active { background: var(--p-raised); }
+.p-kid-end { margin: 0 12px 12px; }
 .p-kid-name { font-size: 1.05rem; font-weight: 600; }
 .p-kid-stars { color: var(--color-accent); font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; text-shadow: 0 0 14px rgba(255, 215, 0, 0.35); }
 .p-kid-stars.big { font-size: 2.2rem; }
