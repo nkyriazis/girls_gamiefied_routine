@@ -307,7 +307,8 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           width: 100%;
         }
 
-        /* Stacked: «Δείξε μου» (it costs the exercise) well apart from the check above it (#50 part 6).
+        /* Stacked: «Δείξε μου» (it costs the exercise) well apart from whatever she taps to answer above it,
+           on every plain type: the check, the OK of the numpad, the last option (#50 part 6).
            Side by side, the renderer's auto margins already keep them apart. */
         .exercise-show {
           margin-top: 1.5rem;
