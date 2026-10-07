@@ -1,7 +1,35 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
+
+// Monaco's ESM vendors its own DOMPurify (esm/vs/base/browser/dompurify/dompurify.js, imported by
+// domSanitize.js as './dompurify/dompurify.js'), so package.json's dompurify override alone changes
+// only node_modules/dompurify, which nothing runs (#35). This sends that import to the dompurify
+// package: in the build (resolveId) and in dev's pre-bundling (esbuild). The build fails if the import
+// was never seen, so a monaco update that moves the file can't quietly bring its own copy back;
+// scripts/check-bundle.mjs checks the version that ends up in dist.
+const MONACO_PURIFY = { source: './dompurify/dompurify.js', importer: /monaco-editor[\\/]esm[\\/]vs[\\/]base[\\/]browser[\\/]/ }
+const PURIFY = path.resolve(__dirname, 'node_modules/dompurify/dist/purify.es.mjs')
+function monacoDompurify(): Plugin {
+  let redirected = false
+  return {
+    name: 'monaco-dompurify',
+    apply: 'build',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      if (source !== MONACO_PURIFY.source || !importer || !MONACO_PURIFY.importer.test(importer)) return null
+      redirected = true
+      return PURIFY
+    },
+    buildEnd(error) {
+      if (!error && !redirected) {
+        this.error(`no import of ${MONACO_PURIFY.source} from monaco-editor's base/browser: ` +
+          'monaco moved its DOMPurify; redirect the new path to the dompurify package (vite.config.ts)')
+      }
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,6 +39,7 @@ export default defineConfig({
     }
   },
   plugins: [
+    monacoDompurify(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -93,6 +122,15 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@monaco-editor/react', 'monaco-editor/editor/editor.api', 'monaco-editor/features/register.all',
       'monaco-editor/languages/features/json/register'],
+    esbuildOptions: {
+      plugins: [{
+        name: 'monaco-dompurify',
+        setup(build) {
+          build.onResolve({ filter: /^\.\/dompurify\/dompurify\.js$/ },
+            args => (MONACO_PURIFY.importer.test(args.importer) ? { path: PURIFY } : undefined))
+        },
+      }],
+    },
   },
   server: {
     host: true, // Listen on all addresses (0.0.0.0)
