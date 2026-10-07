@@ -1340,7 +1340,8 @@ function answerProblemStep(
     const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
     let stars = 0;
     if (!correct) {
-      mistakes[stepIndex]++;
+      // The same rule as the slips above decides whether this wrong try costs (shared/forgiveness.ts)
+      if (wrongTryCounts(step)) mistakes[stepIndex]++;
     } else if (stepIndex + 1 < exercise.steps.length) {
       updated.stepIndex = stepIndex + 1;
     } else {

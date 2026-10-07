@@ -24,8 +24,9 @@ export const DEFAULT_FORGIVENESS: Forgiveness = 'forgiving';
  * Does this wrong try cost a star? Every step's does, but on a calc step only a slip in the
  * arithmetic: a wrong result ('math') or the smaller number first ('order'). A right result
  * that means nothing in the story ('nothing') brings hints only, because some right ways read
- * as nothing (a net change: g3-world-010, 072). The server asks it as each wrong try comes in,
- * so a step's recorded mistakes are its counted ones.
+ * as nothing (a net change: g3-world-010, 072). The server asks it for every wrong try that
+ * comes in, a calc slip and a wrong answer alike (answerProblemStep), so a step's recorded
+ * mistakes are its counted ones, and the screen's help ladder follows them.
  */
 export function wrongTryCounts(step: ProblemStep, slip?: CalcSlip): boolean {
   if (step.kind === 'calc' && slip) return slip !== 'nothing';
