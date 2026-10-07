@@ -1,0 +1,321 @@
+
+> app@1.0.0 test
+> node --require ts-node/register --test test/*.test.ts
+
+✔ a backup holds a consistent copy of the database, the config files and uploads (63.336389ms)
+✔ SHA256SUMS lists every file in sha256sum -c format, and verifies (48.251898ms)
+✔ rotation keeps the newest N complete backups and leaves anything else alone (97.853812ms)
+✔ a backup that never completed is not counted as the newest (84.651838ms)
+✔ a backup on the same filesystem as the database says so (72.851526ms)
+✔ a missing database fails the backup and leaves nothing half-made (45.005198ms)
+✔ a backup that runs past its deadline is killed, logged as failed, and the next run can start (836.548525ms)
+✔ a backup that ends in time is logged from its output, and its deadline is cleared (469.263042ms)
+[ACTION:CHORE_AVAILABLE] {"choreId":"weekdays","instanceId":"60daf9c5-785c-48b9-97ba-18353982e26b","expiresAt":"2026-10-05T16:00:00.040Z"}
+[ACTION:CHORE_AVAILABLE] {"choreId":"four-days","instanceId":"dfdbec60-3d0b-4509-abf3-0e694379f04e","expiresAt":"2026-10-05T16:00:00.040Z"}
+[ACTION:CHORE_CRON_ERROR] {"choreId":"broken","cron":"61 18 * * *","error":"Constraint error, got value 61 expected range 0-59"}
+[ACTION:CHORE_AVAILABLE] {"choreId":"weekdays","instanceId":"3b5cc4f6-cabe-43bd-ad9b-795b498af01b","expiresAt":"2026-10-08T16:00:00.040Z"}
+[ACTION:CHORE_AVAILABLE] {"choreId":"weekdays","instanceId":"18b2b115-41cc-4ada-8cf7-52be851297b5","expiresAt":"2026-10-09T16:00:00.040Z"}
+[ACTION:CHORE_AVAILABLE] {"choreId":"four-days","instanceId":"45672ede-a411-46db-a328-da64c2acf1cc","expiresAt":"2026-10-09T16:00:00.040Z"}
+[ACTION:CHORE_AVAILABLE] {"choreId":"sunday-7","instanceId":"a5e13854-4c03-408c-8cf4-093367964024","expiresAt":"2026-10-11T16:00:00.040Z"}
+[ACTION:CHORE_AVAILABLE] {"choreId":"weekdays","instanceId":"7e9d5e73-e6dd-4316-ac9c-dab7d27aada6","expiresAt":"2026-10-19T16:00:00.040Z"}
+[ACTION:CHORE_AVAILABLE] {"choreId":"four-days","instanceId":"fc194e16-6936-4482-9424-3fe52ed42a3c","expiresAt":"2026-10-19T16:00:00.040Z"}
+✔ a chore on a list of days and ranges becomes available on each day it names, in settings.timezone (108.62532ms)
+✔ a chore whose cron cannot be read is logged once, and the other chores carry on (16.591423ms)
+✔ loads, caches, and reports unchanged files (9.015047ms)
+✔ an invalid file on disk keeps the last valid config live (1.739578ms)
+✔ an invalid file at startup yields the empty fallback, not a crash (1.773262ms)
+✔ save validates, writes, and updates the cache; the cache is frozen (3.351918ms)
+✔ after a start with an unreadable file, a plain save is refused and the file stays as it is (2.455354ms)
+✔ even the deliberate replace never writes the empty fallback over a file it never loaded (1.862068ms)
+✔ the broken text can be fixed and saved with replace; the broken file is kept beside (4.334674ms)
+✔ over an invalid file with the last valid config live: refused, unless replace asks (1.451747ms)
+✔ a missing optional file counts as loaded and can be created (1.162494ms)
+✔ a missing required file is never loaded: saving is refused (1.930127ms)
+✔ the empty config never goes over a loaded file that has content, with or without replace (1.041677ms)
+✔ a file that is itself the empty config can be saved as the empty config (0.925829ms)
+✔ a field is a list of ranges, values and steps (30.287716ms)
+✔ Sunday is 0 and 7; day of month or day of week, either one (5.878495ms)
+✔ a step counts from the start of its field: day of month and month start at 1 (1.221205ms)
+✔ any instant inside the minute matches: a late tick still counts (2.260978ms)
+✔ the time is read in the zone given (2.078195ms)
+✔ spring forward (Athens, 2027-03-28): the skipped hour never happens, 04:00 does (151.411128ms)
+✔ fall back (Athens, 2026-10-25): a time in the repeated hour matches twice (116.365853ms)
+✔ an expression that is not a cron throws (0.785446ms)
+✔ nextCronRun: the next time, strictly after (11.88516ms)
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"g3","date":"2026-10-07","exerciseIds":["P5","M1","rL2"],"revision":["rL2"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"g4","date":"2026-10-07","exerciseIds":["dM1","dL1","dM2"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"g3","date":"2026-10-08","exerciseIds":["P2","M2","rL1"],"revision":["rL1"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"g4","date":"2026-10-08","exerciseIds":["dL3","dM3","dL2"]}
+daily set: 3 a day, plus up to 10 extra problems; under 30 days fails for grades 3, 5, warns for the rest
+grade  category     own  rev  slots/day  days to repeat
+1      (no pools)
+2      Προβλήματα     0    0          0  -
+2      Μαθηματικά     9    0        1.5  6
+2      Γλώσσα         9    0        1.5  6
+3      Προβλήματα   708    0         11  64
+3      Μαθηματικά   120    9          1  120
+3      Γλώσσα        80    9          1  80
+4      Προβλήματα     0    0          0  -
+4      Μαθηματικά     9    0        1.5  6
+4      Γλώσσα         9    0        1.5  6
+5      Προβλήματα   508    0         11  46
+5      Μαθηματικά   120    9          1  120
+5      Γλώσσα        68    9          1  68
+6      (no pools)
+✔ a pool is written for its grades and serves its revision grades apart (1.526298ms)
+✔ a pool may not list a grade both as written for and as revision (0.975723ms)
+✔ the set follows the mix: problem, then maths, then language (0.773614ms)
+✔ own items before revision; revision only for a category the grade lacks (6.176675ms)
+✔ more slots cycle through the mix; at 1 always a problem, at 2 no language (0.303009ms)
+✔ a category a grade lacks passes its slot on, rotating through the mix (0.136516ms)
+✔ with no problems the round starts one further each day; with problems the problem stays first (0.402507ms)
+✔ a grade with no pools gets nothing (0.132579ms)
+✔ with k items in a category and one slot a day, an item comes back after k days (0.37247ms)
+✔ the daily set is stored in mix order, revision items marked, and the draw logged (16.12165ms)
+✔ the next day the Δ΄ kid starts one further round the mix, the Γ΄ kid with the problem again (6.747938ms)
+✔ shipped pools: days before a daily item comes back, per grade and category (84.526492ms)
+ℹ warning: grade 1: no pools, no daily exercises
+ℹ warning: grade 2 Προβλήματα: none, its slot passes on
+ℹ warning: grade 2 Μαθηματικά: an item comes back after 6 days
+ℹ warning: grade 2 Γλώσσα: an item comes back after 6 days
+ℹ warning: grade 4 Προβλήματα: none, its slot passes on
+ℹ warning: grade 4 Μαθηματικά: an item comes back after 6 days
+ℹ warning: grade 4 Γλώσσα: an item comes back after 6 days
+ℹ warning: grade 6: no pools, no daily exercises
+✔ a problem pays one star less for each step with a counted wrong try, however many tries (0.92101ms)
+✔ every step's wrong try counts, paint and calc too; a calc slip only when the arithmetic is wrong (#50) (0.258295ms)
+✔ a plain exercise loses its star at the first wrong try, on both rungs (0.154811ms)
+✔ what a step shows after wrong tries, on each rung (0.928775ms)
+✔ what an exercise pays now: what it paid once done, else what it pays if the rest goes right (0.231956ms)
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":3,"newBalance":108}
+[ACTION:EXERCISE_SESSION_COMPLETE] {"sessionId":"00000000-0000-4000-8000-000000000001","totalStars":{"u1":8,"u2":8}}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":108}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":3,"newBalance":108}
+[ACTION:EXERCISE_SESSION_COMPLETE] {"sessionId":"00000000-0000-4000-8000-000000000001","totalStars":{"u1":8,"u2":8}}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":108}
+✔ the same answer sent twice pays once, and the repeat is refused with nothing stored (12.947777ms)
+✔ an answer to a question that is not on screen is refused, and pays nothing (11.417522ms)
+✔ a player cannot answer out of turn, so surplus answers never skip anyone (37.831199ms)
+✔ a finished game stays on the screens with its results, a long finished one does not (80.550512ms)
+✔ running games come first, then finished ones newest first (17.749859ms)
+✔ «Επιστροφή» on a finished game hides it and keeps its record; on a running game it cancels it (15.699908ms)
+✔ the minute check finds a game whose results window just ended, once (9.722256ms)
+✔ imports every record, balance and log line, and verifies clean (51.625977ms)
+✔ is idempotent: a second run imports nothing and never overwrites newer state (43.829819ms)
+✔ lines without an id get a stable id, so re-reading them is a no-op (78.834908ms)
+✔ an invalid state.json aborts the import without writing anything (31.387041ms)
+✔ verification flags missing and altered records and balances (36.170719ms)
+✔ a fresh install without legacy files starts empty (28.871225ms)
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u1","date":"2026-10-07","exerciseIds":["e-balloons","e-2"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u2","date":"2026-10-07","exerciseIds":["p-balloons","p-two"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u4","date":"2026-10-07","exerciseIds":["p-three","p-two"]}
+[ACTION:EXERCISE_ASSIGNMENTS_CREATED] {"userId":"u5","date":"2026-10-07","exerciseIds":["e-balloons","e-1"]}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"c47b78e6-277c-4f8c-a201-9f71b49886fd","userId":"u2","exerciseId":"p-balloons","step":0,"forgiveness":"forgiving","kind":"tag","correct":false,"wrong":[2],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"c47b78e6-277c-4f8c-a201-9f71b49886fd","userId":"u2","exerciseId":"p-balloons","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"c47b78e6-277c-4f8c-a201-9f71b49886fd","userId":"u2","exerciseId":"p-balloons","step":1,"forgiveness":"forgiving","kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"c47b78e6-277c-4f8c-a201-9f71b49886fd","userId":"u2","exerciseId":"p-balloons","step":1,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"c47b78e6-277c-4f8c-a201-9f71b49886fd","userId":"u2","exerciseId":"p-balloons","step":2,"forgiveness":"forgiving","kind":"numbers","correct":false,"wrong":[1],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"c47b78e6-277c-4f8c-a201-9f71b49886fd","userId":"u2","exerciseId":"p-balloons","step":2,"forgiveness":"forgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":1,"newBalance":1}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"c47b78e6-277c-4f8c-a201-9f71b49886fd","userId":"u2","exerciseId":"p-balloons","step":3,"forgiveness":"forgiving","kind":"order","correct":true,"completed":true,"starsAwarded":1}
+[ACTION:EXERCISE_EXTRA_PROBLEM] {"userId":"u2","exerciseId":"p-three","number":1,"limit":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"26e87959-cb34-4c5c-bc66-64945e8f8f85","userId":"u2","exerciseId":"p-three","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"26e87959-cb34-4c5c-bc66-64945e8f8f85","userId":"u2","exerciseId":"p-three","step":1,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"26e87959-cb34-4c5c-bc66-64945e8f8f85","userId":"u2","exerciseId":"p-three","step":2,"forgiveness":"forgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":4}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"26e87959-cb34-4c5c-bc66-64945e8f8f85","userId":"u2","exerciseId":"p-three","step":3,"forgiveness":"forgiving","kind":"order","correct":true,"completed":true,"starsAwarded":3}
+[ACTION:EXERCISE_EXTRA_PROBLEM] {"userId":"u2","exerciseId":"p-balloons","number":2,"limit":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"3e352982-a267-47da-bf37-f01db175e81f","userId":"u2","exerciseId":"p-balloons","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"3e352982-a267-47da-bf37-f01db175e81f","userId":"u2","exerciseId":"p-balloons","step":1,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"3e352982-a267-47da-bf37-f01db175e81f","userId":"u2","exerciseId":"p-balloons","step":2,"forgiveness":"forgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":7}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"3e352982-a267-47da-bf37-f01db175e81f","userId":"u2","exerciseId":"p-balloons","step":3,"forgiveness":"forgiving","kind":"order","correct":true,"completed":true,"starsAwarded":3}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":false,"wrong":[2],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":false,"wrong":[2],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":2,"forgiveness":"unforgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":2,"forgiveness":"unforgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":2,"forgiveness":"unforgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.1496399220206267","userId":"u4","exerciseId":"p-balloons","step":3,"forgiveness":"unforgiving","kind":"order","correct":true,"completed":true,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.7929715436854141","userId":"u5","exerciseId":"e-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":false,"wrong":[0,1,3],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.7929715436854141","userId":"u5","exerciseId":"e-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.7929715436854141","userId":"u5","exerciseId":"e-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.7929715436854141","userId":"u5","exerciseId":"e-balloons","step":1,"forgiveness":"unforgiving","kind":"choice","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.7929715436854141","userId":"u5","exerciseId":"e-balloons","step":2,"forgiveness":"unforgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u5","amount":1,"newBalance":1}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u5-e-balloons-0.7929715436854141","userId":"u5","exerciseId":"e-balloons","step":3,"forgiveness":"unforgiving","kind":"order","correct":true,"completed":true,"starsAwarded":1}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.6709906191256291","userId":"u2","exerciseId":"p-pocket","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.6709906191256291","userId":"u2","exerciseId":"p-pocket","step":1,"forgiveness":"forgiving","kind":"calc","correct":false,"slip":"math","mistakes":[0,1,0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.6709906191256291","userId":"u2","exerciseId":"p-pocket","step":1,"forgiveness":"forgiving","kind":"calc","correct":false,"slip":"order","mistakes":[0,2,0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.6709906191256291","userId":"u2","exerciseId":"p-pocket","step":1,"forgiveness":"forgiving","kind":"calc","correct":false,"slip":"nothing","mistakes":[0,2,0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.6709906191256291","userId":"u2","exerciseId":"p-pocket","step":1,"forgiveness":"forgiving","kind":"calc","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":2,"newBalance":9}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.6709906191256291","userId":"u2","exerciseId":"p-pocket","step":2,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":true,"starsAwarded":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.4935035847890116","userId":"u2","exerciseId":"p-pocket","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.4935035847890116","userId":"u2","exerciseId":"p-pocket","step":1,"forgiveness":"forgiving","kind":"calc","correct":false,"slip":"nothing","mistakes":[0,0,0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.4935035847890116","userId":"u2","exerciseId":"p-pocket","step":1,"forgiveness":"forgiving","kind":"calc","correct":false,"slip":"nothing","mistakes":[0,0,0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.4935035847890116","userId":"u2","exerciseId":"p-pocket","step":1,"forgiveness":"forgiving","kind":"calc","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":12}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.4935035847890116","userId":"u2","exerciseId":"p-pocket","step":2,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":true,"starsAwarded":3}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-pocket-0.7737881036134286","userId":"u4","exerciseId":"p-pocket","step":0,"forgiveness":"unforgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-pocket-0.7737881036134286","userId":"u4","exerciseId":"p-pocket","step":1,"forgiveness":"unforgiving","kind":"calc","correct":false,"slip":"math","mistakes":[0,1,0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-pocket-0.7737881036134286","userId":"u4","exerciseId":"p-pocket","step":1,"forgiveness":"unforgiving","kind":"calc","correct":false,"slip":"math","mistakes":[0,2,0],"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-pocket-0.7737881036134286","userId":"u4","exerciseId":"p-pocket","step":1,"forgiveness":"unforgiving","kind":"calc","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:AWARD_STARS] {"userId":"u4","amount":2,"newBalance":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-pocket-0.7737881036134286","userId":"u4","exerciseId":"p-pocket","step":2,"forgiveness":"unforgiving","kind":"choice","correct":true,"completed":true,"starsAwarded":2}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.34161698036191857","userId":"u2","exerciseId":"p-pocket","step":0,"forgiveness":"forgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-pocket-0.34161698036191857","userId":"u2","exerciseId":"p-pocket","step":1,"forgiveness":"forgiving","kind":"calc","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-2-0.09244722443708264","userId":"u1","exerciseId":"e-2","forgiveness":"forgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-2-0.09244722443708264","userId":"u1","exerciseId":"e-2","forgiveness":"forgiving","correct":false,"attempts":2,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-2-0.09244722443708264","userId":"u1","exerciseId":"e-2","forgiveness":"forgiving","correct":true,"attempts":3,"starsAwarded":0,"completed":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":1,"newBalance":1}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-3-0.017783912051457573","userId":"u1","exerciseId":"e-3","forgiveness":"forgiving","correct":true,"attempts":1,"starsAwarded":1,"completed":true}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-tf-0.11184585817321158","userId":"u5","exerciseId":"e-tf","forgiveness":"unforgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":true}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-1-0.498774576705147","userId":"u5","exerciseId":"e-1","forgiveness":"unforgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-1-0.498774576705147","userId":"u5","exerciseId":"e-1","forgiveness":"unforgiving","correct":true,"attempts":2,"starsAwarded":0,"completed":true}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-2-0.9444142071503053","userId":"u5","exerciseId":"e-2","forgiveness":"unforgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u5-e-2-0.9444142071503053","userId":"u5","exerciseId":"e-2","forgiveness":"unforgiving","correct":false,"attempts":2,"starsAwarded":0,"completed":true}
+[ACTION:EXERCISE_ASSIGNMENT_ANSWER] {"assignmentId":"u1-e-1-0.5583025219498046","userId":"u1","exerciseId":"e-1","forgiveness":"forgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+[ACTION:EXERCISE_ASSIGNMENT_REVEAL] {"assignmentId":"u1-e-1-0.5583025219498046","userId":"u1","exerciseId":"e-1","attempts":1}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u2-p-balloons-0.6651191513170376","userId":"u2","exerciseId":"p-balloons","step":0,"forgiveness":"forgiving","kind":"tag","correct":false,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_RESTARTED] {"assignmentId":"u4-p-balloons-0.4296399696416221","exerciseId":"p-balloons","stepIndex":4,"mistakes":[0,1,0,0],"steps":4}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-balloons-0.4296399696416221","userId":"u4","exerciseId":"p-balloons","step":0,"forgiveness":"unforgiving","kind":"tag","correct":true,"completed":false,"starsAwarded":0}
+[ACTION:EXERCISE_PROBLEM_RESTARTED] {"assignmentId":"u4-p-two-0.3283416720652059","exerciseId":"p-two","stepIndex":1,"mistakes":[1,0],"steps":4}
+[ACTION:EXERCISE_PROBLEM_STEP] {"assignmentId":"u4-p-two-0.3283416720652059","userId":"u4","exerciseId":"p-two","step":0,"forgiveness":"unforgiving","kind":"tag","correct":false,"wrong":[2],"completed":false,"starsAwarded":0}
+✔ every shipped pool is valid, and every problem can be solved step by step (179.941452ms)
+✔ every shipped problem: whole sentences pass on both rungs; the whole story fails where something is not needed (#50) (259.010991ms)
+✔ every shipped problem: a sentence with both kinds painted whole but the unneeded fact passes on both rungs (#50) (89.194403ms)
+✔ every shipped problem on paint-all: the whole story ⚪ with the needed phrases painted over it is too much (#50) (60.779475ms)
+✔ every shipped plain exercise: the server takes its own key and refuses a wrong answer (39.54044ms)
+✔ «Δείξε μου»: every step of every shipped problem, shown worked, passes its check on every rung (170.493911ms)
+✔ a broken pool file is refused (5.026184ms)
+✔ a plain pool exercise names its textbook chapter, as a problem does (0.840148ms)
+✔ each kid draws exercisesPerDay from the pools of their grade; no grade, no exercises (25.985353ms)
+✔ a problem is answered step by step: wrong tries count, the last step pays a star less per step gone wrong (32.534998ms)
+✔ extra problems: fresh ones first, one open at a time, up to the day's limit (46.280624ms)
+✔ unforgiving: a problem can pay nothing, and a painted reading step costs a star like any step (74.419703ms)
+✔ a calc slip goes to the server as it happens: a wrong sum or the smaller number first costs, a right sum that means nothing does not (#50) (111.225415ms)
+✔ a plain exercise: a wrong first try loses the star; unforgiving closes it after its tries (45.904006ms)
+✔ «Δείξε μου» on a plain exercise: only after a wrong try, and it closes it paying nothing (18.031218ms)
+✔ painting freehand forgives a sloppy stroke, not a wrong fact (0.933995ms)
+✔ painting a needed fact's whole sentence is fine; around an unneeded fact it is too much (#50) (0.718089ms)
+✔ a sentence with a needed and an unneeded fact: only the clause holding the unneeded one is strict (#50) (0.389642ms)
+✔ working it out: each calculation is read back, the answer ends it (0.375415ms)
+✔ working it out: the same quantity taken away again and again reads back, up to the count (#50) (0.901353ms)
+✔ working it out: a pack at a time, the two packs added, «διπλάσια» (#50) (0.352242ms)
+✔ working it out: a run step that is also a quantity is read both ways (#50) (0.266721ms)
+✔ the smaller number first, in a subtraction or a division (#50) (0.084519ms)
+✔ every shipped world problem with a × on its way: the same way with the × done as a run passes (#50) (32.653942ms)
+✔ a problem regenerated under its id (#50): progress that no longer fits it starts again at step 0 (21.867035ms)
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"f6951062-0936-42ae-bdcd-19f8ead209e4"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"88760cba-df15-4231-aa4c-e32dd492d235"}
+[ACTION:ALARM_DISMISSED] {"runId":"d2543155-8f44-46bc-bd45-469a3fc85e8d","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":10}
+[ACTION:TASK_COMPLETE] {"executionId":"c4cc3025-6514-4b61-93ed-7d62f7eba408","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":15}
+[ACTION:TASK_COMPLETE] {"executionId":"c4cc3025-6514-4b61-93ed-7d62f7eba408","taskId":"t2","starsAwarded":5,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:ROUTINE_CLOSED] {"runId":"c4cc3025-6514-4b61-93ed-7d62f7eba408","userId":"u1","finished":true}
+[ACTION:ALARM_DISMISSED] {"runId":"878acbdc-f8fb-4b24-b68d-919fc8776939","flowId":"f2","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"91d73ba2-0850-4a26-949b-ca6e88339acb","userId":"u2","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"17cfb71b-1d42-496e-801a-437bd381ff35"}
+[ACTION:TRIGGER_ROUTINE_SKIPPED] {"id":"a1","source":"unknown","runId":"17cfb71b-1d42-496e-801a-437bd381ff35"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":1,"newBalance":16}
+[ACTION:TASK_COMPLETE] {"executionId":"17cfb71b-1d42-496e-801a-437bd381ff35","taskId":"t1","starsAwarded":1,"userId":"u1","duration":120,"isOnTime":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"e66a04eb-ead2-45ca-975b-2678ffb947b2"}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"c0d6b735-8d0d-46dd-8db8-486172862831"}
+[ACTION:ALARM_DISMISSED] {"runId":"c0d6b735-8d0d-46dd-8db8-486172862831","flowId":"f1","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"81de413b-587b-40f1-9b09-5b020fc4f338"}
+[ACTION:ALARM_DISMISSED] {"runId":"81de413b-587b-40f1-9b09-5b020fc4f338","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"53bf6ceb-8523-4bd7-9487-92f761bb2c61"}
+[ACTION:ALARM_DISMISSED] {"runId":"7deff4c8-99cc-4588-9768-533696514084","flowId":"f1","stepIndex":0}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":26}
+[ACTION:TASK_COMPLETE] {"executionId":"4b364ab4-d021-47cf-92a2-e67e7bf25386","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"70cf87c8-7c25-41df-be28-4d2d53827edb"}
+[ACTION:ALARM_DISMISSED] {"runId":"70cf87c8-7c25-41df-be28-4d2d53827edb","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"db52cd5c-528c-44f6-8dc9-07ee02c4dba7","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"3f08980f-8b3c-4adc-bb8b-4f520caf806a"}
+[ACTION:TRIGGER_ROUTINE] {"id":"a2","source":"unknown","runId":"15e36436-0c45-4b32-9a43-32b4f4d33dce"}
+[ACTION:ROUTINE_CLOSED_STALE] {"runId":"3f08980f-8b3c-4adc-bb8b-4f520caf806a","userId":"u1","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"1b819786-b94a-4ce1-b591-1c210e23453f"}
+[ACTION:ALARM_DISMISSED] {"runId":"6cdd1550-6fc4-4cc9-991f-b3029ab9a12f","flowId":"f2","stepIndex":0}
+[ACTION:ALARM_EXPIRED] {"runId":"ab8ae0f3-dafd-48a1-9da3-7e15d7a8c079","flowId":"f1","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"2ab8bfe2-e253-4199-bce3-d264ead0b59d","userId":"u2","finished":false}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"e32827c9-501f-486b-a987-6b902f1c5b28"}
+[ACTION:ALARM_EXPIRED] {"runId":"e32827c9-501f-486b-a987-6b902f1c5b28","flowId":"alarm","stepIndex":0}
+[ACTION:TRIGGER_FLOW] {"id":"together","source":"unknown","runId":"f39514a2-d9a2-4e35-9c06-40d2c3a045fc"}
+[ACTION:TRIGGER_FLOW] {"id":"both","source":"unknown","runId":"7e121e8c-d931-4d68-9ae4-4eaf001742f8"}
+[ACTION:TRIGGER_FLOW] {"id":"wake","source":"unknown","runId":"6842f5a6-169b-4728-b7ac-0b7a6a5fef85"}
+[ACTION:TRIGGER_FLOW] {"id":"cycle","source":"unknown","runId":"707f5bed-3c61-4c50-9a6b-0fdd48f82f0e"}
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"unknown","runId":"e80f002a-c167-4fb9-8198-b1fb1c8a0467"}
+[ACTION:TRIGGER_FLOW] {"id":"twice","source":"unknown","runId":"b3c0b900-a4d1-4f8c-9184-a085b0c96783"}
+[ACTION:ALARM_DISMISSED] {"runId":"b3c0b900-a4d1-4f8c-9184-a085b0c96783","flowId":"twice","stepIndex":0}
+[ACTION:ROUTINE_CLOSED] {"runId":"1f498275-a32c-43b2-a764-2b26168335ab","userId":"u1","finished":false}
+[ACTION:TRIGGER_ROUTINE] {"id":"a1","source":"unknown","runId":"6f491ff7-d1d5-4e4a-83ef-911f0a511fff"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":10,"newBalance":36}
+[ACTION:TASK_COMPLETE] {"executionId":"6f491ff7-d1d5-4e4a-83ef-911f0a511fff","taskId":"t1","starsAwarded":10,"userId":"u1","duration":0,"isOnTime":true}
+[ACTION:TRIGGER_FLOW] {"id":"f1","source":"unknown","runId":"5316e57b-f612-4980-8792-4c460d2f7c1d"}
+[ACTION:ALARM_DISMISSED] {"runId":"5316e57b-f612-4980-8792-4c460d2f7c1d","flowId":"f1","stepIndex":0}
+✔ a flow runs on the server: alarms, parallel routines, sub-flows, then it ends (55.998853ms)
+✔ a user has one routine at a time; a late task earns lateStars (11.733936ms)
+✔ a flow whose routines are all busy moves on at once (14.688086ms)
+✔ push "alarm" shows a plain alarm until dismissed (7.280869ms)
+✔ runs are in the client state and in the database (a restart resumes them) (11.487603ms)
+✔ a routine left open on an earlier day is closed: on the next trigger and by the minute cron (20.273701ms)
+✔ an alarm nobody dismissed stops after settings.alarmMinutes, with the rest of its flow (17.560874ms)
+✔ the server says whom an alarm is for: the kids of the routines after it (47.169203ms)
+✔ she is in her routine and dismisses her alarm: her routine goes on, nothing new starts (16.897548ms)
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"616e8fc1-6cfe-4a79-9d12-8affcbdd3e25"}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"ef53c2c8-6345-4483-abda-228d7a5d7e70"}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"2c093916-15fc-4583-b6ae-36aec84458c1"}
+[ACTION:TRANSFER_APPROVED] {"transferId":"2c093916-15fc-4583-b6ae-36aec84458c1","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"2b67d31a-f13e-4cdf-be6c-5fc4cc9d674a"}
+[ACTION:TRANSFER_APPROVED] {"transferId":"2b67d31a-f13e-4cdf-be6c-5fc4cc9d674a","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":100,"transferId":"88ccb67d-ec66-4c51-8a37-a64f199abd28"}
+[ACTION:TRANSFER_REJECTED] {"transferId":"88ccb67d-ec66-4c51-8a37-a64f199abd28","fromUserId":"u1","toUserId":"u2","amount":100}
+[ACTION:TRANSFER_REQUEST] {"fromUserId":"u1","toUserId":"u2","amount":40,"transferId":"082900c0-ed43-475c-a64a-45a17523040e"}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":-10,"newBalance":90}
+[ACTION:SPEND_STARS] {"userId":"u1","rewardId":"tv","cost":50,"newBalance":40}
+[ACTION:TRANSFER_APPROVED] {"transferId":"082900c0-ed43-475c-a64a-45a17523040e","fromUserId":"u1","toUserId":"u2","amount":40}
+[ACTION:SPENDING_REVOKED] {"spendingId":"b058ec95-1755-499d-b45a-88ed324fd7a2","userId":"u1","rewardId":"tv","cost":50}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":55}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":-10,"newBalance":0}
+[ACTION:TRANSFER_CANCELLED] {"transferId":"to-gone","fromUserId":"u1","toUserId":"u-gone","amount":5}
+[ACTION:TRANSFER_REJECTED] {"transferId":"to-gone-2","fromUserId":"u1","toUserId":"u-gone","amount":5}
+[ACTION:TRANSFER_REJECTED] {"transferId":"from-gone","fromUserId":"u-gone","toUserId":"u2","amount":5}
+✔ a purchase cannot spend stars promised in a pending gift, and nothing changes (24.519728ms)
+✔ a parent cannot take away stars promised in a pending gift, and nothing changes (15.490885ms)
+✔ the issue: gift, then a take-away or a purchase, then approve: nobody goes below zero (40.870139ms)
+✔ approving a gift the sender no longer has stars for is refused, and the gift stays pending (28.699612ms)
+✔ within the available stars everything still works (52.782831ms)
+✔ awardStars only adds; taking away is takeStars (17.396585ms)
+✔ a gift to (or from) a kid no longer in the config can be cancelled or rejected, not approved (25.004018ms)
+✔ records round-trip exactly, including optional, boolean and JSON fields (50.317649ms)
+✔ put replaces, insertNew never overwrites (36.792778ms)
+✔ enrichment fields are not stored (28.640992ms)
+✔ transactions roll back on error and nest into the outer one (37.022529ms)
+✔ data persists across reopening the file (41.913629ms)
+✔ recentLogs returns the newest entries first (40.239093ms)
+✔ replaceState swaps all runtime state but keeps the log (38.854892ms)
+✔ constraint violations other than a duplicate id are errors, not silently dropped (39.188439ms)
+✔ help tours played are remembered once, and survive a state replace (71.512981ms)
+✔ a connecting client gets the current state (26.41504ms)
+✔ changes in the same turn go out as one snapshot, to open clients only (13.745235ms)
+✔ a change during a slow build is followed by a snapshot of the final state; builds never overlap (21.41171ms)
+✔ a disconnected client gets nothing more; events and heartbeats go out immediately (12.024171ms)
+✔ the store reports every runtime-state write, and only those (61.12274ms)
+ℹ tests 116
+ℹ suites 0
+ℹ pass 116
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4857.420569

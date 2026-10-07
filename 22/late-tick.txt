@@ -1,0 +1,6 @@
+'0 7 * * *' tick at 07:00:00.000 + offset, every millisecond of the minute:
+  master's check fires for offsets 0..999 ms; first miss at 1000 ms
+  includesDate on the floored minute fires for the whole minute: true
+
+Dev stack's own ticks (backend log 'Checking schedules for: <local time>', seconds field), 2026-10-07:
+   1432   second :00

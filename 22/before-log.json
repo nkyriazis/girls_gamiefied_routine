@@ -1,0 +1,41 @@
+{
+ "due": "2026-10-07T13:10:00.000Z",
+ "chores": [
+  {
+   "id": "ev22-weekdays-muy4ivnj",
+   "title": "Πότισμα (Δευ–Παρ)",
+   "icon": {
+    "type": "emoji",
+    "value": "🪴"
+   },
+   "defaultStars": 10,
+   "availabilityCron": "10 16 * * 1-5",
+   "expirationHours": 1,
+   "category": "chore"
+  },
+  {
+   "id": "ev22-four-muy4ivnj",
+   "title": "Στρώσιμο κρεβατιού (Δευ Τρί Τετ Παρ)",
+   "icon": {
+    "type": "emoji",
+    "value": "🛏️"
+   },
+   "defaultStars": 10,
+   "availabilityCron": "10 16 * * 1-3,5",
+   "expirationHours": 1,
+   "category": "chore"
+  }
+ ],
+ "CHORE_AVAILABLE": [
+  {
+   "id": "4bc428bd-f274-4119-abc9-2e048f54b621",
+   "timestamp": "2026-10-07T13:10:00.053Z",
+   "type": "CHORE_AVAILABLE",
+   "details": {
+    "choreId": "ev22-weekdays-muy4ivnj",
+    "instanceId": "bbc29e66-3c3e-42b8-adbf-71121b164062",
+    "expiresAt": "2026-10-07T14:10:00.005Z"
+   }
+  }
+ ]
+}

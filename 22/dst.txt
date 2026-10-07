@@ -1,0 +1,13 @@
+2027-03-27 0 4 * * *      sched 0 incl 1 DIFF sched-only:  incl-only: 03-28 04:00 +03:00
+2027-03-27 0 7 * * *      sched 1 incl 1 same
+2027-03-27 0 20 * * *     sched 1 incl 1 same
+2027-03-27 0 7 * * 1-5    sched 0 incl 0 same
+2027-03-27 * 4 * * *      sched 59 incl 60 DIFF sched-only:  incl-only: 03-28 04:00 +03:00
+2027-03-27 */15 * * * *   sched 100 incl 100 same
+2026-10-24 0 4 * * *      sched 1 incl 1 same
+2026-10-24 0 7 * * *      sched 1 incl 1 same
+2026-10-24 0 20 * * *     sched 1 incl 1 same
+2026-10-24 0 7 * * 1-5    sched 0 incl 0 same
+2026-10-24 * 4 * * *      sched 60 incl 60 same
+2026-10-24 */15 * * * *   sched 100 incl 100 same
+next of 0 4 from 03:59:59+02 -> 2027-03-29T01:00:00.000Z
