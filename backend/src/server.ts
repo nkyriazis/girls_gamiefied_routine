@@ -9,7 +9,7 @@ import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
-import { Spending, StateSnapshot } from '../../shared/types';
+import { StateSnapshot } from '../../shared/types';
 
 // Import shared database layer
 import {
@@ -28,13 +28,31 @@ import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_F
 import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 import { cronMatchesAt, nextCronRun } from './cron';
+import {
+  answerBody, AnswerBody, claimBody, ClaimBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
+  helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, spendingBody, SpendingBody, spendingStatusBody,
+  SpendingStatusBody, starsBody, StarsBody, timeBody, TimeBody, transferActionBody, TransferActionBody, transferBody, TransferBody,
+  userBody, UserBody
+} from './bodies';
 
 const pump = util.promisify(pipeline);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { DateTime } = require('luxon');
 
-const server = Fastify({ logger: true });
+// Request bodies are checked against their schema (bodies.ts) with strict types: "5" is not taken for 5
+// (Fastify's default would coerce it). Only bodies have schemas, so params and query strings are untouched.
+const server = Fastify({ logger: true, ajv: { customOptions: { coerceTypes: false } } });
+
+type Id = { id: string };
+type InstanceId = { instanceId: string };
+
+// A body that doesn't match its schema is a 400 { error: 'body/amount must be integer' } (the shape api.ts
+// reads), before the handler runs, so it changes nothing. Every other error goes on to Fastify's own handler.
+server.setErrorHandler((error, request, reply) => {
+  if ((error as { validation?: unknown }).validation) return reply.code(400).send({ error: (error as Error).message });
+  throw error;
+});
 
 // Scheduler Logic
 async function checkSchedules(date: Date) {
@@ -150,12 +168,10 @@ async function refusable<T>(reply: FastifyReply, operation: () => T) {
 }
 
 // Parent: add (or, with a negative amount, take away) stars
-server.post('/api/users/:id/stars', async (request, reply) => {
-  const { id } = request.params as { id: string };
-  const { amount } = (request.body ?? {}) as { amount?: unknown };
-  if (typeof amount !== 'number' || !Number.isInteger(amount) || amount === 0) {
-    return reply.code(400).send({ error: 'amount must be a non-zero integer' });
-  }
+server.post<{ Params: Id; Body: StarsBody }>('/api/users/:id/stars', { schema: { body: starsBody } }, async (request, reply) => {
+  const { id } = request.params;
+  const { amount } = request.body;
+  if (amount === 0) return reply.code(400).send({ error: 'amount must be a non-zero integer' });
   return refusable(reply, () => amount > 0 ? awardStars(id, amount) : takeStars(id, -amount));
 });
 
@@ -191,15 +207,11 @@ server.get('/api/chores', async (request, reply) => {
   }
 });
 
-server.post('/api/chores/:instanceId/claim', async (request, reply) => {
+server.post<{ Params: InstanceId; Body: ClaimBody }>('/api/chores/:instanceId/claim', { schema: { body: claimBody } }, async (request, reply) => {
   try {
-    const { instanceId } = request.params as { instanceId: string };
-    const { userId } = request.body as { userId: string };
-    
-    if (!userId) {
-      return reply.code(400).send({ error: 'userId is required' });
-    }
-    
+    const { instanceId } = request.params;
+    const { userId } = request.body;
+
     const instance = claimChore(instanceId, userId);
     return instance;
   } catch (error) {
@@ -234,15 +246,16 @@ server.post('/api/chores/:instanceId/attempt', async (request, reply) => {
   }
 });
 
-server.post('/api/chores/:instanceId/confirm', async (request, reply) => {
+server.post<{ Params: InstanceId; Body: ConfirmBody }>('/api/chores/:instanceId/confirm', { schema: { body: confirmBody } }, async (request, reply) => {
   try {
-    const { instanceId } = request.params as { instanceId: string };
-    const { stars } = request.body as { stars?: number };
-    
+    const { instanceId } = request.params;
+    const { stars } = request.body;
+
     const instance = confirmChore(instanceId, stars);
     return instance;
   } catch (error) {
     request.log.error(error);
+    if (error instanceof StarsError) return reply.code(error.status).send({ error: error.message });
     const message = (error as Error).message;
     if (message.includes('not found')) {
       return reply.code(404).send({ error: message });
@@ -283,26 +296,26 @@ server.get('/api/history', async (request, reply) => {
 });
 
 // Spendings routes
-server.post('/api/spendings', async (request, reply) => {
-  const { userId, rewardId } = request.body as { userId: string, rewardId: string };
+server.post<{ Body: SpendingBody }>('/api/spendings', { schema: { body: spendingBody } }, async (request, reply) => {
+  const { userId, rewardId } = request.body;
   return refusable(reply, () => buyReward(userId, rewardId));
 });
 
-server.put('/api/spendings/:id', async (request, reply) => {
-  const { id } = request.params as { id: string };
-  const { status } = request.body as { status: Spending['status'] };
+server.put<{ Params: Id; Body: SpendingStatusBody }>('/api/spendings/:id', { schema: { body: spendingStatusBody } }, async (request, reply) => {
+  const { id } = request.params;
+  const { status } = request.body;
   return refusable(reply, () => resolveSpending(id, status));
 });
 
 // Star Transfers routes
-server.post('/api/transfers', async (request, reply) => {
-  const { fromUserId, toUserId, amount } = request.body as { fromUserId: string, toUserId: string, amount: number };
+server.post<{ Body: TransferBody }>('/api/transfers', { schema: { body: transferBody } }, async (request, reply) => {
+  const { fromUserId, toUserId, amount } = request.body;
   return refusable(reply, () => createGift(fromUserId, toUserId, amount));
 });
 
-server.put('/api/transfers/:id', async (request, reply) => {
-  const { id } = request.params as { id: string };
-  const { action } = request.body as { action: 'approve' | 'reject' | 'cancel' };
+server.put<{ Params: Id; Body: TransferActionBody }>('/api/transfers/:id', { schema: { body: transferActionBody } }, async (request, reply) => {
+  const { id } = request.params;
+  const { action } = request.body;
   return refusable(reply, () => resolveGift(id, action));
 });
 
@@ -331,13 +344,9 @@ server.post('/api/admin/upload', async (request, reply) => {
 });
 
 // Push hook endpoint
-server.post('/api/hooks/push', async (request, reply) => {
+server.post<{ Body: PushBody }>('/api/hooks/push', { schema: { body: pushBody } }, async (request, reply) => {
   try {
-    const { id } = request.body as { id: string };
-
-    if (!id) {
-      return reply.code(400).send({ error: 'Missing id' });
-    }
+    const { id } = request.body;
 
     logAction('PUSH_HOOK', { id });
 
@@ -395,9 +404,8 @@ server.post('/api/debug/backup', async (request, reply) => {
   return { started: backups.run('debug') };
 });
 
-server.post('/api/debug/time', async (request, reply) => {
-  const { time } = request.body as { time: string };
-  if (!time) return reply.code(400).send({ error: 'Missing time (ISO string or HH:mm)' });
+server.post<{ Body: TimeBody }>('/api/debug/time', { schema: { body: timeBody } }, async (request, reply) => {
+  const { time } = request.body;
 
   const timezone = config().settings?.timezone || 'Europe/Athens';
 
@@ -579,9 +587,9 @@ server.post('/api/admin/exercises', async (request, reply) => {
   }
 });
 
-server.post('/api/exercises/sessions', async (request, reply) => {
+server.post<{ Body: GameBody }>('/api/exercises/sessions', { schema: { body: gameBody } }, async (request, reply) => {
   try {
-    const { playerIds, categories, totalRounds, questionsPerRound } = request.body as any;
+    const { playerIds, categories, totalRounds, questionsPerRound } = request.body;
     const session = startExerciseSession(playerIds, categories, totalRounds, questionsPerRound);
     return session;
   } catch (error) {
@@ -596,10 +604,10 @@ server.get('/api/exercises/sessions/:id', async (request, reply) => {
   return session;
 });
 
-server.post('/api/exercises/sessions/:id/answer', async (request, reply) => {
+server.post<{ Params: Id; Body: GameAnswerBody }>('/api/exercises/sessions/:id/answer', { schema: { body: gameAnswerBody } }, async (request, reply) => {
   try {
-    const { id } = request.params as { id: string };
-    const { userId, exerciseId, answer } = request.body as any;
+    const { id } = request.params;
+    const { userId, exerciseId, answer } = request.body;
     const result = submitExerciseAnswer(id, userId, exerciseId, answer);
     return result;
   } catch (error) {
@@ -632,9 +640,9 @@ server.get('/api/exercise-assignments', async (request, reply) => {
 });
 
 // A kid asks for one more problem (see startExtraProblem)
-server.post('/api/exercise-assignments/extra', async (request, reply) => {
+server.post<{ Body: UserBody }>('/api/exercise-assignments/extra', { schema: { body: userBody } }, async (request, reply) => {
   try {
-    const { userId } = request.body as { userId: string };
+    const { userId } = request.body;
     return await startExtraProblem(userId);
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
@@ -642,10 +650,10 @@ server.post('/api/exercise-assignments/extra', async (request, reply) => {
 });
 
 // Answer an assignment
-server.post('/api/exercise-assignments/:id/answer', async (request, reply) => {
+server.post<{ Params: Id; Body: AnswerBody }>('/api/exercise-assignments/:id/answer', { schema: { body: answerBody } }, async (request, reply) => {
   try {
-    const { id } = request.params as { id: string };
-    const { answer } = request.body as any;
+    const { id } = request.params;
+    const { answer } = request.body;
     const result = await answerExerciseAssignment(id, answer);
     return result;
   } catch (error) {
@@ -664,17 +672,20 @@ server.post('/api/exercise-assignments/:id/reveal', async (request, reply) => {
 });
 
 // Help tours played on the kids' screens (the owl stops offering them), and a reset
-server.post('/api/help/seen', async (request, reply) => {
+server.post<{ Body: HelpSeenBody }>('/api/help/seen', { schema: { body: helpSeenBody } }, async (request, reply) => {
   try {
-    markHelpSeen((request.body as { tourIds?: unknown })?.tourIds);
+    markHelpSeen(request.body.tourIds);
     return { ok: true };
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
   }
 });
 
-server.post('/api/help/reset', async (request) => {
-  const { userId } = (request.body ?? {}) as { userId?: string };
+server.post<{ Body: HelpResetBody }>('/api/help/reset', {
+  schema: { body: helpResetBody },
+  preValidation: async (request) => { request.body ??= {}; }, // no body at all: every tour, as before
+}, async (request) => {
+  const { userId } = request.body;
   return { reset: resetHelp(userId || undefined) };
 });
 
