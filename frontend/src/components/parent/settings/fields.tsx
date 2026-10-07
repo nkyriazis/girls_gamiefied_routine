@@ -1,10 +1,10 @@
-import { useId, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import type { IconValue, User } from '@shared/types';
 import { api } from '../../../api';
 import { SmartIcon } from '../../SmartIcon';
 import { DAY_LABELS, formatWeekly, parseWeekly, WEEK_ORDER } from '../cron';
 import { useFeedback } from '../useFeedback';
-import { asFormIcon, type FormIcon } from './model';
+import { asFormIcon, THEME_COLORS, type FormIcon } from './model';
 
 // Form fields for the config editors. Each is a label plus one control.
 
@@ -42,12 +42,12 @@ export function SelectField({ label, value, options, onChange }: {
     );
 }
 
-export function IconField({ value, onChange }: { value: IconValue; onChange: (v: FormIcon) => void }) {
+export function IconField({ label = 'Εικονίδιο', value, onChange }: { label?: string; value: IconValue; onChange: (v: FormIcon) => void }) {
     const { run } = useFeedback();
     const icon = asFormIcon(value);
     const upload = (file?: File) => file && run(async () => onChange({ type: 'image', value: (await api.uploadFile(file)).filename }), 'Η εικόνα ανέβηκε');
     return (
-        <Field label="Εικονίδιο">
+        <Field label={label}>
             {id => (
                 <div className="p-icon-field">
                     <span className="p-icon-preview">{icon.value && <SmartIcon value={icon} size={40} />}</span>
@@ -57,6 +57,28 @@ export function IconField({ value, onChange }: { value: IconValue; onChange: (v:
                         Εικόνα
                         <input type="file" accept="image/*" hidden onChange={e => upload(e.target.files?.[0])} />
                     </label>
+                </div>
+            )}
+        </Field>
+    );
+}
+
+// A colour from the theme, which reads well on the dark kids' screen. A value that is none of them
+// (written by hand in the JSON) shows as its own chip, «Άλλο», and stays unless another is picked;
+// the chip stays too while the sheet is open, so it can be picked back.
+export function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+    const [first] = useState(value);
+    const own = [...new Set([first, value])].filter(v => v.trim() && !THEME_COLORS.some(c => c.value === v)).map(v => ({ value: v, label: 'Άλλο' }));
+    return (
+        <Field label={label}>
+            {() => (
+                <div className="p-chips" role="group" aria-label={label}>
+                    {[...THEME_COLORS, ...own].map(c => (
+                        <button key={c.value} type="button" aria-pressed={c.value === value}
+                            className={c.value === value ? 'p-chip p-swatch on' : 'p-chip p-swatch'} onClick={() => onChange(c.value)}>
+                            <span className="p-swatch-dot" style={{ background: c.value }} aria-hidden />{c.label}
+                        </button>
+                    ))}
                 </div>
             )}
         </Field>
