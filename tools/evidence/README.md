@@ -10,7 +10,8 @@ tools/evidence/record.sh .evidence/52/before.mjs                          # play
 ```
 
 `dev.sh` helpers (`dev/*.js`) change the dev database only: `problem <kid> <exerciseId>` sets a kid's problem
-for today, fresh; `plain` makes today's plain exercises fresh; `clear-runs` takes flows and routines off screen;
+for today, fresh; `exercise <kid> <exerciseId>` puts any pool item in the slot of its category
+(maths, language), fresh; `plain` makes today's plain exercises fresh; `clear-runs` takes flows and routines off screen;
 `stars u1 100 u2 20` sets balances and clears those kids' pending gifts and rewards.
 
 A scenario is a short Playwright script (`scenarios/smoke.mjs` is the smallest, `scenarios/owl-tours.mjs`
