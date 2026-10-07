@@ -26,10 +26,21 @@ the owner of `BACKUP_DIR`. The backup runs in a child process, so a slow or hung
 Each run adds `BACKUP` (folder, files, size, integrity, the balances in the copy) or `BACKUP_FAILED` to the action log,
 which you can read in Γονείς → Προχωρημένα → Καταγραφή.
 
-Disk use: 14 × (routine.db + uploads/), a few MB to tens of MB. An upload may be up to 10 MB (an alarm song, a
-photo), and every backup holds all of them, so each song kept in Αρχεία adds up to 14 × its size: 3 songs of
-5 MB are about 200 MB across the backups. Delete songs nobody rings any more. Check on the Pi with
+Disk use: 14 × (routine.db + uploads/), a few MB to a few hundred MB. An upload may be up to 10 MB (an alarm
+song, a photo), and every backup holds all of them, so each song kept in Αρχεία adds up to 14 × its size: 3 songs
+of 5 MB are about 200 MB across the backups. Check on the Pi with
 `ls -la backend/routine.db; du -sh backend/uploads backups/daily`.
+
+To delete a song nobody rings any more: the page has no delete button, and the files in `backend/uploads` belong
+to root on the Pi, so delete it through the backend container. Take its name from Αρχεία (a tap copies it), check
+that nothing uses it (`grep '<name>' backend/data.json` prints nothing), then:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.release.yml exec backend rm uploads/<name>
+```
+
+It is gone from `uploads/` at once, but every backup taken before still holds it, so the space comes back only
+as those backups rotate out, 14 days later.
 
 ## Moving the backups off the card
 
