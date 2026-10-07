@@ -1,0 +1,145 @@
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":110}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":3,"newBalance":103}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":5,"newBalance":105}
+[ACTION:AWARD_STARS] {"userId":"u1","amount":3,"newBalance":108}
+[ACTION:EXERCISE_SESSION_COMPLETE] {"sessionId":"00000000-0000-4000-8000-000000000001","totalStars":{"u1":8,"u2":8}}
+[ACTION:AWARD_STARS] {"userId":"u2","amount":3,"newBalance":108}
+✖ the same answer sent twice pays once, and the repeat is refused with nothing stored (11.381189ms)
+✖ an answer to a question that is not on screen is refused, and pays nothing (5.603726ms)
+✖ a player cannot answer out of turn, so surplus answers never skip anyone (5.587746ms)
+✖ a finished game stays on the screens with its results, a long finished one does not (23.205209ms)
+✖ running games come first, then finished ones newest first (9.377821ms)
+✖ «Επιστροφή» on a finished game hides it and keeps its record; on a running game it cancels it (2.778013ms)
+✖ the minute check finds a game whose results window just ended, once (0.125747ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 520.043611
+
+✖ failing tests:
+
+test at test/groupGame.test.ts:57:22
+✖ the same answer sent twice pays once, and the repeat is refused with nothing stored (11.381189ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/app/test/groupGame.test.ts:59:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /σειρά|turn/i,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/groupGame.test.ts:66:22
+✖ an answer to a question that is not on screen is refused, and pays nothing (5.603726ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/app/test/groupGame.test.ts:68:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /ερώτηση|question/i,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/groupGame.test.ts:72:22
+✖ a player cannot answer out of turn, so surplus answers never skip anyone (5.587746ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: Ηλέκτρα plays first
+      at TestContext.<anonymous> (/app/test/groupGame.test.ts:75:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /σειρά|turn/i,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/groupGame.test.ts:88:22
+✖ a finished game stays on the screens with its results, a long finished one does not (23.205209ms)
+  AssertionError [ERR_ASSERTION]: just finished: «Μπράβο! 🎉» on every screen
+  + actual - expected
+  
+  + []
+  - [
+  -   '00000000-0000-4000-8000-000000000001'
+  - ]
+  
+      at TestContext.<anonymous> (/app/test/groupGame.test.ts:93:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ '00000000-0000-4000-8000-000000000001' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/groupGame.test.ts:100:22
+✖ running games come first, then finished ones newest first (9.377821ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      '00000000-0000-4000-8000-000000000003',
+  -   '00000000-0000-4000-8000-000000000002',
+  -   '00000000-0000-4000-8000-000000000001'
+    ]
+  
+      at TestContext.<anonymous> (/app/test/groupGame.test.ts:107:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ '00000000-0000-4000-8000-000000000003' ],
+    expected: [ '00000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000001' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/groupGame.test.ts:108:22
+✖ «Επιστροφή» on a finished game hides it and keeps its record; on a running game it cancels it (2.778013ms)
+  TypeError: db.closeExerciseSession is not a function
+      at TestContext.<anonymous> (/app/test/groupGame.test.ts:112:6)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/groupGame.test.ts:118:22
+✖ the minute check finds a game whose results window just ended, once (0.125747ms)
+  RangeError: Invalid time value
+      at Date.toISOString (<anonymous>)
+      at ago (/app/test/groupGame.test.ts:34:74)
+      at TestContext.<anonymous> (/app/test/groupGame.test.ts:123:62)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
