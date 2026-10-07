@@ -324,7 +324,10 @@ Questions that refer to what the story tells (the item bought, «η νονά τ�
 
 **Painting and sentences** (#50). The painting check (`checkPaint`, `paintStrays` in
 shared/problems.ts) lets her paint a needed fact's sentence whole; only around an unneeded
-fact, in its own sentence, does a stroke count as too much. So a sentence that holds a
+fact, in its own sentence, does a stroke count as too much. ⚪ («Δεν χρειάζεται», on
+«paint-all») is the other way round: she may paint an unneeded fact's own sentence ⚪ whole,
+but ⚪ in a sentence with a needed fact, the question or no fact at all counts as too much,
+so painting the whole story ⚪ and the needed phrases over it fails. So a sentence that holds a
 needed and an unneeded fact is one she must paint phrase by phrase (33 Γ΄ generated, 217 Ε΄
 generated, 7 Ε΄ curated today), and a story with no unneeded fact passes painted whole (36
 world stories; `audit.ts` allows them). `world/run.ts`'s painting `grade()` is a prototype
