@@ -1,10 +1,11 @@
 import type {
   ActionLog, ChoreInstance, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
-  ExerciseSession, Spending, StarTransfer, StateSnapshot
+  ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot
 } from '@shared/types';
 
 // REST calls. They report what someone did; the resulting state arrives over
-// the WebSocket (GameContext), so callers never cache what these return.
+// the WebSocket (GameContext), so callers never cache what these return. The
+// exception is history(): the archive STATE doesn't carry, read a page at a time.
 
 const API_URL = '/api';
 
@@ -75,6 +76,10 @@ export const api = {
   approveTransfer: (id: string) => put<StarTransfer>(`/transfers/${id}`, { action: 'approve' }, 'Failed to approve transfer'),
   rejectTransfer: (id: string) => put<StarTransfer>(`/transfers/${id}`, { action: 'reject' }, 'Failed to reject transfer'),
   cancelTransfer: (id: string) => put<StarTransfer>(`/transfers/${id}`, { action: 'cancel' }, 'Failed to cancel transfer'),
+
+  // What was decided, newest first: the first page, or the one after `before` (a page's `next`)
+  history: (before: string | null, userId: string | null) =>
+    get<HistoryPage>(`/history?${new URLSearchParams({ ...(before ? { before } : {}), ...(userId ? { userId } : {}) })}`, 'Failed to read the history'),
 
   // Chores
   claimChore: (instanceId: string, userId: string) => post<ChoreInstance>(`/chores/${instanceId}/claim`, { userId }, 'Failed to claim chore'),
