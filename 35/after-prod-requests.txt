@@ -1,0 +1,17 @@
+[kiosk] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[kiosk] console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[kiosk] console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[kiosk] Ρυθμίσεις (JSON) editor up after 30 s offline: true (up 0.5 s after the tap; the 0.5 s pause after a tap included)
+[kiosk] Ασκήσεις (JSON) editor up after 10 s offline: true
+[kiosk] Κατάσταση (JSON) editor up after 10 s offline: true
+[kiosk] DOMPurify the page loaded (7 scripts scanned): 3.4.16 in /assets/JsonEditor-BgPI8NxF.js
+[kiosk] hover on "availabilityCron", offline: «Cron expression for when chore/activity becomes available (5 fields: minute hour day month weekday)»
+[kiosk] schema warning on "bogus", offline: squiggle true, hover «Property bogus is not allowed.»
+[kiosk] requests that needed the internet: 1
+  https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap
+[phone] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[phone] Ρυθμίσεις (JSON) editor up after 20 s offline: true
+[online] Ρυθμίσεις (JSON) editor up: true
+[online] requests off the LAN: 2 (to cdn.jsdelivr.net: 0)
+  https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap
+  https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtq.woff2

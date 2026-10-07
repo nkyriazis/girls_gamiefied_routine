@@ -1,0 +1,3 @@
+# The redirect's own guard: vite.config.ts with the source changed to './dompurify/moved.js' (as if monaco moved its copy)
+error during build:
+[monaco-dompurify] [plugin monaco-dompurify] monaco-dompurify: no import of ./dompurify/moved.js from monaco-editor's base/browser: monaco moved its DOMPurify; redirect the new path to the dompurify package (vite.config.ts)

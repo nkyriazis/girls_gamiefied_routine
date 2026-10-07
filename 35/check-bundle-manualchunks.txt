@@ -1,0 +1,15 @@
+# The manualChunks trap (#35), built on purpose to see the guard catch it: vite.config.ts with
+#   build.rollupOptions.output.manualChunks: id => id.includes('monaco-editor') ? 'vendor-editor' : undefined
+# and vendor-editor-* added to globIgnores (else vite-plugin-pwa stops first: the 4 MB chunk is over its 2 MiB precache limit).
+> tsc -b && vite build && node scripts/check-bundle.mjs
+dist/assets/index-Db9582dE.css                      21.45 kB │ gzip:     5.38 kB
+dist/assets/vendor-editor--wwQ80g0.css             186.53 kB │ gzip:    27.71 kB
+dist/assets/JsonEditor-d2WxMjAx.js                   2.95 kB │ gzip:     1.60 kB
+dist/assets/index-SlnoypB0.js                      678.75 kB │ gzip:   202.00 kB
+dist/assets/vendor-editor-BhPxXYzI.js            4,042.07 kB │ gzip: 1,049.33 kB
+precache  123 entries (5159.16 KiB)
+check-bundle: 2 problem(s)
+  - index.html loads or preloads assets/vendor-editor-BhPxXYzI.js, which has Monaco in it
+  - the kids' entry imports assets/vendor-editor-BhPxXYzI.js, which has Monaco in it
+index.html:
+<link rel="modulepreload" crossorigin href="/assets/vendor-editor-BhPxXYzI.js">

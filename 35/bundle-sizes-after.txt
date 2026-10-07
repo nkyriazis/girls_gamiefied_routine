@@ -1,0 +1,18 @@
+#35 after: vite build of issue-35-bundle-monaco (8416429) next to master (8d49113), both in the dev container's node_modules
+
+                                    master                       this branch
+dist                                5.3 MB                       10.2 MB
+kids' entry assets/index-*.js       687,558 bytes                687,566 bytes (+8: it now also exports Vite's preload
+                                                                 helper, `cw as _`, for AdvancedView's lazy import; no Monaco)
+AdvancedView-*.js (lazy)            22.62 kB                     6.92 kB
+JsonEditor-*.js (lazy, Monaco)      -                            3,981.86 kB (gzip 1,032.90 kB)   not precached
+JsonEditor-*.css                    -                            186.53 kB (gzip 27.71 kB)        not precached
+jsonMode-*.js                       -                            54.22 kB                         not precached
+editor.worker-*.js / json.worker-*  -                            275.63 kB / 406.91 kB            not precached
+codicon-*.ttf                       -                            153.23 kB                        not precached
+precache                            123 entries, 5183.76 KiB     123 entries, 5168.29 KiB (the same 123 names; AdvancedView smaller)
+vite build time                     ~2 s                         ~8 s
+runtime, Προχωρημένα online         24 requests to jsdelivr      0 (after-requests.txt, after-prod-requests.txt)
+DOMPurify in the build              none (it ran from the CDN,   3.4.16 (check-bundle; the page loaded 3.4.16, after-prod-requests.txt)
+                                    monaco's 3.4.15)
+frontend npm audit                  2 low (dompurify 3.4.15)     0

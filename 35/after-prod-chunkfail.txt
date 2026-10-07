@@ -1,0 +1,16 @@
+[kiosk] console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[kiosk] console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[kiosk] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[kiosk] console error: v: TypeError: Failed to fetch dynamically imported module: http://localhost:4173/assets/JsonEditor-BgPI8NxF.js
+[kiosk] Ρυθμίσεις (JSON), chunk cut: message «Ο επεξεργαστής δεν φορτώθηκε από τον Pi: η συσκευή δεν τον βρίσκει, ή ο Pi πήρε νέα έκδοση. Έλεγξε ότι είσαι στο δίκτυο του σπιτιού και δοκίμασε ξανά.»
+[kiosk] console error: v: TypeError: Failed to fetch dynamically imported module: http://localhost:4173/assets/JsonEditor-BgPI8NxF.js
+[kiosk] Ασκήσεις (JSON), chunk cut: message true
+[kiosk] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[kiosk] console error: v: TypeError: Failed to fetch dynamically imported module: http://localhost:4173/assets/JsonEditor-BgPI8NxF.js
+[kiosk] Δοκίμασε ξανά with the chunk still cut: message again true
+[kiosk] after Δοκίμασε ξανά with the chunk reachable: editor up true, url http://localhost:4173/parent?view=advanced
+[kiosk] chunk requests aborted: 2
+  /assets/JsonEditor-BgPI8NxF.js
+[phone] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[phone] console error: v: TypeError: Failed to fetch dynamically imported module: http://localhost:4173/assets/JsonEditor-BgPI8NxF.js
+[phone] chunk cut: message true

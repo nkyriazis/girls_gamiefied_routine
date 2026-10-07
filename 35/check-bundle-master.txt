@@ -1,0 +1,7 @@
+# master (8d49113), npm run build, then this branch's scripts/check-bundle.mjs against master's dist:
+check-bundle: 5 problem(s)
+  - assets/AdvancedView-Dc8-XbhQ.js loads from cdn.jsdelivr.net: https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs
+  - no assets/JsonEditor-*.js: the JSON editor is not its own lazy chunk
+  - no assets/json.worker-*.js: the JSON worker is not bundled
+  - no assets/editor.worker-*.js: the editor worker is not bundled
+  - found no DOMPurify in the build (Monaco renders its hovers through it)

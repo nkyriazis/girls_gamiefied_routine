@@ -1,0 +1,26 @@
+requests to cdn.jsdelivr.net: 24, distinct files: 24
+script/stylesheet (the page's <script>/<link>): 22, other (importScripts from the blob: workers): 2
+script     loader.js
+script     editor/editor.main.js
+script     json.worker-Bp7U0-9w.js
+script     css.worker-BInK4lsP.js
+script     html.worker-C1TNvQ72.js
+script     ts.worker-BLYAhMkX.js
+script     nls.messages-loader.js
+script     index-DZH_zysX.js
+script     monaco.contribution-C7tY_xnl.js
+script     editor-BdtEMBbM.js
+script     monaco.contribution-BuX2NvO2.js
+script     monaco.contribution-CY2lwFI8.js
+script     monaco.contribution-D1-wBxcq.js
+script     toggleHighContrast-DuqAmExZ.js
+script     basic-languages/monaco.contribution.js
+script     editorWorkerHost-B_VpI68A.js
+stylesheet editor/editor.main.css
+script     jsonMode-w7Q_ZLTt.js
+script     workers-BeMslOxK.js
+script     lspLanguageFeatures-Cog3rVVE.js
+script     main-BEx-Fmlo.js
+other      assets/editor.worker-_vAIFJDs.js
+script     main-DsK8pnKg.js
+other      assets/json.worker-Csf_TLih.js

@@ -1,0 +1,3 @@
+# dompurify override in package.json (node_modules/dompurify is 3.4.16), no redirect in vite.config.ts yet:
+check-bundle: 1 problem(s)
+  - the build carries DOMPurify 3.4.15, not the installed 3.4.16

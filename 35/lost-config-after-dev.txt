@@ -1,0 +1,16 @@
+[lost-config-after-dev-online] http://localhost:5173/monaco-is-bundled-see-monaco.ts/loader.js -> 404 
+[lost-config-after-dev-online] Ρυθμίσεις (JSON) editor up within 20 s: false
+[lost-config-after-dev-online] loader.js requested from: http://localhost:5173/monaco-is-bundled-see-monaco.ts/loader.js
+[lost-config-after-dev-online] requests off the LAN: 2 (to cdn.jsdelivr.net: 0)
+  https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap
+  https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtq.woff2
+[lost-config-after-dev-online] console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[lost-config-after-dev-online] console error: Monaco initialization: error: Event
+[lost-config-after-dev-offline] http://localhost:5173/monaco-is-bundled-see-monaco.ts/loader.js -> 404 
+[lost-config-after-dev-offline] Ρυθμίσεις (JSON) editor up within 20 s: false
+[lost-config-after-dev-offline] loader.js requested from: http://localhost:5173/monaco-is-bundled-see-monaco.ts/loader.js
+[lost-config-after-dev-offline] requests off the LAN: 1 (to cdn.jsdelivr.net: 0)
+  https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap
+[lost-config-after-dev-offline] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[lost-config-after-dev-offline] console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[lost-config-after-dev-offline] console error: Monaco initialization: error: Event

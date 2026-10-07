@@ -1,0 +1,8 @@
+# After the revision, monaco.ts with loader.config dropped: npm run build (tail), then the jsdelivr URLs in dist
+  dist/workbox-6829fd8d.js
+check-bundle: ok. Monaco in 6 lazy files (5.06 MB), not precached, not in the kids' entry (assets/index-DGT-g4bH.js); DOMPurify 3.4.16; no CDN.
+
+$ grep -rho 'https://cdn.jsdelivr.net[^'"]*' frontend/dist | sort -u
+(none)
+$ grep -rho 'monaco-is-bundled[^'"]*' frontend/dist
+monaco-is-bundled-see-monaco.ts

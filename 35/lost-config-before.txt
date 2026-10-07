@@ -1,0 +1,17 @@
+[lost-config-before-online] https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/loader.js -> 200 application/javascript; charset=utf-8
+[lost-config-before-online] Ρυθμίσεις (JSON) editor up within 20 s: true
+[lost-config-before-online] loader.js requested from: https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/loader.js
+[lost-config-before-online] requests off the LAN: 17 (to cdn.jsdelivr.net: 14)
+  https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap
+  https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtq.woff2
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/loader.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/editor/editor.main.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/nls.messages-loader.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/monaco.contribution-DO3azKX8.js
+[lost-config-before-offline] Ρυθμίσεις (JSON) editor up within 20 s: false
+[lost-config-before-offline] loader.js requested from: https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/loader.js
+[lost-config-before-offline] requests off the LAN: 2 (to cdn.jsdelivr.net: 1)
+  https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/loader.js
+[lost-config-before-offline] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[lost-config-before-offline] console error: Monaco initialization: error: Event

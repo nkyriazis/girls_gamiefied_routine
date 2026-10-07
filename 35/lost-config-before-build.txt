@@ -1,0 +1,8 @@
+# Before the revision, monaco.ts with loader.config dropped: npm run build (tail), then the jsdelivr URLs in dist
+  dist/sw.js
+  dist/workbox-6829fd8d.js
+check-bundle: ok. Monaco in 6 lazy files (5.06 MB), not precached, not in the kids' entry (assets/index-CA76Zm4P.js); DOMPurify 3.4.16; no CDN.
+
+$ grep -rho 'https://cdn.jsdelivr.net[^'"]*' frontend/dist | sort -u
+https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs
+(in JsonEditor-12d9d8lb.js)

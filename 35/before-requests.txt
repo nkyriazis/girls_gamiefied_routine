@@ -1,0 +1,51 @@
+[kiosk] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[kiosk] console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[kiosk] console error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[kiosk] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[kiosk] console error: Monaco initialization: error: Event
+[kiosk] console error: Monaco initialization: error: Event
+[kiosk] Ρυθμίσεις (JSON) editor up after 30 s offline: false
+[kiosk] console error: Monaco initialization: error: Event
+[kiosk] console error: Monaco initialization: error: Event
+[kiosk] Ασκήσεις (JSON) editor up after 10 s offline: false
+[kiosk] console error: Monaco initialization: error: Event
+[kiosk] console error: Monaco initialization: error: Event
+[kiosk] Κατάσταση (JSON) editor up after 10 s offline: false
+[kiosk] requests that needed the internet: 2
+  https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/loader.js
+[phone] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[phone] console error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+[phone] console error: Monaco initialization: error: Event
+[phone] console error: Monaco initialization: error: Event
+[phone] Ρυθμίσεις (JSON) editor up after 20 s offline: false
+[online] Ρυθμίσεις (JSON) editor up: true
+[online] requests off the LAN: 28
+  https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/loader.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/editor/editor.main.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/json.worker-Bp7U0-9w.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/css.worker-BInK4lsP.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/html.worker-C1TNvQ72.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/ts.worker-BLYAhMkX.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/nls.messages-loader.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/index-DZH_zysX.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/monaco.contribution-C7tY_xnl.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/editor-BdtEMBbM.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/monaco.contribution-BuX2NvO2.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/monaco.contribution-CY2lwFI8.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/monaco.contribution-D1-wBxcq.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/toggleHighContrast-DuqAmExZ.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/basic-languages/monaco.contribution.js
+  https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtq.woff2
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/editorWorkerHost-B_VpI68A.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/editor/editor.main.css
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/jsonMode-w7Q_ZLTt.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/workers-BeMslOxK.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/lspLanguageFeatures-Cog3rVVE.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/main-BEx-Fmlo.js
+  blob:http://localhost:5173/358cbca0-8509-41ca-8970-c5a085869ab4
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/assets/editor.worker-_vAIFJDs.js
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/main-DsK8pnKg.js
+  blob:http://localhost:5173/e444c48f-c6c9-48a7-aacf-aa1f70155246
+  https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs/assets/json.worker-Csf_TLih.js
