@@ -81,15 +81,16 @@ export const unitRate: Family = {
     const round = Math.round(many / 10) * 10;
     const steps = [
       b.tag(undefined, 'Χρειαζόμαστε ό,τι αλλάζει την ποσότητα. Τα υπόλοιπα τα αφήνουμε.'),
-      ...(r.chance(0.7) ? [b.choice('plan', 'Ποιο σχέδιο δουλεύει;', 'Βρίσκω πρώτα πόσο είναι για 1 και μετά για όλα',
-        [`${fmt(many)} × ${fmt(few * per)}`, `${fmt(many)} + ${fmt(few * per)} + ${few}`],
+      // As bare as the wrong ones: first for 1, then for all; × for :, or every number added
+      ...(r.chance(0.7) ? [b.choice('plan', 'Ποιο σχέδιο δουλεύει;', `(${fmt(few * per)} : ${few}) × ${fmt(many)}`,
+        [`(${fmt(few * per)} × ${few}) × ${fmt(many)}`, `${fmt(many)} × ${fmt(few * per)}`, `${fmt(many)} + ${fmt(few * per)} + ${few}`],
         `Τα ${fmt(few * per)} είναι για ${few}, όχι για 1.`)] : []),
       b.numbers('solve', 'Λύνουμε.', [
         { label: s.one, answer: per },
         { label: s.all(many), answer: total, unit: s.unit },
       ], `${fmt(few * per)} : ${few} = ${per}. Μετά ${fmt(many)} × ${per}.`),
-      b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: περίπου ${fmt(round)} × ${per} = ${fmt(round * per)}`,
-        [`Όχι: πρέπει να είναι λιγότερο από ${fmt(many)}`, `Όχι: πρέπει να είναι περίπου ${fmt(round * per * 10)}`],
+      b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: είναι περίπου ${fmt(round)} × ${per} = ${fmt(round * per)}`,
+        [`Όχι: πρέπει να είναι κάτω από ${fmt(many)}`, `Όχι: πρέπει να είναι περίπου ${fmt(round * per * 10)}`],
         `Στρογγυλοποιούμε το ${fmt(many)} στο ${fmt(round)}.`),
     ];
     return { title: s.title, story, steps };

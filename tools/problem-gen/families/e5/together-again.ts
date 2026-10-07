@@ -205,12 +205,12 @@ export const togetherAgain: Family = {
 
     const plan = r.int(0, 2);
     if (plan === 0) {
-      steps.push(b.choice('plan', 'Τι ψάχνουμε στην ουσία;', `Το Ε.Κ.Π. των ${list(nums)}: το μικρότερο κοινό τους πολλαπλάσιο`,
-        [`Το άθροισμα ${nums.join(' + ')}`, `Έναν κοινό διαιρέτη των ${list(nums)}`, `Το ${fmt(big)}, τον μεγαλύτερο αριθμό`],
+      steps.push(b.choice('plan', 'Τι ψάχνουμε στην ουσία;', `Το Ε.Κ.Π. των ${list(nums)}`,
+        [`Το άθροισμα ${nums.join(' + ')}`, `Έναν διαιρέτη των ${list(nums)}`, `Το ${fmt(big)}, τον μεγαλύτερο αριθμό`],
         `Ξανασυμπίπτουν σε έναν αριθμό ${sc.unit === 'ημέρες' ? 'ημερών' : sc.unit === 'λεπτά' ? 'λεπτών' : 'δευτερολέπτων'} που είναι πολλαπλάσιο ${nums.map(n => `και του ${n}`).join(' ')}.`));
     } else if (plan === 1) {
       steps.push(b.choice('plan', 'Ποιο εργαλείο μας βοηθά περισσότερο;', `Ένας κατάλογος με τα πολλαπλάσια των ${list(nums)}`,
-        [`Ένας κατάλογος με τους διαιρέτες των ${list(nums)}`, `Μια διαίρεση ${fmt(big)} : ${fmt(ps[0])}`],
+        [`Ένας κατάλογος με τους διαιρέτες των ${list(nums)}`, `Μια διαίρεση, ${fmt(big)} : ${fmt(ps[0])}, και κρατάω το πηλίκο`],
         `Γράφουμε πότε ξαναγίνεται το καθένα: ${fmt(ps[0])}, ${fmt(2 * ps[0])}, ${fmt(3 * ps[0])}, …`));
     } else {
       steps.push(b.order('plan', 'Βάζουμε σε σειρά το σχέδιό μας.', [
@@ -239,16 +239,20 @@ export const togetherAgain: Family = {
     }
 
     if (claim) {
-      steps.push(b.choice('check', `Έχει δίκιο ${c.nom};`, `Όχι: το ${fmt(prod)} είναι κοινό πολλαπλάσιο, αλλά το μικρότερο είναι το ${fmt(L)}`,
-        [`Ναι: για να βρούμε πότε συμπίπτουν, πολλαπλασιάζουμε τους αριθμούς`, `Όχι: έπρεπε να προσθέσει ${nums.join(' + ')} = ${fmt(sum)}`],
+      steps.push(b.choice('check', `Έχει δίκιο ${c.nom};`, `Όχι: συμπίπτουν νωρίτερα, στο ${fmt(L)}`,
+        ['Ναι: τους πολλαπλασιάζουμε', `Όχι: έπρεπε να προσθέσει ${nums.join(' + ')} = ${fmt(sum)}`],
         `Συμπίπτουν και στο ${fmt(prod)}, αλλά μήπως συμπίπτουν νωρίτερα;`));
     } else if (r.chance(0.5)) {
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;',
-        `${ps.map(p => `${fmt(L)} : ${fmt(p)} = ${fmt(L / p)}`).join(' και ')}, και κανένας μικρότερος αριθμός δεν διαιρείται με όλους`,
-        [`${nums.join(' + ')} = ${fmt(sum)}`, `Το ${fmt(L)} είναι μεγαλύτερο από το ${fmt(big)}`],
+        // The right one is the whole of it: divides by each, and the smallest such. Beside it the
+        // greatest for the smallest (Μ.Κ.Δ. for Ε.Κ.Π.), half of it (true of every common multiple), and
+        // a true one beside the point (bigger than each)
+        `Είναι το μικρότερο που διαιρείται με ${list(nums.map(n => `το ${n}`))}`,
+        [`Είναι το μεγαλύτερο που διαιρείται με ${list(nums.map(n => `το ${n}`))}`, `Διαιρείται με ${list(nums.map(n => `το ${n}`))}`,
+          `Είναι μεγαλύτερο από ${list(nums.map(n => `το ${n}`))}`],
         'Το Ε.Κ.Π. διαιρείται ακριβώς με καθέναν από τους αριθμούς, και είναι το μικρότερο τέτοιο.'));
     } else {
-      steps.push(b.numbers('check', `Αναστοχαζόμαστε: διαιρείται το ${fmt(L)} ακριβώς με ${list(nums.map(n => `το ${n}`))};`,
+      steps.push(b.numbers('check', `Αναστοχαζόμαστε: διαιρείται το ${fmt(L)} ακριβώς με καθέναν από τους αριθμούς;`,
         ps.map(p => ({ label: `${fmt(L)} : ${fmt(p)} =`, answer: L / p }))));
     }
     return { title: sc.title, story, steps };

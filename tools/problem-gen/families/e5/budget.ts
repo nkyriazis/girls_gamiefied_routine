@@ -119,7 +119,7 @@ export const budget: Family = {
     steps.push(b.choice('solve', `Φτάνουν ${s.their};`,
       enough ? `Ναι, γιατί ${fmt(total)} < ${fmt(money)}` : `Όχι, γιατί ${fmt(total)} > ${fmt(money)}`,
       [enough ? `Όχι, γιατί ${fmt(total)} > ${fmt(money)}` : `Ναι, γιατί ${fmt(total)} < ${fmt(money)}`,
-        `Ναι, γιατί το ${fmt(top)} είναι μικρότερο από το ${fmt(money)}`],
+        `Ναι, γιατί ${fmt(top)} < ${fmt(money)}`],
       'Συγκρίνουμε το άθροισμα όλων των τιμών με τα χρήματα που υπάρχουν, όχι μία μόνο τιμή.'));
     steps.push(b.numbers('solve', enough ? 'Πόσα € θα περισσέψουν;' : 'Πόσα € θα λείψουν;', [
       { label: show ? (enough ? `${fmt(money)} − ${fmt(total)} =` : `${fmt(total)} − ${fmt(money)} =`) : (enough ? 'Περισσεύουν' : 'Λείπουν'), answer: diff, unit: '€' },

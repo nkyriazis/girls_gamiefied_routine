@@ -47,7 +47,7 @@ function buy(r: Rng, p: Person): Parts {
       cut: `${p.Nom} αγόρασε ${some(t)} ${t.manyAcc} ${why}. ${each} ${price} ευρώ. Πόσα ευρώ πλήρωσε;`,
       full: `${p.Nom} αγόρασε ${known(count(n, t, true))} ${why}. ${each} ${known(`${price} ευρώ`)}. ${noise} ${sought('Πόσα ευρώ πλήρωσε')};`,
       missing: `${HowMany(t)} ${t.manyAcc} αγόρασε`,
-      wrongs: [`Πόσο κοστίζει ${one(t)} ${t.one}`, `Πόσα χρήματα είχε μαζί ${p.his}`, 'Σε ποιο μαγαζί πήγε'],
+      wrongs: [`Πόσο κοστίζει ${one(t)} ${t.one}`, `Πόσα χρήματα είχε μαζί ${p.his}`, 'Σε ποιο μαγαζί πήγε να ψωνίσει'],
       row: { op: `${n} × ${price} =`, name: 'Πλήρωσε', answer: cost, unit: 'ευρώ' },
       check: { right: `${fmt(cost)} : ${n} = ${price}`, wrong: [`${fmt(cost)} + ${n} = ${fmt(cost + n)}`, `${n} + ${price} = ${n + price}`] },
     };
@@ -58,7 +58,7 @@ function buy(r: Rng, p: Person): Parts {
     cut: `${p.Nom} αγόρασε ${count(n, t, true)} ${why}. Πόσα ευρώ πλήρωσε;`,
     full: `${p.Nom} αγόρασε ${known(count(n, t, true))} ${why}. ${each} ${known(`${price} ευρώ`)}. ${noise} ${sought('Πόσα ευρώ πλήρωσε')};`,
     missing: `Πόσο κοστίζει ${one(t)} ${t.one}`,
-    wrongs: [`${HowMany(t)} ${t.manyAcc} αγόρασε`, `Πόσα χρήματα είχε μαζί ${p.his}`, 'Τι ώρα πήγε στο μαγαζί'],
+    wrongs: [`${HowMany(t)} ${t.manyAcc} αγόρασε`, `Πόσα χρήματα είχε μαζί ${p.his}`, 'Τι ώρα πήγε στο μαγαζί το πρωί'],
     row: { op: `${n} × ${price} =`, name: 'Πλήρωσε', answer: cost, unit: 'ευρώ' },
     check: { right: `${fmt(cost)} : ${n} = ${price}`, wrong: [`${fmt(cost)} + ${n} = ${fmt(cost + n)}`, `${n} + ${price} = ${n + price}`] },
   };
@@ -80,10 +80,10 @@ function spend(r: Rng, p: Person): Parts {
     title: 'Τι λείπει;',
     cut: `${p.Nom} αγόρασε ${toy.what} που κόστιζε ${cost} ευρώ. Πόσα ευρώ ${p.his} έμειναν;`,
     full: `${p.Nom} είχε ${known(`${have} ευρώ`)} στον κουμπαρά. Αγόρασε ${toy.what} που κόστιζε ${known(`${cost} ευρώ`)}. ${toy.ex(r)} ${sought(`Πόσα ευρώ ${p.his} έμειναν`)};`,
-    missing: 'Πόσα ευρώ είχε πριν από την αγορά',
-    wrongs: [`Πόσο κόστιζε ${toy.the}`, 'Πόσα ευρώ θα πάρει την επόμενη εβδομάδα', `Από ποιο μαγαζί ${toy.it} αγόρασε`],
+    missing: 'Πόσα ευρώ είχε στην αρχή',
+    wrongs: [`Πόσο κόστιζε ${toy.the}`, 'Πόσα ευρώ θα πάρει αύριο', `Από ποιο μαγαζί ${toy.it} αγόρασε`],
     row: { op: `${have} − ${cost} =`, name: 'Έμειναν', answer: have - cost, unit: 'ευρώ' },
-    check: { right: `${cost} + ${have - cost} = ${have}`, wrong: [`${have} + ${cost} = ${have + cost}`, `${have} + ${have - cost} = ${2 * have - cost}`] },
+    check: { right: `${cost} + ${have - cost} = ${have}`, wrong: [`${have} + ${cost} = ${have + cost}`, have - cost !== cost ? `${Math.max(cost, have - cost)} − ${Math.min(cost, have - cost)} = ${Math.abs(2 * cost - have)}` : `${have} + ${have - cost} = ${2 * have - cost}`] },
   };
 }
 
@@ -107,10 +107,10 @@ function share(r: Rng): Parts {
     title: 'Για τα εγγόνια',
     cut: `${G.Nom} ${made} ${count(total, t, true)} και ${them} μοίρασε εξίσου στα εγγόνια ${G.his}. ${HowMany(t)} ${t.manyAcc} πήρε το καθένα;`,
     full: `${G.Nom} ${made} ${known(count(total, t, true))} και ${them} μοίρασε εξίσου στα ${known(`${k} εγγόνια`)} ${G.his}. ${noise} ${sought(`${HowMany(t)} ${t.manyAcc} πήρε το καθένα`)};`,
-    missing: 'Πόσα είναι τα εγγόνια',
-    wrongs: [`${HowMany(t)} ${t.manyAcc} ${made}`, `Πόσων χρονών είναι ${G.Nom === 'Η γιαγιά' ? 'η γιαγιά' : 'ο παππούς'}`, 'Τι ώρα ήταν'],
+    missing: `Πόσα εγγόνια έχει ${G.Nom === 'Η γιαγιά' ? 'η γιαγιά' : 'ο παππούς'}`,
+    wrongs: [`${HowMany(t)} ${t.manyAcc} ${made}`, `Πόσων χρονών είναι ${G.Nom === 'Η γιαγιά' ? 'η γιαγιά' : 'ο παππούς'}`, 'Τι ώρα ήταν το απόγευμα'],
     row: { op: `${total} : ${k} =`, name: 'Πήρε το καθένα', answer: each, unit: t.manyAcc },
-    check: { right: `${k} × ${each} = ${total}`, wrong: [`${total} − ${k} = ${total - k}`, `${total} + ${k} = ${total + k}`] },
+    check: { right: `${k} × ${each} = ${total}`, wrong: [`${each} + ${k} = ${each + k}`, `${total} + ${k} = ${total + k}`] },
   };
 }
 
@@ -128,10 +128,10 @@ function ride(r: Rng): Parts {
     title: 'Οι επιβάτες',
     cut: `${x.at} κατέβηκαν από ${x.the} ${off} επιβάτες και δεν ανέβηκε κανείς. Πόσοι επιβάτες έμειναν;`,
     full: `${x.v} είχε ${known(`${fmt(on)} επιβάτες`)}. ${x.at} κατέβηκαν ${known(`${off} επιβάτες`)} και δεν ανέβηκε κανείς. ${x.ex(r)} ${sought('Πόσοι επιβάτες έμειναν')};`,
-    missing: `Πόσοι επιβάτες ήταν μέσα ${x.before}`,
-    wrongs: ['Πόσοι επιβάτες κατέβηκαν', `Πόσες θέσεις έχει ${x.the}`, 'Τι ώρα ξεκίνησε'],
+    missing: 'Πόσοι επιβάτες ήταν στην αρχή',
+    wrongs: ['Πόσοι επιβάτες κατέβηκαν τελικά', `Πόσες θέσεις έχει ${x.the}`, `Τι ώρα ξεκίνησε ${x.the}`],
     row: { op: `${fmt(on)} − ${off} =`, name: 'Έμειναν', answer: on - off, unit: 'επιβάτες' },
-    check: { right: `${fmt(on - off)} + ${off} = ${fmt(on)}`, wrong: [`${fmt(on)} + ${off} = ${fmt(on + off)}`, `${fmt(on - off)} + ${fmt(on)} = ${fmt(2 * on - off)}`] },
+    check: { right: `${fmt(on - off)} + ${off} = ${fmt(on)}`, wrong: [`${fmt(on)} + ${off} = ${fmt(on + off)}`, `${off} + ${off} = ${2 * off}`] },
   };
 }
 
@@ -154,7 +154,7 @@ function compare(r: Rng): Parts {
     cut: `${A.Nom} έχει ${d} ${t.manyAcc} ${more(t)} από ${B.acc}. ${HowMany(t)} ${t.manyAcc} έχει ${A.nom};`,
     full: `${B.Nom} έχει ${known(count(x, t, true))}. ${A.Nom} έχει ${known(`${d} ${t.manyAcc} ${more(t)}`)} από ${B.acc}. ${noise} ${sought(`${HowMany(t)} ${t.manyAcc} έχει ${A.nom}`)};`,
     missing: `${HowMany(t)} ${t.manyAcc} έχει ${B.nom}`,
-    wrongs: [`${HowMany(t)} ${t.manyAcc} ${more(t)} έχει ${A.nom}`, `Πόσων χρονών είναι ${B.nom}`, `Πού τ${t.g === 'n' ? 'α' : t.g === 'f' ? 'ις' : 'ους'} φυλάνε`],
+    wrongs: [`${HowMany(t)} ${more(t)} έχει ${A.nom}`, `Πόσων χρονών είναι ${B.nom}`, `Πού φυλάνε ${t.g === 'n' ? 'τα' : t.g === 'f' ? 'τις' : 'τους'} ${t.manyAcc} τους`],
     row: { op: `${x} + ${d} =`, name: A.Nom, answer: x + d, unit: t.manyAcc, opUnit: t.many },
     check: { right: `${x + d} − ${x} = ${d}`, wrong: [`${x} − ${d} = ${x - d}`, `${x + d} + ${x} = ${2 * x + d}`] },
   };
@@ -181,7 +181,10 @@ function build(r: Rng, b: Builder, x: Parts): ProblemStep[] {
   ];
   const ops = r.chance(0.5);
   const unit = ops ? x.row.opUnit ?? x.row.unit : x.row.unit;
-  steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: ops ? x.row.op : x.row.name, answer: x.row.answer, ...(unit ? { unit } : {}) }]));
-  if (x.check && r.chance(0.6)) steps.push(b.choice('check', 'Πώς ελέγχουμε;', x.check.right, x.check.wrong));
+  steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: ops ? x.row.op : x.row.name, answer: x.row.answer, eq: x.row.op.replace(/ =$/, ''), ...(unit ? { unit } : {}) }]));
+  if (x.check && r.chance(0.6)) {
+    steps.push(b.choice('check', 'Πώς ελέγχουμε;', x.check.right, x.check.wrong,
+      'Ξεκινάμε από την απάντηση και κάνουμε την αντίθετη πράξη. Πρέπει να βρούμε έναν αριθμό της ιστορίας.'));
+  }
   return steps;
 }

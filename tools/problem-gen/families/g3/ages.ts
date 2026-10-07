@@ -83,16 +83,16 @@ export const ages: Family = {
       const story = `${kid} ${cSentence} ${sought('Πόσα χρόνια κάνουν μαζί οι ηλικίες τους')}; ${sought(`Πόσα θα κάνουν σε ${k} χρόνια`)};`;
       steps.push(b.tag(undefined, 'Χρειαζόμαστε μόνο τους αριθμούς που είναι ηλικίες.'));
       steps.push(b.numbers('solve', 'Πόσα χρόνια κάνουν μαζί τώρα;', [
-        { label: r.chance(0.5) ? `${a} + ${c} =` : 'Μαζί τώρα', answer: sum, unit: 'χρόνια' },
+        { label: r.chance(0.5) ? `${a} + ${c} =` : 'Μαζί τώρα', answer: sum, unit: 'χρόνια', eq: `${a} + ${c}` },
       ]));
       const shown = r.chance(0.5);
-      steps.push(b.choice('solve', `Πόσα θα κάνουν μαζί σε ${k} χρόνια;`, `${sum + 2 * k}, γιατί μεγαλώνουν και οι δύο ${k} χρόνια`,
-        [`${sum + k}, γιατί περνούν ${k} χρόνια`, `${sum}, γιατί οι ηλικίες δεν αλλάζουν`],
+      steps.push(b.choice('solve', `Πόσα θα κάνουν μαζί σε ${k} χρόνια;`, `${sum + 2 * k}, μεγαλώνουν και οι δύο`,
+        [`${sum + k}, περνούν ${k} χρόνια`, `${sum}, οι ηλικίες δεν αλλάζουν`],
         shown ? `Σε ${k} χρόνια: ${a} + ${k} = ${a + k} και ${c} + ${k} = ${c + k}.` : `Σε ${k} χρόνια θα έχει μεγαλώσει ο καθένας ${k} χρόνια.`));
       if (!shown || r.chance(0.5)) {
         steps.push(b.numbers('check', 'Ελέγχουμε με τις ηλικίες σε λίγα χρόνια.', [
-          { label: `${cap(p.nom)} σε ${k} χρόνια`, answer: a + k, unit: 'χρονών' },
-          { label: `${cap(R)} σε ${k} χρόνια`, answer: c + k, unit: 'χρονών' },
+          { label: `${cap(p.nom)} σε ${k} χρόνια`, answer: a + k, unit: 'χρονών', eq: `${a} + ${k}` },
+          { label: `${cap(R)} σε ${k} χρόνια`, answer: c + k, unit: 'χρονών', eq: `${c} + ${k}` },
           { label: `${a + k} + ${c + k} =`, answer: sum + 2 * k, unit: 'χρόνια' },
         ]));
       }
@@ -107,9 +107,9 @@ export const ages: Family = {
       steps.push(b.tag(undefined, 'Χρειαζόμαστε μόνο τους αριθμούς που είναι ηλικίες.'));
       steps.push(b.choice('plan', 'Ποια πράξη μας βοηθά;', `${big} − ${small}`, [`${big} + ${small}`],
         `Όταν γεννήθηκε ${y}, ${o} είχε ήδη τόσα χρόνια όσα είναι η διαφορά τους.`));
-      steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: r.chance(0.5) ? `${big} − ${small} =` : 'Ήταν', answer: d, unit: 'χρονών' }]));
-      steps.push(b.choice('check', `Θα αλλάξει η διαφορά των ${d} χρόνων όταν μεγαλώσουν;`, 'Όχι, μεγαλώνουν και οι δύο το ίδιο',
-        ['Ναι, θα μεγαλώνει κάθε χρόνο', 'Ναι, θα μικραίνει κάθε χρόνο'],
+      steps.push(b.numbers('solve', 'Λύνουμε.', [{ label: r.chance(0.5) ? `${big} − ${small} =` : 'Ήταν', answer: d, unit: 'χρονών', eq: `${big} − ${small}` }]));
+      steps.push(b.choice('check', `Θα αλλάξει η διαφορά των ${d} χρόνων όταν μεγαλώσουν;`, 'Όχι, μεγαλώνουν και οι δύο',
+        ['Ναι, θα μεγαλώνει κάθε χρόνο', 'Ναι, θα γίνει μικρότερη'],
         `Σε ${k} χρόνια: ${big} + ${k} = ${big + k} και ${small} + ${k} = ${small + k}. Πόση είναι τότε η διαφορά;`));
       return { title, story, steps };
     }
@@ -124,12 +124,13 @@ export const ages: Family = {
     const future = r.chance(0.5);
     if (future) {
       steps.push(b.numbers('solve', `Πόσων χρονών θα είναι σε ${k} χρόνια;`, [
-        { label: cap(p.nom), answer: a + k, unit: 'χρονών' },
-        { label: cap(R), answer: c + k, unit: 'χρονών' },
+        { label: cap(p.nom), answer: a + k, unit: 'χρονών', eq: `${a} + ${k}` },
+        { label: cap(R), answer: c + k, unit: 'χρονών', eq: `${c} + ${k}` },
       ]));
     }
-    steps.push(b.choice('check', `Πόση θα είναι η διαφορά τους σε ${k} χρόνια;`, `${d} χρόνια, γιατί μεγαλώνουν και οι δύο ${k} χρόνια`,
-      [`${d + k} χρόνια, γιατί περνούν ${k} χρόνια`, ...(d - k >= 2 ? [`${d - k} χρόνια, γιατί η διαφορά μικραίνει`] : [])],
+    steps.push(b.choice('check', `Πόση θα είναι η διαφορά τους σε ${k} χρόνια;`, `${d} χρόνια, μεγαλώνουν και οι δύο`,
+      // (or, with no room to shrink, both ages' years added: as long as the right one)
+      [`${d + k} χρόνια, γιατί περνούν ${k} χρόνια`, d - k >= 2 ? `${d - k} χρόνια, η διαφορά μικραίνει` : `${d + 2 * k} χρόνια, μεγαλώνουν και οι δύο`],
       future ? `${big + k} − ${small + k} = ${d}` : 'Σε μερικά χρόνια θα έχουν μεγαλώσει και οι δύο το ίδιο.'));
     return { title, story, steps };
   },

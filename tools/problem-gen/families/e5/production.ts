@@ -96,7 +96,7 @@ export const production: Family = {
     const showOps = r.chance(0.5);
     if (ask === 'total' || ask === 'two') {
       if (r.chance(0.5)) {
-        steps.push(b.choice('plan', 'Ποιο σχέδιο δουλεύει;', 'Βρίσκω πόσα φτιάχνονται την ημέρα και μετά σε όλες τις ημέρες',
+        steps.push(b.choice('plan', 'Ποιο σχέδιο δουλεύει;', 'Βρίσκω πρώτα τη μία ημέρα',
           [`Προσθέτω ${fmt(rate)} + ${h} + ${d}`, `Πολλαπλασιάζω μόνο ${fmt(rate)} × ${d}`, ...(ask === 'two' ? [`Υπολογίζω μόνο ${s.one}`] : [])],
           `${h} ώρες την ημέρα, ${d} ημέρες: πρώτα η μία ημέρα.`));
       }
@@ -108,8 +108,8 @@ export const production: Family = {
       steps.push(b.numbers('solve', 'Λύνουμε.', rows, `${fmt(perHour)} × ${h} = ${fmt(perDay)}.`));
       if (r.chance(0.5)) {
         steps.push(b.choice('check', 'Αναστοχαζόμαστε: ποια πράξη δίνει το ίδιο αποτέλεσμα;',
-          `${fmt(perHour)} × ${fmt(h * d)} = ${fmt(total)}, γιατί ${d} ημέρες των ${h} ωρών είναι ${fmt(h * d)} ώρες`,
-          [`${fmt(perHour)} × ${fmt(h + d)}, γιατί ${h} + ${d} = ${fmt(h + d)}`, `${fmt(perHour)} + ${fmt(h * d)}`],
+          `${fmt(perHour)} × ${fmt(h * d)}`,
+          [`${fmt(perHour)} × ${fmt(h + d)}`, `${fmt(perHour)} + ${fmt(h * d)}`],
           'Στον πολλαπλασιασμό μπορούμε να αλλάξουμε τη σειρά: πρώτα οι ώρες όλων των ημερών.'));
       } else {
         steps.push(b.numbers('check', 'Αναστοχαζόμαστε: εργαζόμαστε αντίστροφα.', [
@@ -131,7 +131,7 @@ export const production: Family = {
       ], `${fmt(rate)} × ${h} = ${fmt(perDay)}. Πόσες φορές χωράει το ${fmt(perDay)} στο ${fmt(total)};`));
       const wrongs = [`${fmt(total)} : ${fmt(rate)} = ${fmt(h * d)}, άρα ${fmt(h * d)} ημέρες`, `${fmt(perDay)} × ${d} = ${fmt(total)}, άρα ${fmt(total)} ημέρες`];
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;',
-        `${fmt(perDay)} × ${d} = ${fmt(total)}: σε ${d} ημέρες γίνεται όλη η παραγγελία`, wrongs,
+        `${fmt(perDay)} × ${d} = ${fmt(total)}, άρα ${d} ημέρες`, wrongs,
         `Όσα γίνονται την ημέρα, επί τις ημέρες, πρέπει να κάνουν ${fmt(total)}.`));
     }
     return { title: r.pick(s.title), story, steps };

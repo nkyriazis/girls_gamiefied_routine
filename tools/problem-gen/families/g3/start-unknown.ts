@@ -88,10 +88,10 @@ export const startUnknown: Family = {
         `Βρίσκουμε ${howMany(t)} ${t.manyAcc} είχε στην αρχή`,
       ], 'Δουλεύουμε αντίστροφα: από το τέλος προς την αρχή.'));
     }
-    steps.push(b.choice('plan', 'Ποια πράξη μας βοηθά;', right, [wrongOp, `Καμία, η απάντηση είναι ${count(now, t)}`],
+    steps.push(b.choice('plan', 'Ποια πράξη μας βοηθά;', right, [wrongOp, `${fmt(now)} × ${fmt(change)}`],
       `Πριν από αυτό που έγινε, είχε ${lost ? 'περισσότερ' : 'λιγότερ'}${t.g === 'n' ? 'α' : t.g === 'f' ? 'ες' : 'ους'}.`));
     steps.push(b.numbers('solve', 'Λύνουμε.', [
-      { label: style === 2 ? `${right} =` : 'Στην αρχή είχε', answer: start, unit: t.manyAcc },
+      { label: style === 2 ? `${right} =` : 'Στην αρχή είχε', answer: start, unit: t.manyAcc, eq: right },
     ]));
     steps.push(b.choice('check', 'Πώς ελέγχουμε;',
       lost ? `${fmt(start)} − ${fmt(change)} = ${fmt(now)}` : `${fmt(start)} + ${fmt(change)} = ${fmt(now)}`,
