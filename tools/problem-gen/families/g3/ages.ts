@@ -88,12 +88,13 @@ export const ages: Family = {
       const shown = r.chance(0.5);
       steps.push(b.choice('solve', `Πόσα θα κάνουν μαζί σε ${k} χρόνια;`, `${sum + 2 * k}, μεγαλώνουν και οι δύο`,
         [`${sum + k}, περνούν ${k} χρόνια`, `${sum}, οι ηλικίες δεν αλλάζουν`],
-        shown ? `Σε ${k} χρόνια: ${a} + ${k} = ${a + k} και ${c} + ${k} = ${c + k}.` : `Σε ${k} χρόνια θα έχει μεγαλώσει ο καθένας ${k} χρόνια.`));
+        // (the ages in k years are the next step's rows: the hint never works them out)
+        shown ? `Σε ${k} χρόνια, ${p.nom} θα έχει ${k} χρόνια παραπάνω, και ${R} το ίδιο.` : `Σε ${k} χρόνια θα έχει μεγαλώσει ο καθένας ${k} χρόνια.`));
       if (!shown || r.chance(0.5)) {
         steps.push(b.numbers('check', 'Ελέγχουμε με τις ηλικίες σε λίγα χρόνια.', [
           { label: `${cap(p.nom)} σε ${k} χρόνια`, answer: a + k, unit: 'χρονών', eq: `${a} + ${k}` },
           { label: `${cap(R)} σε ${k} χρόνια`, answer: c + k, unit: 'χρονών', eq: `${c} + ${k}` },
-          { label: `${a + k} + ${c + k} =`, answer: sum + 2 * k, unit: 'χρόνια' },
+          { label: `Μαζί σε ${k} χρόνια`, answer: sum + 2 * k, unit: 'χρόνια', eq: `${a + k} + ${c + k}` },
         ]));
       }
       return { title, story, steps };

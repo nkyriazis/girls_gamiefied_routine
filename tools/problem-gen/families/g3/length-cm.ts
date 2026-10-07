@@ -7,6 +7,8 @@ const m = (n: number) => (n === 1 ? '1 μέτρο' : `${n} μέτρα`);
 /** 215 → "2 μέτρα και 15 εκατοστά" */
 const mcm = (cm: number) => `${m(Math.floor(cm / 100))} και ${cm % 100} εκατοστά`;
 const CM = 'εκατοστά';
+// How many centimetres in a metre, without the 100 a row asks for («1 μέτρο =» [100])
+const METRE = 'Κάθε μέτρο έχει 10 φορές τα 10 εκατοστά.';
 
 interface Roll { what: string; the: string; for: string; fit?: string; noise: (r: Rng) => string }
 const ROLLS: Roll[] = [
@@ -51,27 +53,28 @@ function cut(r: Rng, b: B, p: Person) {
   const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε όλο το μήκος και τα κομμάτια που κόβει.')];
   const style = r.int(0, 2);
   if (style === 0) {
+    // (1 μέτρο is 100: a sub-calculation, not the row's answer)
     steps.push(b.numbers('plan', 'Πρώτα κάνουμε τα μέτρα εκατοστά.', [{ label: `${m(metres)} =`, answer: total, unit: CM }],
-      '1 μέτρο = 100 εκατοστά.'));
+      METRE));
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: `${fmt(total)} − ${a} =`, answer: total - a, unit: CM },
-      { label: `${fmt(total - a)} − ${c} =`, answer: left, unit: CM },
+      { label: `Ό,τι έμεινε − ${c} =`, answer: left, unit: CM },
     ], 'Βγάζουμε το ένα κομμάτι και μετά το άλλο.'));
   } else if (style === 1) {
     steps.push(b.choice('plan', 'Τι κάνουμε πρώτα;', 'Κάνουμε τα μέτρα εκατοστά',
       [[`Αφαιρούμε τα εκατοστά από το ${metres}`, 'Αφαιρούμε τα εκατοστά'], ['Προσθέτουμε όλα μαζί', 'Τα προσθέτουμε όλα μαζί', 'Τα προσθέτουμε']],
-      `Δεν αφαιρούμε εκατοστά από μέτρα. ${m(metres)} δεν είναι ${metres} εκατοστά αλλά ${fmt(total)}.`));
+      'Δεν αφαιρούμε εκατοστά από μέτρα: πρώτα κάνουμε τα μέτρα εκατοστά.'));
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: 'Όλο το μήκος', answer: total, unit: CM },
       { label: 'Τα δύο κομμάτια μαζί', answer: a + c, unit: CM },
       { label: 'Έμειναν', answer: left, unit: CM },
-    ], `1 μέτρο = 100 εκατοστά. Μετά: ${a} + ${c} = ${a + c}.`));
+    ], `${METRE} Μετά: ${a} + ${c}.`));
   } else {
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: `${m(metres)} =`, answer: total, unit: CM },
       { label: `${a} + ${c} =`, answer: a + c, unit: CM },
-      { label: `${fmt(total)} − ${a + c} =`, answer: left, unit: CM },
-    ], '1 μέτρο = 100 εκατοστά.'));
+      { label: 'Όλο το μήκος − τα δύο κομμάτια =', answer: left, unit: CM },
+    ], METRE));
   }
   steps.push(b.choice('check', 'Πώς ελέγχουμε;', `${a} + ${c} + ${left} = ${fmt(total)}`,
     [`${a} + ${c} + ${left} = ${metres}`, `${fmt(total)} + ${a} + ${c} = ${fmt(total + a + c)}`],
@@ -97,7 +100,7 @@ function fit(r: Rng, b: B, p: Person) {
   steps.push(b.numbers('solve', 'Λύνουμε.', [
     { label: 'Κομμάτια', answer: n },
     { label: 'Εκατοστά που περισσεύουν', answer: rest },
-  ], `${k} × ${n} = ${n * k}.${rest ? ` Πόσα μένουν ως το ${L};` : ''}`));
+  ], `Πόσες φορές χωράει το ${k} στο ${L};${rest ? ' Ό,τι μένει περισσεύει.' : ''}`));
   steps.push(b.choice('check', 'Πώς ελέγχουμε;', rest ? `${n} × ${k} + ${rest} = ${L}` : `${n} × ${k} = ${L}`,
     rest ? [`${n} + ${k} + ${rest} = ${n + k + rest}`, `${n} × ${k} − ${rest} = ${n * k - rest}`] : [`${n} + ${k} = ${n + k}`, `${L} − ${k} = ${L - k}`],
     'Όλα τα κομμάτια μαζί, και ό,τι περισσεύει, κάνουν όλο το μήκος.'));
@@ -128,7 +131,7 @@ function height(r: Rng, b: B, p: Person, q: Person) {
   }
   steps.push(b.numbers('solve', 'Λύνουμε.', [
     { label: `${mcm(hp)} =`, answer: hp, unit: CM },
-    { label: taller ? `${fmt(hp)} + ${d} =` : `${fmt(hp)} − ${d} =`, answer: hq, unit: CM },
+    { label: `Το ύψος ${p.gen} ${taller ? '+' : '−'} ${d} =`, answer: hq, unit: CM },
   ], '1 μέτρο = 100 εκατοστά.'));
   steps.push(b.choice('check', 'Πώς ελέγχουμε;', taller ? `${fmt(hq)} − ${d} = ${fmt(hp)}` : `${fmt(hq)} + ${d} = ${fmt(hp)}`,
     [taller ? `${fmt(hq)} + ${d} = ${fmt(hq + d)}` : `${fmt(hq)} − ${d} = ${fmt(hq - d)}`, `${hp % 100} + ${d} = ${hp % 100 + d}`],
@@ -151,7 +154,7 @@ function jump(r: Rng, b: B, p: Person, q: Person) {
   steps.push(b.numbers('solve', 'Κάνουμε τα άλματα εκατοστά και τα συγκρίνουμε.', [
     { label: `${p.Nom}: ${mcm(jp)} =`, answer: jp, unit: CM },
     { label: `${q.Nom}: ${mcm(jq)} =`, answer: jq, unit: CM },
-    { label: `${fmt(jp)} − ${fmt(jq)} =`, answer: d, unit: CM },
+    { label: 'Η διαφορά τους', answer: d, unit: CM },
   ], `${mcm(jp)}: ${m(Math.floor(jp / 100))} είναι ${Math.floor(jp / 100) * 100} εκατοστά, και ${jp % 100} ακόμα.`));
   steps.push(b.choice('check', 'Πώς ελέγχουμε;', `${fmt(jq)} + ${d} = ${fmt(jp)}`,
     [`${fmt(jp)} + ${fmt(jq)} = ${fmt(jp + jq)}`, `${fmt(jp)} + ${d} = ${fmt(jp + d)}`],

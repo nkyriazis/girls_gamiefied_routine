@@ -187,7 +187,7 @@ export const tableReading: Family = {
     } else {
       steps.push(b.numbers('solve', 'Λύνουμε βήμα βήμα.', [
         { label: `Μαζί: ${fmt(A)} + ${fmt(B)} =`, answer: A + B, unit: s.unit },
-        { label: `Διαφορά: ${fmt(A + B)} − ${fmt(C)} =`, answer: A + B - C, unit: s.unit },
+        { label: `Διαφορά: το άθροισμα − ${fmt(C)} =`, answer: A + B - C, unit: s.unit },
       ], 'Πρώτα βρίσκουμε το άθροισμα και μετά το συγκρίνουμε με τον τρίτο αριθμό.'));
       steps.push(b.choice('check', 'Πώς ελέγχουμε τη δεύτερη απάντηση;', `${fmt(C)} + ${fmt(A + B - C)} = ${fmt(A + B)}`,
         [`${fmt(A)} + ${fmt(A + B - C)} = ${fmt(A + A + B - C)}`, `${fmt(A + B)} + ${fmt(C)} = ${fmt(A + B + C)}`],

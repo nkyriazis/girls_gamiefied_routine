@@ -110,7 +110,7 @@ export const doubleHalf: Family = {
         : `Ποιος αριθμός και ο ίδιος ξανά κάνει ${fmt(a)};`;
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: plan && r.chance(0.5) ? `${doubled ? `2 × ${fmt(a)}` : `${fmt(a)} : 2`} =` : s.other, answer: other, unit: s.unit },
-      { label: r.chance(0.5) ? `${fmt(a)} + ${fmt(other)} =` : s.both, answer: sum, unit: s.unit },
+      { label: r.chance(0.5) ? `${fmt(a)} + τα ${doubled ? 'διπλάσια' : 'μισά'} =` : s.both, answer: sum, unit: s.unit },
     ], hint));
     steps.push(doubled
       ? b.choice('check', 'Πώς ελέγχουμε;', `${fmt(other)} : 2 = ${fmt(a)}`,

@@ -47,7 +47,7 @@ export const collectionGoal: Family = {
     // At least one regrouping in the sum
     if ((a % 10) + (bb % 10) < 10 && (a % 100) + (bb % 100) < 100) return null;
 
-    const P = t.g === 'n' ? { Many: 'Πόσα', more: 'περισσότερα', the: 'τα' } : { Many: 'Πόσες', more: 'περισσότερες', the: 'οι' };
+    const P = t.g === 'n' ? { Many: 'Πόσα', more: 'περισσότερα', the: 'τα', asMany: 'όσα' } : { Many: 'Πόσες', more: 'περισσότερες', the: 'οι', asMany: 'όσες' };
     const noise = r.pick([
       `Στο σχολείο υπάρχουν ${extra(`${r.int(3, 8)} κάδοι`)} για τη συλλογή.`,
       `Η ${c1} τάξη έχει ${extra(`${r.int(18, 25)} μαθητές`)}.`,
@@ -79,8 +79,9 @@ export const collectionGoal: Family = {
     const ops = r.chance(0.6);
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       ...(more ? [{ label: ops ? `${fmt(a)} + ${d} =` : `Μάζεψε η ${c2}`, answer: bb, unit: t.short }] : []),
-      { label: ops ? `${fmt(a)} + ${fmt(bb)} =` : 'Μάζεψαν μαζί', answer: sum, unit: t.short },
-      { label: ops ? `${fmt(goal)} − ${fmt(sum)} =` : 'Λείπουν ακόμη', answer: missing, unit: t.short },
+      // A row names the number a row above asks for by what it is («όσα μάζεψαν μαζί»)
+      { label: ops ? `${fmt(a)} + ${more ? `${P.asMany} μάζεψε η ${c2}` : fmt(bb)} =` : 'Μάζεψαν μαζί', answer: sum, unit: t.short },
+      { label: ops ? `${fmt(goal)} − ${P.asMany} μάζεψαν μαζί =` : 'Λείπουν ακόμη', answer: missing, unit: t.short },
     ], 'Στην πρόσθεση και στην αφαίρεση προσέχουμε τα κρατούμενα.'));
     // Exactly half missing is neither «κάτω» nor «πάνω από τα μισά»: then the check by the sum
     steps.push(r.chance(0.5) || 2 * sum === goal

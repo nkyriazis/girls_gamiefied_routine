@@ -87,7 +87,7 @@ export const buyAndChange: Family = {
     const ops = r.chance(0.5);
     steps.push(b.numbers('solve', 'Λύνουμε.', [
       { label: ops ? `${n} × ${price} =` : 'Κοστίζουν όλα μαζί', answer: cost, unit: 'ευρώ' },
-      { label: ops ? `${note} − ${cost} =` : 'Ρέστα', answer: change, unit: 'ευρώ' },
+      { label: ops ? `${note} − όσα κοστίζουν =` : 'Ρέστα', answer: change, unit: 'ευρώ' },
     ], `Πρώτα βρίσκουμε το κόστος: ${n} φορές από ${price} ευρώ. Μετά βγάζουμε το κόστος από τα ${note} ευρώ.`));
     steps.push(r.chance(0.5)
       ? b.choice('check', 'Πώς ελέγχουμε;', `${cost} + ${change} = ${note}`,
