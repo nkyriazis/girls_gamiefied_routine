@@ -223,7 +223,7 @@ derives the key again from the lexicon and the rule, written apart from the item
 
 | skill | wording | rule |
 |---|---|---|
-| `pos` | «Κύκλωσε το ρήμα/ουσιαστικό της πρότασης: «…»»; true-false «Στην πρόταση «…» η λέξη «…» είναι ρήμα.» | part of speech from the lexicon; options are words of the sentence |
+| `pos` | «Κύκλωσε το ρήμα/ουσιαστικό της πρότασης: «…»», or «ένα ουσιαστικό» when the sentence has more than one; true-false «Στην πρόταση «…» η λέξη «…» είναι ρήμα.» | part of speech from the lexicon; options are words of the sentence; every word of the sentence is in the lexicon, and «το» means it has exactly one |
 | `gender` | «Κύκλωσε το αρσενικό/θηλυκό/ουδέτερο ουσιαστικό.» | the noun's gender |
 | `agree` | a gap ({0} or «…») after an article, or an article before a word | the article's gender, case and number (and the noun's after an adjective) |
 | `alpha` | ordering «Βάλε τις λέξεις σε αλφαβητική σειρά.» | Greek collation, accents ignored |

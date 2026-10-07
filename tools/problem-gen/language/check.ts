@@ -235,7 +235,8 @@ function solvers(ix: Index): Record<string, (ex: Plain) => Verdict> {
   const meet = (a: Iterable<Tag>, b: Set<Tag>) => new Set([...a].filter(t => b.has(t)));
 
   return {
-    // «Κύκλωσε το ρήμα της πρότασης: «…»», and the true-false «Στην πρόταση «…» η λέξη «…» είναι ρήμα.»
+    // «Κύκλωσε το ρήμα της πρότασης: «…»» (the sentence has one), «Κύκλωσε ένα ουσιαστικό της πρότασης: «…»»
+    // (it has more than one, one of them offered), and the true-false «Στην πρόταση «…» η λέξη «…» είναι ρήμα.»
     pos(ex) {
       if (ex.type === 'true-false') {
         const [, sentence, word, asked] = read(ex.question, /^Στην πρόταση «(.+)» η λέξη «(.+)» είναι (ρήμα|ουσιαστικό)\.$/);
@@ -244,11 +245,16 @@ function solvers(ix: Index): Record<string, (ex: Plain) => Verdict> {
         const truth = posOf(word).has(asked);
         return ex.correctValue === truth ? [] : [`key ${ex.correctValue}, the lexicon says ${truth}`];
       }
-      const [, asked, sentence] = read(ex.type === 'multiple-choice' ? ex.question : '', /^Κύκλωσε το (ρήμα|ουσιαστικό) της πρότασης: «(.+)»$/);
+      const [, article, asked, sentence] = read(ex.type === 'multiple-choice' ? ex.question : '', /^Κύκλωσε (το|ένα) (ρήμα|ουσιαστικό) της πρότασης: «(.+)»$/);
       const { options, key } = choice(ex);
-      const missing = options.filter(o => !wordsOf(sentence).includes(o)).map(o => `«${o}» is not a word of the sentence`);
-      const noPos = options.filter(o => !posOf(o).size).map(o => `«${o}» has no part of speech in the lexicon`);
-      return [...missing, ...noPos, ...one(options, o => posOf(o).has(asked), key)];
+      const ws = wordsOf(sentence);
+      const missing = options.filter(o => !ws.includes(o)).map(o => `«${o}» is not a word of the sentence`);
+      const noPos = [...new Set([...ws, ...options])].filter(o => !posOf(o).size).map(o => `«${o}» has no part of speech in the lexicon`);
+      // «το ρήμα» says the sentence has one; with two, it says «ένα»
+      const inSentence = ws.filter(w => posOf(w).has(asked));
+      const count = article === 'το' && inSentence.length !== 1 ? [`«το ${asked}», but the sentence has ${inSentence.length} (${inSentence.join(', ')}): say «ένα»`]
+        : article === 'ένα' && inSentence.length < 2 ? [`«ένα ${asked}», but the sentence has ${inSentence.length}: say «το»`] : [];
+      return [...missing, ...noPos, ...count, ...one(options, o => posOf(o).has(asked), key)];
     },
     // «Κύκλωσε το αρσενικό/θηλυκό/ουδέτερο ουσιαστικό.»
     gender(ex) {
