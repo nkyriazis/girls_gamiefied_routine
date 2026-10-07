@@ -84,16 +84,20 @@ export const distanceTime: Family = {
 
     let text: string;
     const asksHoursLeft = ask === 'left' && r.chance(0.5);
+    const noise = s.noise(r);
+    // A person in the noise right before the question («Ο οδηγός κάνει αυτή τη δουλειά 19 χρόνια.»):
+    // the question names the vehicle, or it reads as about them (#50)
+    const it = /^(?:Ο|Η|Οι) /.test(noise) ? ` ${s.it[0].toLowerCase()}${s.it.slice(1)}` : '';
     if (ask === 'far') {
-      text = `${s.it} ${s.v[0]} ${rate}. ${s.noise(r)} ${sought(`Πόσα χιλιόμετρα ${s.v[2]}`)} ${known(`σε ${h} ώρες`)};`;
+      text = `${s.it} ${s.v[0]} ${rate}. ${noise} ${sought(`Πόσα χιλιόμετρα ${s.v[2]}${it}`)} ${known(`σε ${h} ώρες`)};`;
     } else if (ask === 'left') {
-      text = `Όλη η διαδρομή είναι ${known(`${fmt(R)} χιλιόμετρα`)}. ${s.it} ${s.v[0]} ${rate}. ${s.noise(r)} `
+      text = `Όλη η διαδρομή είναι ${known(`${fmt(R)} χιλιόμετρα`)}. ${s.it} ${s.v[0]} ${rate}. ${noise} `
         + `${known(`Έχουν περάσει ${h} ώρες από την αναχώρηση`)}. ${sought(`Πόσα χιλιόμετρα μένουν ακόμα`)}${asksHoursLeft ? ` και ${sought(`σε πόσες ώρες ${s.v[3]}, αν ${s.v[4]} έτσι`)}` : ''};`;
     } else if (ask === 'hours') {
-      text = `Όλη η διαδρομή είναι ${known(`${fmt(done)} χιλιόμετρα`)}. ${s.it} ${s.v[0]} ${rate}. ${s.noise(r)} ${sought(`Σε πόσες ώρες ${s.v[3]}`)};`;
+      text = `Όλη η διαδρομή είναι ${known(`${fmt(done)} χιλιόμετρα`)}. ${s.it} ${s.v[0]} ${rate}. ${noise} ${sought(`Σε πόσες ώρες ${s.v[3]}${it}`)};`;
     } else {
       text = `${s.it} ${s.v[0]} πρώτα ${rate} ${known(`για ${h} ώρες`)} και μετά, σε πιο δύσκολο δρόμο, ${known(`${fmt(k2)} χιλιόμετρα κάθε ώρα`)} ${known(`για ${h2 === 1 ? '1 ώρα' : `${h2} ώρες`}`)}. `
-        + `${s.noise(r)} ${sought(`Πόσα χιλιόμετρα ${s.v[1]} συνολικά`)};`;
+        + `${noise} ${sought(`Πόσα χιλιόμετρα ${s.v[1]} συνολικά${it}`)};`;
     }
     const story = `${s.intro(p)} ${text}`;
 

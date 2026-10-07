@@ -18,6 +18,8 @@ interface Scene {
   ask: string;
   /** The same question, told another way. */
   ask2: string;
+  /** Both, naming who does it: after a child's claim, «θα ξαναποτίσει» alone would be the child's */
+  named?: [string, string];
   unit: string;
   /** What the kid counts in the rows: "Ποτίσματα της τριανταφυλλιάς" */
   each: string[];
@@ -54,6 +56,7 @@ const SETTINGS: Setting[] = [
     scene: (r, ps, [kid]) => {
       const grandma = r.chance(0.5);
       const who = grandma ? `Η γιαγιά ${kid.gen}` : `Ο παππούς ${kid.gen}`;
+      const whoAfter = who[0].toLowerCase() + who.slice(1); // «η γιαγιά του Μάρκου»: only the article
       const plants = r.sample(PLANTS, ps.length);
       const noise = r.chance(0.5)
         ? extra(`που είναι ${r.int(66, 86)} χρονών`)
@@ -67,6 +70,7 @@ const SETTINGS: Setting[] = [
           + `${cap(list(needs))}. ${known(`Σήμερα πότισε ${all}`)}.`,
         ask: `Σε πόσες ημέρες θα ποτίσει ξανά ${all} την ίδια ημέρα`,
         ask2: `Μετά από πόσες ημέρες θα ξαναποτίσει ${all} μαζί`,
+        named: [`Σε πόσες ημέρες θα ποτίσει ${whoAfter} ξανά ${all} την ίδια ημέρα`, `Μετά από πόσες ημέρες θα ξαναποτίσει ${whoAfter} ${all} μαζί`],
         unit: 'ημέρες',
         each: plants.map(p => `Ποτίσματα ${p.of}`),
       };
@@ -192,10 +196,14 @@ export const togetherAgain: Family = {
     // A friend multiplies the periods: a common multiple, but not the least
     const claim = prod > L && r.chance(0.4);
     const c = who[2];
+    // After someone else of the scene («Ο Μιχάλης κάνει…», «Ο παππούς του Μάρκου…»), «Έχει δίκιο;»
+    // names who claims it
+    const crowd = who.slice(0, 2).some(x => sc.intro.includes(x.Nom) || sc.intro.includes(x.nom)) || /(?:Η γιαγιά|Ο παππούς)/.test(sc.intro);
     const claimText = claim
-      ? ` ${known(`${c.Nom} λέει ότι αυτό θα ξαναγίνει σε ${fmt(prod)} ${sc.unit}, γιατί ${ps.map(fmt).join(' × ')} = ${fmt(prod)}`)}. ${sought(`Έχει δίκιο`)};`
+      ? ` ${known(`${c.Nom} λέει ότι αυτό θα ξαναγίνει σε ${fmt(prod)} ${sc.unit}, γιατί ${ps.map(fmt).join(' × ')} = ${fmt(prod)}`)}. ${sought(`Έχει δίκιο${crowd ? ` ${c.nom}` : ''}`)};`
       : '';
-    const story = `${sc.intro}${claimText} ${sought(r.chance(0.5) ? sc.ask : sc.ask2)};`;
+    const [ask, ask2] = claim && sc.named ? sc.named : [sc.ask, sc.ask2];
+    const story = `${sc.intro}${claimText} ${sought(r.chance(0.5) ? ask : ask2)};`;
 
     const steps: ProblemStep[] = [
       b.tag(undefined, claim

@@ -47,15 +47,16 @@ const SETTINGS: Setting[] = [
         return r.int(Math.max(it.min, need + 10), it.max);
       },
     }),
+    // After the sister, «θα έχει όσα χρειάζεται» could be hers: the question names whom it means
     story: (p, n, per, noise, given, r) => {
       const item = r.pick(ITEMS.filter(x => x.min <= n.b && n.b <= x.max));
       if (!item) return '';
       const every = per === WEEKS ? 'Κάθε εβδομάδα βάζει' : 'Κάθε Σάββατο βάζει';
       return given
         ? `${p.Nom} μαζεύει χρήματα για ${item.what}. Έχει ${extra(`${n.a} ευρώ`)} και ${p.his} λείπουν ακόμη ${known(`${n.need} ευρώ`)}. `
-          + `${every} στον κουμπαρά ${known(`${n.c} ευρώ`)} από το χαρτζιλίκι ${p.his}. ${noise} ${sought(`${per.HowMany} θα έχει όσα χρειάζεται`)};`
+          + `${every} στον κουμπαρά ${known(`${n.c} ευρώ`)} από το χαρτζιλίκι ${p.his}. ${noise} ${sought(`${per.HowMany} θα έχει${/^Η αδερφή/.test(noise) ? ` ${p.nom}` : ''} όσα χρειάζεται`)};`
         : `${p.Nom} θέλει να αγοράσει ${item.what} που κοστίζει ${known(`${n.b} ευρώ`)}. Έχει ήδη στον κουμπαρά ${known(`${n.a} ευρώ`)}. `
-          + `${every} ${known(`${n.c} ευρώ`)} ${r.pick(['από το χαρτζιλίκι', 'από τις οικονομίες'])} ${p.his}. ${noise} ${sought(`${per.HowMany} θα έχει όσα χρειάζεται`)};`;
+          + `${every} ${known(`${n.c} ευρώ`)} ${r.pick(['από το χαρτζιλίκι', 'από τις οικονομίες'])} ${p.his}. ${noise} ${sought(`${per.HowMany} θα έχει${/^Η αδερφή/.test(noise) ? ` ${p.nom}` : ''} όσα χρειάζεται`)};`;
     },
     still: (p, rest) => (rest === 1 ? `θα ${p.his} λείπει ακόμη 1 ευρώ` : `θα ${p.his} λείπουν ακόμη ${rest} ευρώ`),
     noise: (r, p) => r.pick([
@@ -68,8 +69,9 @@ const SETTINGS: Setting[] = [
     title: 'Το άλμπουμ', unit: 'αυτοκόλλητα',
     period: () => DAYS,
     numbers: r => ({ c: r.pick([4, 5, 6]), q: r.int(3, 10), b: need => r.step(Math.max(160, need + 60), 300, 20) }),
+    // After the friend, «θα γεμίσει το άλμπουμ» could be the friend's doing: the question names her
     story: (p, n, per, noise) => `Το άλμπουμ ${p.gen} έχει θέσεις για ${known(`${n.b} αυτοκόλλητα`)}. Έχει ήδη κολλήσει ${known(`${n.a} αυτοκόλλητα`)}. `
-      + `Κάθε μέρα ανοίγει ένα φακελάκι με ${known(`${n.c} αυτοκόλλητα`)}, όλα καινούργια. ${noise} ${sought(`${per.HowMany} θα γεμίσει το άλμπουμ`)};`,
+      + `Κάθε μέρα ανοίγει ένα φακελάκι με ${known(`${n.c} αυτοκόλλητα`)}, όλα καινούργια. ${noise} ${sought(`${per.HowMany} θα γεμίσει${/^(?:Η φίλη|Ο φίλος)/.test(noise) ? ` ${p.nom}` : ''} το άλμπουμ`)};`,
     still: (_p, rest) => (rest === 1 ? 'θα λείπει ακόμη 1 αυτοκόλλητο' : `θα λείπουν ακόμη ${rest} αυτοκόλλητα`),
     noise: (r, p) => r.pick([
       `Το άλμπουμ έχει ${extra(`${r.int(20, 40)} σελίδες`)}.`,

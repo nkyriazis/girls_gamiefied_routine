@@ -7,7 +7,7 @@ type Kind = 'minus' | 'plus' | 'half';
 interface Op { kind: Kind; n: number; before: string }
 
 /** One thing that happens: the phrase (with its number) and the name of the moment before it. */
-interface Event { say: (n: string, p: Person) => string; before: string }
+interface Event { say: (n: string, p: Person) => string; before: string; /** the most it costs, when less than any amount */ max?: number }
 
 interface Setting {
   title: string;
@@ -33,7 +33,7 @@ const SETTINGS: Setting[] = [
     minus: [
       { say: n => `αγόρασε ένα βιβλίο των ${n} €`, before: 'Πριν από το βιβλίο' },
       { say: n => `έδωσε ${n} € για ένα βραχιόλι`, before: 'Πριν από το βραχιόλι' },
-      { say: n => `πλήρωσε ${n} € για λουκουμάδες`, before: 'Πριν από τους λουκουμάδες' },
+      { say: n => `πλήρωσε ${n} € για λουκουμάδες`, before: 'Πριν από τους λουκουμάδες', max: 15 },
     ],
     plus: { say: (n, p) => `πήρε ${n} € από τη γιαγιά ${p.his}`, before: 'Πριν από τα χρήματα της γιαγιάς' },
     half: [p => `ξόδεψε τα μισά χρήματά ${p.his} σε παιχνίδια`, p => `ξόδεψε σε παιχνίδια τα μισά από όσα ${p.his} είχαν μείνει`, () => 'ξόδεψε σε παιχνίδια τα μισά από όσα είχε τότε'],
@@ -65,7 +65,7 @@ const SETTINGS: Setting[] = [
     minus: [
       { say: n => `ξόδεψε ${n} € για φρούτα`, before: 'Πριν από τα φρούτα' },
       { say: n => `πλήρωσε ${n} € για λουλούδια`, before: 'Πριν από τα λουλούδια' },
-      { say: n => `έδωσε ${n} € για αυγά`, before: 'Πριν από τα αυγά' },
+      { say: n => `έδωσε ${n} € για αυγά`, before: 'Πριν από τα αυγά', max: 10 },
     ],
     plus: { say: n => `πήρε πίσω ${n} € από μια φίλη της που της χρωστούσε`, before: 'Πριν πάρει πίσω τα χρήματα' },
     half: [() => 'έδωσε τα μισά χρήματά της για ψάρια', () => 'έδωσε για ψάρια τα μισά από όσα της είχαν μείνει', () => 'έδωσε για ψάρια τα μισά από όσα είχε τότε'],
@@ -121,7 +121,7 @@ export const backwardsMoney: Family = {
       } else {
         const n = r.int(3, s.step === 5 ? 14 : 25) * s.step;
         const ev = k === 'plus' ? s.plus : minus.pop()!;
-        if (k === 'minus') { if (n >= x) return null; x -= n; } else x += n;
+        if (k === 'minus') { if (n >= x || n > (ev.max ?? n)) return null; x -= n; } else x += n;
         ops.push({ kind: k, n, before: ev.before });
         phrases.push(ev.say(fmt(n), p));
       }

@@ -137,15 +137,25 @@ function handful(r: Args[0], b: Args[1], p: P) {
   const price = buy ? r.step(buy.min, Math.min(buy.max, total - 5), 5) : 0;
   if (buy && (price < buy.min || price >= total)) return null;
   const telling = r.int(0, 2);
-  const has = sought(telling === 2 ? `Πόσα λεπτά ${p.his} έδωσε` : 'Πόσα λεπτά έχει');
-  const ask = buy
-    ? `${has}; Θέλει να αγοράσει ${buy.what} που κοστίζει ${known(`${price} λεπτά`)}. ${sought(`Πόσα λεπτά θα ${p.his} περισσέψουν`)};`
-    : `${has}; ${sought(`Πόσα λεπτά ${p.his} λείπουν για να έχει ένα ευρώ`)};`;
+  // A sibling, a friend or the grandfather in the noise is a second subject: the question then
+  // names her («Πόσα λεπτά έχει η Άννα;»), and so does the sentence after it
+  const ask = (noise: string, giver?: string) => {
+    // (or the one who gave them is of her gender: «Η γιαγιά έδωσε στην Άννα… Πόσα λεπτά της έδωσε;»)
+    const other = /^(?:Ο|Η) (?:αδερφός|αδερφή|φίλος|φίλη|παππούς)/.test(noise) || !!giver?.startsWith(p.female ? 'Η' : 'Ο');
+    const has = sought(telling === 2
+      ? other ? `Πόσα λεπτά έδωσε ${giver!.toLowerCase()} σ${p.acc}` : `Πόσα λεπτά ${p.his} έδωσε`
+      : other ? `Πόσα λεπτά έχει ${p.nom}` : 'Πόσα λεπτά έχει');
+    return buy
+      ? `${has}; ${other ? `${p.Nom} θέλει` : 'Θέλει'} να αγοράσει ${buy.what} που κοστίζει ${known(`${price} λεπτά`)}. ${sought(`Πόσα λεπτά θα ${p.his} περισσέψουν`)};`
+      : `${has}; ${sought(other ? `Πόσα λεπτά λείπουν σ${p.acc} για να έχει ένα ευρώ` : `Πόσα λεπτά ${p.his} λείπουν για να έχει ένα ευρώ`)};`;
+  };
   const story = [
-    () => `${p.Nom} άδειασε τον κουμπαρά ${p.his} και βρήκε ${groupText}. ${noise(r, p.his)} ${ask}`,
-    () => `Στην κασετίνα ${p.gen} υπάρχουν ${groupText}. ${noise(r, p.his)} ${ask}`,
-    () => `${r.pick(['Η γιαγιά', 'Ο παππούς', 'Η θεία', 'Ο νονός'])} έδωσε σ${p.acc} ${groupText}. ${noise(r, p.his)} ${ask}`,
+    () => { const nz = noise(r, p.his); return `${p.Nom} άδειασε τον κουμπαρά ${p.his} και βρήκε ${groupText}. ${nz} ${ask(nz)}`; },
+    () => { const nz = noise(r, p.his); return `Στην κασετίνα ${p.gen} υπάρχουν ${groupText}. ${nz} ${ask(nz)}`; },
+    // (the grandfather who gave them is not the one with the collection: «Ο παππούς … Ο παππούς της …»)
+    () => { const g = r.pick(['Η γιαγιά', 'Ο παππούς', 'Η θεία', 'Ο νονός']); const nz = noise(r, p.his); return nz.startsWith(g) ? '' : `${g} έδωσε σ${p.acc} ${groupText}. ${nz} ${ask(nz, g)}`; },
   ][telling]();
+  if (!story) return null;
 
   const second = buy ? total - price : 100 - total;
   const steps: ProblemStep[] = [

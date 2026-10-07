@@ -54,7 +54,17 @@ work (the generator tries again).
   change-left and the world's purchases use it; add an item there, not a price in a family.
   What she pays with is a sum of real notes that needs every note (`payWith`: 20 + 20 for
   37 €, 200 + 100 for 248 €), and savings are above the price. The audit keeps its own,
-  wider table (`story-check.ts`) and fails a price outside it.
+  wider table (`story-check.ts`, about 150 items, written from real Greek prices, not fitted to the
+  pools) and reads the prices of every family (#50 part 5b) in these phrasings: «κοστίζει/κοστίζουν N»,
+  «ξόδεψε/πλήρωσε/έδωσε/θέλει να πάρει N για X», «X για N», «X των N», «X αξίας N», «αγόρασε/αγοράζει X με
+  N» (any tense or accent), «N το κιλό / την καθεμία / το άτομο», «€» as «ευρώ», «N ευρώ και M λεπτά».
+  A «για X» right after a price names that price's item, or none, never the item before («… των 935 €
+  και 730 € για το λεωφορείο»). Money in any other phrasing isn't read («βγήκε βόλτα με 20 ευρώ»), so
+  a new telling of a price gets a case in `story-check.test.ts` that shows it is read (`reads(…)`). It judges one piece: a pack «με 6 χυμούς για 4 €» and a total «τα πέντε τετράδια κοστίζουν
+  8 ευρώ» are divided by their count. **A price names its item in its own sentence** («Στο
+  βιβλιοπωλείο το βιβλίο κοστίζει 9 ευρώ», never «Το καθένα κοστίζει 550 €»), and the item is one the
+  table knows: a new item goes in the table, with a real range, and a price outside it is fixed in the
+  family. Notes and coins are real ones («χαρτονόμισμα των 50», «κέρματα των 20 λεπτών»).
 
 ### Greek
 The audit can't read Greek; you must. The traps the generator has already hit:
@@ -346,7 +356,8 @@ comes back after 80 days; Ε΄ has 68, back after 68.
   `set-*.ts` group families written together).
 - `gen.ts`, `audit.ts`: see the top of each.
 - `prices.ts`: what things cost and what she pays with (change-left, the world's purchases).
-- `story-check.ts`: the audit's reading of who a story means, the order of events, checks and prices.
+- `story-check.ts`: the audit's reading of who a story means, the order of events, checks and prices,
+  for every pool; `story-check.test.ts`: a story per rule.
 - `maths/`: the plain maths (`curriculum.ts`, `grades.ts`, `lib.ts`, `g3.ts`, `e5.ts`, `gen-maths.ts`, `check.ts`).
 - `language/`: the plain language (`curriculum.ts`, `lexicon.ts` and `lexicon/g3.ts`, `lexicon/e5.ts`, `lib.ts`, `g3.ts`, `e5.ts`, `gen-language.ts`, `check.ts`).
 
@@ -398,7 +409,10 @@ sentence before said (`told`: whose it was, who else it named), and `problem()` 
   Γιώργος…», and «Τότε ο Στέλιος είχε…»; a story where two sentences in a row would still
   open with one name is dropped;
 - a receiver is named until the clitic is clear: «Ο Αλέξης χάρισε 12 κάρτες στην
-  Κατερίνα», and «της χάρισε» only right after a sentence about her that named no one else;
+  Κατερίνα», and «της χάρισε» only right after a sentence about her that named no one else, when no
+  one else of her gender could be meant (a sibling, a relative, a child named before: `Told.clear`);
+  a gift question «Πόσα ευρώ της έδωσε η γιαγιά της;» the same way, else «… έδωσε στην Ελένη η γιαγιά
+  της;»; «Αναρωτιέται» names her after a sentence that names someone else too, relatives included;
 - the question names the hero whenever anyone else is the subject of a sentence, and the
   questions that had no subject say whose («Πόσο κόστιζε το παζλ που αγόρασε ο Πέτρος;»).
 
@@ -412,5 +426,26 @@ other order and net, so every right way reads back; that isn't built.
 the answer instead of the start, the other operation, the answer with the other number. A
 problem that can't have 3 is dropped.
 
-The audit's `story-check.ts` holds these rules (and prices) for the world pool and
-change-left; the other families, and the «Αναρωτιέται» questions, come in #50 part 5b.
+**In every family** (#50 part 5b) the same reading holds, and `story-check.ts` runs on every pool,
+generated and curated, as audit errors (a story that fails is a family bug: fix it in the family;
+`story-check.test.ts` has a case per rule, `node --test tools/problem-gen/story-check.test.ts`):
+- relatives and friends are people («η γιαγιά», «ο θείος», «η φίλη της»): a sister or a friend in a
+  noise sentence is someone the next «του/της» or nameless question could mean;
+- a question names whom it means when its verb is singular and it has no subject of its own, once two
+  people are subjects; and, the worst case, right after a sentence whose subject is someone the story
+  isn't about («… Η αδερφή της είναι 7 χρονών. Πόσα ευρώ θα πάρει πίσω;»): say «… πίσω η Σοφία;».
+  A grown-up at work («ο οδηγός», «η δασκάλα», «ο προπονητής», «ο υπεύθυνος», …) is someone else too when
+  a child is the story's subject or their sentence is noise («… Ο οδηγός κάνει αυτή τη δουλειά 19 χρόνια.
+  Πόσα χιλιόμετρα διάνυσε συνολικά το φορτηγό;»), not when they do what is asked («Ο γυμναστής θέλει να
+  τους βάλει σε ίσες σειρές… Με πόσους τρόπους μπορεί να το κάνει;»); a new grown-up goes in `AT_WORK`.
+  A plural verb («μάζεψαν και οι δύο μαζί»), its own subject («η ρόδα», «ο καθένας», «ποιο παιδί»,
+  «κάθε σειρά», not «κάθε εβδομάδα»; a neuter «το καρουζέλ» only after a verb like «έχει», «κοστίζει», «φτάνει») and a verbless
+  follow-up («Πόσα ευρώ λιγότερα;») need no name. «Έχει δίκιο;» after other children: «Έχει δίκιο η Άννα;»;
+- «Αναρωτιέται» follows the clitic's rule: whoever wonders is named in it, or is the one person of the
+  sentence before, or the only one so far («Η Σοφία χάρισε 25 βόλους στην Ελένη. Αναρωτιέται η Σοφία…»);
+- after «Τώρα», a sentence opening with «Νωρίτερα» (no comma) tells what came before: start-unknown's
+  backward telling («Τώρα η Κατερίνα έχει 115 αυτοκόλλητα. Νωρίτερα αγόρασε άλλα 39…»);
+- the same «<noun> του/της <someone>» isn't said in two told sentences in a row («Στο άλμπουμ του
+  Στέλιου … Το άλμπουμ έχει 40 σελίδες»); a question and the sentence after it may repeat it;
+- a child's name is never in lowercase: lowercasing «Ο παππούς του Μάρκου» for the middle of a
+  question lowercases only the article.

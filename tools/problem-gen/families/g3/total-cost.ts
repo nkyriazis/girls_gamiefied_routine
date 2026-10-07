@@ -104,15 +104,19 @@ export const totalCost: Family = {
     const noiseShort = r.chance(0.5) ? s.noise(r, p) : age();
     const moneyFull = mode === 'total' ? '' : ` ${p.Nom} έχει ${r.pick(['μαζί', 'στο πορτοφόλι'])} ${p.his} ${known(`${fmt(money)} ευρώ`)}.`;
     const moneyShort = mode === 'total' ? '' : ` Έχει ${r.pick(['μαζί', 'στο πορτοφόλι'])} ${p.his} ${known(`${fmt(money)} ευρώ`)}.`;
-    const ask = mode === 'total'
-      ? r.pick([`${sought('Πόσα ευρώ θα πληρώσει')};`, `${sought('Πόσο κοστίζουν όλα μαζί')};`, `${sought('Πόσα ευρώ θα δώσει στο ταμείο')};`])
-      : `${sought(`Φτάνουν τα χρήματά ${p.his}`)}; ${sought('Πόσα ευρώ θα περισσέψουν ή πόσα θα λείπουν')};`;
+    const asks = [
+      (who: string) => `${sought(`Πόσα ευρώ θα πληρώσει${who}`)};`, () => `${sought('Πόσο κοστίζουν όλα μαζί')};`,
+      (who: string) => `${sought(`Πόσα ευρώ θα δώσει${who} στο ταμείο`)};`,
+    ];
+    const asking = mode === 'total' ? r.pick(asks) : () => `${sought(`Φτάνουν τα χρήματά ${p.his}`)}; ${sought('Πόσα ευρώ θα περισσέψουν ή πόσα θα λείπουν')};`;
+    // A friend in the noise is a second subject: the question then names whom it means
+    const ask = (noise: string) => asking(/^(?:Η φίλη|Ο φίλος)/.test(noise) ? ` ${p.nom}` : '');
     const lower = (x: string) => x[0].toLowerCase() + x.slice(1);
 
     const story = r.pick([
-      () => `${p.Nom} θέλει να αγοράσει ${why} ${listed}. ${noiseShort} ${priceLines}${moneyFull} ${ask}`,
-      () => `${Cap(s.place)}, ${p.nom} διαλέγει ${listed} ${why}.${moneyShort} ${priceLines} ${s.noise(r, p)} ${ask}`,
-      () => `${Cap(s.place)} της γειτονιάς ${lower(priceLines)} ${p.Nom} θέλει να αγοράσει ${n === 3 ? 'και τα τρία' : 'και τα δύο'} ${why}.${moneyShort} ${s.noise(r, p)} ${ask}`,
+      () => `${p.Nom} θέλει να αγοράσει ${why} ${listed}. ${noiseShort} ${priceLines}${moneyFull} ${ask(noiseShort)}`,
+      () => { const noise = s.noise(r, p); return `${Cap(s.place)}, ${p.nom} διαλέγει ${listed} ${why}.${moneyShort} ${priceLines} ${noise} ${ask(noise)}`; },
+      () => { const noise = s.noise(r, p); return `${Cap(s.place)} της γειτονιάς ${lower(priceLines)} ${p.Nom} θέλει να αγοράσει ${n === 3 ? 'και τα τρία' : 'και τα δύο'} ${why}.${moneyShort} ${noise} ${ask(noise)}`; },
     ])();
 
     const sum = prices.map(x => String(x)).join(' + ');
