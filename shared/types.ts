@@ -546,6 +546,9 @@ export interface ChoreEventPayload {
 export type ServerEvent =
   | { type: 'CHORE_CONFIRMED'; payload: ChoreEventPayload & { starsAwarded: number } }
   | { type: 'CHORE_REJECTED'; payload: ChoreEventPayload }
-  | { type: 'CHORE_EXPIRED'; payload: ChoreEventPayload };
+  | { type: 'CHORE_EXPIRED'; payload: ChoreEventPayload }
+  // A parent ended a kid's routine from /parent (#63): her lane on the kids' screens says so.
+  // Sent before the STATE without the run; routineId is the run's (as RoutineRun.routineId).
+  | { type: 'ROUTINE_ENDED_BY_PARENT'; payload: { runId: string; userId: string; routineId: string } };
 
 export type ServerMessage = { type: 'STATE'; payload: AppState } | { type: 'HEARTBEAT' } | ServerEvent;

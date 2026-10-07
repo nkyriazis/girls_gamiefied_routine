@@ -30,7 +30,7 @@ import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 import { cronMatchesAt, nextCronRun } from './cron';
 import {
-  answerBody, AnswerBody, claimBody, ClaimBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
+  answerBody, AnswerBody, claimBody, ClaimBody, closeBody, CloseBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
   helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, spendingBody, SpendingBody, spendingStatusBody,
   SpendingStatusBody, starsBody, StarsBody, timeBody, TimeBody, transferActionBody, TransferActionBody, transferBody, TransferBody,
   userBody, UserBody
@@ -374,9 +374,13 @@ server.post('/api/executions/:executionId/tasks/:taskId/complete', async (reques
   return result.success ? result : reply.code(409).send(result);
 });
 
-server.post('/api/executions/:executionId/close', async (request) => {
+// A parent's «Τέλος» on /parent sends { by: 'parent' } (#63): the same close, and her lane says so.
+server.post<{ Body: CloseBody }>('/api/executions/:executionId/close', {
+  schema: { body: closeBody },
+  preValidation: async (request) => { request.body ??= {}; }, // no body at all: the kids' close, as before
+}, async (request) => {
   const { executionId } = request.params as { executionId: string };
-  return { success: closeRoutine(executionId) };
+  return { success: closeRoutine(executionId, request.body.by) };
 });
 
 server.post('/api/flow-runs/:runId/steps/:stepIndex/dismiss', async (request) => {
