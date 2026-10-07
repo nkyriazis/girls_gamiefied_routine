@@ -108,8 +108,8 @@ export const equalGroups: Family = {
     ], `Μετράμε ανά ${k}: ${Array.from({ length: Math.min(n, 4) }, (_x, i) => fmt((i + 1) * k)).join(', ')}${n > 4 ? ', …' : ''}`));
     steps.push(n <= 5
       ? b.choice('check', 'Πώς ελέγχουμε;', `${Array(n).fill(k).join(' + ')} = ${fmt(total)}`,
-        // one group too many, as many terms as the right one and one more
-        [`${n} + ${k} = ${n + k}`, `${Array(n + 1).fill(k).join(' + ')} = ${fmt(k * (n + 1))}`],
+        // one group too many or one too few (a term more, a term fewer), or n + k when there are only two
+        [n > 2 ? `${Array(n - 1).fill(k).join(' + ')} = ${fmt(k * (n - 1))}` : `${n} + ${k} = ${n + k}`, `${Array(n + 1).fill(k).join(' + ')} = ${fmt(k * (n + 1))}`],
         `Προσθέτουμε ${n} φορές το ${k}.`)
       : b.choice('check', 'Πώς ελέγχουμε;', `${k} × ${n} = ${fmt(total)}`,
         [`${n} + ${k} = ${n + k}`, `${k} × ${n + 1} = ${fmt(k * (n + 1))}`],

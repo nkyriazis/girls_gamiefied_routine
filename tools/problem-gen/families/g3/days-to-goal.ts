@@ -162,10 +162,10 @@ export const daysToGoal: Family = {
       ], c >= 10 ? `Μετράμε ανά ${c}: ${c}, ${2 * c}, ${3 * c}, … Πού σταματάμε, πριν ξεπεράσουμε το ${need};`
         : `Σκέψου την προπαίδεια του ${c}: ποιο γινόμενο φτάνει πιο κοντά στο ${need} χωρίς να το ξεπερνά;`));
       const wrongs = [`${q}, γιατί τόσες φορές χωράει το ${c} στο ${need}`];
-      if (rest > 1 && rest !== q && rest !== q + 1) wrongs.push(`${rest}, γιατί τόσα περισσεύουν`);
-      else if (!given && Math.ceil(total / c) !== q + 1 && Math.ceil(total / c) !== q) wrongs.push(`${Math.ceil(total / c)}, γιατί ${fmt(total)} : ${c}`);
+      if (rest > 1 && rest !== q && rest !== q + 1) wrongs.push(`${rest}, όσα περισσεύουν στο τέλος`);
+      else if (!given && Math.ceil(total / c) !== q + 1 && Math.ceil(total / c) !== q) wrongs.push(`${Math.ceil(total / c)}, όσες φορές χωράει το ${c} στο ${fmt(total)}`);
       if (wrongs.length < 2 && rest > 1 && q + rest !== q + 1) wrongs.push(`${q + rest}, γιατί προσθέτουμε και όσα περισσεύουν`);
-      if (wrongs.length < 2) wrongs.push(`${need - c}, γιατί ${need} − ${c}`);
+      if (wrongs.length < 2) wrongs.push(`${need - c}, γιατί αφαιρούμε ${need} − ${c}`);
       steps.push(b.choice('check', `${per.HowMany} λοιπόν;`,
         `${q + 1}, ${per.oneMore} για όσα μένουν`, wrongs,
         `Αυτά που περισσεύουν χρειάζονται κι αυτά ${per.oneMore}.`));

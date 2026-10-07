@@ -83,7 +83,7 @@ function spend(r: Rng, p: Person): Parts {
     missing: 'Πόσα ευρώ είχε στην αρχή',
     wrongs: [`Πόσο κόστιζε ${toy.the}`, 'Πόσα ευρώ θα πάρει αύριο', `Από ποιο μαγαζί ${toy.it} αγόρασε`],
     row: { op: `${have} − ${cost} =`, name: 'Έμειναν', answer: have - cost, unit: 'ευρώ' },
-    check: { right: `${cost} + ${have - cost} = ${have}`, wrong: [`${have} + ${cost} = ${have + cost}`, `${have} + ${have - cost} = ${2 * have - cost}`] },
+    check: { right: `${cost} + ${have - cost} = ${have}`, wrong: [`${have} + ${cost} = ${have + cost}`, have - cost !== cost ? `${Math.max(cost, have - cost)} − ${Math.min(cost, have - cost)} = ${Math.abs(2 * cost - have)}` : `${have} + ${have - cost} = ${2 * have - cost}`] },
   };
 }
 
@@ -110,7 +110,7 @@ function share(r: Rng): Parts {
     missing: `Πόσα εγγόνια έχει ${G.Nom === 'Η γιαγιά' ? 'η γιαγιά' : 'ο παππούς'}`,
     wrongs: [`${HowMany(t)} ${t.manyAcc} ${made}`, `Πόσων χρονών είναι ${G.Nom === 'Η γιαγιά' ? 'η γιαγιά' : 'ο παππούς'}`, 'Τι ώρα ήταν το απόγευμα'],
     row: { op: `${total} : ${k} =`, name: 'Πήρε το καθένα', answer: each, unit: t.manyAcc },
-    check: { right: `${k} × ${each} = ${total}`, wrong: [`${total} − ${k} = ${total - k}`, `${total} + ${k} = ${total + k}`] },
+    check: { right: `${k} × ${each} = ${total}`, wrong: [`${each} + ${k} = ${each + k}`, `${total} + ${k} = ${total + k}`] },
   };
 }
 
@@ -131,7 +131,7 @@ function ride(r: Rng): Parts {
     missing: 'Πόσοι επιβάτες ήταν στην αρχή',
     wrongs: ['Πόσοι επιβάτες κατέβηκαν τελικά', `Πόσες θέσεις έχει ${x.the}`, `Τι ώρα ξεκίνησε ${x.the}`],
     row: { op: `${fmt(on)} − ${off} =`, name: 'Έμειναν', answer: on - off, unit: 'επιβάτες' },
-    check: { right: `${fmt(on - off)} + ${off} = ${fmt(on)}`, wrong: [`${fmt(on)} + ${off} = ${fmt(on + off)}`, `${fmt(on - off)} + ${fmt(on)} = ${fmt(2 * on - off)}`] },
+    check: { right: `${fmt(on - off)} + ${off} = ${fmt(on)}`, wrong: [`${fmt(on)} + ${off} = ${fmt(on + off)}`, `${off} + ${off} = ${2 * off}`] },
   };
 }
 

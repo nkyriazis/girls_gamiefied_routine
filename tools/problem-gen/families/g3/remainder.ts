@@ -58,7 +58,6 @@ export const remainder: Family = {
     const people = seats * full + left;
     const v = ride.vehicle;
     const kids = ride.who === 'παιδιά';
-    const whoLeft = kids ? 'όσα' : 'όσοι';
     const story = `${known(`${fmt(people)} ${ride.who}`)} ${ride.trip}. Σε κάθε ${v.one} χωράνε ${known(`${seats} ${ride.who}`)}. `
       + `Είναι ${extra(`${r.int(8, 11)} η ώρα`)} το πρωί. ${sought(`${HowMany(v, false)} ${v.many} χρειάζονται`)}, ${ride.goal};`;
     const steps = [
@@ -67,8 +66,8 @@ export const remainder: Family = {
         { label: `Γεμάτα ${v.many}`, answer: full },
         { label: `${ride.Who} που περισσεύουν`, answer: left },
       ], `${seats} × ${full} = ${fmt(seats * full)}. Πόσοι μένουν ως το ${fmt(people)};`),
-      b.choice('check', `${HowMany(v, false)} ${v.many} χρειάζονται λοιπόν;`, `${full + 1}, ${v.g === 'f' ? 'μία' : 'ένα'} ακόμα για ${whoLeft} περισσεύουν`,
-        [`${full}, ${v.g === 'f' ? 'όσες' : 'όσα'} γεμίζουν· ${kids ? 'τα άλλα' : 'οι άλλοι'} περιμένουν`, `${left}, ${whoLeft} περισσεύουν από τη διαίρεση`],
+      b.choice('check', `${HowMany(v, false)} ${v.many} χρειάζονται λοιπόν;`, `${full + 1}, ${v.g === 'f' ? 'μία' : 'ένα'} ακόμα για ${kids ? 'όσα' : 'όσους'} περισσεύουν`,
+        [`${full}, ${v.g === 'f' ? 'όσες' : 'όσα'} γεμίζουν· ${kids ? 'τα άλλα' : 'οι άλλοι'} περιμένουν`, `${left}, το υπόλοιπο της διαίρεσης`],
         left === 1 ? 'Και ένας που περισσεύει δεν μπορεί να μείνει πίσω.' : `Οι ${left} που περισσεύουν δεν μπορούν να μείνουν πίσω.`),
     ];
     return { title: r.pick(['Όλοι μαζί', 'Φτάνουν οι θέσεις;', `${cap(the(v, false))} ${v.many}`]), story, steps };
