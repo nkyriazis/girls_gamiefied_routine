@@ -62,7 +62,7 @@ docker compose exec backend npm run backup
 ```
 
 Beyond `npm test`, verify changes manually:
-- `/?push=<id>`, `POST /api/hooks/push` and the parents' «Ξεκίνα τώρα» start exactly that flow, routine assignment or `alarm`, now (`triggerAction(id, 'push_hook')`), never the other schedules due at the same time (#29). A kid already in a routine keeps it: the answer is `{ skipped, runningId }` and the parent's toast says «Ήδη σε ρουτίνα».
+- `/?push=<id>`, `POST /api/hooks/push` and the parents' «Ξεκίνα τώρα» start exactly that flow, routine assignment or `alarm`, now (`triggerAction(id, 'push_hook')`), never the other schedules due at the same time (#29). A push of a kid's routine while she is already in one keeps hers: the answer is `{ skipped, runningId }` and the parent's toast says «Ήδη σε ρουτίνα».
 - `POST /api/debug/time` simulates a minute: every schedule due then starts, logged as `SCHEDULE_MATCH`.
 - `POST /api/debug/time` and `GET /api/debug/schedule` help with time and schedule debugging.
 - `GET /api/debug/logs` returns recent action logs.

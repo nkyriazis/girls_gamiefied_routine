@@ -164,7 +164,7 @@ cron.schedule('* * * * *', () => {
 - Used by the parent dashboard's «Ξεκίνα τώρα» buttons (Ρυθμίσεις)
 - Used by URL parameter (`?push=morning-flow`) for testing
 - Starts exactly this routine assignment, flow or `alarm`, now: `triggerAction(id, 'push_hook')`. Other schedules due at the same time don't start (#29)
-- A kid already in a routine keeps it: the answer is `{ skipped: true, runningId }`, and the parent's toast says «Ήδη σε ρουτίνα»
+- A push of a kid's routine while she is already in one keeps hers: the answer is `{ skipped: true, runningId }`, and the parent's toast says «Ήδη σε ρουτίνα»
 - To simulate a minute, every schedule due in it, use `POST /api/debug/time` (`{ "time": "20:00" }`)
 
 **3. Flow Orchestration**
