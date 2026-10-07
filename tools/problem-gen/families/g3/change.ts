@@ -1,10 +1,6 @@
 // Money left after a purchase: X − Y (Γ΄ κεφ. 10 «Το μαγαζί της τάξης»).
 import { extra, fmt, known, PEOPLE, sought, type Family } from '../../lib.ts';
-
-const ITEMS = [
-  'ένα αυτοκίνητο ράλι', 'ένα βιβλίο με παραμύθια', 'μια μπάλα ποδοσφαίρου', 'ένα επιτραπέζιο παιχνίδι',
-  'ένα σακίδιο για το σχολείο', 'μια κούκλα', 'ένα παζλ', 'ένα ζευγάρι πατίνια', 'μια κασετίνα', 'ένα τηλεσκόπιο παιχνίδι',
-];
+import { BIG, payWith, TOYS } from '../../prices.ts';
 
 export const change: Family = {
   id: 'change-left',
@@ -13,11 +9,16 @@ export const change: Family = {
   source: 'Μαθηματικά Γ΄, κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const p = r.pick(PEOPLE);
-    const item = r.pick(ITEMS);
-    // Two-digit money early in the year, three-digit sometimes
+    // Two-digit money early in the year; three-digit sometimes, for the things that cost that
+    // much (prices.ts): from the κουμπαράς, or paid with 100 and 200 notes
     const big = r.chance(0.4);
-    const have = big ? r.step(120, 900, 5) : r.int(35, 99);
-    const cost = big ? r.int(35, have - 20) : r.int(12, have - 8);
+    const thing = r.pick(big ? BIG : TOYS);
+    const item = thing.a;
+    const cost = r.int(thing.lo, thing.hi);
+    const telling = r.int(0, 2);
+    const have = telling === 1
+      ? payWith(r, cost, big ? [50, 100, 200] : [5, 10, 20, 50, 100], big ? 4 : 3)
+      : big ? r.step(cost + 20, Math.min(600, cost + 250), 5) : r.int(cost + 8, 99);
     const left = have - cost;
     const noise = r.pick([
       `Το μαγαζί ανοίγει στις ${extra(`${r.int(8, 10)} το πρωί`)}.`,
@@ -25,11 +26,11 @@ export const change: Family = {
       `Στο ράφι υπάρχουν ${extra(`${r.int(12, 40)} παιχνίδια`)}.`,
       `Το μαγαζί είναι ${extra(`${r.int(2, 6)} στενά`)} από το σπίτι ${p.his}.`,
     ]);
-    const story = r.pick([
+    const story = [
       () => `${p.Nom} έχει στον κουμπαρά ${p.his} ${known(`${fmt(have)} ευρώ`)}. Αγοράζει ${item} που κοστίζει ${known(`${fmt(cost)} ευρώ`)}. ${noise} ${sought(`Πόσα ευρώ θα ${p.his} περισσέψουν`)};`,
       () => `Στο μαγαζί της γειτονιάς, ${item} κοστίζει ${known(`${fmt(cost)} ευρώ`)}. ${p.Nom} πληρώνει με ${known(`${fmt(have)} ευρώ`)}. ${noise} ${sought('Πόσα ρέστα θα πάρει')};`,
       () => `${p.Nom} είχε ${known(`${fmt(have)} ευρώ`)} και ξόδεψε ${known(`${fmt(cost)} ευρώ`)} για ${item}. ${noise} ${sought(`Πόσα ευρώ ${p.his} έμειναν`)};`,
-    ])();
+    ][telling]();
 
     // Subtract the tens first, then the ones: 76 − 35: 76 − 30 = 46, 46 − 5 = 41
     const tens = cost - (cost % 10);

@@ -1149,7 +1149,8 @@ export async function startExtraProblem(userId: string): Promise<ExerciseAssignm
     logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit });
     return created;
   });
-  return { ...assignment, exercise: await exercisePoolProvider.getExerciseById(assignment.exerciseId) };
+  const exercise = await exercisePoolProvider.getExerciseById(assignment.exerciseId);
+  return { ...fitProgress(assignment, exercise), exercise };
 }
 
 // Make sure every user has today's assignments drawn from their pool, in the
@@ -1218,9 +1219,23 @@ async function todaysAssignments(userId?: string): Promise<ExerciseAssignmentWit
   const enriched: ExerciseAssignmentWithExercise[] = [];
   for (const a of assignments) {
     const exercise = await exercisePoolProvider.getExerciseById(a.exerciseId);
-    enriched.push({ ...a, exercise, ...(await isRevision(a) ? { revision: true } : {}) });
+    enriched.push({ ...fitProgress(a, exercise), exercise, ...(await isRevision(a) ? { revision: true } : {}) });
   }
   return enriched;
+}
+
+/**
+ * A problem's progress, if it still fits the problem. The pools are regenerated under the
+ * same ids (#50), so an open assignment may hold a step or mistakes of an older version:
+ * a step past the last one, or mistakes counted for another number of steps. Such progress
+ * starts again at step 0 (shown so, and stored so on her next answer).
+ */
+export function fitProgress<A extends ExerciseAssignment>(a: A, exercise: Exercise | undefined): A {
+  if (exercise?.type !== 'problem' || a.status === 'completed') return a;
+  const step = a.stepIndex ?? 0;
+  if (step < exercise.steps.length && (!a.mistakes || a.mistakes.length === exercise.steps.length)) return a;
+  const { stepIndex: _step, mistakes: _mistakes, ...rest } = a;
+  return { ...rest, stepIndex: 0 } as A;
 }
 
 // The kid's rung on the forgiveness ladder (shared/forgiveness.ts)
@@ -1297,8 +1312,10 @@ function answerProblemStep(
   answer: ProblemStepAnswer
 ): { correct: boolean; starsAwarded: number; assignment: ExerciseAssignment; wrong?: number[] } {
   const result = store.transaction(() => {
-    const current = store.exerciseAssignments.get(assignmentId);
-    if (!current || current.status === 'completed') throw new Error('Assignment already completed');
+    const stored = store.exerciseAssignments.get(assignmentId);
+    if (!stored || stored.status === 'completed') throw new Error('Assignment already completed');
+    const current = fitProgress(stored, exercise);
+    if (current !== stored) logAction('EXERCISE_PROBLEM_RESTARTED', { assignmentId, exerciseId: exercise.id, stepIndex: stored.stepIndex, mistakes: stored.mistakes, steps: exercise.steps.length });
     const stepIndex = current.stepIndex ?? 0;
     const rung = forgivenessOf(current.userId);
     // An answer to a step already solved (a second device, a double tap) changes nothing.

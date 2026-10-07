@@ -47,6 +47,12 @@ work (the generator tries again).
 - **Realistic magnitudes**: a crate holds 8–25 kg, a bottle 1–2 litres, a bus 40–60 seats,
   a toy costs 5–60 €, a child is 7–12, a book has 40–300 pages. If numbers come out
   absurd, return `null`.
+- **Prices** come from `prices.ts`, a range per item (κούκλα 12–30 €, παζλ 9–25 €, …; a
+  ποδήλατο, κιθάρα or ηλεκτρικό πιάνο a few hundred, for κεφ. 10's three-digit amounts).
+  change-left and the world's purchases use it; add an item there, not a price in a family.
+  What she pays with is a sum of real notes that needs every note (`payWith`: 20 + 20 for
+  37 €, 200 + 100 for 248 €), and savings are above the price. The audit keeps its own,
+  wider table (`story-check.ts`) and fails a price outside it.
 
 ### Greek
 The audit can't read Greek; you must. The traps the generator has already hit:
@@ -298,6 +304,8 @@ comes back after 80 days; Ε΄ has 68, back after 68.
 - `families/g3/`, `families/e5/`: one file per family; `index.ts` lists them (sets
   `set-*.ts` group families written together).
 - `gen.ts`, `audit.ts`: see the top of each.
+- `prices.ts`: what things cost and what she pays with (change-left, the world's purchases).
+- `story-check.ts`: the audit's reading of who a story means, the order of events, checks and prices.
 - `maths/`: the plain maths (`curriculum.ts`, `grades.ts`, `lib.ts`, `g3.ts`, `e5.ts`, `gen-maths.ts`, `check.ts`).
 - `language/`: the plain language (`curriculum.ts`, `lexicon.ts` and `lexicon/g3.ts`, `lexicon/e5.ts`, `lib.ts`, `g3.ts`, `e5.ts`, `gen-language.ts`, `check.ts`).
 
@@ -314,3 +322,28 @@ two changes taken together), or a right calculation reads back as meaning nothin
 Questions that refer to what the story tells (the item bought, «η νονά της», «αυτές τις
 εβδομάδες») go in `late` and are asked only at the end. So far one world, Γ΄ only: a
 child's money or collection that changes, friends compared, their own collections.
+
+**Who a sentence means** (#50). A sentence's `say(S, told)` gets its subject and what the
+sentence before said (`told`: whose it was, who else it named), and `problem()` decides:
+- the subject stays out only when the sentence before was about the same person and named
+  no one else («Ο Γιώργος χάρισε 19 βόλους στη Σοφία. Τώρα ο Γιώργος έχει 34», not «Τώρα
+  έχει 34»); a change right after a sentence that opened with that name says «Μετά ο
+  Γιώργος…», and «Τότε ο Στέλιος είχε…»; a story where two sentences in a row would still
+  open with one name is dropped;
+- a receiver is named until the clitic is clear: «Ο Αλέξης χάρισε 12 κάρτες στην
+  Κατερίνα», and «της χάρισε» only right after a sentence about her that named no one else;
+- the question names the hero whenever anyone else is the subject of a sentence, and the
+  questions that had no subject say whose («Πόσο κόστιζε το παζλ που αγόρασε ο Πέτρος;»).
+
+**Time.** Every «Τώρα» comes after the last event: nothing changes after it. A friend takes
+part in one event only, so their stock changes once (a gift from them and one to them in
+the same story is dropped): their «… τώρα» relation then holds every change they were in.
+Two events with one friend would need the friend's stock to go through both, with its own
+other order and net, so every right way reads back; that isn't built.
+
+**Checks** have at least 3 options, the typical slips: a change the other way, starting from
+the answer instead of the start, the other operation, the answer with the other number. A
+problem that can't have 3 is dropped.
+
+The audit's `story-check.ts` holds these rules (and prices) for the world pool and
+change-left; the other families, and the «Αναρωτιέται» questions, come in #50 part 5.
