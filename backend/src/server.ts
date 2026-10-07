@@ -10,6 +10,7 @@ import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
 import { CONFIG_SAVE_SOURCES, StateSnapshot } from '../../shared/types';
+import { UPLOAD_MAX_BYTES, uploadTooBig } from '../../shared/uploads';
 
 // Import shared database layer
 import {
@@ -140,8 +141,9 @@ server.register(cors, {
 // (permessage-deflate, when the browser offers it; Vite's proxy and nginx pass it through) it is a fifth.
 server.register(websocket, { options: { perMessageDeflate: true } });
 
-// Enable Multipart
-server.register(multipart);
+// Multipart, for /api/admin/upload: a file stops at UPLOAD_MAX_BYTES (shared/uploads.ts, #107). Left unset it
+// would stop at Fastify's bodyLimit (1 MiB), and the route would keep the cut file as if it were whole.
+server.register(multipart, { limits: { fileSize: UPLOAD_MAX_BYTES } });
 
 // Enable Static for Uploads
 server.register(fastifyStatic, {
@@ -329,8 +331,14 @@ server.post('/api/admin/upload', async (request, reply) => {
 
     const filename = `${Date.now()}-${data.filename}`;
     const filepath = path.join(UPLOADS_DIR, filename);
-    
+
     await pump(data.file, createWriteStream(filepath));
+    // Over the limit, busboy stops the stream there and marks it truncated: what was written is a cut
+    // file (a song that stops short), so it goes, and the page shows why.
+    if (data.file.truncated) {
+      await fs.unlink(filepath).catch(() => {});
+      return reply.code(413).send({ error: uploadTooBig(data.filename) });
+    }
 
     const protocol = request.protocol;
     const host = request.hostname;
