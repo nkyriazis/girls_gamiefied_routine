@@ -1,7 +1,13 @@
 # Validation
 
-Every config and state write is checked against a JSON Schema (ajv, all errors reported) before anything is written.
-An invalid write changes nothing.
+Every config save (`data.json`, `exercises.json`) and every whole-state replace from Κατάσταση (JSON) is checked
+against a JSON Schema (ajv, all errors reported) before anything is written. An invalid one changes nothing.
+
+Day-to-day actions (stars, purchases, transfers, chores, exercises, routines on screen) don't go through
+`state.schema.json`: they write to the database through `backend/src/db.ts`. Each route's request body is checked
+against its own schema (`backend/src/bodies.ts`), and `db.ts` refuses what its rules forbid (a user or reward that
+doesn't exist, a purchase or gift worth more stars than are left, a chore that isn't open). Nothing checks the
+database against `state.schema.json` afterwards.
 
 | What | Where it lives | Schema | Parent's editor |
 | --- | --- | --- | --- |
