@@ -1,0 +1,24 @@
+{
+ "steps": [
+  {
+   "push": "200 {\"success\":true,\"type\":\"assignment\",\"id\":\"u1-assign-morning\"}"
+  },
+  {
+   "oldBundle": true
+  },
+  {
+   "toasts": 1,
+   "toastClass": "toast toast-undefined",
+   "toastText": "",
+   "toastBox": {
+    "x": 1230,
+    "y": 16,
+    "width": 34,
+    "height": 26
+   }
+  },
+  {
+   "toastsAfterTap": 0
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+{
+ "steps": [
+  {
+   "push": "200 {\"success\":true,\"type\":\"assignment\",\"id\":\"u1-assign-morning\"}"
+  },
+  {
+   "card": "Ηλέκτρα\n⭐ 100\nΠλύσιμο Δοντιών · 1/4\nΤέλος",
+   "buttonsInCard": 2,
+   "cardIsButton": "DIV"
+  },
+  {
+   "cardAfter": "Ηλέκτρα\n⭐ 100"
+  },
+  {
+   "push2": "200 {\"success\":true,\"type\":\"assignment\",\"id\":\"u1-assign-morning\"}"
+  },
+  {
+   "notice": "☀️\nΠρωινή Ρουτίνα\n\nΗλέκτρα\n\nΟ γονιός έκλεισε τη ρουτίνα"
+  },
+  {
+   "push3": "200 {\"success\":true,\"type\":\"flow\",\"id\":\"evidence-63-chain\"}"
+  },
+  {
+   "lanes": [
+    "🌙\nΒραδινή Ρουτίνα\n\nΗλέκτρα\n\nΟ γονιός έκλεισε τη ρουτίνα",
+    "Ιφιγένεια\n✕\n🪥\nΠλύσιμο Δοντιών\n1:59\nΈτοιμο!"
+   ]
+  },
+  {
+   "push4": "200 {\"success\":true,\"type\":\"assignment\",\"id\":\"u1-assign-morning\"}"
+  },
+  {
+   "phoneButton": {
+    "x": 29,
+    "y": 295,
+    "width": 147,
+    "height": 48
+   }
+  }
+ ],
+ "log": [
+  "2026-10-07T23:24:36.753Z ROUTINE_CLOSED {\"runId\":\"ce0959f7-1bf7-46d6-859d-b9addbada0e5\",\"userId\":\"u1\",\"finished\":false}",
+  "2026-10-07T23:24:32.192Z TRIGGER_ROUTINE {\"id\":\"u1-assign-morning\",\"source\":\"push_hook\",\"runId\":\"ce0959f7-1bf7-46d6-859d-b9addbada0e5\"}",
+  "2026-10-07T23:24:26.945Z ROUTINE_CLOSED {\"runId\":\"95c3f0ad-3bbb-4f67-9cd1-7cfe3ced1157\",\"userId\":\"u2\",\"finished\":false}",
+  "2026-10-07T23:24:19.636Z ROUTINE_CLOSED {\"runId\":\"363e1c56-a2a5-4285-88a1-76efa76e130e\",\"userId\":\"u1\",\"finished\":false}",
+  "2026-10-07T23:24:14.859Z TRIGGER_FLOW {\"id\":\"evidence-63-chain\",\"source\":\"push_hook\",\"runId\":\"751baf94-0e66-4c26-a646-8a99fbc7ae54\"}",
+  "2026-10-07T23:24:08.272Z ROUTINE_CLOSED {\"runId\":\"e14334a9-9cb9-4a40-80a4-976b64b4d354\",\"userId\":\"u1\",\"finished\":false}",
+  "2026-10-07T23:24:01.849Z TRIGGER_ROUTINE {\"id\":\"u1-assign-morning\",\"source\":\"push_hook\",\"runId\":\"e14334a9-9cb9-4a40-80a4-976b64b4d354\"}",
+  "2026-10-07T23:23:54.038Z ROUTINE_CLOSED {\"runId\":\"8e57cc6f-44f4-4603-801a-a4c049452b2d\",\"userId\":\"u1\",\"finished\":false}",
+  "2026-10-07T23:23:43.820Z TRIGGER_ROUTINE {\"id\":\"u1-assign-morning\",\"source\":\"push_hook\",\"runId\":\"8e57cc6f-44f4-4603-801a-a4c049452b2d\"}",
+  "2026-10-07T23:23:08.862Z ROUTINE_CLOSED {\"runId\":\"197562e8-f679-46a8-84f6-8ed9fc111935\",\"userId\":\"u1\",\"finished\":false}",
+  "2026-10-07T23:23:04.032Z TRIGGER_ROUTINE {\"id\":\"u1-assign-morning\",\"source\":\"push_hook\",\"runId\":\"197562e8-f679-46a8-84f6-8ed9fc111935\"}",
+  "2026-10-07T23:22:58.781Z ROUTINE_CLOSED {\"runId\":\"161dab80-6fc0-4b72-a314-daf56009cbd8\",\"userId\":\"u2\",\"finished\":false}",
+  "2026-10-07T23:22:51.495Z ROUTINE_CLOSED {\"runId\":\"a8eb0fc9-32d5-4e20-bc1c-b11f07195ff9\",\"userId\":\"u1\",\"finished\":false}",
+  "2026-10-07T23:22:46.709Z TRIGGER_FLOW {\"id\":\"evidence-63-chain\",\"source\":\"push_hook\",\"runId\":\"b733af9c-3114-48fb-9ab9-41a4144660c4\"}"
+ ]
+}
