@@ -14,6 +14,8 @@ for today, fresh; `exercise <kid> <exerciseId>` puts any pool item in the slot o
 (maths, language), fresh; `plain` makes today's plain exercises fresh; `clear-runs` takes flows and routines off screen;
 `stars u1 100 u2 20` sets balances and clears those kids' pending gifts and rewards; `game u1,u2 math-mc-1,lang-tf-1`
 starts a group game (📚) with those questions in one round, alone: every other game, running or finished, is removed.
+`history 120` adds a busy family's purchases and gifts decided 31 to 120 days ago, older than STATE's window
+(ids `cafe0000-…`), and `history undo` removes exactly those.
 
 A scenario is a short Playwright script (`scenarios/smoke.mjs` is the smallest, `scenarios/owl-tours.mjs`
 a long one). `kit.mjs` gives it `open()` (the kids' screen, past the start overlay), `tap`, `caption` (says on

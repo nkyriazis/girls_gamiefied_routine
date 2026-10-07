@@ -57,6 +57,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
 
   // Other users for transfer
   const otherUsers = allUsers.filter(u => u.id !== user.id);
+  // Records name the kids and the reward by id
+  const nameOf = (userId: string) => allUsers.find(u => u.id === userId)?.name;
+  const rewardOf = (rewardId: string) => rewards.find(r => r.id === rewardId);
 
   // A purchase or gift the server refused (a gift made on another screen took the stars first, say).
   // It shows where she is looking: under the balance, or in the gift form or the activity popup
@@ -337,7 +340,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         <div key={transfer.id} className="pending-item transfer-incoming">
                           <div className="pending-icon">🎁</div>
                           <div className="pending-info">
-                            <span className="pending-title">⭐ {transfer.amount} από {transfer.fromUser?.name || 'άλλο παιδί'}</span>
+                            <span className="pending-title">⭐ {transfer.amount} από {nameOf(transfer.fromUserId) || 'άλλο παιδί'}</span>
                             <span className="pending-date">
                               {format(new Date(transfer.createdAt), 'd MMM HH:mm', { locale: el })}
                             </span>
@@ -358,7 +361,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                         <div key={transfer.id} className="pending-item transfer-outgoing">
                           <div className="pending-icon">📤</div>
                           <div className="pending-info">
-                            <span className="pending-title">⭐ {transfer.amount} προς {transfer.toUser?.name || 'άλλο παιδί'}</span>
+                            <span className="pending-title">⭐ {transfer.amount} προς {nameOf(transfer.toUserId) || 'άλλο παιδί'}</span>
                             <span className="pending-date">
                               {format(new Date(transfer.createdAt), 'd MMM HH:mm', { locale: el })}
                             </span>
@@ -383,10 +386,10 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                       {pendingSpendings.map(spending => (
                         <div key={spending.id} className="pending-item">
                           <div className="pending-icon">
-                            <SmartIcon value={spending.reward?.icon || '❓'} />
+                            <SmartIcon value={rewardOf(spending.rewardId)?.icon || '❓'} />
                           </div>
                           <div className="pending-info">
-                            <span className="pending-title">{spending.reward?.title}</span>
+                            <span className="pending-title">{rewardOf(spending.rewardId)?.title}</span>
                             <span className="pending-date">
                               {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
                             </span>
@@ -405,10 +408,10 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
                       {historySpendings.slice(0, 10).map(spending => (
                         <div key={spending.id} className="pending-item done">
                           <div className="pending-icon">
-                            <SmartIcon value={spending.reward?.icon || '❓'} />
+                            <SmartIcon value={rewardOf(spending.rewardId)?.icon || '❓'} />
                           </div>
                           <div className="pending-info">
-                            <span className="pending-title">{spending.reward?.title}</span>
+                            <span className="pending-title">{rewardOf(spending.rewardId)?.title}</span>
                             <span className="pending-date">
                               {format(new Date(spending.createdAt), 'd MMM HH:mm', { locale: el })}
                             </span>

@@ -1,15 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
-import type { IconValue } from '@shared/types';
+import type { HistoryEntry, HistoryPage, IconValue } from '@shared/types';
+import { api } from '../../../api';
 import { useGame } from '../../../context/GameContext';
 import { SmartIcon } from '../../SmartIcon';
+import { useFeedback } from '../useFeedback';
 import { Empty, Stars } from '../ui';
 
-interface Entry {
-    id: string;
+interface Row {
+    key: string;
     at: string;
-    userIds: string[];
     icon: IconValue;
     title: string;
     outcome: string;
@@ -18,38 +19,99 @@ interface Entry {
 }
 
 const TRANSFER_OUTCOME = { approved: 'Εγκρίθηκε', rejected: 'Απορρίφθηκε', cancelled: 'Ακυρώθηκε από το παιδί', pending: '' };
-const PAGE = 30;
 
-// What parents and kids decided: rewards given, star gifts, chores.
+const idOf = (e: HistoryEntry) => (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.instance).id;
+const keyOf = (e: HistoryEntry) => `${e.kind}:${idOf(e)}`;
+// The server's order: newest first, ties by id
+const older = (a: HistoryEntry, b: HistoryEntry) => a.at < b.at || (a.at === b.at && idOf(a) < idOf(b));
+
+interface Loaded {
+    kid: string | null;
+    entries: HistoryEntry[];
+    next: string | null; // where «Περισσότερα» continues
+    olderPages: boolean; // pages after the first are loaded: their cursor, not the first page's, is `next`
+}
+
+// The first page, fresh: it replaces what it covers, and the older pages already loaded stay below it
+function withFirst(loaded: Loaded, first: HistoryPage): Loaded {
+    const last = first.entries[first.entries.length - 1];
+    if (!first.next || !loaded.olderPages || !last) return { ...loaded, entries: first.entries, next: first.next, olderPages: false };
+    const keys = new Set(first.entries.map(keyOf));
+    return { ...loaded, entries: [...first.entries, ...loaded.entries.filter(e => older(e, last) && !keys.has(keyOf(e)))] };
+}
+
+function withOlder(loaded: Loaded, page: HistoryPage): Loaded {
+    const keys = new Set(loaded.entries.map(keyOf));
+    return { ...loaded, entries: [...loaded.entries, ...page.entries.filter(e => !keys.has(keyOf(e)))], next: page.next, olderPages: true };
+}
+
+// What parents and kids decided: rewards given, star gifts, chores. It is read from the server a page at a
+// time (GET /api/history), since STATE carries only the last 30 days; the first page is read again whenever
+// a STATE arrives, so a decision shows up here as it is made. The pages stay in this view (not GameContext).
 export function HistoryView() {
-    const { spendings, starTransfers, choreInstances, chores, users } = useGame();
+    const { spendings, starTransfers, choreInstances, chores, rewards, users } = useGame();
+    const { notify } = useFeedback();
     const [kid, setKid] = useState<string | null>(null);
-    const [shown, setShown] = useState(PAGE);
-    const entries = useMemo<Entry[]>(() => {
-        const name = (id?: string) => users.find(u => u.id === id)?.name ?? id ?? '';
-        return [
-        ...spendings.filter(s => s.status !== 'pending').map(s => ({
-            id: s.id, at: s.createdAt, userIds: [s.userId], icon: s.reward?.icon ?? '🎀',
-            title: `${name(s.userId)}: ${s.reward?.title ?? s.rewardId}`,
-            outcome: s.status === 'done' ? 'Δόθηκε' : 'Ακυρώθηκε', stars: -s.cost, undone: s.status === 'revoked',
-        })),
-        ...starTransfers.filter(t => t.status !== 'pending').map(t => ({
-            id: t.id, at: t.resolvedAt ?? t.createdAt, userIds: [t.fromUserId, t.toUserId], icon: '🎁',
-            title: `${name(t.fromUserId)} → ${name(t.toUserId)}`,
-            outcome: TRANSFER_OUTCOME[t.status], stars: t.amount, undone: t.status !== 'approved',
-        })),
-        ...choreInstances.filter(i => i.status === 'confirmed' || i.status === 'rejected').map(i => {
-            const chore = chores.find(c => c.id === i.choreId);
-            return {
-                id: i.id, at: i.confirmedAt ?? i.rejectedAt ?? i.availableAt, userIds: i.claimedBy ? [i.claimedBy] : [],
-                icon: chore?.icon ?? '🧹', title: `${name(i.claimedBy)}: ${chore?.title ?? i.choreId}`,
-                outcome: i.status === 'confirmed' ? 'Επιβεβαιώθηκε' : 'Απορρίφθηκε', stars: i.starsAwarded ?? 0, undone: i.status === 'rejected',
-            };
-        }),
-        ].sort((a, b) => b.at.localeCompare(a.at));
-    }, [spendings, starTransfers, choreInstances, chores, users]);
+    // Null until a first page arrives. It belongs to one kid; while another kid's first page is on its way,
+    // nothing is shown (not «Δεν υπάρχει ακόμη ιστορικό.», which is true only once her page came back empty).
+    const [loaded, setLoaded] = useState<Loaded | null>(null);
+    const [busy, setBusy] = useState(false);
+    const kidNow = useRef(kid);
+    kidNow.current = kid;
 
-    const visible = kid ? entries.filter(e => e.userIds.includes(kid)) : entries;
+    // On a kid chosen and on every STATE (a decision may have been made): the first page again
+    useEffect(() => {
+        let current = true;
+        api.history(null, kid).then(first => {
+            if (!current) return;
+            setLoaded(l => withFirst(l?.kid === kid ? l : { kid, entries: [], next: null, olderPages: false }, first));
+        }).catch(() => current && notify('Το ιστορικό δεν διαβάστηκε', 'error'));
+        return () => { current = false; };
+    }, [kid, spendings, starTransfers, choreInstances, notify]);
+
+    const shown = loaded?.kid === kid ? loaded : null;
+
+    const more = async () => {
+        const next = shown?.next;
+        if (!next) return;
+        setBusy(true);
+        try {
+            const page = await api.history(next, kid);
+            setLoaded(l => (l && l.kid === kidNow.current && l.next === next ? withOlder(l, page) : l));
+        } catch {
+            notify('Το ιστορικό δεν διαβάστηκε', 'error');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const name = (id?: string) => users.find(u => u.id === id)?.name ?? id ?? '';
+    const reward = (id: string) => rewards.find(r => r.id === id);
+    const rows: Row[] = (shown?.entries ?? []).map(e => {
+        switch (e.kind) {
+            case 'spending': {
+                const s = e.spending;
+                return {
+                    key: keyOf(e), at: e.at, icon: reward(s.rewardId)?.icon ?? '🎀', title: `${name(s.userId)}: ${reward(s.rewardId)?.title ?? s.rewardId}`,
+                    outcome: s.status === 'done' ? 'Δόθηκε' : 'Ακυρώθηκε', stars: -s.cost, undone: s.status === 'revoked',
+                };
+            }
+            case 'transfer': {
+                const t = e.transfer;
+                return {
+                    key: keyOf(e), at: e.at, icon: '🎁', title: `${name(t.fromUserId)} → ${name(t.toUserId)}`,
+                    outcome: TRANSFER_OUTCOME[t.status], stars: t.amount, undone: t.status !== 'approved',
+                };
+            }
+            case 'chore': {
+                const i = e.instance, chore = chores.find(c => c.id === i.choreId);
+                return {
+                    key: keyOf(e), at: e.at, icon: chore?.icon ?? '🧹', title: `${name(i.claimedBy)}: ${chore?.title ?? i.choreId}`,
+                    outcome: i.status === 'confirmed' ? 'Επιβεβαιώθηκε' : 'Απορρίφθηκε', stars: i.starsAwarded ?? 0, undone: i.status === 'rejected',
+                };
+            }
+        }
+    });
 
     return (
         <section className="p-section">
@@ -59,10 +121,10 @@ export function HistoryView() {
                     <button key={u.id} type="button" className={kid === u.id ? 'p-chip on' : 'p-chip'} onClick={() => setKid(u.id)}>{u.name}</button>
                 ))}
             </div>
-            {visible.length === 0 && <Empty>Δεν υπάρχει ακόμη ιστορικό.</Empty>}
+            {shown && rows.length === 0 && <Empty>Δεν υπάρχει ακόμη ιστορικό.</Empty>}
             <ul className="p-list">
-                {visible.slice(0, shown).map(e => (
-                    <li key={e.id} className={e.undone ? 'p-row undone' : 'p-row'}>
+                {rows.map(e => (
+                    <li key={e.key} className={e.undone ? 'p-row undone' : 'p-row'}>
                         <SmartIcon value={e.icon} size={32} />
                         <div className="p-row-main">
                             <div className="p-row-title">{e.title}</div>
@@ -72,7 +134,9 @@ export function HistoryView() {
                     </li>
                 ))}
             </ul>
-            {visible.length > shown && <button type="button" className="p-btn ghost wide" onClick={() => setShown(n => n + PAGE)}>Περισσότερα</button>}
+            {shown?.next && (
+                <button type="button" className="p-btn ghost wide" disabled={busy} onClick={more}>{busy ? 'Φόρτωση…' : 'Περισσότερα'}</button>
+            )}
         </section>
     );
 }

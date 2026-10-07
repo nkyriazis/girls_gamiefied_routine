@@ -36,9 +36,6 @@ export interface User {
   routines: Routine[];
 }
 
-// The user fields embedded in API responses (config user + live balance).
-export type UserSummary = Pick<User, 'id' | 'name' | 'avatar' | 'color' | 'stars'>;
-
 export type FlowAction = 
   | { type: 'routine'; userId: string; routineId: string }
   | { type: 'flow'; flowId: string };
@@ -103,8 +100,7 @@ export interface Spending {
   cost: number;
   createdAt: string;
   status: 'pending' | 'done' | 'revoked';
-  user?: UserSummary;
-  reward?: Reward;
+  resolvedAt?: string; // when a parent gave it or revoked it (absent on purchases resolved before #34)
 }
 
 export interface StarTransfer {
@@ -115,8 +111,6 @@ export interface StarTransfer {
   createdAt: string;
   status: 'pending' | 'approved' | 'rejected' | 'cancelled';
   resolvedAt?: string;
-  fromUser?: UserSummary;
-  toUser?: UserSummary;
 }
 
 // Chores and Bonus Activities System
@@ -491,6 +485,11 @@ export interface AppState {
   // couldn't be read since the start (emptyFallback), an empty one. Saving is off until it is fixed.
   configError: { message: string; errors: unknown[]; file: string; emptyFallback: boolean } | null;
   users: User[]; // config users with their balance and assigned routines
+  // STATE carries the current world, never the archive (#34). Purchases and gifts: every pending one,
+  // whatever its age, those decided in the last HISTORY_DAYS (by resolvedAt, else createdAt), and, for
+  // purchases, each kid's last LAST_REWARDS_GIVEN given whatever their age (her store lists them).
+  // Newest first. They name kids and rewards by id (look them up in `users` and `config.rewards`).
+  // Everything decided, of any age, is read a page at a time from GET /api/history (HistoryPage).
   spendings: Spending[];
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[]; // open ones, plus ones closed in the last 24h
@@ -499,6 +498,26 @@ export interface AppState {
   flowRuns: FlowRun[];
   routineRuns: RoutineRun[];
   helpSeen: string[]; // help tours already played (see HelpSeen)
+}
+
+// STATE's window for decided purchases and gifts, in days, and how many rewards given per kid it keeps
+// whatever their age. Anything added to AppState is bounded by time or count like this, never by how long
+// the family has used the app (backend/test/stateSize.test.ts holds the budget).
+export const HISTORY_DAYS = 30;
+export const LAST_REWARDS_GIVEN = 10;
+
+// What was decided (Ιστορικό), from GET /api/history?before=<next>&limit=<n>&userId=<kid>: purchases given
+// or revoked, gifts approved, rejected or cancelled, chores confirmed or rejected (the database keeps those
+// for 7 days), newest first by `at`, the time it was decided. `next` is the cursor of the following page,
+// null on the last one.
+export type HistoryEntry = { at: string } & (
+  | { kind: 'spending'; spending: Spending }
+  | { kind: 'transfer'; transfer: StarTransfer }
+  | { kind: 'chore'; instance: ChoreInstance });
+
+export interface HistoryPage {
+  entries: HistoryEntry[];
+  next: string | null;
 }
 
 export interface ChoreEventPayload {
