@@ -43,6 +43,10 @@
 //     asks for, that the story doesn't give and the right option doesn't show («30 − 21» above
 //     «9 + 3 + 9 = 21»; smaller numbers meet by chance, «4 παιδικά» beside a price of 4 €);
 //   - every step has a hint of its own;
+//   - nothing on a step shows an answer still to work out (lib.ts, hintShows): no prompt, hint or row
+//     label has a number that a numbers row of its step or a later one asks for and she hasn't settled
+//     (the story, earlier rows, earlier choices' right options), from 10 up or after «=» («12 : 4 = 3»),
+//     and in a label also a small one that a row above asks for («3 × 7 =» under «Πόσα παιδιά [3]»);
 //   - a check step's numbers don't ask for a number its prompt already states («βγαίνουν όλα
 //     μαζί 390;» with a row whose answer is 390);
 //   - no number is compared with itself («Γιατί το 3 είναι μεγαλύτερο από το 3»);
@@ -54,8 +58,7 @@
 //     a warning).
 // Warnings: the place rule's prompts with 3–5 choices and those its wordings can't spread evenly, a family with little variety (few distinct story skeletons), a story without
 // a question, very long stories, check-gender's words already in the pools (one line per
-// family and place), prompts, hints and row labels that show an answer still to work out (lib.ts,
-// hintShows; one line per family, kind and place: many written hints work the row out, «12 × 2 = 24.»).
+// family and place).
 //
 //   node tools/problem-gen/audit.ts --gender-baseline   write gender-baseline.json from the pools as they are
 //
@@ -146,8 +149,6 @@ const shortest = new Map<string, { n: number; only: number; example: string }>()
 const placeTally = new Map<string, { N: number; P: number[]; example: string }>();
 // Per pool and number of options, the same
 const poolPlaces = new Map<string, { N: number; P: number[] }>();
-// Per family, kind and place (prompt, hint, row): what shows an answer still to work out (lib.ts, hintShows)
-const laterAnswers = new Map<string, { n: number; example: string }>();
 const kinds = new Map<string, number>();
 
 // A story with numbers and names blanked out: how many really different stories a family has.
@@ -308,17 +309,9 @@ for (const pool of pools) {
       }
     });
 
-    // A prompt, a hint or a row label that shows an answer still to work out (lib.ts, hintShows): listed per
-    // family, kind and place, for now
-    const placesShown = new Set<string>();
-    for (const s of hintShows(ex)) {
-      if (placesShown.has(`${s.step} ${s.where}`)) continue;
-      placesShown.add(`${s.step} ${s.where}`);
-      const k = `${fam} ${ex.steps[s.step].kind} ${s.where.replace(/ \d+$/, '')}`;
-      const l = laterAnswers.get(k) ?? { n: 0, example: `${ex.id} ${shownText(s)}` };
-      l.n++;
-      laterAnswers.set(k, l);
-    }
+    // A prompt, a hint or a row label that shows an answer still to work out (lib.ts, hintShows): a hint
+    // shows after a wrong try, and every row of a step is on screen at once
+    for (const s of hintShows(ex)) err(ex, shownText(s));
 
     // Everything she reads, by where it is
     const read: [string, string][] = [['title', ex.title], ['story', plain(ex.story)], ...ex.steps.flatMap((st, i): [string, string][] => [
@@ -381,7 +374,6 @@ for (const [key, f] of families) {
   if (!id.startsWith('(') && f.skeletons.size < Math.min(Math.max(5, Math.ceil(f.n / 3)), f.n)) warnings.push(`family ${id}: only ${f.skeletons.size} different story shapes in ${f.n} problems`);
 }
 
-for (const [key, l] of laterAnswers) warnings.push(`${key.slice(2)}: ${l.n} show an answer still to work out (e.g. ${l.example})`);
 for (const [where, words] of gendered) warnings.push(`${where}: check-gender's words already in the pools: ${[...new Set(words)].join(', ')} (${words.length})`);
 if (process.argv.includes('--gender-baseline')) {
   writeFileSync(BASELINE_FILE, JSON.stringify([...new Set(genderHits)].sort(), null, 1) + '\n');
