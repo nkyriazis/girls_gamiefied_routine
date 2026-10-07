@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { UPLOAD_MAX_MB } from '@shared/uploads';
 import { api } from '../../../api';
 import { useFeedback } from '../useFeedback';
 import { Empty } from '../ui';
@@ -21,6 +22,7 @@ export function UploadsPanel() {
                 Ανέβασμα εικόνας ή ήχου
                 <input type="file" accept="image/*,audio/*" hidden onChange={e => upload(e.target.files?.[0])} />
             </label>
+            <p className="p-hint">Εικόνες και ήχοι έως {UPLOAD_MAX_MB} MB. Για ξυπνητήρι: MP3, 30 με 60 δευτερόλεπτα.</p>
             {files.length === 0 && <Empty>Δεν έχει ανέβει κανένα αρχείο. Οι εικόνες μπαίνουν και από τα εικονίδια στις φόρμες.</Empty>}
             <ul className="p-list">
                 {files.map(f => (
