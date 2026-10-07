@@ -30,6 +30,6 @@ export function SchedulesEditor() {
             create={() => ({ id: newId('sch'), cron: '0 7 * * 1-5', type: first?.type ?? 'flow', targetId: first?.id ?? '' })}
             row={s => ({ icon: '⏰', title: describeCron(s.cron), sub: targets.find(t => t.id === s.targetId)?.label ?? s.targetId })}
             isValid={s => targets.some(t => t.id === s.targetId)}
-            save={(items, done) => save('schedules', items, done)} />
+            save={(items, options) => save('schedules', items, options)} />
     );
 }

@@ -25,6 +25,6 @@ export function RewardsEditor() {
             create={() => ({ id: newId('rew'), title: '', icon: { type: 'emoji', value: '🎁' }, cost: 100 })}
             row={r => ({ icon: r.icon, title: r.title, sub: <Stars value={r.cost} /> })}
             isValid={r => r.title.trim() !== '' && Number.isInteger(r.cost) && r.cost >= 1}
-            save={(items, done) => save('rewards', items, done)} />
+            save={(items, options) => save('rewards', items, options)} />
     );
 }

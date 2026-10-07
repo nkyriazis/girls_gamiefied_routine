@@ -1,5 +1,5 @@
 import type {
-  ActionLog, ChoreInstance, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
+  ActionLog, ChoreInstance, ConfigSaveSource, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
   ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot, TriggerResult
 } from '@shared/types';
 
@@ -39,7 +39,7 @@ export class ApiError extends Error {
 }
 
 // Rejects with an ApiError carrying the server's error message when there is one.
-async function request<T>(method: string, path: string, body?: unknown, fallbackError = 'Request failed'): Promise<T> {
+async function send<T>(method: string, path: string, body?: unknown, fallbackError = 'Request failed'): Promise<{ json: T; response: Response }> {
   const response = await fetch(`${API_URL}${path}`, {
     method,
     cache: 'no-store',
@@ -48,8 +48,21 @@ async function request<T>(method: string, path: string, body?: unknown, fallback
   });
   const json = await response.json().catch(() => undefined);
   if (!response.ok) throw new ApiError(json?.error || fallbackError, response.status);
-  return json as T;
+  return { json: json as T, response };
 }
+
+const request = async <T>(method: string, path: string, body?: unknown, fallbackError?: string) =>
+  (await send<T>(method, path, body, fallbackError)).json;
+
+/** A config file's document and the version it is (the GET's X-Config-Version), to send back when saving it. */
+export interface Versioned<T> { data: T; version?: string }
+
+/** A config save's answer: the file's new version, which the editor that saved now holds. */
+export interface Saved { success: boolean; version: string }
+
+// A config save names the version it edited (a newer live one makes it a 409, #33) and which screen it is
+const saveQuery = (version: string | undefined, source: ConfigSaveSource, replace = false) =>
+  new URLSearchParams({ ...(replace ? { replace: '1' } : {}), ...(version ? { version } : {}), source }).toString();
 
 const post = <T = void>(path: string, body: unknown = {}, error?: string) => request<T>('POST', path, body, error);
 const put = <T>(path: string, body: unknown, error?: string) => request<T>('PUT', path, body, error);
@@ -88,17 +101,23 @@ export const api = {
   rejectChore: (instanceId: string) => post<ChoreInstance>(`/chores/${instanceId}/reject`, {}, 'Failed to reject chore'),
 
   // Config and admin
-  saveConfig: (config: DataConfig) => post('/admin/data', config, 'Failed to save data'),
+  // The config the form edited and its version (AppState.configVersion.data, or the one its sheet opened with)
+  saveConfig: (config: DataConfig, version: string) =>
+    post<Saved>(`/admin/data?${saveQuery(version, 'form')}`, config, 'Failed to save data'),
   // The Advanced JSON editor replaces the whole file on purpose, so it may replace an invalid one
-  // (replace=1; the server keeps the invalid file beside). The forms never do.
-  saveRawConfig: (data: unknown) => post('/admin/data?replace=1', data, 'Failed to save data'),
+  // (replace=1; the server keeps the invalid file beside). The forms never do. Fixing a file that
+  // doesn't parse ('advanced-fix') names no version: there is no live one it was edited from.
+  saveRawConfig: (data: unknown, version?: string, source: ConfigSaveSource = 'advanced') =>
+    post<Saved>(`/admin/data?${saveQuery(version, source, true)}`, data, 'Failed to save data'),
   getConfigText: () => get<{ text: string }>('/admin/data/text', 'Failed to read data.json').then(r => r.text),
   validateConfig: (data: unknown) => post<ValidationResult>('/admin/validate', data, 'Failed to validate config'),
   getRawState: () => get<StateSnapshot>('/admin/state', 'Failed to fetch state'),
   saveRawState: (data: unknown) => post('/admin/state', data, 'Failed to save state'),
   validateState: (data: unknown) => post<ValidationResult>('/admin/validate-state', data, 'Failed to validate state'),
-  getRawExercises: () => get<unknown>('/admin/exercises', 'Failed to fetch exercises'),
-  saveRawExercises: (data: unknown) => post('/admin/exercises?replace=1', data, 'Failed to save exercises'),
+  getRawExercises: () => send<unknown>('GET', '/admin/exercises', undefined, 'Failed to fetch exercises')
+    .then(({ json, response }): Versioned<unknown> => ({ data: json, version: response.headers.get('X-Config-Version') ?? undefined })),
+  saveRawExercises: (data: unknown, version?: string, source: ConfigSaveSource = 'advanced') =>
+    post<Saved>(`/admin/exercises?${saveQuery(version, source, true)}`, data, 'Failed to save exercises'),
   validateExercises: (data: unknown) => post<ValidationResult>('/admin/validate-exercises', data, 'Failed to validate exercises'),
   getExercisesText: () => get<{ text: string }>('/admin/exercises/text', 'Failed to read exercises.json').then(r => r.text),
   getSchema: (name: 'data' | 'state') => get<object>(`/admin/schema/${name}`, 'Failed to fetch schema'),

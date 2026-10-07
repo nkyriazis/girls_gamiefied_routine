@@ -485,8 +485,18 @@ export interface DataConfig {
 // HEARTBEAT: sent every few seconds so a client can tell a dead link from a
 // quiet one and reconnect.
 
+// Which screen saved a config file, as POST /api/admin/{data,exercises}?source= names it and the action log
+// (CONFIG_SAVED) records it: the Ρυθμίσεις forms, the Advanced JSON editor, that editor fixing a file that
+// doesn't parse; 'api' for anything that names none (scripts, curl).
+export type ConfigSaveSource = 'form' | 'advanced' | 'advanced-fix' | 'api';
+export const CONFIG_SAVE_SOURCES: readonly ConfigSaveSource[] = ['form', 'advanced', 'advanced-fix', 'api'];
+
 export interface AppState {
   config: DataConfig; // the live data.json
+  // The versions of the live data.json (the one in `config`, read with it) and exercises.json: a short hash
+  // of each file's text. A screen that saves a config file sends the version it edited (?version=), and the
+  // server refuses a save over a newer one with a 409 (#33).
+  configVersion: { data: string; exercises: string };
   // data.json or exercises.json is invalid on disk: the last valid version stays live, or, when the file
   // couldn't be read since the start (emptyFallback), an empty one. Saving is off until it is fixed.
   configError: { message: string; errors: unknown[]; file: string; emptyFallback: boolean } | null;

@@ -1,7 +1,8 @@
 import { promises as fs } from 'fs';
+import path from 'path';
 import { randomUUID } from 'crypto';
 import {
-  AppState, Chore, ChoreInstance, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
+  AppState, Chore, ChoreInstance, ConfigSaveSource, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
   ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
   ProblemExercise, ProblemReading, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
@@ -10,7 +11,7 @@ import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type Cal
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { cronMatchesAt } from './cron';
-import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { changedKeys, config, ConfigFile, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { summarize } from './schemas';
 import { Store, Table } from './store';
@@ -46,8 +47,12 @@ export function logAction(type: string, details: unknown) {
 
 // Everything clients render (see AppState in shared/types.ts).
 export async function appState(): Promise<AppState> {
+  // The config and its version from one read, before any await: a STATE never pairs a config with
+  // the version of another save (a writer sends back the version it edited, #33).
+  const data = dataConfig.current();
   return {
-    config: config(),
+    config: data.value,
+    configVersion: { data: data.version, exercises: exercisesConfig.version() },
     configError: configError(),
     users: usersView(),
     spendings: recentSpendings(),
@@ -152,24 +157,51 @@ export function readRawConfig(): DataConfig {
   return dataConfig.raw();
 }
 
+/** A config save that names a version older than the live one (another screen saved, or the file changed on disk). */
+export class ConfigConflict extends Error {}
+
+/** How a screen saves a config file: what it edited and who it is (see ConfigFile.save, ConfigSaveSource). */
+export interface ConfigSave {
+  replace?: boolean; // only the Advanced JSON editor: may replace an invalid file (#45)
+  version?: string; // the version it edited; none: not checked
+  source?: ConfigSaveSource;
+  route?: string; // for the log: 'POST /api/admin/data'
+}
+
 /**
- * Validate and save data.json. Throws when invalid, or when the file on disk
- * is invalid (see ConfigFile.save): only the Advanced editor passes `replace`.
+ * Validate and save a config file; returns the new version. Throws ConfigConflict when `version` is
+ * older than the live one, and an Error when the data is invalid or the file on disk is (see
+ * ConfigFile.save). Every save is logged as CONFIG_SAVED with the top-level keys it changed, and every
+ * refused stale one as CONFIG_SAVE_STALE.
  */
-export function writeRawConfig(data: unknown, options: { replace?: boolean } = {}): void {
-  const error = dataConfig.save(data, options);
-  if (error) throw new Error(error.errors.length ? `Validation failed: ${summarize(error.errors)}` : error.message);
+function saveConfigFile<T extends object>(file: ConfigFile<T>, data: unknown, options: ConfigSave, invalid: string): string {
+  const { source = 'api', route, version } = options;
+  const name = path.basename(file.file);
+  const before = file.get();
+  const current = file.version();
+  const error = file.save(data, options);
+  if (error?.conflict) {
+    logAction('CONFIG_SAVE_STALE', { file: name, source, route, version, current });
+    throw new ConfigConflict(error.message);
+  }
+  if (error) throw new Error(error.errors.length ? `${invalid}: ${summarize(error.errors)}` : error.message);
+  logAction('CONFIG_SAVED', { file: name, source, route, changed: changedKeys(before, file.get()) });
   sync.changed();
+  return file.version();
+}
+
+/** Validate and save data.json (see saveConfigFile); returns its new version. */
+export function writeRawConfig(data: unknown, options: ConfigSave = {}): string {
+  return saveConfigFile(dataConfig, data, options, 'Validation failed');
 }
 
 export function readRawExercises(): ExercisesConfig {
   return exercisesConfig.raw();
 }
 
-export function writeRawExercises(data: unknown, options: { replace?: boolean } = {}): void {
-  const error = exercisesConfig.save(data, options);
-  if (error) throw new Error(error.errors.length ? `Exercises validation failed: ${summarize(error.errors)}` : error.message);
-  sync.changed();
+/** Validate and save exercises.json (see saveConfigFile); returns its new version. */
+export function writeRawExercises(data: unknown, options: ConfigSave = {}): string {
+  return saveConfigFile(exercisesConfig, data, options, 'Exercises validation failed');
 }
 
 // ============================================

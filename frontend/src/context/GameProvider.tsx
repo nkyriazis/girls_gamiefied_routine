@@ -18,6 +18,7 @@ const EMPTY_STATE: AppState = {
         users: [], tasks: [], routines: [], routineTasks: [], routineAssignments: [],
         flows: [], schedules: [], rewards: [], chores: [], settings: { timezone: 'Europe/Athens' }
     },
+    configVersion: { data: '', exercises: '' },
     configError: null,
     users: [],
     spendings: [],
