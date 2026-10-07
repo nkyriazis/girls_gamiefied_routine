@@ -13,6 +13,7 @@
 import type { ProblemStep } from '../../../shared/types.ts';
 import { plainStory } from '../../../shared/problems.ts';
 import { builder, cap, fmt, people, READ_PROMPT_G3, the, thing, type Person, type Rng, type Thing } from '../lib.ts';
+import { TOYS } from '../prices.ts';
 
 export type Op = '+' | '−' | '×' | ':';
 
@@ -29,13 +30,19 @@ export interface Relation { out: string; op: Op; a: string; b: string }
 
 /** Text, or the words stating a quantity (core: the words a painting must cover). */
 export type Piece = string | { q: string; text: string; core?: string };
+/** What the story has said just before a sentence: whose sentence it was, and who else it named. */
+export interface Told { prev?: Person; prevOthers: Person[] }
 export interface Sentence {
-  /** The words, given the subject (or '' when the previous sentence had the same one). */
-  say: (subj: string) => Piece[];
+  /** The words, given the subject: '' when it stays out (the sentence before was about the
+   * same person and named no one else), «Ο Νίκος», or «Μετά ο Νίκος» for a change right
+   * after a sentence that opened with his name. */
+  say: (subj: string, told: Told) => Piece[];
   subj?: Person;
   states: string[];
   /** Position in the story's time line. */
   at: number;
+  /** A change in someone's stock (an event), which may open with «Μετά». */
+  change?: boolean;
 }
 
 export interface World {
@@ -47,6 +54,8 @@ export interface World {
   asks: Map<string, (subj: string) => string>;
   /** Who the questions are about (for leaving the name out). */
   hero: Person;
+  /** Everyone the story may name, to know who a sentence names. */
+  people: Person[];
   title: string;
   /** Quantities that are stated unless asked (the inputs of the world). */
   base: string[];
@@ -152,11 +161,6 @@ const COLLECTIONS: Coll[] = [
   { t: thing('γραμματόσημο', 'γραμματόσημα', 'n'), where: 'στο άλμπουμ', Where: 'Στο άλμπουμ', box: thing('φάκελος', 'φάκελοι', 'm', 'φακέλους'), boxWhere: 'στους φακέλους' },
 ];
 
-const ITEMS = [
-  ['ένα παζλ', 'το παζλ', 'του παζλ'], ['μια μπάλα', 'η μπάλα', 'της μπάλας'], ['ένα βιβλίο με παραμύθια', 'το βιβλίο', 'του βιβλίου'],
-  ['μια κασετίνα', 'η κασετίνα', 'της κασετίνας'], ['ένα επιτραπέζιο', 'το επιτραπέζιο', 'του επιτραπέζιου'],
-  ['ένα σακίδιο', 'το σακίδιο', 'του σακιδίου'], ['μια κούκλα', 'η κούκλα', 'της κούκλας'], ['ένα αυτοκινητάκι', 'το αυτοκινητάκι', 'του αυτοκινήτου'],
-];
 const RELATIVES = [['τη γιαγιά', 'η γιαγιά'], ['τον παππού', 'ο παππούς'], ['τη νονά', 'η νονά'], ['τον θείο', 'ο θείος']];
 // with the possessive after them: «στον ξάδερφό του» (enclitic accent)
 const SIBLINGS = [['τον αδερφό', 'τον αδερφό'], ['την αδερφή', 'την αδερφή'], ['τον ξάδερφο', 'τον ξάδερφό'], ['την ξαδέρφη', 'την ξαδέρφη']];
@@ -187,19 +191,25 @@ export function stockWorld(r: Rng): World | null {
     return { q: id, text: `${w ?? fmt(q.value)} ${noun}`, core: w ?? fmt(q.value) };
   };
   const cl = P.his; // "της" as an indirect object: "της χάρισε"
+  // «της χάρισε» only right after a sentence about her that named no one else; otherwise
+  // the receiver by name: «Ο Αλέξης χάρισε 12 κάρτες στην Κατερίνα»
+  const toHer = (t: Told) => t.prev === P && !t.prevOthers.length;
   const Things = cap(T.many);
   const sentences: ((stated: Set<string>) => Sentence | null)[] = [];
   const late = new Set<string>();
   const asks = new Map<string, (subj: string) => string>();
   const say = (s: string) => (s ? `${s} ` : '');
-  // The friend in a gift has a collection too, changed by the same gift
+  // The friend in a gift has a collection too, changed by the same gift. A friend takes part
+  // in one event only (so their stock changes once), and their «Τώρα» comes after the last
+  // event of the story: nothing changes after a «Τώρα».
+  let k = 0;
   const friendStock = (e: string, op: Op, at: number) => {
     if (qs.has('g0') || !r.chance(0.45)) return;
     add('g0', r.int(15, 90), `${Things} ${F.gen} στην αρχή`);
     add('g1', apply(op, qs.get('g0')!.value, qs.get(e)!.value), `${Things} ${F.gen} τώρα`);
     rels.push({ out: 'g1', op, a: 'g0', b: e });
     sentences.push(st => st.has('g0') ? { at: at - 0.5, subj: F, states: ['g0'], say: () => [`${F.Nom} είχε `, n('g0'), '.'] } : null);
-    sentences.push(st => st.has('g1') ? { at: at + 0.3, subj: F, states: ['g1'], say: () => [`Τώρα ${F.nom} έχει `, n('g1'), '.'] } : null);
+    sentences.push(st => st.has('g1') ? { at: k + 0.6, subj: F, states: ['g1'], say: () => [`Τώρα ${F.nom} έχει `, n('g1'), '.'] } : null);
     asks.set('g1', () => `${pos(T)} ${T.manyAcc} έχει τώρα ${F.nom}`);
     asks.set('g0', () => `${pos(T)} ${T.manyAcc} είχε ${F.nom} στην αρχή`);
   };
@@ -223,6 +233,9 @@ export function stockWorld(r: Rng): World | null {
     // One or two events, each changing the stock
     const kinds = money ? ['buy', 'gift', 'give', 'save'] : ['gift', 'give', 'packs', 'lose'];
     const events = r.sample(kinds, r.chance(0.55) ? 2 : 1);
+    // A friend in one event only: not a gift from them and one to them in the same story
+    if (!money && events.includes('gift') && events.includes('give')) return null;
+    k = events.length;
     let cur = 's0';
     const afters: string[] = [];
     // «χωρίς όσα έδωσε»: each change left out, to name the other order of two
@@ -232,33 +245,37 @@ export function stockWorld(r: Rng): World | null {
       const have = qs.get(cur)!.value;
       let op: Op = '+', after = '', without = '';
       if (kind === 'buy') {
-        const [a, the, of] = r.pick(ITEMS);
-        add(e, r.int(5, Math.min(60, have - 3)), `Τιμή ${of}`);
+        // What it costs: the price table (prices.ts), within what she has
+        const affordable = TOYS.filter(t => t.lo <= have - 3);
+        if (!affordable.length) throw new Bad();
+        const { a, the, of, lo, hi } = r.pick(affordable);
+        add(e, r.int(lo, Math.min(hi, have - 3)), `Τιμή ${of}`);
         op = '−'; after = `${Things} μετά την αγορά`; without = `την αγορά`;
         const form = r.int(0, 1);
         sentences.push(st => st.has(e) ? {
-          at, subj: P, states: [e],
+          at, subj: P, states: [e], change: true,
           say: S => form ? [say(S), `αγόρασε ${a} που κόστιζε `, n(e), '.'] : [say(S), 'ξόδεψε ', n(e), ` για ${a}.`],
-        } : { at, subj: P, states: [], say: S => [say(S), `αγόρασε ${a}.`] });
-        asks.set(e, () => `πόσο κόστιζε ${the}`);
+        } : { at, subj: P, states: [], change: true, say: S => [say(S), `αγόρασε ${a}.`] });
+        asks.set(e, S => `πόσο κόστιζε ${the}${S ? ` που αγόρασε ${S}` : ''}`);
         late.add(e);
       } else if (kind === 'gift') {
         if (money) {
           const [acc, nom] = r.pick(RELATIVES);
           add(e, r.step(5, 30, 5), `${Things} από ${acc}`);
           sentences.push(st => st.has(e) ? {
-            at, subj: P, states: [e], say: S => [say(S), 'πήρε ', n(e), ` δώρο από ${acc} ${P.his}.`],
-          } : { at, subj: P, states: [], say: S => [say(S), `πήρε χρήματα δώρο από ${acc} ${P.his}.`] });
-          asks.set(e, () => `${pos(T)} ${T.manyAcc} ${cl} έδωσε ${nom} ${P.his}`);
+            at, subj: P, states: [e], change: true, say: S => [say(S), 'πήρε ', n(e), ` δώρο από ${acc} ${P.his}.`],
+          } : { at, subj: P, states: [], change: true, say: S => [say(S), `πήρε χρήματα δώρο από ${acc} ${P.his}.`] });
+          asks.set(e, S => (S ? `${pos(T)} ${T.manyAcc} έδωσε σ${P.acc} ${nom} ${P.his}` : `${pos(T)} ${T.manyAcc} ${cl} έδωσε ${nom} ${P.his}`));
           late.add(e);
         } else {
           add(e, r.int(3, 25), `${Things} από ${F.acc}`);
           const form = r.int(0, 1);
+          const some = `μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} ${T.manyAcc}`;
           sentences.push(st => st.has(e) ? (form
-            ? { at, subj: P, states: [e], say: S => [say(S), 'πήρε ', n(e), ` από ${F.acc}.`] }
-            : { at, subj: F, states: [e], say: () => [`${F.Nom} ${cl} χάρισε `, n(e), '.'] })
-            : { at, subj: F, states: [], say: () => [`${F.Nom} ${cl} χάρισε μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} ${T.manyAcc}.`] });
-          asks.set(e, () => `${pos(T)} ${T.manyAcc} ${cl} χάρισε ${F.nom}`);
+            ? { at, subj: P, states: [e], change: true, say: S => [say(S), 'πήρε ', n(e), ` από ${F.acc}.`] }
+            : { at, subj: F, states: [e], change: true, say: (S, t) => (toHer(t) ? [say(S), `${cl} χάρισε `, n(e), '.'] : [say(S), 'χάρισε ', n(e), ` σ${P.acc}.`]) })
+            : { at, subj: F, states: [], change: true, say: (S, t) => [say(S), toHer(t) ? `${cl} χάρισε ${some}.` : `χάρισε ${some} σ${P.acc}.`] });
+          asks.set(e, S => (S ? `${pos(T)} ${T.manyAcc} χάρισε ${F.nom} σ${P.acc}` : `${pos(T)} ${T.manyAcc} ${cl} χάρισε ${F.nom}`));
           late.add(e);
           friendStock(e, '−', at);
         }
@@ -267,19 +284,19 @@ export function stockWorld(r: Rng): World | null {
         add(e, r.int(2, Math.max(2, Math.floor(have * 0.6))), kind === 'lose' ? `${Things} που χάθηκαν` : `${Things} που έδωσε`);
         op = '−';
         if (kind === 'lose') {
-          sentences.push(st => st.has(e) ? { at, subj: P, states: [e], say: S => [say(S), 'έχασε ', n(e), ' στο διάλειμμα.'] }
-            : { at, subj: P, states: [], say: S => [say(S), `έχασε μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} στο διάλειμμα.`] });
+          sentences.push(st => st.has(e) ? { at, subj: P, states: [e], change: true, say: S => [say(S), 'έχασε ', n(e), ' στο διάλειμμα.'] }
+            : { at, subj: P, states: [], change: true, say: S => [say(S), `έχασε μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} στο διάλειμμα.`] });
           asks.set(e, S => `${pos(T)} ${T.manyAcc} έχασε${S ? ` ${S}` : ''}`);
           after = `${Things} αφού έχασε`; without = 'όσα έχασε';
         } else if (money) {
           const sib = r.pick(SIBLINGS)[1];
-          sentences.push(st => st.has(e) ? { at, subj: P, states: [e], say: S => [say(S), 'έδωσε ', n(e), ` σ${sib} ${P.his}.`] }
-            : { at, subj: P, states: [], say: S => [say(S), `έδωσε χρήματα σ${sib} ${P.his}.`] });
+          sentences.push(st => st.has(e) ? { at, subj: P, states: [e], change: true, say: S => [say(S), 'έδωσε ', n(e), ` σ${sib} ${P.his}.`] }
+            : { at, subj: P, states: [], change: true, say: S => [say(S), `έδωσε χρήματα σ${sib} ${P.his}.`] });
           asks.set(e, S => `${pos(T)} ${T.manyAcc} έδωσε${S ? ` ${S}` : ''} σ${sib} ${P.his}`);
           after = `${Things} αφού έδωσε`; without = 'όσα έδωσε';
         } else {
-          sentences.push(st => st.has(e) ? { at, subj: P, states: [e], say: S => [say(S), 'χάρισε ', n(e), ` σ${F.acc}.`] }
-            : { at, subj: P, states: [], say: S => [say(S), `χάρισε μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} σ${F.acc}.`] });
+          sentences.push(st => st.has(e) ? { at, subj: P, states: [e], change: true, say: S => [say(S), 'χάρισε ', n(e), ` σ${F.acc}.`] }
+            : { at, subj: P, states: [], change: true, say: S => [say(S), `χάρισε μερικ${T.g === 'n' ? 'ά' : T.g === 'f' ? 'ές' : 'ούς'} σ${F.acc}.`] });
           asks.set(e, S => `${pos(T)} ${T.manyAcc} χάρισε${S ? ` ${S}` : ''} σ${F.acc}`);
           friendStock(e, '+', at);
           after = `${Things} αφού χάρισε`; without = 'όσα χάρισε';
@@ -294,6 +311,10 @@ export function stockWorld(r: Rng): World | null {
         rels.push({ out: e, op: '×', a: k, b: each });
         const words = r.chance(0.8);
         sentences.push(st => {
+          const s = packs(st);
+          return s && { ...s, change: true };
+        });
+        function packs(st: Set<string>): Sentence | null {
           const sk = st.has(k), sm = st.has(each);
           if (money) {
             if (sk && sm) return { at, subj: P, states: [k, each], say: S => [say(S), `έβαλε στον κουμπαρά `, n(each), ` κάθε εβδομάδα, για `, n(k, true, words), '.'] };
@@ -303,9 +324,9 @@ export function stockWorld(r: Rng): World | null {
           }
           if (sk && sm) return { at, subj: P, states: [k, each], say: S => [say(S), 'αγόρασε ', n(k, true, words), ' με ', n(each), ' το καθένα.'] };
           if (sk) return { at, subj: P, states: [k], say: S => [say(S), 'αγόρασε ', n(k, true, words), ` με ${T.manyAcc}, όλα με τον ίδιο αριθμό.`] };
-          if (sm) return { at, subj: P, states: [each], say: S => [say(S), `αγόρασε μερικά ${box.manyAcc} με `, n(each), ' το καθένα.'] };
+          if (sm) return { at, subj: P, states: [each], say: S => [say(S), `αγόρασε μερικ${box.g === 'n' ? 'ά' : box.g === 'f' ? 'ές' : 'ούς'} ${box.manyAcc} με `, n(each), ' το καθένα.'] };
           return st.has(e) ? { at, subj: P, states: [e], say: S => [say(S), 'αγόρασε άλλα ', n(e), '.'] } : null;
-        });
+        }
         if (money) {
           asks.set(k, S => `για πόσες εβδομάδες έβαλε χρήματα${S ? ` ${S}` : ''}`);
           asks.set(each, S => `πόσα ευρώ έβαλε${S ? ` ${S}` : ''} κάθε εβδομάδα`);
@@ -313,7 +334,7 @@ export function stockWorld(r: Rng): World | null {
           late.add(e);
         } else {
           asks.set(k, S => `${pos(box)} ${box.manyAcc} αγόρασε${S ? ` ${S}` : ''}`);
-          asks.set(each, () => `${pos(T)} ${T.manyAcc} είχε κάθε ${box.one}`);
+          asks.set(each, S => `${pos(T)} ${T.manyAcc} είχε κάθε ${box.one}${S ? ` που αγόρασε ${S}` : ''}`);
           asks.set(e, S => `${posNom(T)} ${T.many} ήταν ${coll.boxWhere} που αγόρασε${S ? ` ${S}` : ''}`);
         }
         after = money ? 'Ευρώ μετά τις εβδομάδες' : `${Things} μετά ${the(box)} ${box.manyAcc}`;
@@ -325,7 +346,7 @@ export function stockWorld(r: Rng): World | null {
       rels.push({ out: next, op, a: cur, b: e });
       cur = next;
     });
-    const last = cur, k = events.length;
+    const last = cur;
     qs.get(last)!.label = `${Things} ${P.gen} τώρα`;
     // Two changes can also be taken the other way round (71 + 24 = 95 with the savings
     // first, 95 − 88 = 7 given away), and two the same way together (50 − 36 = 14 left
@@ -353,7 +374,7 @@ export function stockWorld(r: Rng): World | null {
     // After the first of two events, sometimes the story says what she had then:
     // everything before it stops mattering for what comes after.
     if (k === 2 && r.chance(0.2)) {
-      sentences.push(st => st.has('s1') ? { at: 1.5, subj: P, states: ['s1'], say: () => ['Τότε είχε ', n('s1'), '.'] } : null);
+      sentences.push(st => st.has('s1') ? { at: 1.3, subj: P, states: ['s1'], say: S => [S ? `Τότε ${P.nom} είχε ` : 'Τότε είχε ', n('s1'), '.'] } : null);
     }
 
     // A friend compared with her now: more, fewer, twice as many, half
@@ -369,7 +390,7 @@ export function stockWorld(r: Rng): World | null {
           at: k + 1, subj: R, states: ['d'],
           say: () => [`${R.Nom} έχει `, { q: 'd', text: `${fmt(qs.get('d')!.value)} ${word} ${T.manyAcc}`, core: fmt(qs.get('d')!.value) }, ` από ${P.acc}.`],
         } : null);
-        asks.set('d', () => `${pos(T)} ${T.manyAcc} ${word} έχει ${R.nom}`);
+        asks.set('d', () => `${pos(T)} ${T.manyAcc} ${word} έχει ${R.nom} από ${P.acc}`);
       } else {
         add('d', 2, how === 'double' ? 'Φορές' : 'Μέρη', thing('φορά', 'φορές', 'f'));
         if (how === 'half' && now % 2) return null;
@@ -417,7 +438,7 @@ export function stockWorld(r: Rng): World | null {
     if (new Set(values).size < values.length) return null;
     const base = [...qs.keys()].filter(id => !rels.some(rel => rel.out === id));
     return {
-      qs, rels, asks, hero: P, base, late,
+      qs, rels, asks, hero: P, people: [P, F, R, Z], base, late,
       title: money ? r.pick(['Ο κουμπαράς', 'Τα χρήματα', 'Λογαριασμοί']) : r.pick(['Η συλλογή', 'Ανταλλαγές', 'Μετράμε']),
       alsoState: q => (q === 's0' || /^e\d/.test(q) ? [last] : q === 'd' ? ['f'] : q === 'g0' ? ['g1'] : []),
       sentences: st => sentences.map(f => f(st)).filter((s): s is Sentence => !!s),
@@ -472,7 +493,16 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
   // «Αναρωτιέται…» in the middle only after a sentence about her, or whose question it is is unclear
   const where = picked === 'wonder' && sents[0]?.subj !== hero ? 'end' : picked;
   const out: Painted[] = [];
-  let prev: Person | undefined;
+  // Who each sentence names, so the next one knows whether its subject may stay out
+  const forms = (p: Person) => [p.bare, p.gen.split(' ')[1], p.acc.split(' ')[1]];
+  const names = (text: string) => w.people.filter(p => forms(p).some(f => new RegExp(`(?<!\\p{L})${f}(?!\\p{L})`, 'u').test(text)));
+  const textOf = (ps: Piece[]) => ps.map(p => (typeof p === 'string' ? p : p.text)).join('').trim();
+  let told: Told = { prevOthers: [] };
+  const openers: (Person | undefined)[] = [];
+  const said = (text: string, subj: Person | undefined) => {
+    told = { prev: subj, prevOthers: names(text).filter(p => p !== subj) };
+    openers.push(w.people.find(p => text.startsWith(`${p.Nom} `)));
+  };
   const push = (ps: Piece[]) => {
     for (const p of ps) {
       if (typeof p === 'string') out.push({ text: p });
@@ -482,18 +512,35 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
   };
   const ask = (subj: string) => w.asks.get(sought)!(subj);
   const soughtPiece = (text: string): Painted => ({ text, role: 'sought', q: sought });
-  if (where === 'first') { out.push({ text: 'Θέλουμε να βρούμε ' }, soughtPiece(ask(hero.nom)), { text: '. ' }); }
+  if (where === 'first') {
+    const q = ask(hero.nom);
+    out.push({ text: 'Θέλουμε να βρούμε ' }, soughtPiece(q), { text: '. ' });
+    said(q, undefined);
+  }
   sents.forEach((s, i) => {
-    // pro-drop: the subject stays out when the sentence before had the same one
-    push(s.say(s.subj && s.subj === prev ? '' : (s.subj?.Nom ?? '')));
-    prev = s.subj;
+    // pro-drop: the subject stays out when the sentence before was about the same person
+    // and named no one else; a change right after a sentence that opened with the same name
+    // says «Μετά ο Νίκος…», so no two sentences open with it
+    const drop = !!s.subj && s.subj === told.prev && !told.prevOthers.length;
+    const S = !s.subj || drop ? '' : s.change && openers[openers.length - 1] === s.subj ? `Μετά ${s.subj.nom}` : s.subj.Nom;
+    const ps = s.say(S, told);
+    push(ps);
+    said(textOf(ps), s.subj);
     if (where === 'wonder' && i === 0) {
-      out.push({ text: prev === hero ? 'Αναρωτιέται ' : `${hero.Nom} αναρωτιέται ` }, soughtPiece(ask('')), { text: '. ' });
-      prev = hero;
+      const q = ask('');
+      out.push({ text: told.prev === hero ? 'Αναρωτιέται ' : `${hero.Nom} αναρωτιέται ` }, soughtPiece(q), { text: '. ' });
+      said(q, hero);
     }
   });
-  if (where === 'end') out.push(soughtPiece(cap(ask(prev === hero ? '' : hero.nom))), { text: ';' });
-  if (where === 'end-imp') out.push({ text: 'Να βρεις ' }, soughtPiece(ask(prev === hero ? '' : hero.nom)), { text: '.' });
+  // The question names her unless the story is about her alone and the sentence before
+  // was hers and named no one else
+  const others = sents.some(s => s.subj && s.subj !== hero);
+  const asked = told.prev === hero && !told.prevOthers.length && !others ? '' : hero.nom;
+  if (where === 'end') out.push(soughtPiece(cap(ask(asked))), { text: ';' });
+  if (where === 'end-imp') out.push({ text: 'Να βρεις ' }, soughtPiece(ask(asked)), { text: '.' });
+  // No two sentences in a row open with the same name (a sentence that can't open with
+  // «Μετά» is told another way, or not at all)
+  if (openers.some((p, i) => p && p === openers[i - 1])) return null;
 
   // Capitals after full stops, one space between words
   let story = '', plain = '';
@@ -536,7 +583,11 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
     }))));
   }
   // Checking a change in her stock: the answer back in the story, from the start to now
-  // («15 − 7 − 5 = 3»), whichever way she worked it out
+  // («15 − 7 − 5 = 3»), whichever way she worked it out. Every check has at least 3 options,
+  // the typical slips: a change the other way, starting from the answer instead of the start
+  // (or the other operation, or the other number); a problem that can't is dropped.
+  const CHECK_WRONGS = 3;
+  const valid = (v: number) => Number.isInteger(v) && v > 0;
   const chainRels = w.rels.filter(rel => /^s\d$/.test(rel.out) && /^s\d$/.test(rel.a) && /^e\d$/.test(rel.b));
   const chainIds = new Set(chainRels.flatMap(rel => [rel.out, rel.a, rel.b]));
   const chainStated = [...chainIds].filter(id => stated.has(id));
@@ -546,31 +597,43 @@ export function problem(r: Rng, w: World, opts: { calc?: boolean } = {}): Made |
     // A change asked by its parts shows them, so the check holds her answer: 37 + (6 × 3) = 55
     const term = (e: string) => (w.qs.has(`${e}n`) && sought.startsWith(e) && sought !== e
       ? `(${fmt(val(`${e}n`))} × ${fmt(val(`${e}m`))})` : fmt(val(e)));
-    const terms = chainRels.map(rel => `${rel.op} ${term(rel.b)}`).join(' ');
-    const right = `${fmt(val('s0'))} ${terms} = ${fmt(val(last))}`;
     const flip = (op: Op) => (op === '+' ? '−' : '+');
-    const flipped = chainRels.map((rel, i) => ({ op: i === 0 ? flip(rel.op) : rel.op, v: val(rel.b), t: term(rel.b) }));
-    const flippedValue = flipped.reduce((acc, t) => apply(t.op, acc, t.v), val('s0'));
+    const line = (start: number, ops: Op[]) => {
+      const v = ops.reduce((acc, op, i) => apply(op, acc, val(chainRels[i].b)), start);
+      return { v, text: `${fmt(start)} ${ops.map((op, i) => `${op} ${term(chainRels[i].b)}`).join(' ')} = ${fmt(v)}` };
+    };
+    const ops = chainRels.map(rel => rel.op);
+    const right = line(val('s0'), ops).text;
     const wrongs = [
-      ...(flippedValue > 0 ? [`${fmt(val('s0'))} ${flipped.map(t => `${t.op} ${t.t}`).join(' ')} = ${fmt(flippedValue)}`] : []),
-      `${fmt(val(last))} ${terms} = ${fmt(chainRels.reduce((acc, rel) => apply(rel.op, acc, val(rel.b)), val(last)))}`,
-    ].filter(o => o !== right && !/= [-−]/.test(o));
-    if (wrongs.length) {
-      steps.push(b.choice('check', 'Πώς ελέγχουμε; Βάλε την απάντηση μέσα στην ιστορία.', right, wrongs));
+      // some change the other way, from the start
+      ...Array.from({ length: (1 << ops.length) - 1 }, (_, m) => line(val('s0'), ops.map((op, i) => ((m + 1) & (1 << i) ? flip(op) : op)))),
+      // from the answer instead of the start
+      line(val(last), ops),
+    ].filter(o => valid(o.v) && o.text !== right).map(o => o.text);
+    const unique = [...new Set(wrongs)];
+    if (unique.length >= 2) {
+      steps.push(b.choice('check', 'Πώς ελέγχουμε; Βάλε την απάντηση μέσα στην ιστορία.', right, unique.slice(0, CHECK_WRONGS)));
       return { world: w, sought, stated, needed: used, pieces, story, steps, derivation };
     }
   }
+  // The last calculation undone: 53 = 30 + 23 is checked 53 − 23 = 30
   const lastD = derivation[derivation.length - 1];
+  const additive = lastD.op === '+' || lastD.op === '−';
   const back: Op = lastD.op === '+' ? '−' : lastD.op === '−' ? '+' : lastD.op === '×' ? ':' : '×';
-  const checkRight = `${fmt(val(lastD.target))} ${back} ${fmt(val(lastD.y))} = ${fmt(apply(back, val(lastD.target), val(lastD.y)))}`;
-  const wrongChecks = [
-    [lastD.op, val(lastD.target), val(lastD.y)],
-    [back, val(lastD.x), val(lastD.y)],
-  ].map(([op, x, y]) => [op as Op, x as number, y as number, apply(op as Op, x as number, y as number)] as const)
-    .filter(([, , , v]) => Number.isInteger(v) && v > 0)
-    .map(([op, x, y, v]) => `${fmt(x)} ${op} ${fmt(y)} = ${fmt(v)}`)
+  const [t, x, y] = [val(lastD.target), val(lastD.x), val(lastD.y)];
+  const checkRight = `${fmt(t)} ${back} ${fmt(y)} = ${fmt(apply(back, t, y))}`;
+  const wrongChecks = ([
+    [lastD.op, t, y], // the same operation again, on the answer
+    [back, x, y], // the other operation, on the numbers of the story
+    [additive ? '+' : '×', t, x], // the answer with the other number
+  ] as [Op, number, number][])
+    .map(([op, a, c]) => ({ op, a, c, v: apply(op, a, c) }))
+    .filter(o => valid(o.v) && o.v !== x && o.v < 1000)
+    .map(o => `${fmt(o.a)} ${o.op} ${fmt(o.c)} = ${fmt(o.v)}`)
     .filter(o => o !== checkRight);
-  if (wrongChecks.length) steps.push(b.choice('check', 'Πώς ελέγχουμε;', checkRight, [...new Set(wrongChecks)]));
+  const unique = [...new Set(wrongChecks)];
+  if (unique.length < 2) return null;
+  steps.push(b.choice('check', 'Πώς ελέγχουμε;', checkRight, unique));
   return { world: w, sought, stated, needed: used, pieces, story, steps, derivation };
 }
 
