@@ -320,7 +320,15 @@ calculation. `world/run.ts` prints a sample and how far lazy strategies get;
 other valid way to work it out must be a quantity too (the other order of two changes,
 two changes taken together), or a right calculation reads back as meaning nothing.
 Questions that refer to what the story tells (the item bought, «η νονά της», «αυτές τις
-εβδομάδες») go in `late` and are asked only at the end. So far one world, Γ΄ only: a
+εβδομάδες») go in `late` and are asked only at the end.
+
+**Painting and sentences** (#50). The painting check (`checkPaint`, `paintStrays` in
+shared/problems.ts) lets her paint a needed fact's sentence whole; only around an unneeded
+fact, in its own sentence, does a stroke count as too much. So a sentence that holds a
+needed and an unneeded fact is one she must paint phrase by phrase (33 Γ΄ generated, 217 Ε΄
+generated, 7 Ε΄ curated today), and a story with no unneeded fact passes painted whole (36
+world stories; `audit.ts` allows them). `world/run.ts`'s painting `grade()` is a prototype
+printout, not the check. So far one world, Γ΄ only: a
 child's money or collection that changes, friends compared, their own collections.
 
 **Who a sentence means** (#50). A sentence's `say(S, told)` gets its subject and what the
