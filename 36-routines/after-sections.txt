@@ -1,0 +1,7 @@
+kiosk 1280x800, Ρυθμίσεις sections: Δώρα | Πρόγραμμα | Ξεκίνα τώρα | Δουλειές & έξτρα | Ρουτίνες | Εργασίες | Παιδιά | Σχολείο
+kiosk 1280x800: a routines section (Ρουτίνες): yes
+kiosk 1280x800: a tasks section: yes
+Ξεκίνα τώρα: ▶ morning-flow | ▶ u1-morning-flow | ▶ u2-morning-flow | ▶ Ηλέκτρα: Πρωινή Ρουτίνα | ▶ Ηλέκτρα: Βραδινή Ρουτίνα | ▶ Ιφιγένεια: Πρωινή Ρουτίνα
+phone 390x844, Ρυθμίσεις sections: Δώρα | Πρόγραμμα | Ξεκίνα τώρα | Δουλειές & έξτρα | Ρουτίνες | Εργασίες | Παιδιά | Σχολείο
+phone 390x844: a routines section (Ρουτίνες): yes
+phone 390x844: a tasks section: yes

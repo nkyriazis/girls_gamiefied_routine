@@ -1,0 +1,21 @@
+What the routine save changed in data.json (rows of every other list: untouched)
+routines:
+    r-morning unchanged
+    r-evening unchanged
+routineTasks:
+    rt-1 unchanged
+    rt-2 unchanged
+    rt-3 unchanged
+    rt-4 unchanged
+  ~ {"id":"rt-5","routineId":"r-evening","taskId":"t-pajamas","order":1,"durationSeconds":180}
+    -> {"id":"rt-5","routineId":"r-evening","taskId":"t-pajamas","order":1,"durationSeconds":120}
+  ~ {"id":"rt-7","routineId":"r-evening","taskId":"t-story","order":3,"durationSeconds":600}
+    -> {"id":"rt-7","routineId":"r-evening","taskId":"t-story","order":2,"durationSeconds":600}
+  ~ {"id":"rt-6","routineId":"r-evening","taskId":"t-brush","order":2,"durationSeconds":120}
+    -> {"id":"rt-6","routineId":"r-evening","taskId":"t-brush","order":3,"durationSeconds":120}
+  + {"id":"rt-muyl89jw","routineId":"r-evening","taskId":"task-muyl81ft","order":4,"durationSeconds":300}
+routineAssignments:
+    u1-assign-morning unchanged
+    u1-assign-evening unchanged
+    u2-assign-morning unchanged
+  + {"id":"u2-r-evening","userId":"u2","routineId":"r-evening"}

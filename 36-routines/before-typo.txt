@@ -1,0 +1,5 @@
+routineTasks rt-7: taskId "t-story" -> "t-stroy" (no such task)
+POST /api/admin/validate -> {"valid":true}
+POST /api/admin/data?source=advanced -> 200 {"success":true,"version":"02e40f08e9ce"}
+push u1-assign-evening -> 200 {"success":true,"type":"assignment","id":"u1-assign-evening"}
+kids' screen: Βραδινή Ρουτίνα with 2 task(s) (data.json lists 3: Πιτζάμες, Πλύσιμο Δοντιών, Παραμύθι); current task: Πιτζάμες
