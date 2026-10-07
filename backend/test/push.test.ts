@@ -59,18 +59,33 @@ test('push starts the routine named, and not the other kid’s routine due at th
   assert.deepEqual(logged('TRIGGER_ROUTINE').map(e => (e.details as { source: string }).source), ['push_hook']);
 });
 
-test('push starts its target even when the target’s schedule has a cron that can’t be read', async () => {
-  const broken = { ...cfg, schedules: [{ id: 's3', cron: '99 20 * * *', type: 'routine' as const, targetId: 'a2' }] };
-  writeFileSync(path.join(dir, 'data.json'), JSON.stringify(broken));
+// A push never looks at its target's schedule. On master it ran that schedule's next minute, so a cron
+// cron-parser can't read ('99 20 * * *', which data.schema.json lets through) made the push a 500. #89 will
+// refuse such a cron in the config, so this checks the push with a readable one at another time: what
+// starts, and what it answers, don't depend on the cron.
+test('push starts its target now, whatever its schedule says: no simulated time, no SCHEDULE_MATCH', async () => {
+  const later = { ...cfg, schedules: [{ id: 's3', cron: '30 7 * * 1', type: 'routine' as const, targetId: 'a2' }] };
+  writeFileSync(path.join(dir, 'data.json'), JSON.stringify(later));
   assert.equal(reloadConfig()?.type, 'updated');
   try {
     const res = await post('/api/hooks/push', { id: 'a2' });
     assert.equal(res.status, 200, JSON.stringify(res.body));
+    assert.deepEqual(res.body, { success: true, type: 'assignment', id: 'a2' });
     assert.deepEqual(running(), ['a2']);
+    assert.equal(logged('SCHEDULE_MATCH').length, 0);
   } finally {
     writeFileSync(path.join(dir, 'data.json'), JSON.stringify(cfg));
     reloadConfig();
   }
+});
+
+test('a kid already in a routine keeps it: the push answers skipped, with the run on screen', async () => {
+  await post('/api/hooks/push', { id: 'a1' });
+  const [run] = store.routineRuns.all('1');
+  const res = await post('/api/hooks/push', { id: 'a1' });
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body, { success: true, skipped: true, type: 'assignment', id: 'a1', runningId: run.id });
+  assert.deepEqual(running(), ['a1']);
 });
 
 test('an unknown id is a 404 and starts nothing', async () => {
