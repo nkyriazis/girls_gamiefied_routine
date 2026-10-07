@@ -8,12 +8,14 @@ A real-time gamified routine/chore system for children, run as a kiosk-style PWA
 
 Stack: Fastify 5 + TypeScript + WebSockets + node-cron (backend), React 19 + Vite + Framer Motion (frontend), JSON files for config and SQLite (`node:sqlite`, Node 24) for runtime state, Docker Compose for everything.
 
-## Agent rules (from .cursorrules)
+## Agent rules
+
+(`.cursorrules` repeats these four for Cursor and points here: change them here, then there.)
 
 - Don't modify the host: no global installs or system config changes. Use Docker for any tooling or services.
-- During the design phase, recreate data from scratch with mock data instead of writing migrations, unless told otherwise.
-- Before committing, always check `git status` and `git diff`. Avoid `git add .`. Split commits into logical chunks using `<type>(<scope>): <subject>` (types: feat, fix, docs, refactor, chore…; scopes: backend, frontend, shared, docker, config).
-- If the data model changes, update `shared/types.ts` **and** the matching JSON schema in `backend/*.schema.json`. Otherwise config validation will reject the data.
+- The family's data on piserve is live (see «Deployment target»). A change to the data model stays compatible with it or comes with a migration (state: a new entry in `MIGRATIONS` in store.ts; config: a step for the owner to run). Only the dev data may be recreated from mock data.
+- Before committing, always check `git status` and `git diff`. Never `git add .`; add files by name. Split commits into logical chunks using `<type>(<scope>): <subject>` (types: feat, fix, docs, refactor, test, chore…; scopes: backend, frontend, shared, docker, config).
+- If the data model changes, update `shared/types.ts` **and** the matching JSON schema in `backend/*.schema.json` (state: `state.schema.json` and the store.ts migration too). Otherwise validation will reject the data.
 
 ## Pull requests
 
