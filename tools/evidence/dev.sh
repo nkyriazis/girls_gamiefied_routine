@@ -5,11 +5,12 @@
 #   dev.sh plain                     today's plain exercises fresh again, both kids
 #   dev.sh clear-runs                no flow or routine on screen
 #   dev.sh stars u1 100 u2 20        set balances, clear their pending gifts and rewards
+#   dev.sh game u1,u2 math-mc-1,lang-tf-1  a group game running with these questions, one round
 # Dev stack only: never against piserve.
 set -e
 repo=$(cd "$(dirname "$0")/../.." && pwd)
 dc() { docker compose -f "$repo/docker-compose.yml" -f "$repo/docker-compose.dev.yml" "$@"; }
-[ -n "$1" ] || { sed -n "2,8p" "$0" | sed "s/^# //"; exit 1; }
+[ -n "$1" ] || { sed -n "2,9p" "$0" | sed "s/^# //"; exit 1; }
 h=$1; shift
 dc cp "$repo/tools/evidence/dev/$h.js" "backend:/tmp/$h.js" >/dev/null 2>&1
 dc exec -T backend node "/tmp/$h.js" "$@"

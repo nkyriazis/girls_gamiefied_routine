@@ -12,7 +12,8 @@ tools/evidence/record.sh .evidence/52/before.mjs                          # play
 `dev.sh` helpers (`dev/*.js`) change the dev database only: `problem <kid> <exerciseId>` sets a kid's problem
 for today, fresh; `exercise <kid> <exerciseId>` puts any pool item in the slot of its category
 (maths, language), fresh; `plain` makes today's plain exercises fresh; `clear-runs` takes flows and routines off screen;
-`stars u1 100 u2 20` sets balances and clears those kids' pending gifts and rewards.
+`stars u1 100 u2 20` sets balances and clears those kids' pending gifts and rewards; `game u1,u2 math-mc-1,lang-tf-1`
+starts a group game (📚) with those questions in one round.
 
 A scenario is a short Playwright script (`scenarios/smoke.mjs` is the smallest, `scenarios/owl-tours.mjs`
 a long one). `kit.mjs` gives it `open()` (the kids' screen, past the start overlay), `tap`, `caption` (says on
