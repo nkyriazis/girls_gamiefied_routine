@@ -122,11 +122,11 @@ let globalState: {
 
 ### Frontend: React Context + WebSocket Sync
 
-The server is the source of truth and clients only render its state (`backend/src/sync.ts`, `frontend/src/context/GameContext.tsx`):
+The server is the source of truth and clients only render its state (`backend/src/sync.ts`, `frontend/src/context/GameProvider.tsx`):
 
 1. Every write to runtime state (`store.ts`) and every config change calls `sync.changed()`.
 2. The server rebuilds the whole `AppState` (config, users with stars and routines, spendings, transfers, chores, exercises) and sends it to every client as a `STATE` message. Changes in one event-loop turn go out as one message, and builds never overlap, so the last message is always current.
-3. A client that connects (or reconnects after a drop or a server restart) gets `STATE` the same way. `GameContext` replaces its state with each one; there is no REST fetch and no patching.
+3. A client that connects (or reconnects after a drop or a server restart) gets `STATE` the same way. `GameProvider` replaces its state with each one; there is no REST fetch and no patching.
 
 One-off effects are separate events and never the only carrier of state.
 
@@ -282,7 +282,7 @@ Dashboard
 
 ### Frontend
 
-**`frontend/src/context/GameContext.tsx`** (State Container)
+**`frontend/src/context/GameProvider.tsx`** (State Container; `useGame()` and the context in `GameContext.ts`)
 - Holds the server's `AppState` (replaced by every `STATE` message), plus `isConnected` and `subscribe()` for events
 - WebSocket client: reconnects on close; the server sends the state on connect
 - Exported hook: `useGame()` for component access
@@ -356,7 +356,7 @@ The server runs flows and routines (`db.ts`, "ROUTINES AND FLOWS ON SCREEN"); cl
 ### Initial Page Load
 
 1. **Client** opens `/` → React app loads
-2. **GameContext** mounts → opens the WebSocket
+2. **GameProvider** mounts → opens the WebSocket
 3. **Server** sends `STATE` (the whole `AppState`) on connect
 4. **Dashboard** renders clock (idle mode)
 
@@ -484,7 +484,7 @@ Fully supported on ARM64 architecture:
 ### 10. **Server-Driven State**
 - **Pattern**: Clients never patch state; they render the latest `STATE` from the server
 - **Benefit**: Every view converges, including after reconnects and restarts
-- **Implementation**: `backend/src/sync.ts` + `GameContext.tsx`
+- **Implementation**: `backend/src/sync.ts` + `GameProvider.tsx`
 
 ---
 

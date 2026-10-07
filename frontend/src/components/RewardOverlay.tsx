@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface RewardOverlayProps {
@@ -7,13 +7,14 @@ interface RewardOverlayProps {
 }
 
 export const RewardOverlay: React.FC<RewardOverlayProps> = ({ starsEarned, onClose }) => {
-  // Generate random particles
-  const particles = Array.from({ length: 20 }).map((_, i) => ({
+  // The sparkles' random directions, drawn once per reward (a state initializer), not at every
+  // render: the routine card around it re-renders every second
+  const [particles] = useState(() => Array.from({ length: 20 }, (_, i) => ({
     id: i,
     x: Math.random() * 100 - 50,
     y: Math.random() * 100 - 50,
     scale: Math.random() * 0.5 + 0.5,
-  }));
+  })));
 
   return (
     <motion.div 

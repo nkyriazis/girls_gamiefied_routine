@@ -4,7 +4,7 @@ import type {
 } from '@shared/types';
 
 // REST calls. They report what someone did; the resulting state arrives over
-// the WebSocket (GameContext), so callers never cache what these return. The
+// the WebSocket (GameProvider), so callers never cache what these return. The
 // exception is history(): the archive STATE doesn't carry, read a page at a time.
 
 const API_URL = '/api';

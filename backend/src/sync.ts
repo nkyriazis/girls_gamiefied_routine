@@ -9,7 +9,7 @@ import { AppState, ServerEvent, ServerMessage } from '../../shared/types';
 // Changes made in the same turn of the event loop go out as one message, and
 // builds never overlap, so the last message a client receives is always the
 // current state. One-off effects go out immediately with notify(). A
-// heartbeat every HEARTBEAT_MS lets clients spot a dead link (see GameContext).
+// heartbeat every HEARTBEAT_MS lets clients spot a dead link (see context/GameProvider.tsx).
 // ============================================================================
 
 export interface Client {
