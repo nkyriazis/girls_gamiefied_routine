@@ -1,7 +1,8 @@
 // The build's own check (#35), last step of `npm run build`, so CI and the image build run it too.
 // The parent's JSON editors (Monaco) must come from the Pi, never the internet, and must stay out of
 // what every device downloads:
-//  - nothing in dist loads from cdn.jsdelivr.net (Monaco once did, so the editors died with the internet)
+//  - no cdn.jsdelivr.net URL in dist, @monaco-editor/loader's default included (Monaco once came from there,
+//    so the editors died with the internet)
 //  - Monaco's files (the lazy JsonEditor chunk, jsonMode, the workers, codicon) exist and are neither
 //    linked nor preloaded by index.html, nor imported by the kids' entry (directly or through a chunk it
 //    imports), nor precached by the service worker. build.rollupOptions.output.manualChunks did exactly
@@ -22,12 +23,12 @@ const fail = msg => failures.push(msg);
 const files = fs.readdirSync(dist, { recursive: true }).filter(f => fs.statSync(path.join(dist, f)).isFile());
 const texts = files.filter(f => /\.(js|mjs|css|html|webmanifest)$/.test(f));
 
-// 1. No CDN. One URL may stay: @monaco-editor/loader's own default (its config/index.js), dead code
-// once monaco.ts hands the loader the bundled Monaco (loader.config({ monaco })), so it never fetches.
-const loaderDefault = fs.readFileSync(path.join(root, 'node_modules/@monaco-editor/loader/lib/es/config/index.js'), 'utf8')
-    .match(/https:\/\/cdn\.jsdelivr\.net\/[^'"]+/)?.[0];
+// 1. No CDN, not even @monaco-editor/loader's default (the monaco-loader-no-cdn plugin in vite.config.ts
+// takes it out): with it in dist, a monaco.ts that lost its loader.config({ monaco }) would pass every
+// check here and still load Monaco from jsdelivr at runtime. No check here can see that line go; the
+// plugin makes it fail everywhere instead (the editor never loads, online or not).
 for (const f of texts) {
-    const urls = (read(f).match(/https?:\/\/cdn\.jsdelivr\.net[^'"`\s)]*/g) ?? []).filter(u => u !== loaderDefault);
+    const urls = read(f).match(/https?:\/\/cdn\.jsdelivr\.net[^'"`\s)]*/g) ?? [];
     if (urls.length) fail(`${f} loads from cdn.jsdelivr.net: ${[...new Set(urls)].join(', ')}`);
 }
 
