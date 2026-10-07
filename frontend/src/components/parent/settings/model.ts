@@ -2,7 +2,21 @@ import type { ConfigUser, DataConfig, Forgiveness, IconValue, ProblemReading, Sc
 
 // Pure helpers for the config forms.
 
-export const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}`;
+// An id no other in `taken` has: the base, else base-2, base-3…
+export function uniqueId(base: string, taken: Iterable<string> = []): string {
+    const ids = new Set(taken);
+    let id = base;
+    for (let n = 2; ids.has(id); n++) id = `${base}-${n}`;
+    return id;
+}
+
+// A new id, from the time: two in the same millisecond (one save adding several rows) differ too.
+let last = { stamp: '', count: 0 };
+export function newId(prefix: string, taken: Iterable<string> = []): string {
+    const stamp = Date.now().toString(36);
+    last = { stamp, count: stamp === last.stamp ? last.count + 1 : 0 };
+    return uniqueId(last.count ? `${prefix}-${stamp}-${last.count}` : `${prefix}-${stamp}`, taken);
+}
 
 // The icons forms can set (the schema allows an emoji or an uploaded image).
 export type FormIcon = { type: 'emoji' | 'image'; value: string };
@@ -62,8 +76,7 @@ export function tidyUser(user: ConfigUser): ConfigUser {
 
 // A new kid: an id nobody has, an emoji to start with, and a colour no other kid wears (if one is left).
 export function newKid(users: ConfigUser[]): ConfigUser {
-    let id = newId('kid');
-    for (let n = 2; users.some(u => u.id === id); n++) id = `${newId('kid')}-${n}`;
+    const id = newId('kid', users.map(u => u.id));
     const color = THEME_COLORS.find(c => !users.some(u => u.color === c.value)) ?? THEME_COLORS[0];
     return { id, name: '', avatar: { type: 'emoji', value: '🙂' }, color: color.value };
 }
