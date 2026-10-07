@@ -1,0 +1,29 @@
+Ρυθμίσεις (JSON), localhost, STATE as it comes: the banner appeared after 10 of 10 own saves
+  own save 1 (Γλυκό 41): banner appeared for 3 ms
+  own save 2 (Γλυκό 42): banner appeared for 2.3 ms
+  own save 3 (Γλυκό 43): banner appeared for 2.4 ms
+  own save 4 (Γλυκό 44): banner appeared for 2.2 ms
+  own save 5 (Γλυκό 45): banner appeared for 2.6 ms
+  own save 6 (Γλυκό 46): banner appeared for 2.1 ms
+  own save 7 (Γλυκό 47): banner appeared for 2.3 ms
+  own save 8 (Γλυκό 48): banner appeared for 2.3 ms
+  own save 9 (Γλυκό 49): banner appeared for 3.2 ms
+  own save 10 (Γλυκό 50): banner appeared for 1.9 ms
+  control, another writer sets Γλυκό 39: banner appeared, and is still up
+
+Ρυθμίσεις (JSON), STATE held back 150 ms (routeWebSocket): the banner appeared after 10 of 10 own saves
+  own save 1 (Γλυκό 41): banner appeared for 157.9 ms
+  own save 2 (Γλυκό 42): banner appeared for 155.7 ms
+  own save 3 (Γλυκό 43): banner appeared for 157.2 ms
+  own save 4 (Γλυκό 44): banner appeared for 156.3 ms
+  own save 5 (Γλυκό 45): banner appeared for 156.2 ms
+  own save 6 (Γλυκό 46): banner appeared for 156.9 ms
+  own save 7 (Γλυκό 47): banner appeared for 156.6 ms
+  own save 8 (Γλυκό 48): banner appeared for 156 ms
+  own save 9 (Γλυκό 49): banner appeared for 155.2 ms
+  own save 10 (Γλυκό 50): banner appeared for 156 ms
+  control, another writer sets Γλυκό 39: banner appeared, and is still up
+
+Ασκήσεις (JSON), STATE held back 400 ms
+  opened just after another writer's save: banner appeared for 355.5 ms
+  control, another writer saves again while it is open: banner appeared, and is still up

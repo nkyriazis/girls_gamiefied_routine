@@ -1,0 +1,4 @@
+# Before: after parent B's form save (TV 50 -> 70) and parent A's editor save (Γλυκό 30 -> 40)
+GET /api/admin/data -> rewards: 1 Ώρα Τηλεόραση: 50 | Γλυκό: 40 | Βόλτα στο Πάρκο: 100 | Μικρό Παιχνίδι: 200
+GET /api/debug/logs -> 200 entries; in the last 5 minutes: 0
+config-related entries (type matching /CONFIG/): 0

@@ -1,0 +1,15 @@
+# After: B's form save (TV 50 -> 70), A's stale editor save (refused), A's save after reloading (TV 60, Γλυκό 40),
+# B's stale sheet (refused) and its second try (TV 75), A's Γλυκό 45 under B's open editor, B's stale save (refused)
+GET /api/admin/data -> rewards: 1 Ώρα Τηλεόραση: 75 | Γλυκό: 45 | Βόλτα στο Πάρκο: 100 | Μικρό Παιχνίδι: 200
+GET /api/debug/logs -> 200 entries; during this scenario: 7
+  2026-10-07T18:45:27.188Z CONFIG_SAVE_STALE {"file":"data.json","source":"advanced","route":"POST /api/admin/data","version":"9e9016826cf6","current":"10a49bc19c07"}
+  2026-10-07T18:45:23.671Z CONFIG_SAVED {"file":"data.json","source":"advanced","route":"POST /api/admin/data","changed":["rewards"]}
+  2026-10-07T18:45:16.342Z CONFIG_SAVED {"file":"data.json","source":"form","route":"POST /api/admin/data","changed":["rewards"]}
+  2026-10-07T18:45:10.725Z CONFIG_SAVE_STALE {"file":"data.json","source":"form","route":"POST /api/admin/data","version":"cc3d320df392","current":"8ee338a6bc81"}
+  2026-10-07T18:45:08.072Z CONFIG_SAVED {"file":"data.json","source":"advanced","route":"POST /api/admin/data","changed":["rewards"]}
+  2026-10-07T18:44:59.421Z CONFIG_SAVE_STALE {"file":"data.json","source":"advanced","route":"POST /api/admin/data","version":"de48e4b7b155","current":"cc3d320df392"}
+  2026-10-07T18:44:55.328Z CONFIG_SAVED {"file":"data.json","source":"form","route":"POST /api/admin/data","changed":["rewards"]}
+config-related entries (type matching /CONFIG/): 126
+# The kiosk's own saves: a MutationObserver on .p-stale, from the editor's load to 2.5 s after the save
+A's save after Φόρτωσε ξανά (TV 60, Γλυκό 40): the banner appeared 0 times
+A's save of Γλυκό 45 (B's editor open on the phone): on A's kiosk the banner appeared 0 times

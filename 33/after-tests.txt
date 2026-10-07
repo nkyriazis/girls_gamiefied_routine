@@ -1,0 +1,41 @@
+✔ loads, caches, and reports unchanged files (3.083176ms)
+✔ an invalid file on disk keeps the last valid config live (6.542258ms)
+✔ an invalid file at startup yields the empty fallback, not a crash (0.797319ms)
+✔ save validates, writes, and updates the cache; the cache is frozen (0.793812ms)
+✔ after a start with an unreadable file, a plain save is refused and the file stays as it is (0.604005ms)
+✔ even the deliberate replace never writes the empty fallback over a file it never loaded (0.414278ms)
+✔ the broken text can be fixed and saved with replace; the broken file is kept beside (0.794564ms)
+✔ over an invalid file with the last valid config live: refused, unless replace asks (0.512514ms)
+✔ a missing optional file counts as loaded and can be created (0.445137ms)
+✔ a missing required file is never loaded: saving is refused (0.357061ms)
+✔ the empty config never goes over a loaded file that has content, with or without replace (0.432673ms)
+✔ a file that is itself the empty config can be saved as the empty config (0.334179ms)
+✔ the version follows the live text: it changes on a save and on a valid reload from disk (0.568559ms)
+✔ the value and its version are read together (0.284986ms)
+✔ a save that names an older version is refused as a conflict and writes nothing (0.375606ms)
+✔ a save with no version is not checked (scripts, the fix-a-broken-file editor) (0.321825ms)
+✔ AppState carries the version of the config it carries (27.266595ms)
+[ACTION:CONFIG_SAVED] {"file":"data.json","source":"form","route":"POST /api/admin/data","changed":["rewards"]}
+✔ a form save with the version it opened with saves, answers the new version and is logged (23.389967ms)
+[ACTION:CONFIG_SAVED] {"file":"data.json","source":"form","route":"POST /api/admin/data","changed":["rewards"]}
+[ACTION:CONFIG_SAVE_STALE] {"file":"data.json","source":"advanced","route":"POST /api/admin/data","version":"431dd84ca06d","current":"a571674f1d40"}
+✔ two saves from the same version: the first saves, the second is a 409 that writes nothing (6.924937ms)
+[ACTION:CONFIG_SAVED] {"file":"data.json","source":"form","route":"POST /api/admin/data","changed":["rewards"]}
+[ACTION:CONFIG_SAVE_STALE] {"file":"data.json","source":"advanced","route":"POST /api/admin/data","version":"a571674f1d40","current":"78705f7c7fa0"}
+✔ the Advanced editor (replace=1) is checked the same way (4.969181ms)
+[ACTION:CONFIG_SAVED] {"file":"data.json","source":"api","route":"POST /api/admin/data","changed":["settings"]}
+✔ a save with no version is not checked, and is logged as from the API (2.234661ms)
+✔ an invalid save is still a 400 (1.246584ms)
+[ACTION:CONFIG_SAVED] {"file":"exercises.json","source":"advanced","route":"POST /api/admin/exercises","changed":["exercises"]}
+[ACTION:CONFIG_SAVE_STALE] {"file":"exercises.json","source":"advanced","route":"POST /api/admin/exercises","version":"58a683d2ab34","current":"dd2893e17b9c"}
+✔ exercises.json: the GET gives the version with the document, a stale save is a 409, a fresh one is logged (6.007583ms)
+[ACTION:CONFIG_SAVED] {"file":"data.json","source":"api","route":"POST /api/admin/data","changed":["rewards"]}
+✔ an unknown source is logged as from the API (2.262994ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1410.901938

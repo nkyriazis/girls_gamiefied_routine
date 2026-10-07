@@ -1,0 +1,156 @@
+✔ loads, caches, and reports unchanged files (3.209844ms)
+✔ an invalid file on disk keeps the last valid config live (3.589948ms)
+✔ an invalid file at startup yields the empty fallback, not a crash (0.746844ms)
+✔ save validates, writes, and updates the cache; the cache is frozen (0.857452ms)
+✔ after a start with an unreadable file, a plain save is refused and the file stays as it is (0.549733ms)
+✔ even the deliberate replace never writes the empty fallback over a file it never loaded (0.428766ms)
+✔ the broken text can be fixed and saved with replace; the broken file is kept beside (0.77137ms)
+✔ over an invalid file with the last valid config live: refused, unless replace asks (0.479191ms)
+✔ a missing optional file counts as loaded and can be created (0.410541ms)
+✔ a missing required file is never loaded: saving is refused (0.358584ms)
+✔ the empty config never goes over a loaded file that has content, with or without replace (0.404721ms)
+✔ a file that is itself the empty config can be saved as the empty config (0.375636ms)
+✖ the version follows the live text: it changes on a save and on a valid reload from disk (0.394842ms)
+✖ the value and its version are read together (0.286308ms)
+✖ a save that names an older version is refused as a conflict and writes nothing (0.273585ms)
+✔ a save with no version is not checked (scripts, the fix-a-broken-file editor) (0.330642ms)
+{"level":30,"time":1791397394978,"pid":7258,"hostname":"c448ec00e9de","reqId":"req-1","req":{"method":"POST","url":"/api/admin/data","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+✖ AppState carries the version of the config it carries (28.432946ms)
+✖ a form save with the version it opened with saves, answers the new version and is logged (2.761801ms)
+✖ two saves from the same version: the first saves, the second is a 409 that writes nothing (0.590791ms)
+✖ the Advanced editor (replace=1) is checked the same way (0.513545ms)
+{"level":30,"time":1791397394984,"pid":7258,"hostname":"c448ec00e9de","reqId":"req-1","res":{"statusCode":200},"responseTime":4.816033000000061,"msg":"request completed"}
+✖ a save with no version is not checked, and is logged as from the API (9.981983ms)
+✖ an invalid save is still a 400 (0.534294ms)
+✖ exercises.json: the GET gives the version with the document, a stale save is a 409, a fresh one is logged (0.949976ms)
+{"level":30,"time":1791397394985,"pid":7258,"hostname":"c448ec00e9de","reqId":"req-2","req":{"method":"GET","url":"/api/admin/exercises","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1791397394986,"pid":7258,"hostname":"c448ec00e9de","reqId":"req-2","res":{"statusCode":200},"responseTime":0.22327899999993406,"msg":"request completed"}
+{"level":30,"time":1791397394986,"pid":7258,"hostname":"c448ec00e9de","reqId":"req-3","req":{"method":"POST","url":"/api/admin/data?source=whatever","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+✖ an unknown source is logged as from the API (2.456357ms)
+{"level":30,"time":1791397394988,"pid":7258,"hostname":"c448ec00e9de","reqId":"req-3","res":{"statusCode":200},"responseTime":1.8297700000000532,"msg":"request completed"}
+ℹ tests 24
+ℹ suites 0
+ℹ pass 13
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 553.404421
+
+✖ failing tests:
+
+test at test/config.test.ts:169:22
+✖ the version follows the live text: it changes on a save and on a valid reload from disk (0.394842ms)
+  TypeError: cfg.version is not a function
+      at TestContext.<anonymous> (/app/test/config.test.ts:196:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/config.test.ts:188:22
+✖ the value and its version are read together (0.286308ms)
+  TypeError: cfg.current is not a function
+      at TestContext.<anonymous> (/app/test/config.test.ts:219:34)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/config.test.ts:195:22
+✖ a save that names an older version is refused as a conflict and writes nothing (0.273585ms)
+  TypeError: cfg.version is not a function
+      at TestContext.<anonymous> (/app/test/config.test.ts:227:22)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/configSave.test.ts:47:22
+✖ AppState carries the version of the config it carries (28.432946ms)
+  TypeError: Cannot read properties of undefined (reading 'data')
+      at TestContext.<anonymous> (/app/test/configSave.test.ts:48:36)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at test/configSave.test.ts:53:22
+✖ a form save with the version it opened with saves, answers the new version and is logged (2.761801ms)
+  TypeError: Cannot read properties of undefined (reading 'data')
+      at TestContext.<anonymous> (/app/test/configSave.test.ts:54:37)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/configSave.test.ts:63:22
+✖ two saves from the same version: the first saves, the second is a 409 that writes nothing (0.590791ms)
+  TypeError: Cannot read properties of undefined (reading 'data')
+      at TestContext.<anonymous> (/app/test/configSave.test.ts:66:37)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/configSave.test.ts:77:22
+✖ the Advanced editor (replace=1) is checked the same way (0.513545ms)
+  TypeError: Cannot read properties of undefined (reading 'data')
+      at TestContext.<anonymous> (/app/test/configSave.test.ts:83:37)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/configSave.test.ts:84:22
+✖ a save with no version is not checked, and is logged as from the API (9.981983ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + undefined
+  - {
+  -   changed: [
+  -     'settings'
+  -   ],
+  -   file: 'data.json',
+  -   route: 'POST /api/admin/data',
+  -   source: 'api'
+  - }
+  
+      at TestContext.<anonymous> (/app/test/configSave.test.ts:93:10)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: { file: 'data.json', source: 'api', route: 'POST /api/admin/data', changed: [ 'settings' ] },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/configSave.test.ts:89:22
+✖ an invalid save is still a 400 (0.534294ms)
+  TypeError: Cannot read properties of undefined (reading 'data')
+      at TestContext.<anonymous> (/app/test/configSave.test.ts:98:72)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/configSave.test.ts:93:22
+✖ exercises.json: the GET gives the version with the document, a stale save is a 409, a fresh one is logged (0.949976ms)
+  TypeError: Cannot read properties of undefined (reading 'exercises')
+      at TestContext.<anonymous> (/app/test/configSave.test.ts:105:43)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/configSave.test.ts:110:22
+✖ an unknown source is logged as from the API (2.456357ms)
+  TypeError: Cannot read properties of undefined (reading 'source')
+      at TestContext.<anonymous> (/app/test/configSave.test.ts:125:72)
+      at processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
