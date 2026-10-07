@@ -244,13 +244,15 @@ export function routineIsValid(draft: RoutineDraft, original: RoutineDraft | und
     return draft.tasks.every(t => countOf(draft, t.taskId) <= Math.max(1, original ? countOf(original, t.taskId) : 0));
 }
 
-export function routineWarnings(draft: RoutineDraft, config: DataConfig): string[] {
+// `locked` (it runs now): every ✕ is disabled, so the advice says the ✕ waits for the run to end.
+export function routineWarnings(draft: RoutineDraft, config: DataConfig, locked: boolean): string[] {
     const warnings: string[] = [];
+    const remove = locked ? 'με το ✕ όταν τελειώσει' : 'με το ✕';
     for (const taskId of new Set(draft.tasks.map(t => t.taskId))) {
         const task = config.tasks.find(t => t.id === taskId);
         const n = countOf(draft, taskId);
-        if (!task) warnings.push(`«${taskId}»: δεν υπάρχει τέτοια εργασία, οπότε η ρουτίνα την παραλείπει. Βγάλ' την με το ✕.`);
-        else if (n > 1) warnings.push(`«${task.title}» είναι ${n} φορές στη ρουτίνα: ένα πάτημα στο Έτοιμο μπορεί να τις κλείσει μαζί. Βγάλε τη μία με το ✕.`);
+        if (!task) warnings.push(`«${taskId}»: δεν υπάρχει τέτοια εργασία, οπότε η ρουτίνα την παραλείπει. Βγάλ' την ${remove}.`);
+        else if (n > 1) warnings.push(`«${task.title}» είναι ${n} φορές στη ρουτίνα: ένα πάτημα στο Έτοιμο μπορεί να τις κλείσει μαζί. Βγάλε τη μία ${remove}.`);
     }
     return warnings;
 }

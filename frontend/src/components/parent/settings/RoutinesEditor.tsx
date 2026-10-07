@@ -80,7 +80,7 @@ function RoutineForm({ value, onChange }: FormProps<RoutineDraft>) {
                     </select>
                 )}
                 <p className="p-hint">Μια νέα εργασία φτιάχνεται στις Εργασίες, πιο κάτω. Τα λεπτά είναι ο χρόνος της σε αυτή τη ρουτίνα.</p>
-                {routineWarnings(value, config).map(w => <p key={w} className="p-hint p-warning">⚠ {w}</p>)}
+                {routineWarnings(value, config, locked).map(w => <p key={w} className="p-hint p-warning">⚠ {w}</p>)}
             </div>
 
             <div className="p-field" role="group" aria-labelledby={`${id}-kids`}>

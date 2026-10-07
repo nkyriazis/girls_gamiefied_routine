@@ -296,10 +296,20 @@ test('an oddity already in the data (a task twice, a task id that doesn\'t exist
     c.routineTasks.push({ id: 'rt-9', routineId: 'r-evening', taskId: 't-stroy', order: 5, durationSeconds: 60 });
     const d = routineDraft(c, 'r-evening');
     assert.equal(routineIsValid({ ...d, title: 'Βράδυ' }, d, c, false), true);
-    const warnings = routineWarnings(d, c);
+    const warnings = routineWarnings(d, c, false);
     assert.equal(warnings.length, 2);
     assert.match(warnings.join(' '), /Πλύσιμο Δοντιών/);
     assert.match(warnings.join(' '), /t-stroy/);
+    assert.ok(warnings.every(w => w.endsWith('με το ✕.')));
+});
+
+test('while it runs, the warnings say the ✕ waits for the run to end (every ✕ is disabled then)', () => {
+    const c = base();
+    c.routineTasks.push({ id: 'rt-8', routineId: 'r-evening', taskId: 't-brush', order: 4, durationSeconds: 60 });
+    c.routineTasks.push({ id: 'rt-9', routineId: 'r-evening', taskId: 't-stroy', order: 5, durationSeconds: 60 });
+    const warnings = routineWarnings(routineDraft(c, 'r-evening'), c, true);
+    assert.equal(warnings.length, 2);
+    assert.ok(warnings.every(w => w.endsWith('με το ✕ όταν τελειώσει.')));
 });
 
 test('while it runs, the task list is locked (add, remove, reorder); name, colour and durations still save', () => {
