@@ -2,7 +2,7 @@
 // with multiplication; what is left of a budget; the share of each (Ε΄ κεφ. 2.8 και 2.9:
 // πρόσθεση, αφαίρεση και πολλαπλασιασμός στους φυσικούς αριθμούς).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { extra, fmt, known, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { extra, fmt, known, people, sought, type Family, type Person, type Rng, type Wording } from '../../lib.ts';
 
 interface Cost { label: string; ops: string; value: number }
 interface Plan {
@@ -12,7 +12,7 @@ interface Plan {
   /** Does the number of travellers matter? */
   perPerson: boolean;
   /** A total with one thing forgotten, what was forgotten, and wrong explanations */
-  slip: { value: number; what: string; others: string[] };
+  slip: { value: number; what: string; others: Wording[] };
 }
 
 interface Setting {
@@ -35,7 +35,7 @@ const SETTINGS: Setting[] = [
           { label: 'Πήγαινε και έλα', ops: `${fmt(n * t + car)} × 2`, value: 2 * (n * t + car) },
         ],
         perPerson: true,
-        slip: { value: n * t + car, what: 'Την επιστροφή', others: ['Το αυτοκίνητο', 'Ένα άτομο'] },
+        slip: { value: n * t + car, what: 'Την επιστροφή', others: [['Το αυτοκίνητο', 'Το αμάξι'], 'Ένα άτομο'] },
       };
     },
     noise: r => `Το ταξίδι με το πλοίο κρατά ${extra(`${r.int(4, 7)} ώρες`)}.`,
@@ -52,7 +52,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fuel} + ${toll * 2} + ${night * 2}`, value: fuel + toll * 2 + night * 2 },
         ],
         perPerson: false,
-        slip: { value: fuel + toll + night * 2, what: 'Τα διόδια της επιστροφής', others: ['Τη βενζίνη του γυρισμού', 'Τη δεύτερη νύχτα στο ξενοδοχείο'] },
+        slip: { value: fuel + toll + night * 2, what: 'Τα διόδια της επιστροφής', others: [['Τη βενζίνη του γυρισμού', 'Τη βενζίνη ως εκεί', 'Τη βενζίνη για την επιστροφή'], ['Τη δεύτερη νύχτα στο ξενοδοχείο', 'Τη δεύτερη νύχτα στον ξενώνα', 'Τη δεύτερη νύχτα εκεί']] },
       };
     },
     noise: r => `Το χωριό απέχει ${extra(`${r.int(150, 320)} χιλιόμετρα`)}.`,
@@ -68,7 +68,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fmt(n * entry)} + ${park} + ${fuel}`, value: n * entry + park + fuel },
         ],
         perPerson: true,
-        slip: { value: (n - 1) * entry + park + fuel, what: 'Την είσοδο ενός ατόμου', others: ['Το πάρκινγκ του αυτοκινήτου', 'Τη βενζίνη ως εκεί'] },
+        slip: { value: (n - 1) * entry + park + fuel, what: 'Την είσοδο ενός ατόμου', others: [['Το πάρκινγκ του αυτοκινήτου', 'Το πάρκινγκ τους'], ['Τη βενζίνη ως εκεί', 'Τη βενζίνη για τη διαδρομή']] },
       };
     },
     noise: r => `Το πάρκο έχει ${extra(`${r.int(25, 60)} παιχνίδια`)}.`,
@@ -86,7 +86,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fmt(n * t * 2)} + ${fmt(n * mus)}`, value: n * t * 2 + n * mus },
         ],
         perPerson: true,
-        slip: { value: n * t + n * mus, what: 'Τα εισιτήρια του γυρισμού', others: ['Τα εισιτήρια του μουσείου', 'Ένα άτομο στο μουσείο'] },
+        slip: { value: n * t + n * mus, what: 'Τα εισιτήρια του γυρισμού', others: [['Τα εισιτήρια του μουσείου', 'Το μουσείο για όλους'], 'Ένα άτομο στο μουσείο'] },
       };
     },
     noise: r => `Το τρένο φεύγει ${extra(`στις ${r.int(6, 9)} το πρωί`)}.`,
@@ -103,7 +103,7 @@ const SETTINGS: Setting[] = [
           { label: 'Όλα μαζί', ops: `${fmt(n * pass * days)} + ${fuel}`, value: n * pass * days + fuel },
         ],
         perPerson: true,
-        slip: { value: n * pass + fuel, what: `Ότι κάνουν σκι ${days} ημέρες`, others: ['Τη βενζίνη του ταξιδιού', 'Το πάσο ενός ατόμου'] },
+        slip: { value: n * pass + fuel, what: `Ότι κάνουν σκι ${days} ημέρες`, others: [['Τη βενζίνη του ταξιδιού', 'Τη βενζίνη ως εκεί'], 'Το πάσο ενός ατόμου'] },
       };
     },
     noise: r => `Το βουνό έχει ύψος ${extra(`${fmt(r.step(1700, 2400, 10))} μέτρα`)}.`,

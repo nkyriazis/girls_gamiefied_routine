@@ -2,10 +2,7 @@
 // says what is missing; then the whole story comes, to read, solve and check
 // (Γ΄ κεφ. 19 «Προβλήματα» 4: «Διατύπωσε μια ερώτηση για αυτό το πρόβλημα»).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import {
-  count, extra, fmt, GIRLS, BOYS, HowMany, known, PEOPLE, sought, thing,
-  type Builder, type Draft, type Family, type Person, type Rng, type Thing,
-} from '../../lib.ts';
+import { BOYS, count, extra, fmt, GIRLS, HowMany, known, PEOPLE, sought, thing, type Builder, type Draft, type Family, type Person, type Rng, type Thing, type Wording } from '../../lib.ts';
 
 // What each kind of problem gives: the story with and without the number, what is missing,
 // and the operation that solves it
@@ -14,7 +11,7 @@ interface Parts {
   full: string;
   cut: string;
   missing: string;
-  wrongs: string[];
+  wrongs: Wording[];
   row: { op: string; name: string; answer: number; unit?: string; opUnit?: string };
   check?: { right: string; wrong: string[] };
 }
@@ -47,7 +44,7 @@ function buy(r: Rng, p: Person): Parts {
       cut: `${p.Nom} αγόρασε ${some(t)} ${t.manyAcc} ${why}. ${each} ${price} ευρώ. Πόσα ευρώ πλήρωσε;`,
       full: `${p.Nom} αγόρασε ${known(count(n, t, true))} ${why}. ${each} ${known(`${price} ευρώ`)}. ${noise} ${sought('Πόσα ευρώ πλήρωσε')};`,
       missing: `${HowMany(t)} ${t.manyAcc} αγόρασε`,
-      wrongs: [`Πόσο κοστίζει ${one(t)} ${t.one}`, `Πόσα χρήματα είχε μαζί ${p.his}`, 'Σε ποιο μαγαζί πήγε να ψωνίσει'],
+      wrongs: [`Πόσο κοστίζει ${one(t)} ${t.one}`, [`Πόσα χρήματα είχε μαζί ${p.his}`, 'Πόσα χρήματα είχε'], ['Σε ποιο μαγαζί πήγε να ψωνίσει', 'Σε ποιο μαγαζί πήγε']],
       row: { op: `${n} × ${price} =`, name: 'Πλήρωσε', answer: cost, unit: 'ευρώ' },
       check: { right: `${fmt(cost)} : ${n} = ${price}`, wrong: [`${fmt(cost)} + ${n} = ${fmt(cost + n)}`, `${n} + ${price} = ${n + price}`] },
     };
@@ -58,7 +55,7 @@ function buy(r: Rng, p: Person): Parts {
     cut: `${p.Nom} αγόρασε ${count(n, t, true)} ${why}. Πόσα ευρώ πλήρωσε;`,
     full: `${p.Nom} αγόρασε ${known(count(n, t, true))} ${why}. ${each} ${known(`${price} ευρώ`)}. ${noise} ${sought('Πόσα ευρώ πλήρωσε')};`,
     missing: `Πόσο κοστίζει ${one(t)} ${t.one}`,
-    wrongs: [`${HowMany(t)} ${t.manyAcc} αγόρασε`, `Πόσα χρήματα είχε μαζί ${p.his}`, 'Τι ώρα πήγε στο μαγαζί το πρωί'],
+    wrongs: [`${HowMany(t)} ${t.manyAcc} αγόρασε`, [`Πόσα χρήματα είχε μαζί ${p.his}`, 'Πόσα χρήματα είχε'], ['Τι ώρα πήγε στο μαγαζί το πρωί', 'Τι ώρα πήγε στο μαγαζί']],
     row: { op: `${n} × ${price} =`, name: 'Πλήρωσε', answer: cost, unit: 'ευρώ' },
     check: { right: `${fmt(cost)} : ${n} = ${price}`, wrong: [`${fmt(cost)} + ${n} = ${fmt(cost + n)}`, `${n} + ${price} = ${n + price}`] },
   };
@@ -108,7 +105,7 @@ function share(r: Rng): Parts {
     cut: `${G.Nom} ${made} ${count(total, t, true)} και ${them} μοίρασε εξίσου στα εγγόνια ${G.his}. ${HowMany(t)} ${t.manyAcc} πήρε το καθένα;`,
     full: `${G.Nom} ${made} ${known(count(total, t, true))} και ${them} μοίρασε εξίσου στα ${known(`${k} εγγόνια`)} ${G.his}. ${noise} ${sought(`${HowMany(t)} ${t.manyAcc} πήρε το καθένα`)};`,
     missing: `Πόσα εγγόνια έχει ${G.Nom === 'Η γιαγιά' ? 'η γιαγιά' : 'ο παππούς'}`,
-    wrongs: [`${HowMany(t)} ${t.manyAcc} ${made}`, `Πόσων χρονών είναι ${G.Nom === 'Η γιαγιά' ? 'η γιαγιά' : 'ο παππούς'}`, 'Τι ώρα ήταν το απόγευμα'],
+    wrongs: [`${HowMany(t)} ${t.manyAcc} ${made}`, `Πόσων χρονών είναι ${G.Nom === 'Η γιαγιά' ? 'η γιαγιά' : 'ο παππούς'}`, ['Τι ώρα ήταν το απόγευμα', 'Τι ώρα ήταν']],
     row: { op: `${total} : ${k} =`, name: 'Πήρε το καθένα', answer: each, unit: t.manyAcc },
     check: { right: `${k} × ${each} = ${total}`, wrong: [`${each} + ${k} = ${each + k}`, `${total} + ${k} = ${total + k}`] },
   };
@@ -129,7 +126,7 @@ function ride(r: Rng): Parts {
     cut: `${x.at} κατέβηκαν από ${x.the} ${off} επιβάτες και δεν ανέβηκε κανείς. Πόσοι επιβάτες έμειναν;`,
     full: `${x.v} είχε ${known(`${fmt(on)} επιβάτες`)}. ${x.at} κατέβηκαν ${known(`${off} επιβάτες`)} και δεν ανέβηκε κανείς. ${x.ex(r)} ${sought('Πόσοι επιβάτες έμειναν')};`,
     missing: 'Πόσοι επιβάτες ήταν στην αρχή',
-    wrongs: ['Πόσοι επιβάτες κατέβηκαν τελικά', `Πόσες θέσεις έχει ${x.the}`, `Τι ώρα ξεκίνησε ${x.the}`],
+    wrongs: [['Πόσοι επιβάτες κατέβηκαν τελικά', 'Πόσοι κατέβηκαν τελικά'], `Πόσες θέσεις έχει ${x.the}`, `Τι ώρα ξεκίνησε ${x.the}`],
     row: { op: `${fmt(on)} − ${off} =`, name: 'Έμειναν', answer: on - off, unit: 'επιβάτες' },
     check: { right: `${fmt(on - off)} + ${off} = ${fmt(on)}`, wrong: [`${fmt(on)} + ${off} = ${fmt(on + off)}`, `${off} + ${off} = ${2 * off}`] },
   };

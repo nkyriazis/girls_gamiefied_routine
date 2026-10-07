@@ -91,8 +91,8 @@ export const equalGroups: Family = {
     const missing = r.chance(0.35);
     if (missing) {
       steps.push(b.choice('read', 'Μπορούμε να απαντήσουμε;', `Όχι, δεν λέει ${howMany(item)} έχει κάθε ${cont.one}`,
-        [`Ναι, είναι ${count(n, item)}, όσ${cont.g === 'n' ? 'α' : cont.g === 'f' ? 'ες' : 'οι'} και ${the(cont, false)} ${cont.many}`,
-          `Ναι, αρκεί να μετρήσουμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`],
+        [[`Ναι, είναι ${count(n, item)}, όσ${cont.g === 'n' ? 'α' : cont.g === 'f' ? 'ες' : 'οι'} και ${the(cont, false)} ${cont.many}`, `Ναι, είναι ${count(n, item)}`],
+          [`Ναι, αρκεί να μετρήσουμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`, `Ναι, μετράμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`]],
         `Ξέρουμε ${howMany(cont)} ${cont.manyAcc} είναι. Ξέρουμε και τι έχει ${cont.g === 'n' ? 'το καθένα' : 'η καθεμία'};`,
         build(id, id, id, false)));
     }
@@ -107,9 +107,10 @@ export const equalGroups: Family = {
       { label: r.chance(0.5) ? `${n} × ${k} =` : 'Όλα μαζί', answer: total, unit: item.manyAcc },
     ], `Μετράμε ανά ${k}: ${Array.from({ length: Math.min(n, 4) }, (_x, i) => fmt((i + 1) * k)).join(', ')}${n > 4 ? ', …' : ''}`));
     steps.push(n <= 5
-      ? b.choice('check', 'Πώς ελέγχουμε;', `${Array(n).fill(k).join(' + ')} = ${fmt(total)}`,
-        // one group too many or one too few (a term more, a term fewer), or n + k when there are only two
-        [n > 2 ? `${Array(n - 1).fill(k).join(' + ')} = ${fmt(k * (n - 1))}` : `${n} + ${k} = ${n + k}`, `${Array(n + 1).fill(k).join(' + ')} = ${fmt(k * (n + 1))}`],
+      ? b.choice('check', 'Πώς ελέγχουμε;', [`${Array(n).fill(k).join(' + ')} = ${fmt(total)}`, `${k} × ${n} = ${fmt(total)}`],
+        // one group too many or one too few (a term more, a term fewer, or as a product), or n + k when there are only two
+        [n > 2 ? [`${Array(n - 1).fill(k).join(' + ')} = ${fmt(k * (n - 1))}`, `${k} × ${n - 1} = ${fmt(k * (n - 1))}`] : `${n} + ${k} = ${n + k}`,
+          [`${Array(n + 1).fill(k).join(' + ')} = ${fmt(k * (n + 1))}`, `${k} × ${n + 1} = ${fmt(k * (n + 1))}`]],
         `Προσθέτουμε ${n} φορές το ${k}.`)
       : b.choice('check', 'Πώς ελέγχουμε;', `${k} × ${n} = ${fmt(total)}`,
         [`${n} + ${k} = ${n + k}`, `${k} × ${n + 1} = ${fmt(k * (n + 1))}`],

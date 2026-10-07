@@ -1,6 +1,6 @@
 // "If Nikos gives her 39, they will have the same": work backwards from the end
 // (Ε΄ Επαναληπτικό 2, 2ο πρόβλημα).
-import { count, extra, fmt, HowMany, known, people, sought, thing, type Family } from '../../lib.ts';
+import { count, extra, fmt, HowMany, known, people, sought, STRATEGY, thing, type Family } from '../../lib.ts';
 
 const COLLECTIONS = [
   { t: thing('γραμματόσημο', 'γραμματόσημα', 'n'), of: 'γραμματοσήμων', noise: (n: number) => `από ${n} χώρες` },
@@ -34,8 +34,8 @@ export const equalize: Family = {
       + `${sought(`${HowMany(t)} ${t.manyAcc} έχει ${other.nom}`)};`;
     const steps = [
       b.tag(undefined, 'Το «θα έχουν τον ίδιο αριθμό» είναι κι αυτό κάτι που ξέρουμε.'),
-      b.choice('plan', 'Ποια στρατηγική ταιριάζει;', 'Εργάζομαι αντίστροφα: από το τέλος',
-        ['Αναζητώ ένα μοτίβο στους αριθμούς', `Προσθέτω ${fmt(has)} + ${fmt(give)} και τελειώνω εκεί`],
+      b.choice('plan', 'Ποια στρατηγική ταιριάζει;', STRATEGY.backwards,
+        [STRATEGY.pattern, [`Προσθέτω ${fmt(has)} + ${fmt(give)} και τελειώνω εκεί`, `Προσθέτω ${fmt(has)} + ${fmt(give)}`, `Προσθέτω ${fmt(has)} + ${fmt(give)} και τελειώνω`]],
         'Ξέρουμε τι γίνεται στο τέλος. Από εκεί γυρίζουμε πίσω.'),
       b.numbers('solve', 'Πηγαίνουμε αντίστροφα.', [
         { label: `${a.Nom} μετά`, answer: after },

@@ -1,6 +1,6 @@
 // Two quantities with a known total and a known difference: take the difference away, halve,
 // then add it back (Ε΄ κεφ. 1.3, στρατηγική «Παρουσιάζω το πρόβλημα» με σχέδιο).
-import { extra, fmt, known, people, sought, type Family, type Person } from '../../lib.ts';
+import { extra, fmt, known, people, sought, STRATEGY, type Family, type Person } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 interface Setting {
@@ -118,8 +118,8 @@ export const sumDifference: Family = {
     const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε το σύνολο και τη διαφορά. Ό,τι δεν αλλάζει τους αριθμούς το αφήνουμε.')];
     if (r.chance(0.6)) {
       steps.push(b.choice('plan', 'Ποια στρατηγική μας βοηθά;',
-        'Παρουσιάζω το πρόβλημα με σχέδιο',
-        [`Μοιράζω τα ${fmt(T)} στα δύο και τελείωσα`, `Αφαιρώ ${fmt(T)} − ${fmt(d)} και τελείωσα`],
+        STRATEGY.draw,
+        [[`Μοιράζω τα ${fmt(T)} στα δύο και τελείωσα`, `Μοιράζω τα ${fmt(T)} στα δύο`], [`Αφαιρώ ${fmt(T)} − ${fmt(d)} και τελείωσα`, `Αφαιρώ ${fmt(T)} − ${fmt(d)}`]],
         `Αν βγάλουμε τη διαφορά, ${['μαθητές', 'κάτοικοι', 'επισκέπτες'].includes(s.unit) ? 'οι' : 'τα'} ${withUnit(s, T - d).replace('κατοίκους', 'κάτοικοι')} που μένουν μοιράζονται στα δύο εξίσου.`));
     }
     steps.push(b.numbers('solve', 'Λύνουμε: βγάζουμε τη διαφορά, μοιράζουμε στα δύο, ξαναβάζουμε τη διαφορά.', [
@@ -134,7 +134,7 @@ export const sumDifference: Family = {
       ], 'Μαζί πρέπει να κάνουν το σύνολο, και η διαφορά τους να είναι αυτή της ιστορίας.')
       : b.choice('check', `Κάποιος απάντησε «${fmt(T / 2)} και ${fmt(T / 2)}». Γιατί είναι λάθος;`,
 `Γιατί δεν έχουν διαφορά ${fmt(d)}`,
-        ['Δεν είναι λάθος καθόλου', `Γιατί όλα μαζί δεν κάνουν ${fmt(T)}`],
+        [['Δεν είναι λάθος καθόλου', 'Δεν είναι λάθος', 'Δεν είναι λάθος, ισχύουν όλα'], [`Γιατί όλα μαζί δεν κάνουν ${fmt(T)}`, `Δεν κάνουν ${fmt(T)} μαζί`, `Γιατί μαζί δεν κάνουν ${fmt(T)}`]],
         `Ελέγχουμε και τα δύο: το σύνολο και τη διαφορά.`));
     return { title: s.title, story, steps };
   },

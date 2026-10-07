@@ -2,7 +2,7 @@
 // into N exactly, the last day is shorter: one more day for the pages that are left
 // (Γ΄ κεφ. 18 «Διαιρέσεις»: 42 : 5, τα δύο διαδοχικά γινόμενα 5 × 8 = 40 και 5 × 9 = 45).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { cap, extra, fmt, known, PEOPLE, sought, type Family } from '../../lib.ts';
+import { cap, extra, fmt, known, PEOPLE, sought, type Family, type Wording } from '../../lib.ts';
 
 const BOOKS = [
   'ένα βιβλίο με παραμύθια', 'ένα βιβλίο για τους δεινόσαυρους', 'ένα μυθιστόρημα περιπέτειας',
@@ -100,8 +100,8 @@ export const pagesPerDay: Family = {
       : `Σκέψου την προπαίδεια του ${k}: ποιο γινόμενο φτάνει πιο κοντά στο ${fmt(left)} χωρίς να το ξεπερνά;`));
     const restText = rest === 1 ? 'τη μία σελίδα που μένει' : `τις ${rest} σελίδες που μένουν`;
     if (r.chance(0.5)) {
-      const wrongs = [`Σε ${q}, γιατί τόσες φορές χωράει το ${k} στο ${fmt(left)}`];
-      if (rest > 1 && rest !== q && rest !== q + 1) wrongs.push(`Σε ${rest}, γιατί τόσες σελίδες περισσεύουν`);
+      const wrongs: Wording[] = [[`Σε ${q}, γιατί τόσες φορές χωράει το ${k} στο ${fmt(left)}`, `Σε ${q}, όσες φορές χωράει το ${k}`]];
+      if (rest > 1 && rest !== q && rest !== q + 1) wrongs.push([`Σε ${rest}, γιατί τόσες σελίδες περισσεύουν`, `Σε ${rest}, όσες σελίδες περισσεύουν`, `Σε ${rest}, όσες περισσεύουν`]);
       else if (rest > 1) wrongs.push(`Σε ${q + rest}: ${q} και οι ${rest} σελίδες που περισσεύουν`);
       steps.push(b.choice('check', `${w.HowMany} ${finish} λοιπόν το βιβλίο;`,
         `Σε ${q + 1}, ${w.oneMore} για ${rest === 1 ? 'τη μία σελίδα' : `τις ${rest} σελίδες`}`, wrongs,
@@ -109,8 +109,8 @@ export const pagesPerDay: Family = {
     } else {
       steps.push(b.choice('check', `Τι σημαίνει ${rest === 1 ? 'η σελίδα που περισσεύει' : `ότι περισσεύουν ${rest} σελίδες`};`,
         `Ότι θα χρειαστεί ${w.oneMore}`,
-        [rest === 1 ? 'Ότι αυτή δεν θα διαβαστεί' : 'Ότι αυτές δεν θα διαβαστούν',
-          they ? `Ότι θα το τελειώσουν σε ${q} ${w.many}` : `Ότι το βιβλίο θα τελειώσει σε ${q} ${w.many}`],
+        [rest === 1 ? ['Ότι αυτή δεν θα διαβαστεί', 'Ότι αυτή δεν θα διαβαστεί καθόλου', 'Ότι δεν θα διαβαστεί'] : ['Ότι αυτές δεν θα διαβαστούν', 'Ότι αυτές δεν θα διαβαστούν καθόλου', 'Ότι δεν θα διαβαστούν'],
+          they ? [`Ότι θα το τελειώσουν σε ${q} ${w.many}`, `Ότι τελειώνουν σε ${q} ${w.many}`] : [`Ότι το βιβλίο θα τελειώσει σε ${q} ${w.many}`, `Ότι θα τελειώσει σε ${q} ${w.many}`, `Ότι τελειώνει σε ${q} ${w.many}`]],
         `Μετά από ${q} ${w.many} το βιβλίο δεν έχει τελειώσει ακόμη.`));
     }
     return { title, story, steps };

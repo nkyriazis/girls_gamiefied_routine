@@ -1,13 +1,13 @@
 // A story without numbers first: which question fits it? Then the same story with its
 // numbers, to tag, solve and check (Γ΄ κεφ. 12 «Προβλήματα»; «προβλήματα χωρίς αριθμούς»).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { count, extra, fmt, known, people, sought, thing, type Family, type Person, type Rng, type Thing } from '../../lib.ts';
+import { count, extra, fmt, known, people, sought, thing, type Family, type Person, type Rng, type Thing, type Wording } from '../../lib.ts';
 
 interface Tale {
   plain: string;        // the story without numbers
   story: string;        // with numbers and marks
   right: string;        // the question that fits
-  wrongs: string[];     // questions that don't
+  wrongs: Wording[];    // questions that don't (in a few wordings each)
   a: number; b: number; op: '+' | '−';
   unit: string;
   plan: string;         // why this operation
@@ -28,7 +28,9 @@ function gift(r: Rng, p: Person, q: Person, noise: (present?: boolean) => string
     plain: `${p.Nom} είχε ${some(t)} ${t.manyAcc}. ${q.Nom} ${him(p)} χάρισε ${some(t)} ακόμα.`,
     story: `${p.Nom} είχε ${known(count(a, t, true))}. ${q.Nom} ${him(p)} χάρισε ${known(`άλλ${t.g === 'n' ? 'α' : t.g === 'f' ? 'ες' : 'ους'} ${count(b, t, true)}`)}. ${noise()} ${sought(Q)};`,
     right: `${Q};`,
-    wrongs: [`${Many(t)} ${t.manyAcc} έχασε ${p.nom} στο παιχνίδι;`, `Πόσο κοστίζει ${t.g === 'n' ? 'ένα' : t.g === 'f' ? 'μία' : 'ένας'} ${t.one} στο περίπτερο;`, `Πόσων χρονών είναι τώρα ${q.nom};`],
+    wrongs: [[`${Many(t)} ${t.manyAcc} έχασε ${p.nom} στο παιχνίδι;`, `${Many(t)} ${t.manyAcc} έχασε ${p.nom};`],
+      [`Πόσο κοστίζει ${t.g === 'n' ? 'ένα' : t.g === 'f' ? 'μία' : 'ένας'} ${t.one} στο περίπτερο;`, `Πόσο κοστίζει ${t.g === 'n' ? 'ένα' : t.g === 'f' ? 'μία' : 'ένας'} ${t.one};`],
+      [`Πόσων χρονών είναι τώρα ${q.nom};`, `Πόσων χρονών είναι ${q.nom};`]],
     a, b, op: '+', unit: t.manyAcc, plan: 'Πήρε κι άλλα: τα έχει όλα μαζί.', label: 'Τώρα έχει',
   };
 }
@@ -48,7 +50,9 @@ function sold(r: Rng, _p: Person, _q: Person, noise: (present?: boolean) => stri
     plain: `${s.where} υπήρχαν ${some(t)} ${t.manyAcc}. ${s.who} ${s.verb} ${some(t)} από αυτά το πρωί.`.replace('μερικές από αυτά', 'μερικές από αυτές'),
     story: `${s.where} υπήρχαν ${known(count(a, t))}. ${s.who} ${s.verb} ${known(count(b, t, true))} το πρωί. ${noise()} ${sought(Q)};`,
     right: `${Q};`,
-    wrongs: [`${Many(t)} ${t.manyAcc} θα φέρουν αύριο ${s.where.replace(/^Σ/, 'σ')};`, `Πόσο κοστίζει ${t.g === 'f' ? 'μία' : 'ένα'} ${t.one} ${s.where.replace(/^Σ/, 'σ')};`, `Τι ώρα ανοίγει ${s.shop} τις καθημερινές;`],
+    wrongs: [[`${Many(t)} ${t.manyAcc} θα φέρουν αύριο ${s.where.replace(/^Σ/, 'σ')};`, `${Many(t)} ${t.manyAcc} θα φέρουν αύριο;`],
+      [`Πόσο κοστίζει ${t.g === 'f' ? 'μία' : 'ένα'} ${t.one} ${s.where.replace(/^Σ/, 'σ')};`, `Πόσο κοστίζει ${t.g === 'f' ? 'μία' : 'ένα'} ${t.one};`],
+      [`Τι ώρα ανοίγει ${s.shop} τις καθημερινές;`, `Τι ώρα ανοίγει ${s.shop};`]],
     a, b, op: '−', unit: t.many, plan: 'Κάποια έφυγαν: μένουν λιγότερα.', label: 'Έμειναν',
   };
 }
@@ -69,7 +73,7 @@ function compare(r: Rng, p: Person, q: Person, noise: (present?: boolean) => str
     story: `${p.Nom} ${s.verb} ${known(count(b, t, true))} ${s.tail}. ${q.Nom} ${s.verb} ${known(count(a, t, true))}. ${noise()} ${sought(Q)};`,
     right: `${Q};`,
     // The comparison the other way round, both together (the usual slips), what the story already says
-    wrongs: [`${Many(t)} ${more(t)} ${t.manyAcc} ${s.verb} ${p.nom} από ${q.acc};`, `${Many(t)} ${t.manyAcc} ${s.pl} μαζί ${p.nom} και ${q.nom} ${s.at};`, `${Many(t)} ${t.manyAcc} ${s.verb} ${q.nom} ${s.tail} χθες;`],
+    wrongs: [`${Many(t)} ${more(t)} ${t.manyAcc} ${s.verb} ${p.nom} από ${q.acc};`, [`${Many(t)} ${t.manyAcc} ${s.pl} μαζί ${p.nom} και ${q.nom} ${s.at};`, `${Many(t)} ${t.manyAcc} ${s.pl} μαζί ${p.nom} και ${q.nom};`], `${Many(t)} ${t.manyAcc} ${s.verb} ${q.nom} ${s.tail} χθες;`],
     a, b, op: '−', unit: t.manyAcc, plan: 'Η διαφορά βρίσκεται με αφαίρεση.', label: 'Η διαφορά',
   };
 }
@@ -78,13 +82,13 @@ function compare(r: Rng, p: Person, q: Person, noise: (present?: boolean) => str
 function parts(r: Rng, _p: Person, _q: Person, noise: (present?: boolean) => string): Tale {
   const s = r.pick([
     { whole: thing('παιδί', 'παιδιά', 'n'), x: 'αγόρια', y: thing('κορίτσι', 'κορίτσια', 'n'), where: 'Στο πούλμαν της εκδρομής', verb: 'κάθονται', place: 'στο πούλμαν',
-      wrong: ['Πόσα παιδιά έχει όλο το σχολείο;', 'Πόσων χρονών είναι ο οδηγός του πούλμαν;', 'Πόσες ώρες κρατά το ταξίδι της εκδρομής;'] },
+      wrong: [['Πόσα παιδιά έχει όλο το σχολείο;', 'Πόσα παιδιά έχει το σχολείο;'], ['Πόσων χρονών είναι ο οδηγός του πούλμαν;', 'Πόσων χρονών είναι ο οδηγός;'], ['Πόσες ώρες κρατά το ταξίδι της εκδρομής;', 'Πόσες ώρες κρατά το ταξίδι;']] },
     { whole: thing('λουλούδι', 'λουλούδια', 'n'), x: 'τριαντάφυλλα', y: thing('μαργαρίτα', 'μαργαρίτες', 'f'), where: 'Στον κήπο της γιαγιάς', verb: 'υπάρχουν', place: 'στον κήπο',
-      wrong: ['Πόσα λουλούδια έκοψε η γιαγιά για το βάζο;', 'Πόσων χρονών είναι η γιαγιά φέτος;', 'Τι χρώμα έχουν τα τριαντάφυλλα του κήπου;'] },
+      wrong: [['Πόσα λουλούδια έκοψε η γιαγιά για το βάζο;', 'Πόσα λουλούδια έκοψε η γιαγιά;'], ['Πόσων χρονών είναι η γιαγιά φέτος;', 'Πόσων χρονών είναι η γιαγιά;'], ['Τι χρώμα έχουν τα τριαντάφυλλα του κήπου;', 'Τι χρώμα έχουν τα τριαντάφυλλα;']] },
     { whole: thing('δέντρο', 'δέντρα', 'n'), x: 'ελιές', y: thing('λεμονιά', 'λεμονιές', 'f'), where: 'Στο κτήμα του παππού', verb: 'υπάρχουν', place: 'στο κτήμα',
-      wrong: ['Πόσα κιλά λάδι βγάζει ο παππούς;', 'Πόσα δέντρα φύτεψε φέτος ο παππούς;', 'Πόσο μεγάλο είναι το κτήμα του παππού;'] },
+      wrong: [['Πόσα κιλά λάδι βγάζει ο παππούς;', 'Πόσα κιλά λάδι βγάζει ο παππούς κάθε χρόνο;'], ['Πόσα δέντρα φύτεψε φέτος ο παππούς;', 'Πόσα δέντρα φύτεψε ο παππούς;'], ['Πόσο μεγάλο είναι το κτήμα του παππού;', 'Πόσο μεγάλο είναι το κτήμα;']] },
     { whole: thing('βιβλίο', 'βιβλία', 'n'), x: 'παραμύθια', y: thing('κόμικ', 'κόμικ', 'n'), where: 'Στη βιβλιοθήκη της τάξης', verb: 'υπάρχουν', place: 'στη βιβλιοθήκη',
-      wrong: ['Πόσα βιβλία δανείστηκαν τα παιδιά της τάξης;', 'Πόσες σελίδες έχει κάθε παραμύθι;', 'Πόσα ράφια έχει η βιβλιοθήκη;'] },
+      wrong: [['Πόσα βιβλία δανείστηκαν τα παιδιά της τάξης;', 'Πόσα βιβλία δανείστηκαν τα παιδιά;'], ['Πόσες σελίδες έχει κάθε παραμύθι;', 'Πόσες σελίδες έχει κάθε παραμύθι της τάξης;'], ['Πόσα ράφια έχει η βιβλιοθήκη;', 'Πόσα ράφια έχει η βιβλιοθήκη της τάξης;']] },
   ]);
   const a = r.int(30, 120), b = r.int(8, a - 8);
   const Q = `${Many(s.y, false)} ${s.y.many} ${s.verb} ${s.place}`;
@@ -110,7 +114,7 @@ function spend(r: Rng, p: Person, _q: Person, noise: (present?: boolean) => stri
     plain: `${p.Nom} είχε μερικά χρήματα στον κουμπαρά. Πήρε κάποια από αυτά και αγόρασε ${item.acc}.`,
     story: `${p.Nom} είχε ${known(`${fmt(a)} ευρώ`)} στον κουμπαρά. Πήρε ${known(`${b} ευρώ`)} από αυτά και αγόρασε ${item.acc}. ${noise()} ${sought(Q)};`,
     right: `${Q};`,
-    wrongs: [`Πόσα ευρώ κέρδισε ${p.nom};`, 'Πού πήγε για ψώνια;', 'Πόσα ευρώ έχει στην τράπεζα;'],
+    wrongs: [[`Πόσα ευρώ κέρδισε ${p.nom};`, 'Πόσα ευρώ κέρδισε;'], ['Πού πήγε για ψώνια;', 'Σε ποιο μαγαζί πήγε;'], ['Πόσα ευρώ έχει στην τράπεζα;', 'Πόσα έχει στην τράπεζα;']],
     a, b, op: '−', unit: 'ευρώ', plan: 'Ξόδεψε χρήματα: μένουν λιγότερα.', label: 'Έμειναν',
   };
 }
@@ -118,10 +122,10 @@ function spend(r: Rng, p: Person, _q: Person, noise: (present?: boolean) => stri
 // 6. Two parts of a day: put together
 function twoTimes(r: Rng, p: Person, _q: Person, noise: (present?: boolean) => string): Tale {
   const s = r.pick([
-    { t: thing('κοχύλι', 'κοχύλια', 'n'), verb: 'μάζεψε', where: 'στην παραλία', wrong: 'Πόσες ώρες έμεινε στην παραλία;' },
-    { t: thing('σελίδα', 'σελίδες', 'f'), verb: 'διάβασε', where: 'από το βιβλίο του', wrong: 'Πόσες σελίδες έχει όλο το βιβλίο;' },
-    { t: thing('κάστανο', 'κάστανα', 'n'), verb: 'μάζεψε', where: 'στο δάσος', wrong: 'Πόσο μακριά από το σπίτι είναι το δάσος;' },
-    { t: thing('λουλούδι', 'λουλούδια', 'n'), verb: 'φύτεψε', where: 'στον κήπο', wrong: 'Πόσο μεγάλος είναι ο κήπος του σπιτιού;' },
+    { t: thing('κοχύλι', 'κοχύλια', 'n'), verb: 'μάζεψε', where: 'στην παραλία', wrong: ['Πόσες ώρες έμεινε στην παραλία;', 'Πόσες ώρες έμεινε εκεί;'] },
+    { t: thing('σελίδα', 'σελίδες', 'f'), verb: 'διάβασε', where: 'από το βιβλίο του', wrong: ['Πόσες σελίδες έχει όλο το βιβλίο;', 'Πόσες σελίδες έχει το βιβλίο;'] },
+    { t: thing('κάστανο', 'κάστανα', 'n'), verb: 'μάζεψε', where: 'στο δάσος', wrong: ['Πόσο μακριά από το σπίτι είναι το δάσος;', 'Πόσο μακριά είναι το δάσος;'] },
+    { t: thing('λουλούδι', 'λουλούδια', 'n'), verb: 'φύτεψε', where: 'στον κήπο', wrong: ['Πόσο μεγάλος είναι ο κήπος του σπιτιού;', 'Πόσο μεγάλος είναι ο κήπος;'] },
   ]);
   const t = s.t;
   const where = s.where.replace('του', p.his);
@@ -131,7 +135,8 @@ function twoTimes(r: Rng, p: Person, _q: Person, noise: (present?: boolean) => s
     plain: `Το πρωί ${p.nom} ${s.verb} ${some(t)} ${t.manyAcc} ${where}. Το απόγευμα ${s.verb} ${some(t)} ακόμα.`,
     story: `Το πρωί ${p.nom} ${s.verb} ${known(count(a, t, true))} ${where}. Το απόγευμα ${s.verb} ${known(`άλλ${t.g === 'n' ? 'α' : t.g === 'f' ? 'ες' : 'ους'} ${count(b, t, true)}`)}. ${noise()} ${sought(Q)};`,
     right: `${Q};`,
-    wrongs: [`${Many(t)} ${t.manyAcc} έχασε το βράδυ;`, s.wrong, `${Many(t)} ${t.manyAcc} ${s.verb} το πρωί ${p.female ? 'η μαμά της' : 'η μαμά του'};`],
+    wrongs: [[`${Many(t)} ${t.manyAcc} έχασε το βράδυ;`, `${Many(t)} ${t.manyAcc} έχασε το βράδυ στον δρόμο;`], s.wrong,
+      [`${Many(t)} ${t.manyAcc} ${s.verb} το πρωί ${p.female ? 'η μαμά της' : 'η μαμά του'};`, `${Many(t)} ${t.manyAcc} ${s.verb} ${p.female ? 'η μαμά της' : 'η μαμά του'};`]],
     a, b, op: '+', unit: t.manyAcc, plan: 'Βάζουμε μαζί το πρωί και το απόγευμα.', label: 'Όλη τη μέρα',
   };
 }

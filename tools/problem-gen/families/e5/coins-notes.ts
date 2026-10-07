@@ -1,6 +1,6 @@
 // Money in coins or notes of one kind: turn it into euros, then buy with it (Ε΄ Επαναληπτικό 1,
 // 3ο πρόβλημα: «Η Δανάη ανοίγει τον κουμπαρά της και βρίσκει 146 κέρματα των 50 λεπτών»).
-import { extra, fmt, known, people, sought, type Family, type Person } from '../../lib.ts';
+import { extra, fmt, known, NO_MISTAKE, people, sought, type Family, type Person } from '../../lib.ts';
 import type { ProblemStep } from '../../../../shared/types.ts';
 
 interface Coin {
@@ -172,7 +172,7 @@ export const coinsNotes: Family = {
         ? b.numbers('check', 'Πώς ελέγχουμε; Όλα μαζί πρέπει να κάνουν όσα ήταν στην αρχή.', [{ label: `${p1} + ${p2} + ${p3} =`, answer: euros, unit: '€' }])
         : b.choice('check', `Κάποιος απάντησε «${fmt(naive)} €». Τι έκανε λάθος;`,
           `Μέτρησε κάθε ${coin.short === 'κέρματα' ? 'κέρμα' : 'χαρτονόμισμα'} σαν 1 €`,
-          ['Κανένα λάθος, είναι σωστό', `Ξέχασε να αφαιρέσει ${i2.the}`],
+          [NO_MISTAKE, [`Ξέχασε να αφαιρέσει ${i2.the}`, `Δεν αφαίρεσε ${i2.the}`]],
           `Τα ${coin.short} δεν αξίζουν 1 € το καθένα.`));
     }
     return { title: s.title, story, steps };

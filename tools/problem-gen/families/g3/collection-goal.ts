@@ -69,7 +69,7 @@ export const collectionGoal: Family = {
     const steps: ProblemStep[] = [b.tag(undefined, 'Χρειαζόμαστε όσα μάζεψε κάθε τάξη και τον στόχο.')];
     if (more) {
       steps.push(b.choice('plan', 'Τι βρίσκουμε πρώτα;', `${P.Many} ${t.short} μάζεψε η ${c2} τάξη`,
-        [`${P.Many} ${t.short} λείπουν για τον στόχο`, `${P.Many} ${t.short} μάζεψαν μαζί`],
+        [[`${P.Many} ${t.short} λείπουν για τον στόχο`, `${P.Many} ${t.short} λείπουν`], [`${P.Many} ${t.short} μάζεψαν μαζί`, `${P.Many} ${t.short} μάζεψαν μαζί οι δύο τάξεις`]],
         `Για να βρούμε όσα μάζεψαν μαζί, πρέπει να ξέρουμε πόσα μάζεψε κάθε τάξη.`));
     } else if (r.chance(0.4)) {
       steps.push(b.choice('plan', 'Ποιες πράξεις μας βοηθούν;', 'Πρώτα πρόσθεση, μετά αφαίρεση',

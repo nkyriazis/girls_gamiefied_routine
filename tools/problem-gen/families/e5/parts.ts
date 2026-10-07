@@ -1,6 +1,6 @@
 // A total, one known part, and the rest split in a ratio: "the volleyballs were twice
 // the footballs" (Ε΄ κεφ. 1.3 «Πώς λύνουμε ένα πρόβλημα»).
-import { extra, fmt, known, sought, type Family } from '../../lib.ts';
+import { extra, fmt, known, sought, STRATEGY, type Family } from '../../lib.ts';
 
 type Times = { f: string; n: string };
 const TIMES: Record<number, Times> = {
@@ -109,8 +109,8 @@ export const parts: Family = {
     const steps = [
       b.tag(undefined, `Μια σχέση («${times}») είναι κι αυτή κάτι που γνωρίζουμε. Κάτι που δεν αλλάζει τους αριθμούς δεν χρειάζεται.`),
       b.choice('plan', 'Ποια στρατηγική μας βοηθά περισσότερο;',
-        'Παρουσιάζω το πρόβλημα με σχέδιο',
-        ['Προσθέτω τους αριθμούς του προβλήματος', 'Μοιράζω εξίσου στα δύο είδη'],
+        STRATEGY.draw,
+        [['Προσθέτω τους αριθμούς του προβλήματος', 'Προσθέτω τους αριθμούς'], ['Μοιράζω εξίσου στα δύο είδη', 'Μοιράζω εξίσου']],
         `Το «${times}» σημαίνει ότι πάνε σε ομάδες: ${groupWord}.`),
       b.numbers('solve', 'Με ποιες σχέσεις βρίσκουμε τη λύση;', [
         { label: `${s.big} και ${s.small.toLowerCase()} μαζί`, answer: small + big },
@@ -122,7 +122,7 @@ export const parts: Family = {
         ? b.numbers('check', 'Αναστοχαζόμαστε: πόσα βγαίνουν όλα μαζί;', [{ label: `${fmt(first)} + ${fmt(big)} + ${fmt(small)} =`, answer: total }])
         : b.choice('check', `Κάποιος απάντησε: «${fmt(big)} και ${fmt(small)}». Τι λείπει από την απάντηση;`,
           'Δεν λέει τι μετράει κάθε αριθμός',
-          ['Οι αριθμοί του είναι λάθος', `Έπρεπε να γράψει μόνο το σύνολο, ${fmt(small + big)}`],
+          [['Οι αριθμοί του είναι λάθος', 'Οι αριθμοί του δεν είναι σωστοί'], [`Έπρεπε να γράψει μόνο το σύνολο, ${fmt(small + big)}`, `Έπρεπε να γράψει μόνο ${fmt(small + big)}`]],
           'Οι αριθμοί είναι σωστοί. Θα καταλάβαινε κάποιος που δεν ξέρει το πρόβλημα τι σημαίνουν;'),
     ];
     return { title: s.title, story, steps };

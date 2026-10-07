@@ -1,7 +1,7 @@
 // A car, train or ship covers k km every hour for h hours: the distance; what is left of a
 // route; the hours a route needs (Ε΄ κεφ. 2.9 και 2.12: πολλαπλασιασμός και διαίρεση).
 import type { ProblemStep } from '../../../../shared/types.ts';
-import { cap, extra, fmt, known, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
+import { cap, extra, fmt, known, NO_MISTAKE, people, sought, type Family, type Person, type Rng } from '../../lib.ts';
 
 interface Setting {
   title: string[];
@@ -146,7 +146,7 @@ export const distanceTime: Family = {
       const wrongSame = k * (h + h2);
       steps.push(b.choice('check', `Κάποιος έγραψε ${fmt(k)} × ${h + h2} = ${fmt(wrongSame)}. Τι λάθος έκανε;`,
         `Στο δεύτερο κομμάτι: ${fmt(k2)}, όχι ${fmt(k)}`,
-        ['Κανένα λάθος, είναι σωστό', `Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)} = ${fmt(k + k2)}`],
+        [NO_MISTAKE, [`Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)} = ${fmt(k + k2)}`, `Έπρεπε να προσθέσει ${fmt(k)} + ${fmt(k2)}`]],
         'Οι δύο δρόμοι δεν είναι ίδιοι.'));
     }
     return { title: r.pick(s.title), story, steps };
