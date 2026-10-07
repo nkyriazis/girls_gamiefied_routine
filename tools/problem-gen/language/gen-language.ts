@@ -4,7 +4,7 @@
 //   node tools/problem-gen/language/gen-language.ts --check    build and report, write nothing
 //   node tools/problem-gen/language/gen-language.ts --out DIR  into DIR (audit.ts --dir DIR checks them)
 //
-// The items are written by hand (g3.ts); this gives them their ids, source and generatorParams
+// The items are written by hand (g3.ts, e5.ts); this gives them their ids, source and generatorParams
 // and shuffles their options, seeded by the id, so the output is the same on every run until
 // an item changes. An item that breaks a rule of lib.ts (too few options, the right one the
 // only longest, a spelling whose right form is the closest to all the others, a «Δείξε μου»
@@ -20,6 +20,7 @@ import { lessonAt, parsePlace, sourceOf, type LanguageGrade } from './curriculum
 import { optionProblems, type Draft, type LanguageFamily } from './lib.ts';
 import { FILL_LINE_MAX } from './check.ts';
 import { G3_LANGUAGE } from './g3.ts';
+import { E5_LANGUAGE } from './e5.ts';
 
 interface LanguageGradeSpec {
   grade: LanguageGrade;
@@ -35,6 +36,10 @@ export const LANGUAGE_GRADES: LanguageGradeSpec[] = [
   {
     grade: 3, prefix: 'g3', file: 'g-dimotikou-language.json', families: G3_LANGUAGE,
     description: 'Γ΄ Δημοτικού: γλώσσα από τις ενότητες 1–3 του βιβλίου «Τα απίθανα μολύβια», γραμμένη στο tools/problem-gen/language (κάθε άσκηση με το μάθημα και τη σελίδα της στο source) και ελεγμένη από το audit.ts. Μην τη διορθώνετε εδώ: αλλάξτε το g3.ts και ξανατρέξτε το gen-language.ts.',
+  },
+  {
+    grade: 5, prefix: 'e5', file: 'e-dimotikou-language.json', families: E5_LANGUAGE,
+    description: 'Ε΄ Δημοτικού: γλώσσα από τις ενότητες 1–2 του βιβλίου «Της γλώσσας ρόδι και ροδάνι», γραμμένη στο tools/problem-gen/language (κάθε άσκηση με το μάθημα και τη σελίδα της στο source) και ελεγμένη από το audit.ts. Μην τη διορθώνετε εδώ: αλλάξτε το e5.ts και ξανατρέξτε το gen-language.ts.',
   },
 ];
 
