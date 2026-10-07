@@ -10,6 +10,15 @@ export const UPLOAD_MAX_BYTES = UPLOAD_MAX_MB * 1024 * 1024;
 export const uploadTooBig = (name: string) =>
   `${name}: πάνω από ${UPLOAD_MAX_MB} MB, δεν ανέβηκε. Μίκρυνέ το (για ήχο: λιγότερα δευτερόλεπτα ή 128 kbps) και ξαναδοκίμασε.`;
 
+/** The backend's other refusal: a request with no file in it (the page always sends one; curl may not). */
+export const uploadNoFile = 'Δεν ήρθε αρχείο: διάλεξε ένα και ξαναδοκίμασε.';
+
+/** The backend failed while reading or writing the file (its 500): the connection dropped mid-file, or the
+ *  disk is full (songs in uploads/ and in 14 backups add up, BACKUP.md). Nothing of it is kept. The name is
+ *  missing only when the failure came before the file did. */
+export const uploadBroke = (name?: string) =>
+  `${name ? `${name}: το` : 'Το'} ανέβασμα απέτυχε στον server, δεν κρατήθηκε τίποτα. Ξαναδοκίμασε· αν ξαναγίνει, ίσως γέμισε ο δίσκος του Pi.`;
+
 /** What the parents' page says when an upload fails (api.ts): the backend's own message when it sent one
  *  (JSON { error }); the limit's message for nginx's 413, which is an HTML page; a word about the connection
  *  when no answer came at all (fetch threw: Wi-Fi gone, or the backend down). */

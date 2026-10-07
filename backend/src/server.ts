@@ -10,7 +10,7 @@ import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
 import { CONFIG_SAVE_SOURCES, StateSnapshot } from '../../shared/types';
-import { UPLOAD_MAX_BYTES, uploadTooBig } from '../../shared/uploads';
+import { UPLOAD_MAX_BYTES, uploadBroke, uploadNoFile, uploadTooBig } from '../../shared/uploads';
 
 // Import shared database layer
 import {
@@ -321,16 +321,20 @@ server.put<{ Params: Id; Body: TransferActionBody }>('/api/transfers/:id', { sch
   return refusable(reply, () => resolveGift(id, action));
 });
 
-// Admin: Upload file
+// Admin: Upload file. Every answer but the 200 is { error } in Greek, naming the file (shared/uploads.ts),
+// and a file that didn't arrive whole is never kept (#107).
 server.post('/api/admin/upload', async (request, reply) => {
+  let name: string | undefined;
+  let filepath: string | undefined;
   try {
     const data = await request.file();
     if (!data) {
-      return reply.code(400).send({ error: 'No file uploaded' });
+      return reply.code(400).send({ error: uploadNoFile });
     }
+    name = data.filename;
 
     const filename = `${Date.now()}-${data.filename}`;
-    const filepath = path.join(UPLOADS_DIR, filename);
+    filepath = path.join(UPLOADS_DIR, filename);
 
     await pump(data.file, createWriteStream(filepath));
     // Over the limit, busboy stops the stream there and marks it truncated: what was written is a cut
@@ -346,8 +350,10 @@ server.post('/api/admin/upload', async (request, reply) => {
 
     return reply.code(200).send({ success: true, url, filename });
   } catch (error) {
+    // The body stopped mid-file (connection dropped) or the write failed (disk full): what was written is cut
     request.log.error(error);
-    return reply.code(500).send({ error: 'Upload failed' });
+    if (filepath) await fs.unlink(filepath).catch(() => {});
+    return reply.code(500).send({ error: uploadBroke(name) });
   }
 });
 

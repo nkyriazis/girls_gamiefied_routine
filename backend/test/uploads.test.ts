@@ -1,13 +1,14 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs';
+import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'fs';
 import path from 'path';
 import { DataConfig } from '../../shared/types';
-import { UPLOAD_MAX_BYTES, UPLOAD_MAX_MB } from '../../shared/uploads';
+import { UPLOAD_MAX_BYTES, UPLOAD_MAX_MB, uploadBroke, uploadNoFile } from '../../shared/uploads';
 import { tempDir } from './helpers';
 
 // Uploads (#107): one file up to UPLOAD_MAX_BYTES is kept byte for byte; a bigger one is refused with
 // 413 and a message, and nothing of it stays in uploads/ (it used to be cut at 1 MiB and answered 200).
+// The route's other failures (no file, a body cut mid-file, a write that fails) answer in Greek too.
 // Called through server.inject, against this file's own data.json, database and uploads folder.
 const dir = tempDir();
 const uploads = path.join(dir, 'uploads');
@@ -39,9 +40,12 @@ function multipart(file?: { name: string; bytes: Buffer }) {
   return Buffer.concat([Buffer.from(part), file?.bytes ?? Buffer.alloc(0), Buffer.from(`\r\n--${BOUNDARY}--\r\n`)]);
 }
 
-async function upload(file?: { name: string; bytes: Buffer }) {
+async function upload(file?: { name: string; bytes: Buffer }, { cut = false } = {}) {
+  let payload = multipart(file);
+  // cut: the body stops halfway through the file, with no closing boundary (the connection dropped)
+  if (cut) payload = payload.subarray(0, payload.length - (file?.bytes.length ?? 0) / 2);
   const res = await server.inject({
-    method: 'POST', url: '/api/admin/upload', payload: multipart(file),
+    method: 'POST', url: '/api/admin/upload', payload,
     headers: { 'content-type': `multipart/form-data; boundary=${BOUNDARY}` }
   });
   return { status: res.statusCode, body: res.json() as { success?: boolean; filename?: string; error?: string } };
@@ -69,10 +73,33 @@ test('a file one byte over the limit is refused with 413 and a message, and noth
   assert.deepEqual(readdirSync(uploads), was, 'no cut copy left in uploads/');
 });
 
-test('a request with no file is still a 400', async () => {
+test('a request with no file is still a 400, in Greek', async () => {
   const was = readdirSync(uploads);
   const { status, body } = await upload();
   assert.equal(status, 400, JSON.stringify(body));
-  assert.equal(body.error, 'No file uploaded');
+  assert.equal(body.error, uploadNoFile);
   assert.deepEqual(readdirSync(uploads), was);
+});
+
+test('a body that stops mid-file is a 500 that names the file, and the cut part is not kept', async () => {
+  const was = readdirSync(uploads);
+  const { status, body } = await upload({ name: 'cut-song.mp3', bytes: song(300_000) }, { cut: true });
+  assert.equal(status, 500, JSON.stringify(body));
+  assert.equal(body.error, uploadBroke('cut-song.mp3'));
+  assert.match(body.error!, /^cut-song\.mp3: το ανέβασμα απέτυχε στον server, δεν κρατήθηκε τίποτα\./);
+  assert.deepEqual(readdirSync(uploads), was, 'no cut copy left in uploads/');
+});
+
+test('a write that fails (no room in uploads/) is a 500 that names the file', async () => {
+  // uploads/ swapped for a plain file, so opening the file to write fails as a full or broken disk would
+  renameSync(uploads, `${uploads}.aside`);
+  writeFileSync(uploads, '');
+  try {
+    const { status, body } = await upload({ name: 'full-disk.mp3', bytes: song(1000) });
+    assert.equal(status, 500, JSON.stringify(body));
+    assert.equal(body.error, uploadBroke('full-disk.mp3'));
+  } finally {
+    rmSync(uploads);
+    renameSync(`${uploads}.aside`, uploads);
+  }
 });
