@@ -1,0 +1,2 @@
+u2's colour set by hand in the JSON to #9b59b6: 200
+renamed in the form and saved: name "Ιφιγένεια Μ.", colour "#9b59b6" (kept)

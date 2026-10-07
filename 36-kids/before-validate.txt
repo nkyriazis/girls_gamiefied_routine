@@ -1,0 +1,13 @@
+# POST /api/admin/validate (validates only, writes nothing): data.json as it is, with mistakes the forms would prevent
+
+## color typo: u2 color = "var(--color-secondry)"
+{"valid":true}
+
+## a blank name: u1 name = "  " (two spaces)
+{"valid":true}
+
+## two kids with the same id: u2 id = "u1"
+{"valid":true}
+
+## assignment to a kid that is gone: routineAssignments[0].userId = "u3"
+{"valid":true}
