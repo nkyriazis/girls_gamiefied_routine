@@ -102,10 +102,6 @@ const MIGRATIONS: string[] = [
   `
 ];
 
-// Stored shapes of API types that carry response-only enrichments.
-type StoredSpending = Omit<Spending, 'user' | 'reward'>;
-type StoredStarTransfer = Omit<StarTransfer, 'fromUser' | 'toUser'>;
-
 // How a record field maps to its column. Column names equal the field names.
 type Codec = 'text' | 'int' | 'bool' | 'json';
 type Columns<T> = { [K in keyof T]-?: Codec };
@@ -201,8 +197,8 @@ export class Store {
 
   readonly routineExecutions: Table<RoutineExecution>;
   readonly taskExecutions: Table<TaskExecution>;
-  readonly spendings: Table<StoredSpending>;
-  readonly starTransfers: Table<StoredStarTransfer>;
+  readonly spendings: Table<Spending>;
+  readonly starTransfers: Table<StarTransfer>;
   readonly choreInstances: Table<ChoreInstance>;
   readonly exerciseSessions: Table<ExerciseSession>;
   readonly exerciseAssignments: Table<ExerciseAssignment>;
@@ -223,10 +219,10 @@ export class Store {
     this.taskExecutions = new Table<TaskExecution>(db, 'task_executions', onChange, {
       id: 'text', executionId: 'text', taskId: 'text', duration: 'int', isOnTime: 'bool', completedAt: 'text'
     });
-    this.spendings = new Table<StoredSpending>(db, 'spendings', onChange, {
+    this.spendings = new Table<Spending>(db, 'spendings', onChange, {
       id: 'text', userId: 'text', rewardId: 'text', cost: 'int', createdAt: 'text', status: 'text', resolvedAt: 'text'
     });
-    this.starTransfers = new Table<StoredStarTransfer>(db, 'star_transfers', onChange, {
+    this.starTransfers = new Table<StarTransfer>(db, 'star_transfers', onChange, {
       id: 'text', fromUserId: 'text', toUserId: 'text', amount: 'int', createdAt: 'text', status: 'text', resolvedAt: 'text'
     });
     this.choreInstances = new Table<ChoreInstance>(db, 'chore_instances', onChange, {

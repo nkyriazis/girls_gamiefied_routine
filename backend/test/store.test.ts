@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'path';
 import { Store } from '../src/store';
-import { ChoreInstance, ExerciseSession, Spending, StateSnapshot } from '../../shared/types';
+import { ChoreInstance, ExerciseSession, StateSnapshot } from '../../shared/types';
 import { tempDir, uuid } from './helpers';
 
 function openStore() {
@@ -39,16 +39,6 @@ test('put replaces, insertNew never overwrites', () => {
   assert.equal(store.spendings.insertNew({ ...spending, status: 'revoked' }), false);
   assert.equal(store.spendings.get(uuid(1))?.status, 'done');
   assert.equal(store.spendings.count(), 1);
-});
-
-test('enrichment fields are not stored', () => {
-  const { store } = openStore();
-  const enriched: Spending = {
-    id: uuid(1), userId: 'u1', rewardId: 'r', cost: 5, createdAt: 't', status: 'pending',
-    user: { id: 'u1', name: 'A', avatar: 'x', color: 'red', stars: 3 }
-  };
-  store.spendings.put(enriched);
-  assert.equal('user' in store.spendings.get(uuid(1))!, false);
 });
 
 test('transactions roll back on error and nest into the outer one', () => {

@@ -13,7 +13,7 @@ import { Spending, StateSnapshot } from '../../shared/types';
 
 // Import shared database layer
 import {
-  store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, expireAlarms, dismissAlarm, getEnrichedSpendings, getEnrichedTransfers,
+  store, sync, triggerAction, completeTask, closeRoutine, closeStaleRoutines, expireAlarms, dismissAlarm, history,
   readLastLogs, MAX_LOGS, awardStars, takeStars, buyReward, resolveSpending, createGift, resolveGift, StarsError, UPLOADS_DIR, getChoresWithInstances, claimChore,
   attemptChore, confirmChore, rejectChore, readExercises, readExerciseCategories, readRawExercises,
   writeRawExercises, readRawConfig, writeRawConfig, startExerciseSession, submitExerciseAnswer,
@@ -272,16 +272,16 @@ server.post('/api/chores/:instanceId/reject', async (request, reply) => {
   }
 });
 
-// Spendings routes
-server.get('/api/spendings', async (request, reply) => {
-  try {
-    return getEnrichedSpendings();
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
-  }
+// What was decided, a page at a time, newest first (Ιστορικό): ?before=<the previous page's next>&limit=&userId=
+server.get('/api/history', async (request, reply) => {
+  const { before, limit, userId } = request.query as { before?: string; limit?: string; userId?: string };
+  const n = limit === undefined ? undefined : Number(limit);
+  if (n !== undefined && !(Number.isInteger(n) && n >= 1 && n <= 100)) return reply.code(400).send({ error: 'limit must be 1-100' });
+  if (before !== undefined && !/^[^|]+\|[^|]+$/.test(before)) return reply.code(400).send({ error: 'before must be a page\'s next' });
+  return history({ before, limit: n, userId: userId || undefined });
 });
 
+// Spendings routes
 server.post('/api/spendings', async (request, reply) => {
   const { userId, rewardId } = request.body as { userId: string, rewardId: string };
   return refusable(reply, () => buyReward(userId, rewardId));
@@ -294,15 +294,6 @@ server.put('/api/spendings/:id', async (request, reply) => {
 });
 
 // Star Transfers routes
-server.get('/api/transfers', async (request, reply) => {
-  try {
-    return getEnrichedTransfers();
-  } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: 'Internal Server Error', details: (error as Error).message });
-  }
-});
-
 server.post('/api/transfers', async (request, reply) => {
   const { fromUserId, toUserId, amount } = request.body as { fromUserId: string, toUserId: string, amount: number };
   return refusable(reply, () => createGift(fromUserId, toUserId, amount));

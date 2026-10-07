@@ -2,8 +2,8 @@ import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
 import {
   AppState, Chore, ChoreInstance, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
-  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ProblemExercise, ProblemReading, ProblemStepAnswer, Spending,
-  StarTransfer, StateSnapshot, ActionLog, User
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
+  ProblemExercise, ProblemReading, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, User
 } from '../../shared/types';
 import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
@@ -12,7 +12,7 @@ import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { cronMatchesAt } from './cron';
 import { config, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
-import { Store } from './store';
+import { Store, Table } from './store';
 import { Sync } from './sync';
 
 // ============================================================================
@@ -49,8 +49,8 @@ export async function appState(): Promise<AppState> {
     config: config(),
     configError: configError(),
     users: usersView(),
-    spendings: getEnrichedSpendings(),
-    starTransfers: getEnrichedTransfers(),
+    spendings: recentSpendings(),
+    starTransfers: recentTransfers(),
     choreInstances: getChoresWithInstances().instances,
     exerciseSessions: exerciseSessionsOnScreen(),
     exerciseAssignments: await todaysAssignments(),
@@ -432,23 +432,55 @@ function byNewest(a: { createdAt: string }, b: { createdAt: string }) {
   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 }
 
-export function getEnrichedSpendings(): Spending[] {
-  const users = usersWithStars();
-  const { rewards } = config();
-  return store.spendings.all().map(s => ({
-    ...s,
-    user: users.find(u => u.id === s.userId),
-    reward: rewards.find(r => r.id === s.rewardId)
-  })).sort(byNewest);
+// STATE carries the current world, never the archive (see AppState): what is pending whatever its age,
+// what was decided in the last HISTORY_DAYS, and each kid's last rewards given. Records name kids and
+// rewards by id. Both read their whole table (no index on the time): fine at a family's rate.
+const historyCutoff = () => new Date(Date.now() - HISTORY_DAYS * 864e5).toISOString();
+
+export function recentSpendings(): Spending[] {
+  return store.spendings.all(`status = 'pending' OR COALESCE(resolvedAt, createdAt) > ? OR id IN (
+      SELECT id FROM (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY userId ORDER BY COALESCE(resolvedAt, createdAt) DESC, id DESC) AS n
+        FROM spendings WHERE status = 'done'
+      ) WHERE n <= ?)`, historyCutoff(), LAST_REWARDS_GIVEN).sort(byNewest);
 }
 
-export function getEnrichedTransfers(): StarTransfer[] {
-  const users = usersWithStars();
-  return store.starTransfers.all().map(t => ({
-    ...t,
-    fromUser: users.find(u => u.id === t.fromUserId),
-    toUser: users.find(u => u.id === t.toUserId)
-  })).sort(byNewest);
+export function recentTransfers(): StarTransfer[] {
+  return store.starTransfers.all(`status = 'pending' OR COALESCE(resolvedAt, createdAt) > ?`, historyCutoff()).sort(byNewest);
+}
+
+export const HISTORY_PAGE = 30;
+
+// The cursor of a page: the last entry's time and id ("<at>|<id>"); the next page starts below it.
+const cursorOf = (e: HistoryEntry) => `${e.at}|${entryId(e)}`;
+const entryId = (e: HistoryEntry) => (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.instance).id;
+const newestFirst = (a: HistoryEntry, b: HistoryEntry) =>
+  a.at !== b.at ? (a.at < b.at ? 1 : -1) : entryId(a) < entryId(b) ? 1 : entryId(a) > entryId(b) ? -1 : 0;
+
+/**
+ * What was decided, newest first, a page at a time (Ιστορικό, GET /api/history): purchases given or
+ * revoked, gifts approved, rejected or cancelled, and chores confirmed or rejected, each at the time it
+ * was decided. `before` is the previous page's `next`; `userId` keeps what names that kid.
+ */
+export function history({ before, limit = HISTORY_PAGE, userId }: { before?: string; limit?: number; userId?: string } = {}): HistoryPage {
+  const [at, id] = before ? before.split('|') : [];
+  // Each table's newest `limit + 1` below the cursor (`kid` takes the one parameter userId); the page is
+  // the newest `limit` of them all
+  const page = <T extends { id: string }>(table: Table<T>, decided: string, time: string, kid: string): T[] => {
+    const where = [decided, ...(before ? [`(${time}, id) < (?, ?)`] : []), ...(userId ? [kid] : [])].join(' AND ');
+    const params = [...(before ? [at, id] : []), ...(userId ? [userId] : []), limit + 1];
+    return table.all(`id IN (SELECT id FROM ${table.name} WHERE ${where} ORDER BY ${time} DESC, id DESC LIMIT ?)`, ...params);
+  };
+  const entries: HistoryEntry[] = [
+    ...page(store.spendings, "status != 'pending'", 'COALESCE(resolvedAt, createdAt)', 'userId = ?')
+      .map(spending => ({ kind: 'spending' as const, at: spending.resolvedAt ?? spending.createdAt, spending })),
+    ...page(store.starTransfers, "status != 'pending'", 'COALESCE(resolvedAt, createdAt)', '? IN (fromUserId, toUserId)')
+      .map(transfer => ({ kind: 'transfer' as const, at: transfer.resolvedAt ?? transfer.createdAt, transfer })),
+    ...page(store.choreInstances, "status IN ('confirmed', 'rejected')", 'COALESCE(confirmedAt, rejectedAt, availableAt)', 'claimedBy = ?')
+      .map(instance => ({ kind: 'chore' as const, at: instance.confirmedAt ?? instance.rejectedAt ?? instance.availableAt, instance })),
+  ].sort(newestFirst);
+  const shown = entries.slice(0, limit);
+  return { entries: shown, next: entries.length > limit ? cursorOf(shown[shown.length - 1]) : null };
 }
 
 export function readLastLogs(limit: number): ActionLog[] {
