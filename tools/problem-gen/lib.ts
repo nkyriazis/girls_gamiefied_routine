@@ -298,7 +298,9 @@ function divHint(a: number, b: number): string {
   const ask = `Πόσες φορές χωράει το ${fmt(b)} στο ${fmt(a)};`;
   if (a <= 100 && b <= 10) return `${ask} Σκεφτόμαστε την προπαίδεια του ${b}.`;
   const q = Math.floor(a / b);
-  const t = q >= 10 ? topSplit(q)[0] : q === 5 ? 4 : 5;
+  // A trial below the quotient, never the quotient itself (2.502 : 5 tries 5 × 400, not 5 × 500)
+  const top = q >= 10 ? topSplit(q)[0] : q === 5 ? 4 : 5;
+  const t = top !== q ? top : top - 10 ** (String(q).length - 1) || q / 2;
   return `${ask} Δοκιμάζουμε ${fmt(b)} × ${fmt(t)} = ${fmt(b * t)}.`;
 }
 
@@ -356,9 +358,17 @@ function workHints(expr: string): string[] {
 /** The hint b.numbers writes from its rows: how to start the first row it can say something about. */
 export function rowsHint(rows: { label: string; answer: number; eq?: string }[]): string | null {
   const answers = new Set(rows.map(r => r.answer));
-  // A hint that states a row's answer gives it away
-  const fair = (h: string) => ![...h.matchAll(new RegExp(String.raw`=\s*(${NUMBER})`, 'g'))].some(x => answers.has(toNumber(x[1])));
-  const hints = rows.map(r => workHints(r.eq ?? r.label).find(fair)).filter((h): h is string => !!h);
+  const numbersIn = (s: string) => [...s.matchAll(new RegExp(NUMBER, 'g'))].map(x => toNumber(x[0]));
+  // A hint that states a row's answer gives it away: after «=», or anywhere else unless it is a
+  // number of the calculation or a part of one («23 − 10 = 13, και μετά βγάζουμε 3 ακόμα» when
+  // 23 − 13 is 10), not a trial («Δοκιμάζουμε 5 × 500» when 2.502 : 5 is 500). A digit is a step
+  // of the way («13 − 3 = 10, και μετά βγάζουμε 5 ακόμα» for 13 − 8).
+  const fair = (expr: string) => (h: string) => {
+    const given = new Set(numbersIn(expr).flatMap(n => [n, ...topSplit(n), n % 10, n - (n % 10)]));
+    return ![...h.matchAll(new RegExp(String.raw`=\s*(${NUMBER})`, 'g'))].some(x => answers.has(toNumber(x[1])))
+      && !numbersIn(h).some(n => n >= 10 && answers.has(n) && !given.has(n));
+  };
+  const hints = rows.map(r => workHints(r.eq ?? r.label).find(fair(r.eq ?? r.label))).filter((h): h is string => !!h);
   return hints[0] ?? null;
 }
 
