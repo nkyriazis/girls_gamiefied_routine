@@ -13,7 +13,14 @@ env:
   IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
 
 jobs:
+  # The same checks as every PR (ci.yml): nothing is built or pushed unless they all pass.
+  check:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   build:
+    needs: check
     runs-on: ubuntu-latest
     permissions:
       contents: read
