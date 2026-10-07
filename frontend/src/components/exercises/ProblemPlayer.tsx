@@ -206,7 +206,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
       const read = readLine(step, value as CalcValue, usefulToAnswer(step));
       setDraft({ step: stepIndex, value: read.value });
       setNote(read.note);
-      if (read.note.kind === 'math' || read.note.kind === 'nothing') { sfx('wrong'); return; }
+      if (read.note.kind === 'math' || read.note.kind === 'order' || read.note.kind === 'nothing') { sfx('wrong'); return; }
       // Something found on the way to the answer is a small yes; a right sum that leads elsewhere, a nod
       if (read.note.kind === 'found') { sfx('correct', { volume: 0.7 }); return; }
       if (read.note.kind !== 'answer') { sfx('select'); return; }
