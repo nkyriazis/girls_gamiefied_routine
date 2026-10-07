@@ -2,6 +2,7 @@ import type {
   ActionLog, ChoreInstance, ConfigSaveSource, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
   ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot, TriggerResult
 } from '@shared/types';
+import { UPLOAD_MAX_BYTES, uploadFailed, uploadTooBig } from '@shared/uploads';
 
 // REST calls. They report what someone did; the resulting state arrives over
 // the WebSocket (GameProvider), so callers never cache what these return. The
@@ -126,11 +127,16 @@ export const api = {
   getScheduleDebug: () => get<ScheduleDebug>('/debug/schedule', 'Failed to fetch schedule debug info'),
   getDebugLogs: () => get<ActionLog[]>('/debug/logs', 'Failed to fetch debug logs'),
 
+  // One file up to UPLOAD_MAX_BYTES (shared/uploads.ts, #107). A bigger one is refused here, before it crosses
+  // the Wi-Fi only to be refused by the backend or nginx. Every failure reads in Greek and names the file
+  // (uploadFailed, from the status alone: the backend's words come from the same functions).
   uploadFile: async (file: File): Promise<{ success: boolean, url: string, filename: string }> => {
+    if (file.size > UPLOAD_MAX_BYTES) throw new ApiError(uploadTooBig(file.name), 413);
     const formData = new FormData();
     formData.append('file', file);
-    const response = await fetch(`${API_URL}/admin/upload`, { method: 'POST', body: formData });
-    if (!response.ok) throw new Error('Failed to upload file');
+    const response = await fetch(`${API_URL}/admin/upload`, { method: 'POST', body: formData })
+      .catch(() => { throw new ApiError(uploadFailed(file.name, 'no answer'), 0); });
+    if (!response.ok) throw new ApiError(uploadFailed(file.name, { status: response.status }), response.status);
     return response.json();
   },
 
