@@ -378,15 +378,19 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
       <style>{`
         .problem { flex: 1; min-height: 0; width: 100%; display: grid; gap: 0.7rem 1.5rem; text-align: left;
           grid-template-columns: minmax(0, 1fr) auto;
-          grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-          grid-template-areas: "phases phases" "story story" "prompt prompt" "work work" "hint check"; }
+          grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+          /* Narrow: the hint full-width under the check row, so it neither squeezes into a corner nor
+             breaks a word in every line (#50 part 6) */
+          grid-template-areas: "phases phases" "story story" "prompt prompt" "work work" "check check" "hint hint"; }
+        /* Narrow, with nothing to say: no empty row under the check (the rows above keep the room) */
+        .problem-hint:empty { min-height: 0; padding: 0; }
         /* Landscape: read on the left, work on the right */
         @media (min-width: 900px) and (orientation: landscape) {
           .problem { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
             grid-template-rows: auto auto auto minmax(0, 1fr) auto;
             grid-template-areas: "phases phases" "story work" "prompt work" "hint work" "hint check"; }
           .problem-prompt { text-align: left; min-height: 2.5em; } /* two lines, so the hint under it stays put */
-          .problem-hint { align-self: start; }
+          .problem-hint, .problem-hint:empty { align-self: start; min-height: 3.6rem; padding: 0.5rem 1rem; }
           .problem-actions { justify-self: end; }
           .problem-work > * { margin-block: auto; } /* centred while it fits, scrolls from the top when it doesn't */
         }
@@ -404,7 +408,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
         .problem-work { min-height: 0; overflow-y: auto; padding: 0.2rem; display: flex; flex-direction: column; }
         .problem-work > * { margin-bottom: auto; } /* stacked: right under the question */
         .problem-hint { min-height: 3.6rem; display: flex; align-items: center; border-radius: 1rem; padding: 0.5rem 1rem; font-size: 1.1rem;
-          border: 1px solid transparent; }
+          border: 1px solid transparent; overflow-wrap: anywhere; } /* a word longer than the box breaks inside it */
         .problem-hint.on { background: rgba(255,200,0,0.14); border-color: rgba(255,200,0,0.5); }
         .problem-hint.on.good { background: rgba(46,213,115,0.14); border-color: rgba(46,213,115,0.5); }
         .problem-check { font-size: 1.3rem; font-weight: bold; padding: 0.9rem 2.2rem; border-radius: 1.2rem; border: none;
