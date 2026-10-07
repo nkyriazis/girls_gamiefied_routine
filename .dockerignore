@@ -12,3 +12,23 @@ backend/state.json
 backend/logs.jsonl
 backups
 materials
+
+# The build context is the repo root (compose and CI build with `context: .`), so this is the only
+# .dockerignore Docker reads: one in frontend/ or backend/ would do nothing. Below, everything local or
+# generated, wherever it sits, so the context stays small and never carries the dev data or secrets.
+**/node_modules
+**/dist
+**/dev-dist
+**/__pycache__
+**/*.log
+**/.DS_Store
+.env
+.evidence
+.playwright-mcp
+backend/uploads
+backend/test-*.json
+backend/*.tmp
+backend/*.invalid-*
+tools/help-voice/out
+tools/problem-gen/.out
+docs
