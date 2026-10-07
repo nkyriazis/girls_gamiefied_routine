@@ -183,6 +183,35 @@ test('every shipped problem: whole sentences pass on both rungs; the whole story
   assert.ok(problems > 1000 && withExtra > 1000, `${problems} problems, ${withExtra} with an unneeded fact`);
 });
 
+test('every shipped problem on paint-all: the whole story ⚪ with the needed phrases painted over it is too much (#50)', () => {
+  // ⚪ is forgiven only in an unneeded fact's own sentence. So the sweep passes only where every needed
+  // fact's and the question's sentence has at most PAINT_SLACK words more than 2 (MARGIN) from a phrase:
+  // there the sweep is a right painting.
+  const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
+  let problems = 0, passed = 0;
+  for (const ex of shipped.flatMap(p => p.exercises)) {
+    if (ex.type !== 'problem') continue;
+    const i = ex.steps.findIndex(s => s.kind === 'tag' || s.kind === 'paint');
+    const read = ex.steps[i];
+    const targets = read.kind === 'paint' ? read.targets : targetsFromMarks(ex.story);
+    const words = storyWords(ex.story);
+    const inSpan = (w: number, role: string) => targets.some(t => t.role === role && w >= t.span[0] && w <= t.span[1]);
+    const known = words.map((_, w) => w).filter(w => inSpan(w, 'known'));
+    const sought = words.map((_, w) => w).filter(w => inSpan(w, 'sought') && !known.includes(w));
+    const extra = words.map((_, w) => w).filter(w => !known.includes(w) && !sought.includes(w));
+    const r = db.checkProblemStep(ex, i, { known, sought, extra }, 'paint-all');
+    problems++;
+    if (!r.correct) { assert.ok(r.wrong?.includes(-1), `${ex.id}: the sweep is too much`); continue; }
+    passed++;
+    const far = paintSentences(words).filter(([a, b]) => targets.some(t => t.role !== 'extra' && t.span[0] <= b && t.span[1] >= a))
+      .flatMap(([a, b]) => Array.from({ length: b - a + 1 }, (_, k) => a + k))
+      .filter(w => !targets.some(t => w >= t.span[0] - 2 && w <= t.span[1] + 2));
+    assert.ok(far.length <= 3, `${ex.id}: the sweep passed with ${far.length} words ⚪ away from every phrase in a needed sentence`);
+    assert.ok(!ex.id.startsWith('g3-gen-'), `${ex.id}: the sweep passed on a Γ΄ generated problem`);
+  }
+  assert.ok(problems > 1000 && passed / problems < 0.05, `the sweep passes on ${passed} of ${problems}`);
+});
+
 test('every shipped plain exercise: the server takes its own key and refuses a wrong answer', () => {
   const shipped = pool.loadPools(path.join(__dirname, '..', 'exercise-pools'));
   let n = 0;
@@ -456,7 +485,12 @@ test('painting a needed fact\'s whole sentence is fine; around an unneeded fact 
   assert.deepEqual(checkPaint(targets, words, sentences), ok, 'each needed sentence whole, the unneeded one left alone');
   assert.deepEqual(checkPaint(targets, words, { ...sentences, extra: toys }, { unneeded: true }), ok, '…and on paint-all, the unneeded one ⚪ whole');
   assert.deepEqual(checkPaint(targets, words, { ...sentences, known: [...none, ...sentences.known] }), ok, 'a sentence with no fact, painted: nothing there is wrong');
-  assert.deepEqual(checkPaint(targets, words, { ...sentences, extra: [...none, ...toys] }, { unneeded: true }), ok, '⚪ is never too much');
+  // ⚪ is forgiven only in an unneeded fact's own sentence: elsewhere it counts like any stroke
+  assert.deepEqual(checkPaint(targets, words, { ...sentences, extra: [...none, ...toys] }, { unneeded: true }), ok, '⚪ on a short sentence with no fact: within PAINT_SLACK');
+  const sweep = { known: words.map((_, w) => w).filter(w => targets.some(t => t.role === 'known' && w >= t.span[0] && w <= t.span[1])), sought: targets[3].words };
+  const rest = words.map((_, w) => w).filter(w => !sweep.known.includes(w) && !sweep.sought.includes(w));
+  assert.deepEqual(checkPaint(targets, words, { ...sweep, extra: rest }, { unneeded: true }), { correct: false, wrong: [-1] }, 'the whole story ⚪, the needed phrases painted over it');
+  assert.deepEqual(paintStrays(targets, words, { known: [], sought: [], extra: price }), price, '⚪ over a needed fact\'s sentence: every word of it, «18 ευρώ» too');
   // The whole story: the unneeded fact is painted (named), and its sentence around it is too much
   assert.deepEqual(checkPaint(targets, words, { known: [...none, ...price, ...toys, ...paid], sought: question }), { correct: false, wrong: [1, -1] });
   // Around the unneeded fact, beyond the margin, in its sentence: strays (the frames on screen)
