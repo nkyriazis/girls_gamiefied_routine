@@ -30,21 +30,39 @@ interface Props {
 // version moves past it (another screen saved, or the file changed on disk) a
 // banner offers to reload, and the server refuses (409) a save that would put
 // the old text over the newer one. After its own save it holds the new version.
+//
+// The editor's version can be ahead of `live`: a save's 200 (or the exercises'
+// GET) answers before the STATE that carries the same version, which the server
+// builds a moment after it replies. Until that STATE lands, the live version the
+// editor had before is `behind`, not stale, so the editor's own save never shows
+// the banner, not even for a frame.
 export function JsonEditor({ initial, load, loadText, save, live, stale, onReload, schemas, validate, warning }: Props) {
     const { notify } = useFeedback();
     const [text, setText] = useState<string | null>(() => (initial === undefined ? null : JSON.stringify(initial.data, null, 2)));
     const [version, setVersion] = useState(initial?.version);
+    const [behind, setBehind] = useState<string>(); // a live version the editor's own is newer than
+    const liveRef = useRef(live);
+    liveRef.current = live;
     const [saving, setSaving] = useState(false);
     const [refused, setRefused] = useState(false); // the server answered 409
     const [errors, setErrors] = useState<string[]>([]);
     const [schemaFiles, setSchemaFiles] = useState<SchemaFile[] | null>(null);
 
     useEffect(() => {
-        load?.().then(({ data, version }) => { setText(JSON.stringify(data, null, 2)); setVersion(version); },
-            err => setErrors([(err as Error).message]));
+        const before = liveRef.current; // the GET answers from the file, maybe before its STATE arrives
+        load?.().then(({ data, version }) => {
+            setText(JSON.stringify(data, null, 2));
+            setVersion(version);
+            if (before !== version) setBehind(before);
+        }, err => setErrors([(err as Error).message]));
         loadText?.().then(setText, err => setErrors([(err as Error).message]));
         schemas?.().then(setSchemaFiles, () => undefined);
     }, [load, loadText, schemas]);
+
+    // Once the live version moves off the one left behind (to this editor's, or past it), it's done
+    useEffect(() => {
+        if (behind !== undefined && live !== behind) setBehind(undefined);
+    }, [live, behind]);
 
     // A file loaded as text is there to be fixed: open it at its first error (a phone shows ~15 lines)
     const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
@@ -88,7 +106,10 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
         try {
             const result = await save(data, version);
             const saved = (result as { version?: unknown } | undefined)?.version;
-            if (typeof saved === 'string') setVersion(saved); // its own save: the new live version is this text's
+            if (typeof saved === 'string') { // its own save: the new live version is this text's
+                if (saved !== version) setBehind(version); // what `live` says until the save's STATE lands
+                setVersion(saved);
+            }
             notify('Αποθηκεύτηκε');
         } catch (err) {
             if (err instanceof ApiError && err.status === 409) {
@@ -101,9 +122,11 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
         }
     };
 
-    // Stale: the live version moved past the one this text was opened with (not while its own save is
-    // on its way: the new version may arrive in a STATE before the answer does), or the server said so.
-    const outdated = refused || (!saving && live !== undefined && version !== undefined && live !== version);
+    // Stale: the live version moved past the one this text was opened with, or the server said so. Not
+    // while its own save is on its way (its STATE may arrive before the answer does), nor while `live`
+    // still holds the version this text was newer than (the answer arrived before the STATE).
+    const outdated = refused ||
+        (!saving && live !== undefined && version !== undefined && live !== version && live !== behind);
 
     if (text === null) return <p className="p-empty">{errors[0] ?? 'Φόρτωση…'}</p>;
     // Wait for the schema so the editor validates from the start.
