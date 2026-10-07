@@ -267,7 +267,8 @@ export interface ProblemPaintStep extends ProblemStepBase {
 // Work it out her own way: pick two numbers she has, an operation, and the result. The
 // step carries the story's quantities and how they relate (out = a op b), so every
 // calculation can be read back: what it found, or that it means nothing here.
-// Answer: { lines: [{ x, op, y, result }], slips } (slips: the calculations taken back).
+// Answer: { lines: [{ x, op, y, result }] }, the lines that find the answer; or, as it
+// happens, a calculation she got wrong: { lines (hers so far), slip: { x, op, y, result } }.
 export interface ProblemCalcStep extends ProblemStepBase {
   kind: 'calc';
   quantities: { id: string; value: number; label: string; unit?: string }[];

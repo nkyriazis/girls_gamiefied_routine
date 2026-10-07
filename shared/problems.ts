@@ -376,6 +376,20 @@ export function readLines(w: CalcWorld, lines: unknown): { lines: LineReading[];
 }
 
 /**
+ * What is wrong with the calculation she built after `lines` (her lines so far): the smaller
+ * number first ('order', whatever the result says), a wrong result ('math'), or a right one that
+ * means nothing here ('nothing': readLines can't read it back); null when it reads back. The
+ * screen says each one in the hint slot; the server counts the first two (wrongTryCounts).
+ */
+export type CalcSlip = 'order' | 'math' | 'nothing';
+export function calcSlip(w: CalcWorld, lines: unknown, line: CalcLine): CalcSlip | null {
+  if (smallerFirst(line.op, line.x, line.y)) return 'order';
+  if (applyOp(line.op, line.x, line.y) !== line.result) return 'math';
+  const read = readLines(w, [...(Array.isArray(lines) ? lines : []), line]).lines;
+  return read[read.length - 1] ? null : 'nothing';
+}
+
+/**
  * Her calculations, in order: each uses numbers the story gives or she found before,
  * is done right, and means something in the story (readLines); one finds the answer.
  */
@@ -438,6 +452,6 @@ export function workedAnswer(exercise: ProblemExercise, stepIndex: number, readi
     case 'choice': return step.correctIndex;
     case 'numbers': return step.rows.map(r => r.answer);
     case 'order': return step.items;
-    case 'calc': return { lines: workedCalc(step), slips: 0 };
+    case 'calc': return { lines: workedCalc(step) };
   }
 }

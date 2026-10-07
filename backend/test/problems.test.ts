@@ -45,6 +45,23 @@ writeFileSync(path.join(pools, 'e.json'), JSON.stringify({
     { ...balloons, id: 'e-balloons' },
   ]
 }));
+// A calc step: 25 − 7 = 18 spent, 18 + 10 = 28 now (a pool of its own, for a grade no kid is in)
+const pocket: ProblemExercise = {
+  id: 'p-pocket', type: 'problem', category: 'Προβλήματα', title: 'Χαρτζιλίκι', stars: 3,
+  story: 'Η Άννα είχε [25 ευρώ|known]. Ξόδεψε [7 ευρώ|known]. Πήρε [10 ευρώ|known]. [Πόσα ευρώ έχει τώρα|sought];',
+  steps: [
+    { kind: 'tag', phase: 'read', prompt: 'Τι ξέρουμε;' },
+    {
+      kind: 'calc', phase: 'solve', prompt: 'Λύνουμε',
+      quantities: [{ id: 'a', value: 25, label: 'Στην αρχή' }, { id: 'b', value: 7, label: 'Ξόδεψε' }, { id: 'c', value: 18, label: 'Μετά' },
+        { id: 'd', value: 10, label: 'Πήρε' }, { id: 'e', value: 28, label: 'Τώρα' }],
+      relations: [{ out: 'c', op: '−', a: 'a', b: 'b' }, { out: 'e', op: '+', a: 'c', b: 'd' }],
+      given: ['a', 'b', 'd'], sought: 'e',
+    },
+    { kind: 'choice', phase: 'check', prompt: 'Έλεγχος', options: ['28 − 10 = 18', '28 + 10 = 38'], correctIndex: 0 },
+  ],
+};
+writeFileSync(path.join(pools, 'd.json'), JSON.stringify({ grades: [4], exercises: [pocket] }));
 writeFileSync(path.join(dir, 'data.json'), JSON.stringify(cfg));
 process.env.DATA_FILE = path.join(dir, 'data.json');
 process.env.EXERCISES_FILE = path.join(dir, 'exercises.json');
@@ -68,7 +85,7 @@ function solution(ex: ProblemExercise, step: ProblemStep): unknown {
     case 'numbers': return step.rows.map(r => r.answer);
     case 'order': return step.items;
     case 'paint': return painting(ex, true);
-    case 'calc': return { lines: workOut(step), slips: 0 };
+    case 'calc': return { lines: workOut(step) };
   }
 }
 
@@ -378,7 +395,7 @@ test('extra problems: fresh ones first, one open at a time, up to the day\'s lim
   await assert.rejects(db.startExtraProblem('u3'), /class/);
 });
 
-test('unforgiving: a problem can pay nothing, and a painted reading step costs nothing', async () => {
+test('unforgiving: a problem can pay nothing, and a painted reading step costs a star like any step', async () => {
   const before = starsOf('u4');
   const a = assign('u4', 'p-balloons');
   const answer = (step: number, value: unknown) => db.answerExerciseAssignment(a.id, { step, value });
@@ -393,7 +410,7 @@ test('unforgiving: a problem can pay nothing, and a painted reading step costs n
   assert.deepEqual(r.assignment.mistakes, [2, 2, 2, 0]);
   assert.equal(starsOf('u4'), before);
 
-  // u5 paints: wrong paintings are free (until #50), a wrong choice is not
+  // u5 paints: a wrong painting costs a star, as a wrong choice does (#50)
   const b = assign('u5', 'e-balloons');
   const before5 = starsOf('u5');
   const painted = { known: [1, 2, 5, 6], sought: [8, 9] };
@@ -403,8 +420,43 @@ test('unforgiving: a problem can pay nothing, and a painted reading step costs n
   await db.answerExerciseAssignment(b.id, { step: 1, value: 1 });
   await db.answerExerciseAssignment(b.id, { step: 2, value: [8, 1] });
   r = await db.answerExerciseAssignment(b.id, { step: 3, value: ['πρώτο', 'δεύτερο', 'τρίτο'] });
-  assert.deepEqual([r.starsAwarded, r.assignment.mistakes], [2, [1, 1, 0, 0]]);
-  assert.equal(starsOf('u5'), before5 + 2);
+  assert.deepEqual([r.starsAwarded, r.assignment.mistakes], [1, [1, 1, 0, 0]]);
+  assert.equal(starsOf('u5'), before5 + 1);
+});
+
+test('a calc slip goes to the server as it happens: a wrong sum or the smaller number first costs, a right sum that means nothing does not (#50)', async () => {
+  const lines = [{ x: 25, op: '−', y: 7, result: 18 }, { x: 18, op: '+', y: 10, result: 28 }];
+  const play = async (userId: string, slips: object[]) => {
+    const a = assign(userId, 'p-pocket');
+    const answer = (step: number, value: unknown) => db.answerExerciseAssignment(a.id, { step, value });
+    await answer(0, ['known', 'known', 'known', 'sought']);
+    const counted: number[] = [];
+    for (const slip of slips) {
+      const r = await answer(1, { lines: lines.slice(0, 1), slip });
+      assert.deepEqual([r.correct, r.assignment.stepIndex], [false, 1], 'a slip is not an answer');
+      counted.push(r.assignment.mistakes![1]);
+    }
+    assert.equal((await answer(1, { lines, slips: 9 })).correct, true, 'the old count of slips taken back is ignored');
+    return { counted, paid: await answer(2, 0) };
+  };
+  const before = starsOf('u2');
+  // After 25 − 7 = 18: 18 + 10 = 27 (math), 10 − 18 (order), 25 + 10 = 35 (right, but nothing here)
+  let { counted, paid } = await play('u2', [{ x: 18, op: '+', y: 10, result: 27 }, { x: 10, op: '−', y: 18, result: 8 }, { x: 25, op: '+', y: 10, result: 35 }]);
+  assert.deepEqual(counted, [1, 2, 2]);
+  assert.deepEqual([paid.starsAwarded, paid.assignment.mistakes], [2, [0, 2, 0]]);
+  // Only right sums that mean nothing: the full price
+  ({ counted, paid } = await play('u2', [{ x: 25, op: '+', y: 10, result: 35 }, { x: 25, op: '+', y: 7, result: 32 }]));
+  assert.deepEqual([counted, paid.starsAwarded], [[0, 0], 3]);
+  assert.equal(starsOf('u2'), before + 5);
+  // Unforgiving: two counted slips, then the step is shown worked (its lines pass), and it costs its star
+  ({ counted, paid } = await play('u4', [{ x: 18, op: '+', y: 10, result: 29 }, { x: 18, op: '+', y: 10, result: 27 }]));
+  assert.deepEqual([counted, paid.starsAwarded], [[1, 2], 2]);
+  // A slip for a step already solved changes nothing
+  const a = assign('u2', 'p-pocket');
+  await db.answerExerciseAssignment(a.id, { step: 0, value: ['known', 'known', 'known', 'sought'] });
+  await db.answerExerciseAssignment(a.id, { step: 1, value: { lines } });
+  const r = await db.answerExerciseAssignment(a.id, { step: 1, value: { lines, slip: { x: 18, op: '+', y: 10, result: 27 } } });
+  assert.deepEqual(r.assignment.mistakes, [0, 0, 0]);
 });
 
 test('a plain exercise: a wrong first try loses the star; unforgiving closes it after its tries', async () => {
