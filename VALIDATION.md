@@ -1,357 +1,135 @@
-# Configuration Validation System
+# Validation
 
-## Overview
+Every config save (`data.json`, `exercises.json`) and every whole-state replace from Κατάσταση (JSON) is checked
+against a JSON Schema (ajv, all errors reported) before anything is written. An invalid one changes nothing.
 
-The parent dashboard JSON editor now includes comprehensive schema validation to prevent invalid configuration edits. This ensures data integrity and prevents runtime errors from malformed configuration.
+Day-to-day actions (stars, purchases, transfers, chores, exercises, routines on screen) don't go through
+`state.schema.json`: they write to the database through `backend/src/db.ts`. Each route's request body is checked
+against its own schema (`backend/src/bodies.ts`), and `db.ts` refuses what its rules forbid (a user or reward that
+doesn't exist, a purchase or gift worth more stars than are left, a chore that isn't open). Nothing checks the
+database against `state.schema.json` afterwards.
 
-## Features
+| What | Where it lives | Schema | Parent's editor |
+| --- | --- | --- | --- |
+| Config | `backend/data.json` | `backend/data.schema.json` | Ρυθμίσεις (the forms), Προχωρημένα → Ρυθμίσεις (JSON) |
+| Group-game questions | `backend/exercises.json` | `backend/exercises.schema.json` | Προχωρημένα → Ασκήσεις (JSON) |
+| Stars and history | the SQLite database, `backend/routine.db` | `backend/state.schema.json` | Προχωρημένα → Κατάσταση (JSON) |
 
-### 1. JSON Schemas
+Κατάσταση (JSON) reads and replaces the whole state in the database (`GET`/`POST /api/admin/state`), shown as a
+`StateSnapshot`. No file is involved: `state.json` (legacy, imported once into the database on first start, see
+CLAUDE.md «Persistence») is neither what the editor shows nor what it saves. Replacing the state replaces balances, history and whatever runs on screen; for
+stars, use Σήμερα.
 
-Two comprehensive JSON Schemas have been created:
+## In the editors
 
-#### Config Schema (`backend/data.schema.json`)
+The three JSON editors (Monaco) load their schema from the server (`/api/admin/schema/data`,
+`/api/admin/schema/state`, `/api/exercises/schema`) and underline errors as you type. There is one button,
+Αποθήκευση. It first asks the server's validate route; if that answers `valid: false`, the errors are listed under
+the editor, one `<path> <message>` per line, and nothing is saved. Otherwise it saves, and the server checks again.
 
-Validates configuration data (data.json):
+The Ρυθμίσεις forms save through the same route as the JSON editor (`POST /api/admin/data`), so the same schema
+applies. The forms also refuse, saying why, what the schema can't see: deleting a task a routine uses, or a routine
+a schedule or flow starts.
 
-- **Tasks**: Unique IDs, required fields (title, icon, stars), icon format
-- **Routines**: Unique IDs, theme colors, icons
-- **RoutineTasks**: Foreign key references, order, duration validation
-- **Users**: Unique IDs, avatar format, color values
-- **Settings**: Timezone format validation (IANA format)
-- **RoutineAssignments**: User-routine mappings
-- **Flows**: Multi-step sequences with proper alarm/parallel action structure
-- **Schedules**: Cron expression validation, target type validation
-- **Rewards**: Cost validation, icon format
+## What the server answers
 
-#### State Schema (`backend/state.schema.json`)
+| Request | Valid | Invalid |
+| --- | --- | --- |
+| `POST /api/admin/validate`, `/api/admin/validate-exercises`, `/api/admin/validate-state` (check only, write nothing) | 200 `{"valid":true}` | 200 `{"valid":false,"errors":[…]}` |
+| `POST /api/admin/data` (data.json) | 200 `{"success":true,"version":"…"}` | 400 `{"error":"Validation failed","errors":[…]}` |
+| `POST /api/admin/exercises` (exercises.json) | 200 `{"success":true,"version":"…"}` | 400 `{"error":"Exercises validation failed: <up to 3 errors on one line>"}` |
+| `POST /api/admin/state` (the database) | 200 `{"success":true}` | 400 `{"error":"State validation failed","errors":[…]}` |
 
-Validates runtime state data (state.json):
+`errors` are ajv's error objects: `instancePath`, `schemaPath`, `keyword`, `params`, `message`. The one-line form,
+`<path> <message>; …` with `(+N more)` past three, is what a parent's toast shows (`summarize` in
+`backend/src/schemas.ts`).
 
-- **UserStars**: Map of user IDs to non-negative integer balances
-- **RoutineExecutions**: Execution history with UUID format, timestamps
-- **TaskExecutions**: Task completion records with duration, timing data
-- **Spendings**: Reward redemption records with status validation (pending/done/revoked)
+Two more refusals for the config files, both writing nothing:
+- **409, stale** (#33): a save names the version it was edited from (`?version=`, the first 12 hex of the file's
+  sha256; `GET /api/admin/data` and `/api/admin/exercises` send it in `X-Config-Version`). If another screen, or a
+  hand edit on disk, saved since, the answer is 409 `{"error":"Το data.json άλλαξε στο μεταξύ …","conflict":true}`
+  and the editor asks to load again.
+- **400 while the file on disk is invalid** (#45): a hand edit that broke `data.json` or `exercises.json` never
+  replaces the live config. The last valid one keeps running, the error reaches every screen as `configError` in
+  the state and `GET /api/admin/validation-status`, and saves are refused so no form writes over the file being
+  fixed. Only the JSON editor may replace it (`?replace=1`); the broken file is kept beside it as
+  `<file>.invalid-<stamp>`.
 
-### 2. Backend Validation (`backend/src/server.ts`)
+Every other route's request body has its own schema (`backend/src/bodies.ts`, #32): a bad body is a 400
+`{"error":"body/amount must be integer"}` before the handler runs.
 
-**New Dependencies:**
-- `ajv` version 8.12.0 - JSON Schema validator
+## From the command line
 
-**New Endpoints:**
-- `POST /api/admin/validate` - Validates configuration without saving
-  - Returns: `{ valid: boolean, errors?: ValidationError[] }`
-- `POST /api/admin/validate-state` - Validates state without saving
-  - Returns: `{ valid: boolean, errors?: ValidationError[] }`
-- `POST /api/admin/data` - Enhanced to validate config before saving
-  - Now returns 400 error with validation details if invalid
-- `POST /api/admin/state` - Enhanced to validate state before saving
-  - Now returns 400 error with validation details if invalid
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm run test-schemas
+```
 
-**Validation Features:**
-- Both schemas are loaded at server startup
-- All errors are reported (not just the first one)
-- Atomic saves: validation happens before writing to disk
-- Graceful degradation: if schema files missing, validation is skipped with warning
-- State validation protects against corrupted runtime data
+`backend/test-schemas.js` checks `data.json` against its schema, then tries `state.json` (legacy, imported once; on
+a checkout without one it prints an `ENOENT` error line). It prints the result and exits 0 either way, so CI only reports
+it (CLAUDE.md, «CI»). `exercises.json` isn't in it; `npm test` validates the shipped exercise pools.
 
-### 3. Frontend Integration (`frontend/src/components/parent/advanced/JsonEditor.tsx`)
+## Worked examples
 
-**Enhanced JSON Editor:**
-- New "Validate" button to check configuration/state before saving
-- Auto-validation before save (prevents saving invalid data)
-- Detailed error display with path, message, and parameters
-- Visual feedback:
-  - Red error box for general errors
-  - Orange validation error list with scrollable details
-  - Toast notifications for success/failure
-- Works for both Config (data.json) and State (state.json) editors
+Each was sent to the dev stack's `POST /api/admin/validate` (or `validate-state`) with today's config (or state) and
+one change; the replies are copied as they came. A Αποθήκευση of the same document shows the same errors under the
+editor.
 
-**User Workflow:**
-1. Edit JSON in either the Config or State editor
-2. Click "Validate" to check for errors (optional)
-3. Click "Save" - automatic validation runs
-4. If invalid: errors are displayed, save is blocked
-5. If valid: data is saved and broadcast to all clients (if applicable)
-
-## Testing the Validation
-
-### Config Validation Tests
-
-#### Test 1: Invalid Task (Missing Required Field)
-
-In the parent dashboard Config tab, try removing the `stars` field from a task:
+**A task without `stars`** (`tasks[0]` is `t-brush`):
 
 ```json
-{
-  "id": "t-brush",
-  "title": "Πλύσιμο Δοντιών",
-  "icon": { "type": "emoji", "value": "🪥" }
-  // Missing "stars" field - should fail validation
-}
+{"valid":false,"errors":[{"instancePath":"/tasks/0","schemaPath":"#/properties/tasks/items/required","keyword":"required","params":{"missingProperty":"stars"},"message":"must have required property 'stars'"}]}
 ```
 
-**Expected Result:** 
-- Error: `/tasks/0 must have required property 'stars'`
-- Save is blocked
-
-### Test 2: Invalid Icon Type
-
-Try using an invalid icon type:
+**An icon type that isn't `emoji` or `image`** (`"type": "invalid-type"`):
 
 ```json
-{
-  "id": "t-brush",
-  "title": "Πλύσιμο Δοντιών",
-  "icon": { "type": "invalid-type", "value": "🪥" },
-  "stars": 10
-}
+{"valid":false,"errors":[{"instancePath":"/tasks/0/icon/type","schemaPath":"#/properties/tasks/items/properties/icon/properties/type/enum","keyword":"enum","params":{"allowedValues":["emoji","image"]},"message":"must be equal to one of the allowed values"}]}
 ```
 
-**Expected Result:**
-- Error: `/tasks/0/icon/type must be equal to one of the allowed values`
-- Shows allowed values: `["emoji", "icon"]`
-
-### Test 3: Invalid Cron Expression
-
-Try an invalid cron format in schedules:
+**Negative stars** (`"stars": -10`):
 
 ```json
-{
-  "id": "sch-morning",
-  "cron": "invalid cron",
-  "type": "flow",
-  "targetId": "morning-flow"
-}
+{"valid":false,"errors":[{"instancePath":"/tasks/0/stars","schemaPath":"#/properties/tasks/items/properties/stars/minimum","keyword":"minimum","params":{"comparison":">=","limit":0},"message":"must be >= 0"}]}
 ```
 
-**Expected Result:**
-- Error: `/schedules/0/cron must match pattern`
-- Pattern requirement shown
-
-### Test 4: Negative Stars
-
-Try setting negative star value:
+**A field the schema doesn't know** (`"unexpectedField": "value"` on a task):
 
 ```json
-{
-  "id": "t-brush",
-  "title": "Πλύσιμο Δοντιών",
-  "icon": { "type": "emoji", "value": "🪥" },
-  "stars": -10
-}
+{"valid":false,"errors":[{"instancePath":"/tasks/0","schemaPath":"#/properties/tasks/items/additionalProperties","keyword":"additionalProperties","params":{"additionalProperty":"unexpectedField"},"message":"must NOT have additional properties"}]}
 ```
 
-**Expected Result:**
-- Error: `/tasks/0/stars must be >= 0`
+**A cron that isn't five fields** (`"cron": "invalid cron"` on `schedules[0]`): `/schedules/0/cron must match pattern
+"^[\d\*\-,/]+ [\d\*\-,/]+ [\d\*\-,/]+ [\d\*\-,/]+ [\d\*\-,/]+$"`.
 
-### Test 5: Invalid Timezone
+**A time zone without a region** (`"timezone": "Athens"`): `/settings/timezone must match pattern
+"^[A-Za-z]+/[A-Za-z_]+$"`. The pattern checks the shape only: `"Invalid/Timezone"` passes.
 
-Try an invalid timezone format:
+**A negative balance**, through `validate-state` (`"userStars": {"u1": -50, …}`):
 
 ```json
-{
-  "settings": {
-    "timezone": "Invalid/Timezone"
-  }
-}
+{"valid":false,"errors":[{"instancePath":"/userStars/u1","schemaPath":"#/properties/userStars/patternProperties/%5E%5Ba-zA-Z0-9-_%5D%2B%24/minimum","keyword":"minimum","params":{"comparison":">=","limit":0},"message":"must be >= 0"}]}
 ```
 
-**Expected Result:**
-- Error: `/settings/timezone must match pattern`
+**A purchase with an unknown status** (`"status": "invalid-status"` in `spendings`): `/spendings/0/status must be equal
+to one of the allowed values`, `allowedValues` `["pending","done","revoked"]`.
 
-### Test 6: Additional Properties
+And the saves, all refused, nothing written:
+- `POST /api/admin/data` with a task missing `stars` and another at `-10`: 400 `{"error":"Validation failed","errors":[…both…]}`.
+- `POST /api/admin/exercises` with an exercise missing `id` and another with an extra field: 400
+  `{"error":"Exercises validation failed: /exercises/0 must have required property 'id'; /exercises/1 must NOT have additional properties"}`.
+- `POST /api/admin/state` with `u1` at `-50`: 400 `{"error":"State validation failed","errors":[…]}`.
+- `POST /api/admin/data?version=000000000000` with today's valid config: 409
+  `{"error":"Το data.json άλλαξε στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.","conflict":true}`.
 
-Try adding an unexpected field to a task:
+## What the schemas check, and don't
 
-```json
-{
-  "id": "t-brush",
-  "title": "Πλύσιμο Δοντιών",
-  "icon": { "type": "emoji", "value": "🪥" },
-  "stars": 10,
-  "unexpectedField": "value"
-}
-```
-
-**Expected Result:**
-- Error: `/tasks/0 must NOT have additional properties`
-
-### State Validation Tests
-
-#### Test 1: Negative Star Balance
-
-In the parent dashboard State tab, try setting a negative star balance:
-
-```json
-{
-  "userStars": {
-    "u1": -50,
-    "u2": 100
-  },
-  ...
-}
-```
-
-**Expected Result:**
-- Error: `/userStars/u1 must be >= 0`
-
-#### Test 2: Invalid UUID Format
-
-Try using an invalid UUID in routineExecutions:
-
-```json
-{
-  "routineExecutions": [
-    {
-      "id": "not-a-valid-uuid",
-      "userId": "u1",
-      "routineId": "r-morning",
-      "startedAt": "2025-11-22T10:00:00.000Z",
-      "totalStars": 10
-    }
-  ],
-  ...
-}
-```
-
-**Expected Result:**
-- Error: `/routineExecutions/0/id must match pattern`
-
-#### Test 3: Invalid Status Value
-
-Try an invalid spending status:
-
-```json
-{
-  "spendings": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "userId": "u1",
-      "rewardId": "rew-tv",
-      "cost": 50,
-      "createdAt": "2025-11-22T10:00:00.000Z",
-      "status": "invalid-status"
-    }
-  ],
-  ...
-}
-```
-
-**Expected Result:**
-- Error: `/spendings/0/status must be equal to one of the allowed values`
-- Shows allowed values: `["pending", "done", "revoked"]`
-
-#### Test 4: Missing Required State Field
-
-Try removing a required field from taskExecutions:
-
-```json
-{
-  "taskExecutions": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "executionId": "650e8400-e29b-41d4-a716-446655440000",
-      "taskId": "t-brush",
-      "duration": 5,
-      "completedAt": "2025-11-22T10:00:00.000Z"
-      // Missing "isOnTime" field
-    }
-  ],
-  ...
-}
-```
-
-**Expected Result:**
-- Error: `/taskExecutions/0 must have required property 'isOnTime'`
-
-## Schema Rules Summary
-
-### ID Format
-- Pattern: `^[a-zA-Z0-9-_]+$` (alphanumeric, hyphens, underscores only)
-- Must be unique within their array
-
-### Icon Format
-```json
-{
-  "type": "emoji" | "icon",
-  "value": "string (non-empty)"
-}
-```
-
-### Cron Format
-- Pattern: 5 fields separated by spaces
-- Each field: digits, *, -, , or / characters
-- Example: `"0 7 * * *"` (7:00 AM daily)
-
-### Timezone Format
-- Pattern: `^[A-Za-z]+/[A-Za-z_]+$`
-- Example: `"Europe/Athens"`
-
-### Flow Steps
-- Must have at least 1 step
-- Step types: `"alarm"` or `"parallel"`
-- Alarm steps require `props.sound`
-- Parallel steps require `actions` array with `type: "routine"` entries
-
-### Schedule Types
-- Must be `"flow"` or `"routine"`
-- `targetId` must reference existing flow or routine assignment
-
-### UUID Format
-- Pattern: `^[a-f0-9-]{36}$` (lowercase hex with hyphens)
-- Example: `"550e8400-e29b-41d4-a716-446655440000"`
-
-### Status Values (Spendings)
-- Must be one of: `"pending"`, `"done"`, `"revoked"`
-
-### Star Values
-- Must be non-negative integers (>= 0)
-
-### Timestamps
-- Must be valid ISO 8601 date-time strings
-- Example: `"2025-11-22T10:00:00.000Z"`
-
-## Benefits
-
-1. **Prevents Runtime Errors**: Catches configuration and state mistakes before they cause app crashes
-2. **Better UX**: Clear error messages guide users to fix issues
-3. **Data Integrity**: Ensures all required fields are present and properly formatted
-4. **Safe Manual Edits**: Parents can safely edit state to reset scores, fix corrupted data, etc.
-5. **Foreign Key Validation**: While not fully enforced, the schema validates ID formats
-6. **Developer Confidence**: Safe to let parents edit both configuration and state without breaking the app
-7. **Prevents State Corruption**: Protects against invalid data being written to state.json
-
-## Future Enhancements
-
-Consider adding:
-- Foreign key validation (verify IDs actually exist in referenced arrays)
-- Duplicate ID detection
-- Orphaned record detection (e.g., routineTasks referencing deleted routines)
-- Migration support for schema version changes
-- Visual schema documentation in the UI
-- Auto-fix suggestions for common errors
-
-## Technical Details
-
-**Validation Library**: [Ajv](https://ajv.js.org/) v8
-- Industry standard JSON Schema validator
-- Fast and lightweight
-- Supports JSON Schema draft-07
-- Comprehensive error reporting
-
-**Performance**: 
-- Validation is fast (<100ms for typical configs)
-- Schema is compiled once at startup for optimal performance
-- Validation runs client-side (preview) and server-side (enforcement)
-
-**Error Format**:
-```typescript
-{
-  instancePath: "/tasks/0/stars",  // Path to invalid field
-  schemaPath: "#/properties/tasks/items/properties/stars/minimum",
-  keyword: "minimum",              // Validation rule that failed
-  params: { minimum: 0 },         // Rule parameters
-  message: "must be >= 0"         // Human-readable message
-}
-```
+- Ids: `^[a-zA-Z0-9-_]+$`. The schemas don't check that ids are unique or that a reference (a schedule's `targetId`,
+  a flow's `routineId`) points at something; the forms make ids themselves and refuse deletes that would break one.
+- Icons: `{"type": "emoji" | "image", "value": "<non-empty>"}`; an image's value is an uploaded file's name (or a URL).
+- Cron: five space-separated fields of digits and `* - , /`.
+- Flows: at least one step; a step is an `alarm` (optional `props.sound`: `"melody"`, `"beep"` or
+  `{"type": "upload", "value": "<file>"}`, see CUSTOM_SOUNDS.md) or a `parallel` list of `routine` and `flow` actions.
+- Schedules: `type` is `flow` or `routine`.
+- State: balances are integers ≥ 0, record ids are 36 characters of lowercase hex and dashes, a purchase's status is
+  `pending`, `done` or `revoked`. Timestamps are only checked to be strings.
+- No unknown fields anywhere the schema lists the fields (`additionalProperties: false`).

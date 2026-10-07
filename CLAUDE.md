@@ -8,16 +8,20 @@ A real-time gamified routine/chore system for children, run as a kiosk-style PWA
 
 Stack: Fastify 5 + TypeScript + WebSockets + node-cron (backend), React 19 + Vite + Framer Motion (frontend), JSON files for config and SQLite (`node:sqlite`, Node 24) for runtime state, Docker Compose for everything.
 
-## Agent rules (from .cursorrules)
+## Agent rules
+
+(`.cursorrules` repeats these four for Cursor and points here: change them here, then there.)
 
 - Don't modify the host: no global installs or system config changes. Use Docker for any tooling or services.
-- During the design phase, recreate data from scratch with mock data instead of writing migrations, unless told otherwise.
-- Before committing, always check `git status` and `git diff`. Avoid `git add .`. Split commits into logical chunks using `<type>(<scope>): <subject>` (types: feat, fix, docs, refactor, chore…; scopes: backend, frontend, shared, docker, config).
-- If the data model changes, update `shared/types.ts` **and** the matching JSON schema in `backend/*.schema.json`. Otherwise config validation will reject the data.
+- The family's data on piserve is live (see «Deployment target»). A change to the data model stays compatible with it or comes with a migration (state: a new entry in `MIGRATIONS` in store.ts; config: a step for the owner to run). Only the dev data may be recreated from mock data.
+- Before committing, always check `git status` and `git diff`. Never `git add .`; add files by name. Split commits into logical chunks using `<type>(<scope>): <subject>` (types: feat, fix, docs, refactor, test, chore…; scopes: backend, frontend, shared, docker, config).
+- If the data model changes, update `shared/types.ts` **and** the matching JSON schema in `backend/*.schema.json` (state: `state.schema.json` and the store.ts migration too). Otherwise validation will reject the data.
 
 ## Pull requests
 
 One issue per PR, kept compact, written for the owner to review from the PR page alone. Follow `.github/pull_request_template.md`: **Before** (the problem shown: screenshot, video with sound, failing test, code at file:line), **Problem**, **Fix**, **After** (the same evidence, now right), **Blast radius** (what else it touched, any manual step for piserve's live data). Capture screens on the dev stack with Playwright at the kiosk size (1280×800) and any other size the change affects; `tools/evidence/` records scenarios as screenshots and videos with sound (see its README). Before closing the issue, record the decision where the next agent will look (this file or the tool's README).
+
+Docs (#37): README.md is the human entry point (run, test, release, a map of the docs) and links here for the architecture instead of restating it; this file is the architecture doc. index.md and frontend/README.md are gone, and `.cursorrules` is only a copy of «Agent rules» for Cursor: don't grow a second architecture doc. A change that moves a command, route, file, screen or a server answer updates the doc that names it (README.md, VALIDATION.md, CUSTOM_SOUNDS.md, GITHUB_TOKEN.md, BACKUP.md, a tool's README) in the same PR; their examples are real replies from the dev stack, not written from memory.
 
 The drill, when the owner names an issue: the `issue` workflow (`.claude/workflows/issue.js`) runs it in stages, and each stops for the owner's reactions.
 1. **Scope** (`{issue, stage: "scope"}`): read the issue and #51, branch `issue-<n>-<slug>`, record the Before evidence in `.evidence/<n>/`, plan, and have a critic challenge it. Show the owner the brief, the critique and the evidence; wait.
@@ -46,12 +50,12 @@ tools/help-voice/run.sh
 # The screens' sounds, rarely: fetch the CC0 packs, then choose and make the palette (see tools/sfx/README.md)
 tools/sfx/fetch.sh
 
-# Validate data.json / state.json against their schemas
+# data.json against its schema, then a legacy state.json (an ENOENT line when there is none); prints, exits 0 either way
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm run test-schemas
 
-# Backend tests (node:test): store, config cache, legacy import
+# Backend tests (node:test, every backend/test/*.test.ts)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm test
-# Frontend tests (node:test on src/**/*.test.ts, types stripped by Node): the alarm's sound
+# Frontend tests (node:test on src/**/*.test.ts, types stripped by Node)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec frontend npm test
 
 # Import state.json + logs.jsonl into the database (if not done yet) and verify record by record (prod image)
@@ -63,8 +67,7 @@ docker compose exec backend npm run backup
 
 Beyond `npm test`, verify changes manually:
 - `/?push=<id>`, `POST /api/hooks/push` and the parents' «Ξεκίνα τώρα» start exactly that flow, routine assignment or `alarm`, now (`triggerAction(id, 'push_hook')`), never the other schedules due at the same time (#29). A push of a kid's routine while she is already in one keeps hers: the answer is `{ skipped, runningId }` and the parent's toast says «Ήδη σε ρουτίνα».
-- `POST /api/debug/time` simulates a minute: every schedule due then starts, logged as `SCHEDULE_MATCH`.
-- `POST /api/debug/time` and `GET /api/debug/schedule` help with time and schedule debugging.
+- `POST /api/debug/time` (`{"time": "07:00"}` today in `settings.timezone`, or an ISO date) simulates that minute: every schedule due then starts, logged as `SCHEDULE_MATCH`. `GET /api/debug/schedule` lists each schedule's next run.
 - `GET /api/debug/logs` returns recent action logs.
 
 ### CI
