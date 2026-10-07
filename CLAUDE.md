@@ -67,6 +67,20 @@ Beyond `npm test`, verify changes manually:
 - `POST /api/debug/time` and `GET /api/debug/schedule` help with time and schedule debugging.
 - `GET /api/debug/logs` returns recent action logs.
 
+### Dependencies
+
+Update them inside the dev containers (`exec -u node backend|frontend npm ...`), never on the host, and only what an advisory needs: `npm audit fix`, `npm update <pkg>` for a vulnerable transitive one audit fix leaves (eslint's brace-expansion 1.x did), and a major only on purpose, with its release notes read against our code (#28: @fastify/static 8 to 10). No blanket `npm update`. Then raise the `package.json` floors to the installed versions, so a regenerated lockfile can't fall back, and restart the dev containers. The target: backend `npm audit --omit=dev` at 0. What is left on purpose (#28):
+- backend, dev only: braces < chokidar 3 < nodemon 3. Kept: the dev watcher polls the bind mount (`CHOKIDAR_USEPOLLING`).
+- frontend: dompurify 3.4.15 (2 low), pinned exactly by monaco-editor 0.57.0. The copy that runs is bundled inside monaco's CDN build, where no `overrides` reaches; npm's suggested "fix" (monaco 0.56.0, dompurify 3.4.8) has 5 moderate. Bundling monaco (#35) would let an override apply.
+
+Say what moved from the lockfiles, not from `npm audit fix`'s output: every `packages` entry whose version differs from master's (`git show master:frontend/package-lock.json`), new names included, and look at the new names. #28's workbox-build 7.4.1 swapped @surma/rollup-plugin-off-main-thread for a one-maintainer pre-release fork, @trickfilm400/rollup-plugin-off-main-thread 3.0.0-pre1, which writes the loader at the top of `sw.js` (build time; same code and loader as the original). Compare lint with `npx eslint src`: `npm run lint` runs `eslint .`, which also counts the generated, git-ignored `frontend/dev-dist/`, 14 problems per `workbox-*.js` in it, and the PWA dev plugin leaves the old one there when workbox changes (#39 owns ignoring it).
+
+The parent's JSON editor (`JsonEditor.tsx`) loads monaco from jsdelivr at the installed `monaco-editor` version (`__MONACO_VERSION__`, read in `vite.config.ts`), not at the version `@monaco-editor/loader` names. `monaco-editor` is a direct dependency, so updating it is an npm update and nothing else; check the editor still marks a JSON error.
+
+ARM64 (the Pi) can't be built here: there is no QEMU on this host, and don't install it. Instead, copy `frontend/package*.json` into a throwaway `node:24-alpine` container, run `npm ci --os=linux --cpu=arm64 --libc=musl --ignore-scripts` there, and check that `@rollup/rollup-linux-arm64-musl` and `@esbuild/linux-arm64` are in its node_modules. Then build the prod images locally (amd64) and smoke them (/health, /ws with permessage-deflate, an upload, the kids' and parent's screens). The real arm64 build is `build.sh` (GitHub Actions). The backend has no native packages (`node:sqlite`).
+
+The e2e scripts under `docs/pr-*` are archived: they drove the MCP endpoint (retired in #55) and old screens. Don't run them; record a scenario with `tools/evidence/` instead.
+
 ## Deployment target
 
 We develop here, but production runs on **piserve**: `ssh piserve`, checkout at `~/work/girls_gamiefied_routine`, deployed with `deploy-rpi.sh`. The Pi's `backend/data.json`, `backend/routine.db` (and, until migrated, `backend/state.json` + `backend/logs.jsonl`) hold the **live family data** (star balances, history). They have uncommitted local changes there, so never overwrite them with the dev copies, and never `git checkout`/`reset` them on the Pi. Any config or schema change must stay compatible with that existing data, or come with a migration step.

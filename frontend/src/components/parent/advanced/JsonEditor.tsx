@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import Editor, { type BeforeMount, type OnMount, type OnValidate } from '@monaco-editor/react';
+import Editor, { loader, type BeforeMount, type OnMount, type OnValidate } from '@monaco-editor/react';
 import type { ValidationResult } from '../../../api';
 import { useFeedback } from '../useFeedback';
+
+// Monaco comes from jsdelivr (#35 would bundle it), at the version npm installed and audits.
+// Without this the loader fetches the version it names itself (0.55.1 in loader 1.7.0).
+loader.config({ paths: { vs: `https://cdn.jsdelivr.net/npm/monaco-editor@${__MONACO_VERSION__}/min/vs` } });
 
 interface Props {
     initial?: unknown; // the document, when it is already at hand...

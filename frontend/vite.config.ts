@@ -2,9 +2,17 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
+import fs from 'fs'
+
+// The JSON editor loads monaco from jsdelivr at this version: the one npm installed and audits (JsonEditor.tsx)
+const monacoVersion: string = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, 'node_modules/monaco-editor/package.json'), 'utf8')).version
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __MONACO_VERSION__: JSON.stringify(monacoVersion),
+  },
   resolve: {
     alias: {
       '@shared': path.resolve(__dirname, '../shared')
