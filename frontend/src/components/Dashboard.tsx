@@ -32,10 +32,16 @@ interface ChoreNotification {
 
 const TOAST_MS = 5000;
 
+// A routine a parent ended from /parent (#63): for this long her lane says so, instead of the card
+// just vanishing. Silent: a sound for what happens elsewhere waits for its notice (CLAUDE.md, Known gaps).
+const ENDED_MS = 3000;
+type Ended = { runId: string; userId: string; routineId: string };
+
 // `order`: where it goes on screen, by kid (the config's order; an alarm for everyone first)
 type ActiveItem =
   | { type: 'alarm'; key: string; order: number; userIds: string[]; run: FlowRun; props: AlarmProps }
-  | { type: 'routine'; key: string; order: number; run: RoutineRun; user: User; routine: Routine };
+  | { type: 'routine'; key: string; order: number; run: RoutineRun; user: User; routine: Routine }
+  | { type: 'ended'; key: string; order: number; user: User; routine: Routine };
 type AlarmItem = Extract<ActiveItem, { type: 'alarm' }>;
 const CHORE_TOAST_TYPE = { CHORE_CONFIRMED: 'confirmed', CHORE_REJECTED: 'rejected', CHORE_EXPIRED: 'expired' } as const;
 
@@ -48,6 +54,7 @@ export const Dashboard: React.FC = () => {
   const dismissChoreNotification = useCallback((id: string) => {
     setChoreNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
+  const [ended, setEnded] = useState<Ended[]>([]);
   const isTouchDevice = useTouchDevice();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -91,8 +98,14 @@ export const Dashboard: React.FC = () => {
     }).length;
   }, [choreInstances, chores]);
 
-  // Chore toasts (server events)
+  // Server events: a parent ended a routine, or the chore toasts
   useEffect(() => subscribe(event => {
+    if (event.type === 'ROUTINE_ENDED_BY_PARENT') {
+      const { runId } = event.payload;
+      setEnded(prev => [...prev.filter(e => e.runId !== runId), event.payload]);
+      setTimeout(() => setEnded(prev => prev.filter(e => e.runId !== runId)), ENDED_MS);
+      return;
+    }
     // A chore was confirmed, rejected or expired
     const { instanceId, choreTitle, userId } = event.payload;
     const notification: ChoreNotification = {
@@ -172,9 +185,17 @@ export const Dashboard: React.FC = () => {
       if (!user || !routine || covered.has(run.userId)) return [];
       return [{ type: 'routine' as const, key: `routine-${run.id}`, order: order(run.userId), run, user, routine }];
     });
+    // A routine a parent just ended: her lane (the same key, so the slot stays) says so, unless she
+    // already has something else on screen (her flow's next routine or alarm)
+    const endedNotices: ActiveItem[] = ended.flatMap(e => {
+      const user = users.find(u => u.id === e.userId);
+      const routine = user?.routines.find(r => r.id === e.routineId);
+      if (!user || !routine || busy.has(e.userId) || covered.has(e.userId)) return [];
+      return [{ type: 'ended' as const, key: `routine-${e.runId}`, order: order(e.userId), user, routine }];
+    });
 
-    return [...alarms, ...routines].sort((a, b) => a.order - b.order);
-  }, [flowRuns, routineRuns, users]);
+    return [...alarms, ...routines, ...endedNotices].sort((a, b) => a.order - b.order);
+  }, [flowRuns, routineRuns, users, ended]);
 
   // One alarm sound for every alarm card on screen (the first one's)
   const firstAlarm = sortedActiveItems.find((item): item is AlarmItem => item.type === 'alarm');
@@ -438,6 +459,23 @@ export const Dashboard: React.FC = () => {
                 />
               </motion.div>
             );
+          } else if (item.type === 'ended') {
+            const { user, routine } = item;
+            return (
+              <motion.div key={item.key} className="routine-slot">
+                <motion.div
+                  className="routine-ended"
+                  role="status"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <SmartIcon value={routine.icon} size={96} />
+                  <h2>{routine.title}</h2>
+                  <p className="routine-ended-who">{user.name}</p>
+                  <p className="routine-ended-text">Ο γονιός έκλεισε τη ρουτίνα</p>
+                </motion.div>
+              </motion.div>
+            );
           } else {
             const { run, user, routine } = item;
             return (
@@ -621,6 +659,24 @@ export const Dashboard: React.FC = () => {
           container-type: size; /* its card sizes to it (cqmin) */
         }
         .stage.one .routine-slot { max-width: 600px; justify-self: center; }
+
+        /* A routine a parent ended (#63): its lane, for ENDED_MS */
+        .routine-ended {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: clamp(0.25rem, 2cqmin, 0.75rem);
+          padding: 1.5rem;
+          text-align: center;
+          background: rgba(0,0,0,0.2);
+          border: 1px solid var(--glass-border);
+          border-radius: 2rem;
+        }
+        .routine-ended h2 { font-size: clamp(1.25rem, 7cqmin, 2.5rem); }
+        .routine-ended-who { font-size: clamp(1rem, 5cqmin, 1.75rem); opacity: 0.7; }
+        .routine-ended-text { font-size: clamp(1.1rem, 6cqmin, 2rem); font-weight: 700; }
         /* The clock still fading out as the first item comes in stays out of the grid's
            cells: in the flow it would take the only one, and the item would wait in a
            0 px row until the clock was gone. It fades behind the item. */
