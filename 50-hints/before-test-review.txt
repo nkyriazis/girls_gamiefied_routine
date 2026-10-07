@@ -1,0 +1,61 @@
+✔ rowsHint never states a row's answer, not even as a part of the calculation (10.984777ms)
+✔ b.numbers lists a step it can write no fair hint for, and never throws (gen.ts drops the draft) (0.304864ms)
+✔ hintShows: a hint that works its own step out (A and B of the evidence) (0.460787ms)
+✔ hintShows: a hint that answers a later step, and a label that names the row above (C of the evidence) (0.251474ms)
+✔ hintShows: what she has settled is no longer an answer to work out (0.141145ms)
+✔ hintShows: small numbers count after «=», and in a label when a row above asks for them (0.115298ms)
+✖ rowsHint: a product with zeros is not worked out one zero short of the answer (0.914161ms)
+✖ rowsHint never hints a row built on the answer of a row above it (0.327376ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 6
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81.713058
+
+✖ failing tests:
+
+test at tools/problem-gen/hints.test.ts:96:1
+✖ rowsHint: a product with zeros is not worked out one zero short of the answer (0.914161ms)
+  AssertionError [ERR_ASSERTION]: «5 × 3 = 15, και μετά βάζουμε το μηδενικό.» for Είσοδοι: 5 × 30 = [150] | Όλα μαζί: οι είσοδοι + 9 + 20 = [179]
+  + actual - expected
+  
+  + [
+  +   15
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///home/kyriazis/work/girls_gamiefied_routine/tools/problem-gen/hints.test.ts:108:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 15 ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tools/problem-gen/hints.test.ts:112:1
+✖ rowsHint never hints a row built on the answer of a row above it (0.327376ms)
+  AssertionError [ERR_ASSERTION]: «200 × 2 = 400, και μετά 60 × 2.» works on 260
+      at TestContext.<anonymous> (file:///home/kyriazis/work/girls_gamiefied_routine/tools/problem-gen/hints.test.ts:123:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '200 × 2 = 400, και μετά 60 × 2.',
+    expected: /\b(200|60|400)\b/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }

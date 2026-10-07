@@ -1,0 +1,11 @@
+
+## 5:coins-notes numbers hint: 1
+  e5-gen-coins-notes-009 step 2: «Πόσες φορές χωράνε τα 5 € στα 50 €;» shows 50
+      rows: Τετράδια ζωγραφικής [10]
+      later: 10 × 5 = [50]
+
+## 5:compare-offers numbers hint: 1
+  e5-gen-compare-offers-010 step 2: «Πόσες φορές χωράει το 6 στο 30; Τόσα κουτιά των 6 χρειάζονται.» shows 30
+      rows: Κουτιά των 6: 30 : 6 = [5] | Κόστος: τα κουτιά × 6 = [30] | Κουτιά των 10: 30 : 10 = [3] | Κόστος: τα κουτιά × 9 = [27]
+
+2 in 2 places
