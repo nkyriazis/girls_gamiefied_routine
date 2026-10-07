@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import Editor, { loader, type BeforeMount, type OnMount, type OnValidate } from '@monaco-editor/react';
+import Editor, { type BeforeMount, type OnMount, type OnValidate } from '@monaco-editor/react';
 import { ApiError, type ValidationResult, type Versioned } from '../../../api';
 import { useFeedback } from '../useFeedback';
-
-// Monaco comes from jsdelivr (#35 would bundle it), at the version npm installed and audits.
-// Without this the loader fetches the version it names itself (0.55.1 in loader 1.7.0).
-loader.config({ paths: { vs: `https://cdn.jsdelivr.net/npm/monaco-editor@${__MONACO_VERSION__}/min/vs` } });
+import './monaco'; // Monaco bundled, from the Pi (#35)
 
 /** A schema as Monaco gets it: under its file name, so a relative $ref ("data.schema.json#…") resolves. */
 export interface SchemaFile { file: string; schema: object }
@@ -141,7 +138,7 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
                 </div>
             )}
             <div className="p-json-editor">
-                <Editor height="100%" defaultLanguage="json" value={text} theme="vs-dark" beforeMount={beforeMount}
+                <Editor height="100%" defaultLanguage="json" value={text} theme="vs-dark" beforeMount={beforeMount} loading="Φόρτωση…"
                     onMount={ed => { editorRef.current = ed; }} onValidate={onValidate}
                     onChange={v => setText(v ?? '')}
                     options={{ minimap: { enabled: false }, scrollBeyondLastLine: false, fontSize: 13, tabSize: 2, automaticLayout: true, wordWrap: 'on' }} />

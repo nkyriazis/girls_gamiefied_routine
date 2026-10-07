@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { api } from '../../../api';
 import { useGame } from '../../../context/GameContext';
-import { JsonEditor, type SchemaFile } from './JsonEditor';
+import type { SchemaFile } from './JsonEditor'; // a type only: `import { type … }` would load the module
+import { LazyJsonEditor } from './LazyJsonEditor';
 import { LogPanel } from './LogPanel';
 import { UploadsPanel } from './UploadsPanel';
 
@@ -29,7 +30,8 @@ const STALE_CONFIG = 'Οι ρυθμίσεις άλλαξαν στο μεταξύ
 const STALE_EXERCISES = 'Οι ασκήσεις άλλαξαν στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά: οι αλλαγές σου εδώ θα χαθούν.';
 
 // Rare admin work: raw JSON for everything the forms don't cover, files, the log.
-// Loaded on demand, so the everyday views don't download the code editor.
+// Loaded on demand, so the everyday views don't download the code editor; the JSON panels load
+// Monaco only when one opens (LazyJsonEditor), so Αρχεία and Καταγραφή don't either.
 export default function AdvancedView() {
     const { config, configVersion, configError, hasState } = useGame();
     const [panel, setPanel] = useState<Panel>('config');
@@ -56,14 +58,14 @@ export default function AdvancedView() {
                 Its version comes from the same STATE as the config, so the two belong together. */}
             {panel === 'config' && !hasState && <p className="p-empty">Φόρτωση…</p>}
             {panel === 'config' && hasState && (unread('data.json')
-                ? <JsonEditor key="config-text" loadText={api.getConfigText} save={saveConfigFix} schemas={dataSchemas} validate={api.validateConfig} warning={fixWarning('data.json')} />
-                : <JsonEditor key={`config-${opened}`} initial={{ data: config, version: configVersion.data }} save={api.saveRawConfig}
+                ? <LazyJsonEditor key="config-text" loadText={api.getConfigText} save={saveConfigFix} schemas={dataSchemas} validate={api.validateConfig} warning={fixWarning('data.json')} />
+                : <LazyJsonEditor key={`config-${opened}`} initial={{ data: config, version: configVersion.data }} save={api.saveRawConfig}
                     live={configVersion.data} stale={STALE_CONFIG} onReload={reopen} schemas={dataSchemas} validate={api.validateConfig} />)}
             {panel === 'exercises' && (unread('exercises.json')
-                ? <JsonEditor key="exercises-text" loadText={api.getExercisesText} save={saveExercisesFix} schemas={exerciseSchemas} validate={api.validateExercises} warning={fixWarning('exercises.json')} />
-                : <JsonEditor key={`exercises-${opened}`} load={api.getRawExercises} save={api.saveRawExercises}
+                ? <LazyJsonEditor key="exercises-text" loadText={api.getExercisesText} save={saveExercisesFix} schemas={exerciseSchemas} validate={api.validateExercises} warning={fixWarning('exercises.json')} />
+                : <LazyJsonEditor key={`exercises-${opened}`} load={api.getRawExercises} save={api.saveRawExercises}
                     live={configVersion.exercises} stale={STALE_EXERCISES} onReload={reopen} schemas={exerciseSchemas} validate={api.validateExercises} />)}
-            {panel === 'state' && <JsonEditor key="state" load={loadState} save={api.saveRawState} schemas={stateSchemas} validate={api.validateState}
+            {panel === 'state' && <LazyJsonEditor key="state" load={loadState} save={api.saveRawState} schemas={stateSchemas} validate={api.validateState}
                 warning="Αντικαθιστά όλη την κατάσταση: αστέρια, ιστορικό και ό,τι τρέχει τώρα. Για αλλαγές αστεριών χρησιμοποίησε την καρτέλα Σήμερα." />}
             {panel === 'uploads' && <UploadsPanel />}
             {panel === 'log' && <LogPanel />}
