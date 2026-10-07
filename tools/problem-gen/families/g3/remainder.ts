@@ -7,6 +7,8 @@ const BUYS = [
   thing('λουλούδι', 'λουλούδια', 'n'), thing('μαρκαδόρος', 'μαρκαδόροι', 'm', 'μαρκαδόρους'), thing('φακός', 'φακοί', 'm', 'φακούς'),
   thing('κορδέλα', 'κορδέλες', 'f'),
 ];
+// The most one costs in a shop (the audit's story-check holds wider ranges); a flashlight up to 9 €
+const MAX_PRICE: Record<string, number> = { μπαλόνι: 5, σοκολάτα: 4, τετράδιο: 4, λουλούδι: 5, μαρκαδόρος: 3, φακός: 9, κορδέλα: 5 };
 
 const RIDES = [
   { vehicle: thing('αυτοκίνητο', 'αυτοκίνητα', 'n'), seats: [3, 4, 5], who: 'παιδιά', Who: 'Παιδιά', trip: 'πηγαίνουν εκδρομή στο δάσος', goal: 'για να πάνε όλα' },
@@ -26,6 +28,7 @@ export const remainder: Family = {
       const p = r.pick(PEOPLE);
       const t = r.pick(BUYS);
       const price = r.int(2, 9);
+      if (price > MAX_PRICE[t.one]) return null;
       const n = r.int(3, 10);
       const rest = r.int(1, price - 1);
       const money = price * n + rest;

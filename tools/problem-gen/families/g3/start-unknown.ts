@@ -29,7 +29,8 @@ const SETTINGS: Setting[] = [
   },
   {
     t: thing('ευρώ', 'ευρώ', 'n'), some: 'κάποια χρήματα στον κουμπαρά', min: 15, max: 150,
-    lose: n => `Έβγαλε ${n} για να αγοράσει ένα βιβλίο`,
+    // what that money buys: a book up to 30 €, then a board game, then a scooter
+    lose: n => `Έβγαλε ${n} για να αγοράσει ${((x: number) => x > 60 ? 'ένα πατίνι' : x > 30 ? 'ένα επιτραπέζιο παιχνίδι' : 'ένα βιβλίο')(Number(n.replace(/\D/g, '')))}`,
     gain: (n, p) => `Πήρε ${n} από τη γιαγιά ${p.his}`,
     noise: (r, p) => `Ο κουμπαράς ${p.his} είναι ένα γουρουνάκι ψηλό ${extra(`${r.int(15, 25)} εκατοστά`)}.`,
   },
@@ -69,7 +70,7 @@ export const startUnknown: Family = {
     const nowPhrase = known(count(now, t, true));
     const story = r.pick([
       () => `${p.Nom} είχε ${s.some}. ${happened}. ${noise} Τώρα έχει ${nowPhrase}. ${sought(`${Many} ${t.manyAcc} είχε στην αρχή`)};`,
-      () => `Τώρα ${p.nom} έχει ${nowPhrase}. Νωρίτερα, ${happened[0].toLowerCase()}${happened.slice(1)}. ${noise} ${sought(`${Many} ${t.manyAcc} είχε πριν`)};`,
+      () => `Τώρα ${p.nom} έχει ${nowPhrase}. Νωρίτερα ${happened[0].toLowerCase()}${happened.slice(1)}. ${noise} ${sought(`${Many} ${t.manyAcc} είχε πριν`)};`,
       () => `${p.Nom} δεν θυμάται πόσ${t.g === 'n' ? 'α' : t.g === 'f' ? 'ες' : 'ους'} ${t.manyAcc} είχε. Ξέρει ότι ${happened[0].toLowerCase()}${happened.slice(1)} και ότι τώρα έχει ${nowPhrase}. ${noise} ${sought(`${Many} ${t.manyAcc} είχε στην αρχή`)};`,
     ])();
 
