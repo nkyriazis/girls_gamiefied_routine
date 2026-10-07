@@ -33,24 +33,24 @@ function Card({ icon, kind, title, who, stars, at, children }: {
     );
 }
 
-function TransferCard({ item: { transfer: t, at } }: { item: Extract<InboxItem, { kind: 'transfer' }> }) {
+function TransferCard({ item: { transfer: t, from, to, at } }: { item: Extract<InboxItem, { kind: 'transfer' }> }) {
     const { run } = useFeedback();
     return (
         <Card icon="🎁" kind="Δώρο αστεριών" at={at} stars={<Stars value={t.amount} />}
-            title={`${t.fromUser?.name ?? t.fromUserId} → ${t.toUser?.name ?? t.toUserId}`}
-            who={t.fromUser && t.toUser && <><Avatar icon={t.fromUser.avatar} color={t.fromUser.color} size={24} /> → <Avatar icon={t.toUser.avatar} color={t.toUser.color} size={24} /></>}>
+            title={`${from?.name ?? t.fromUserId} → ${to?.name ?? t.toUserId}`}
+            who={from && to && <><Avatar icon={from.avatar} color={from.color} size={24} /> → <Avatar icon={to.avatar} color={to.color} size={24} /></>}>
             <ConfirmButton onConfirm={() => run(() => api.rejectTransfer(t.id), 'Η μεταφορά απορρίφθηκε')}>Απόρριψη</ConfirmButton>
             <button type="button" className="p-btn primary" onClick={() => run(() => api.approveTransfer(t.id), 'Η μεταφορά εγκρίθηκε')}>Έγκριση</button>
         </Card>
     );
 }
 
-function SpendingCard({ item: { spending: s, at } }: { item: Extract<InboxItem, { kind: 'spending' }> }) {
+function SpendingCard({ item: { spending: s, user, reward, at } }: { item: Extract<InboxItem, { kind: 'spending' }> }) {
     const { run } = useFeedback();
     return (
-        <Card icon={s.reward ? <SmartIcon value={s.reward.icon} size={44} /> : '🎀'} kind="Εξαργύρωση" at={at}
-            title={s.reward?.title ?? s.rewardId} stars={<Stars value={s.cost} />}
-            who={s.user && <><Avatar icon={s.user.avatar} color={s.user.color} size={24} /> {s.user.name}</>}>
+        <Card icon={reward ? <SmartIcon value={reward.icon} size={44} /> : '🎀'} kind="Εξαργύρωση" at={at}
+            title={reward?.title ?? s.rewardId} stars={<Stars value={s.cost} />}
+            who={user && <><Avatar icon={user.avatar} color={user.color} size={24} /> {user.name}</>}>
             <ConfirmButton onConfirm={() => run(() => api.revokeSpending(s.id), `Ακυρώθηκε· επιστράφηκαν ${s.cost} ⭐`)}>Ακύρωση</ConfirmButton>
             <button type="button" className="p-btn primary" onClick={() => run(() => api.markSpendingDone(s.id), 'Σημειώθηκε ότι δόθηκε')}>Δόθηκε</button>
         </Card>

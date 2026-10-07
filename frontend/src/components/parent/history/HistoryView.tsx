@@ -22,15 +22,16 @@ const PAGE = 30;
 
 // What parents and kids decided: rewards given, star gifts, chores.
 export function HistoryView() {
-    const { spendings, starTransfers, choreInstances, chores, users } = useGame();
+    const { spendings, starTransfers, choreInstances, chores, rewards, users } = useGame();
     const [kid, setKid] = useState<string | null>(null);
     const [shown, setShown] = useState(PAGE);
     const entries = useMemo<Entry[]>(() => {
         const name = (id?: string) => users.find(u => u.id === id)?.name ?? id ?? '';
+        const reward = (id: string) => rewards.find(r => r.id === id);
         return [
         ...spendings.filter(s => s.status !== 'pending').map(s => ({
-            id: s.id, at: s.createdAt, userIds: [s.userId], icon: s.reward?.icon ?? '🎀',
-            title: `${name(s.userId)}: ${s.reward?.title ?? s.rewardId}`,
+            id: s.id, at: s.createdAt, userIds: [s.userId], icon: reward(s.rewardId)?.icon ?? '🎀',
+            title: `${name(s.userId)}: ${reward(s.rewardId)?.title ?? s.rewardId}`,
             outcome: s.status === 'done' ? 'Δόθηκε' : 'Ακυρώθηκε', stars: -s.cost, undone: s.status === 'revoked',
         })),
         ...starTransfers.filter(t => t.status !== 'pending').map(t => ({
@@ -47,7 +48,7 @@ export function HistoryView() {
             };
         }),
         ].sort((a, b) => b.at.localeCompare(a.at));
-    }, [spendings, starTransfers, choreInstances, chores, users]);
+    }, [spendings, starTransfers, choreInstances, chores, rewards, users]);
 
     const visible = kid ? entries.filter(e => e.userIds.includes(kid)) : entries;
 
