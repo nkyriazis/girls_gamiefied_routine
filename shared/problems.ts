@@ -75,6 +75,8 @@ const MARGIN = 2;
 // A word that ends a sentence: its last mark is . ; (Greek or Latin) · ! ? or …, maybe
 // followed by closing » ) ” ’ " '. «9.238» or «3,5» end nothing.
 const SENTENCE_END = /[.;\u037e\u0387\u00b7!?…][»)”’"']*$/;
+// …and a word that ends a clause inside one: «σχολείου,», «χρονιά:».
+const CLAUSE_END = /[,:][»)”’"']*$/;
 
 /** The story's sentences, as the first and last of its words. */
 export function paintSentences(words: string[]): [number, number][] {
@@ -86,22 +88,34 @@ export function paintSentences(words: string[]): [number, number][] {
   return out;
 }
 
+/** A sentence's clauses, as the first and last of its words. */
+function clauses([a, b]: [number, number], words: string[]): [number, number][] {
+  const out: [number, number][] = [];
+  for (let from = a, i = a; i <= b; i++) if (i === b || CLAUSE_END.test(words[i])) { out.push([from, i]); from = i + 1; }
+  return out;
+}
+
 /**
  * The painted words that count as too much, each further than MARGIN from a phrase of its
- * own colour. 🟢 and 🟡 say "needed": too much only in a sentence that holds an unneeded
- * fact, so a needed fact's sentence painted whole, or one that tells what happened without
- * a number, is fine. ⚪ says "not needed": fine in an unneeded fact's own sentence (one
- * with no needed fact or question in it), too much anywhere else, so the whole story ⚪
- * with the needed phrases painted over it is still too much. The unneeded fact itself,
- * painted as needed, is its own mistake (checkPaint), not also a stray.
+ * own colour. 🟢 and 🟡 say "needed": too much only around an unneeded fact, so a needed
+ * fact's sentence painted whole, or one that tells what happened without a number, is fine.
+ * Around means in an unneeded fact's own sentence (one with no needed fact or question in
+ * it), or, in a sentence that holds both kinds, in the clause (split at «,» and «:») that
+ * holds the unneeded fact: «Η βιβλιοθήκη του σχολείου, [που έχει 3 ράφια], δάνεισε τον
+ * Οκτώβριο [390 βιβλία].» painted whole but the middle clause is right (#50 part 4; before,
+ * that whole sentence was strict and had to be painted phrase by phrase). ⚪ says "not
+ * needed": fine in an unneeded fact's own sentence, too much anywhere else, so the whole
+ * story ⚪ with the needed phrases painted over it is still too much. The unneeded fact
+ * itself, painted as needed, is its own mistake (checkPaint), not also a stray.
  */
 export function paintStrays(targets: PaintTarget[], words: string[], value: Painting): number[] {
   const sentences = paintSentences(words);
   const holds = ([a, b]: [number, number], needed: boolean) =>
     targets.some(t => (t.role !== 'extra') === needed && t.span[0] <= b && t.span[1] >= a);
-  // Where a needed brush is too much, and where ⚪ is forgiven
-  const unneeded = sentences.filter(s => holds(s, false));
-  const extraOnly = unneeded.filter(s => !holds(s, true));
+  // Where ⚪ is forgiven, and where a needed brush is too much
+  const extraOnly = sentences.filter(s => holds(s, false) && !holds(s, true));
+  const mixed = sentences.filter(s => holds(s, false) && holds(s, true));
+  const unneeded = [...extraOnly, ...mixed.flatMap(s => clauses(s, words)).filter(c => holds(c, false))];
   const within = (w: number, ss: [number, number][]) => ss.some(([a, b]) => w >= a && w <= b);
   const inExtra = (w: number) => targets.some(t => t.role === 'extra' && w >= t.span[0] && w <= t.span[1]);
   const near = (w: number, role: PaintTarget['role']) =>

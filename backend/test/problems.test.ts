@@ -509,6 +509,35 @@ test('painting a needed fact\'s whole sentence is fine; around an unneeded fact 
   assert.deepEqual(checkPaint(targetsFromMarks(ifPaid), storyWords(ifPaid), { known: [], sought: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }), { correct: false, wrong: [0] });
 });
 
+test('a sentence with a needed and an unneeded fact: only the clause holding the unneeded one is strict (#50)', () => {
+  const range = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const ok = { correct: true };
+  // «Η βιβλιοθήκη του σχολείου, [που έχει 3 ράφια], δάνεισε τον Οκτώβριο [390 βιβλία]. …»: the needed
+  // sentences painted whole, the unneeded clause «που έχει 3 ράφια,» left out
+  const library = 'Η βιβλιοθήκη του σχολείου, [που έχει 3 ράφια|extra], δάνεισε τον Οκτώβριο [390 βιβλία|known]. [Τα 250 ήταν παραμύθια|known] και τα υπόλοιπα κόμικ και βιβλία γνώσεων. '
+    + 'Ξέρουμε ακόμα ότι [τα κόμικ ήταν τριπλάσια από τα βιβλία γνώσεων|known]. [Πόσα κόμικ|sought] και [πόσα βιβλία γνώσεων|sought];';
+  const words = storyWords(library), targets = targetsFromMarks(library);
+  const whole = { known: [...range(0, 3), ...range(8, 34)], sought: range(35, 40) };
+  assert.deepEqual(paintStrays(targets, words, whole), [], '«Η βιβλιοθήκη του σχολείου, … δάνεισε» is not around the unneeded fact');
+  assert.deepEqual(checkPaint(targets, words, whole), ok);
+  assert.deepEqual(checkPaint(targets, words, { ...whole, extra: range(4, 7) }, { unneeded: true }), ok, '…and on paint-all, the clause ⚪');
+  // The unneeded fact painted with its sentence: named, as before
+  assert.deepEqual(checkPaint(targets, words, { ...whole, known: range(0, 34) }), { correct: false, wrong: [0] });
+
+  // In the clause holding the unneeded fact, the words around it are still too much
+  const shop = 'Η Ζωή έχει [18 ευρώ|known], και στο ράφι της βιτρίνας δίπλα στην πόρτα υπάρχουν [23 παιχνίδια|extra]. [Πόσα ευρώ|sought] της λείπουν για [μια μπάλα των 25 ευρώ|known];';
+  const shopWords = storyWords(shop), shopTargets = targetsFromMarks(shop);
+  assert.equal(shopWords[14], '23');
+  const painted = { known: [...range(0, 13), ...range(21, 25)], sought: range(16, 20) };
+  assert.deepEqual(paintStrays(shopTargets, shopWords, painted), range(7, 13), '«στο ράφι της βιτρίνας δίπλα στην πόρτα υπάρχουν», less the margin');
+  assert.deepEqual(checkPaint(shopTargets, shopWords, painted), { correct: false, wrong: [-1] });
+
+  // A colon ends a clause too: a table's intro is not around its first row
+  const table = 'Ο πίνακας δείχνει πόσους επισκέπτες είχε ένα μουσείο κάθε χρονιά: [2019: 245.301|extra], [2020: 198.004|known], [2021: 300.250|known]. [Πόσους επισκέπτες είχε το 2020 και το 2021 μαζί|sought];';
+  const tableWords = storyWords(table), tableTargets = targetsFromMarks(table);
+  assert.deepEqual(checkPaint(tableTargets, tableWords, { known: [...range(0, 9), ...range(12, 15)], sought: range(16, 24) }), ok);
+});
+
 test('working it out: each calculation is read back, the answer ends it', () => {
   const w: CalcWorld = {
     quantities: [
