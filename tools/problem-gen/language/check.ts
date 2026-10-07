@@ -153,8 +153,8 @@ const TENSE_GEN: Record<Tense, string> = {
 };
 const MOOD_LABELS = [...Object.values(TENSE_GEN).map(t => `οριστική ${t}`), 'εξακολουθητική υποτακτική', 'συνοπτική υποτακτική', 'εξακολουθητική προστακτική', 'συνοπτική προστακτική'];
 const PAST: Tense[] = ['παρατατικός', 'αόριστος', 'υπερσυντέλικος'];
-/** What a time word, phrase or clause is (β9); «προθετική φράση» is the grammar's name (γ162) for the book's «φράση με πρόθεση». */
-const TIME_KINDS = ['επίρρημα', 'προθετική φράση', 'χρονική πρόταση'];
+/** What a time word, phrase or clause is, in her books' words: β9 «επιρρήματα, φράσεις με προθέσεις, χρονικές προτάσεις», τ8 «φράσεις σε αιτιατική». */
+const TIME_KINDS = ['επίρρημα', 'φράση με πρόθεση', 'φράση σε αιτιατική', 'χρονική πρόταση'];
 const SHOWS = ['τόπο', 'χρόνο', 'τρόπο', 'ποσό'];
 /** The final -ν stays before a vowel, κ, π, τ, μπ, ντ, γκ, ξ, ψ (γ55). */
 const KEEPS_N = /^(?:[αεηιουωάέήίόύώϊϋΐΰ]|μπ|ντ|γκ|[κπτξψ])/;
@@ -568,7 +568,7 @@ function solvers(ix: Index): Record<string, (ex: Plain) => Verdict> {
       return one(options, o => o === answer, key);
     },
     // «Κύκλωσε αυτό που φανερώνει χρόνο στην πρόταση.» (options are pieces of the sentence, each an expression of
-    // the lexicon, one telling time) and «Τι είναι το «…» στην πρόταση;» (επίρρημα, προθετική φράση, χρονική πρόταση)
+    // the lexicon, one telling time) and «Τι είναι το «…» στην πρόταση;» (TIME_KINDS)
     time(ex) {
       if (ex.type !== 'multiple-choice') return ['time is a multiple choice'];
       const body = ex.body ?? '';
