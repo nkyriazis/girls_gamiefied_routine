@@ -401,3 +401,30 @@ test('working it out: each calculation is read back, the answer ends it', () => 
   assert.deepEqual(checkCalc(w, [{ x: 22, op: '−', y: 16, result: 5 }]), { correct: false, wrong: [0] }, 'miscounted');
   assert.deepEqual(checkCalc(w, [{ x: 6, op: '+', y: 25, result: 31 }]), { correct: false, wrong: [0] }, '6 is not hers yet');
 });
+
+test('a problem regenerated under its id (#50): progress that no longer fits it starts again at step 0', async () => {
+  // p-balloons has 4 steps. Progress stored for an older version of the problem: a step past
+  // the end, or mistakes counted for another number of steps
+  const today = (await db.getExerciseAssignments('u4'))[0].date;
+  const put = (exerciseId: string, stepIndex: number, mistakes: number[]) => {
+    const a = { ...assign('u4', exerciseId), date: today, stepIndex, mistakes, attempts: 3 };
+    store.exerciseAssignments.put(a);
+    return a;
+  };
+  const past = put('p-balloons', 4, [0, 1, 0, 0]);
+  const other = put('p-two', 1, [1, 0]);
+  const fits = put('p-three', 2, [1, 0, 0, 0]);
+  const shown = new Map((await db.getExerciseAssignments('u4')).map(a => [a.id, a]));
+  assert.deepEqual([shown.get(past.id)!.stepIndex, shown.get(past.id)!.mistakes], [0, undefined], 'shown from the start');
+  assert.deepEqual([shown.get(other.id)!.stepIndex, shown.get(other.id)!.mistakes], [0, undefined]);
+  assert.deepEqual([shown.get(fits.id)!.stepIndex, shown.get(fits.id)!.mistakes], [2, [1, 0, 0, 0]], 'progress that fits is kept');
+
+  // Answered from step 0, with mistakes counted afresh
+  let r = await db.answerExerciseAssignment(past.id, { step: 0, value: ['known', 'known', 'extra', 'sought'] });
+  assert.deepEqual([r.correct, r.assignment.stepIndex, r.assignment.mistakes], [true, 1, [0, 0, 0, 0]]);
+  r = await db.answerExerciseAssignment(other.id, { step: 0, value: ['known', 'known', 'known', 'sought'] });
+  assert.deepEqual([r.correct, r.assignment.stepIndex ?? 0, r.assignment.mistakes], [false, 0, [1, 0, 0, 0]]);
+  // A fitting one goes on where it was: step 0 again is a repeat
+  r = await db.answerExerciseAssignment(fits.id, { step: 0, value: ['known', 'known', 'extra', 'sought'] });
+  assert.deepEqual([r.correct, r.assignment.stepIndex, r.assignment.mistakes], [true, 2, [1, 0, 0, 0]]);
+});
