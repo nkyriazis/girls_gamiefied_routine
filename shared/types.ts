@@ -347,6 +347,7 @@ export interface ExerciseSession {
   startedAt: string;
   completedAt?: string;
   totalStarsEarned: Record<string, number>; // keyed by userId
+  dismissedAt?: string; // a finished game closed with «Επιστροφή»: kept, no longer on the screens
 }
 
 // --- Runtime history (persisted in the backend database) ---
@@ -493,7 +494,7 @@ export interface AppState {
   spendings: Spending[];
   starTransfers: StarTransfer[];
   choreInstances: ChoreInstance[]; // open ones, plus ones closed in the last 24h
-  exerciseSessions: ExerciseSession[]; // active group games
+  exerciseSessions: ExerciseSession[]; // running group games, then those finished in the last 30 minutes and not closed
   exerciseAssignments: ExerciseAssignmentWithExercise[]; // today's
   flowRuns: FlowRun[];
   routineRuns: RoutineRun[];

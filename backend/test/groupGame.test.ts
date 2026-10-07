@@ -6,7 +6,7 @@ import { DataConfig, Exercise, ExerciseSession } from '../../shared/types';
 import { tempDir, uuid } from './helpers';
 
 // The group game (📚, #26): an answer counts once, for the question on screen and the player whose
-// turn it is.
+// turn it is; a finished game stays on the screens for its results, until «Επιστροφή» or the window passes.
 const dir = tempDir();
 const icon = { type: 'emoji' as const, value: 'x' };
 const cfg: DataConfig = {
@@ -30,7 +30,8 @@ const db = require('../src/db') as typeof import('../src/db');
 if (reloadConfig()?.type !== 'updated') throw new Error('test config rejected');
 const { store } = db;
 
-const ago = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
+const MINUTE = 60_000;
+const ago = (minutes: number) => new Date(Date.now() - minutes * MINUTE).toISOString();
 
 /** A fresh scene: no games, both kids at 100, and one running game of these questions. */
 function game(exerciseIds = ['mc', 'tf'], extra: Partial<ExerciseSession> = {}): ExerciseSession {
@@ -50,6 +51,7 @@ function newGame(n: number, exerciseIds = ['mc', 'tf'], extra: Partial<ExerciseS
 }
 const answer = (id: string, userId: string, exerciseId: string, value: unknown) => db.submitExerciseAnswer(id, userId, exerciseId, value);
 const right: Record<string, unknown> = { mc: 1, tf: true };
+const onScreen = async () => (await db.appState()).exerciseSessions.map(s => s.id);
 
 test('the same answer sent twice pays once, and the repeat is refused with nothing stored', () => {
   const { id } = game();
@@ -82,4 +84,47 @@ test('a player cannot answer out of turn, so surplus answers never skip anyone',
   assert.deepEqual(last.session.totalStarsEarned, { u1: 8, u2: 8 });
   assert.deepEqual([store.getStars('u1'), store.getStars('u2')], [108, 108]);
   assert.throws(() => answer(id, 'u2', 'tf', true), /completed/);
+});
+
+test('a finished game stays on the screens with its results, a long finished one does not', async () => {
+  const { id } = game();
+  for (const q of ['mc', 'tf']) for (const u of ['u1', 'u2']) answer(id, u, q, right[q]);
+  assert.ok(store.exerciseSessions.get(id)!.completedAt);
+  assert.deepEqual(await onScreen(), [id], 'just finished: «Μπράβο! 🎉» on every screen');
+
+  store.exerciseSessions.put({ ...store.exerciseSessions.get(id)!, completedAt: ago(db.GAME_RESULTS_MINUTES - 1) });
+  assert.deepEqual(await onScreen(), [id]);
+  store.exerciseSessions.put({ ...store.exerciseSessions.get(id)!, completedAt: ago(db.GAME_RESULTS_MINUTES + 1) });
+  assert.deepEqual(await onScreen(), [], 'past the window: gone');
+});
+
+test('running games come first, then finished ones newest first', async () => {
+  const done = { answers: { u1: [], u2: [] }, currentQuestionIndex: 2 };
+  game(['mc', 'tf'], { ...done, completedAt: ago(20) });
+  newGame(2, ['mc', 'tf'], { ...done, completedAt: ago(5) });
+  newGame(3);
+  newGame(4, ['mc', 'tf'], { ...done, completedAt: ago(90) });
+  assert.deepEqual(await onScreen(), [uuid(3), uuid(2), uuid(1)]);
+});
+
+test('«Επιστροφή» on a finished game hides it and keeps its record; on a running game it cancels it', async () => {
+  game(['mc', 'tf'], { currentQuestionIndex: 2, completedAt: ago(1) });
+  db.closeExerciseSession(uuid(1));
+  const kept = store.exerciseSessions.get(uuid(1));
+  assert.ok(kept?.dismissedAt, 'the finished game is kept, marked dismissed');
+  assert.deepEqual(await onScreen(), []);
+
+  newGame(2);
+  db.closeExerciseSession(uuid(2));
+  assert.equal(store.exerciseSessions.get(uuid(2)), undefined, 'a running game is cancelled as before');
+});
+
+test('the minute check finds a game whose results window just ended, once', () => {
+  game(['mc', 'tf'], { currentQuestionIndex: 2, completedAt: ago(db.GAME_RESULTS_MINUTES + 0.5) });
+  newGame(2, ['mc', 'tf'], { currentQuestionIndex: 2, completedAt: ago(db.GAME_RESULTS_MINUTES + 0.5), dismissedAt: ago(5) });
+  newGame(3, ['mc', 'tf'], { currentQuestionIndex: 2, completedAt: ago(db.GAME_RESULTS_MINUTES - 0.5) });
+  const now = new Date();
+  const lastCheck = new Date(now.getTime() - MINUTE);
+  assert.deepEqual(db.gameResultsLeaving(lastCheck, now).map(s => s.id), [uuid(1)], 'not the dismissed one, not the one still showing');
+  assert.deepEqual(db.gameResultsLeaving(now, new Date(now.getTime() + 1000)).map(s => s.id), [], 'the next check: already gone');
 });
