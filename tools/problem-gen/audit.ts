@@ -3,7 +3,7 @@
 //   node tools/problem-gen/audit.ts                    every problem in backend/exercise-pools
 //   node tools/problem-gen/audit.ts --sample out.md 40  also write 40 random problems per grade, as text, for reading
 //   node tools/problem-gen/audit.ts --dir DIR           audit the pools in DIR instead
-//   node tools/problem-gen/audit.ts --all-errors        list every error, not only the first 80
+//   node tools/problem-gen/audit.ts --all-errors        list every error and warning, not only the first 80 and 40
 //
 // Errors (exit 1):
 //   - every equation in the story, prompts, hints, number rows (label + answer) and right
@@ -373,7 +373,7 @@ console.log(`\n${errors.length} errors, ${warnings.length} warnings`);
 const shown = process.argv.includes('--all-errors') ? errors.length : 80;
 for (const e of errors.slice(0, shown)) console.log(`  ✘ ${e}`);
 if (errors.length > shown) console.log(`  … and ${errors.length - shown} more (--all-errors lists them all)`);
-for (const w of warnings.slice(0, 40)) console.log(`  ! ${w}`);
+for (const w of warnings.slice(0, process.argv.includes('--all-errors') ? warnings.length : 40)) console.log(`  ! ${w}`);
 
 // A sample to read, as a kid would see it
 const at = process.argv.indexOf('--sample');
