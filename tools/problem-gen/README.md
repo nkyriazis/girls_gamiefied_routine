@@ -20,8 +20,10 @@ $N node tools/problem-gen/gen.ts --families my-family --target 40 --out tools/pr
 $N node tools/problem-gen/audit.ts --dir tools/problem-gen/.out/me --sample tools/problem-gen/.out/me/sample.md 40
 ```
 
-The output is the same on every run (each family is seeded by its id), so a diff of the
-pool files shows exactly what a change did. Never edit the generated JSON by hand.
+The output is the same on every run (each problem is seeded by its family and number, so a
+dropped draft changes only its own problem, not the ones after it), and a diff of the pool files
+shows exactly what a change did. Never edit the generated JSON by hand. `gen.ts` prints, per
+family, how many drafts it dropped and why; `--tells` also shows what the dropped choices gave away.
 `npm test` in the backend also loads every pool and solves every step.
 
 ## Writing a family
@@ -85,8 +87,37 @@ The audit can't read Greek; you must. The traps the generator has already hit:
   builder shuffles. Wrong options are the **typical mistakes** (the wrong operation,
   forgetting oneself in «ο Φώτης και οι 3 φίλοι του», ignoring the remainder, adding every
   number in the story), all different from each other and from the right one.
+- **No option gives the answer away by its length** (#50 part 5a). The screen shuffles the
+  options, so length is the only tell left: no option stands out (the longest at most 30 % or 5
+  code points longer than the next), the right one is never the only longest, and among options
+  that are all numbers («12», «1.229 €») never the only one with the most digits (`lengthTell` in
+  lib.ts). `b.choice` flags such a choice (and repeated options), `gen.ts` drops the draft, the
+  audit fails it in every pool, curated ones too. Write them so drops stay rare: shorten the right
+  option toward the book's bare wording («Εργάζομαι αντίστροφα: από το τέλος», «47 : 5», «Γιατί
+  10 × 4 + 8 = 48»), give a wrong one only its typical mistake («Όχι, πρέπει να είναι 40: όλα
+  μαζί», «7, όσα γεμίζουν· τα άλλα περιμένουν»), never a strategy that would also work (a valid
+  «Δοκιμάζω και ελέγχω» is not a wrong option), and give equations as many terms as the right one
+  («9 × 5 − 2» beside «9 × 5 + 2»). Two answers that differ by a word of other length are told
+  the same way («πάνω από / κάτω από 120 εκατοστά», not «μεγαλύτερο / μικρότερο»); names that
+  are options (teams, lists, places) have one length. A false comparison in a wrong option may
+  stay (judging it is the skill: «Ναι, γιατί 410 < 300»), but never a number compared with itself.
 - `b.numbers(phase, prompt, rows, hint)`: one row per intermediate quantity, from the
   knowns to the unknown. That chain is the point of the whole exercise.
+- **Every step has a hint of its own** (the audit fails one without). Without `hint`,
+  `b.numbers` writes one from the first row it can (`workHint` in lib.ts): a row's equation is
+  its label («27 + 36 =») or `eq` for a row that only names its quantity (`{ label: 'Στην αρχή
+  είχε', eq: '36 + 19' }`). It fits the digits («8 + 2 = 10, και μετά 3 ακόμα», «27 + 30 = 57, και
+  μετά 6 ακόμα», «600 × 8 = 4.800, και μετά 6 × 8», «Πόσες φορές χωράει το 29 στο 903; Δοκιμάζουμε
+  29 × 30 = 870.») and never states a row's answer; a step it can't write one for throws.
+- A check step never states the number it asks for («Αναστοχαζόμαστε: πόσα βγαίνουν όλα μαζί;»,
+  not «βγαίνουν όλα μαζί 390;» above a row whose answer is 390).
+- A family never repeats its known numbers (the [..|known] marks, sorted): `gen.ts` drops the
+  draft and the audit fails it, since it is the same calculation in another story.
+- Division is «:» everywhere, never «÷», in every pool (the audit fails it).
+- Hints and options speak the same way to every child: the audit fails check-gender's words
+  (`frontend/scripts/gendered.mjs`) in a hint or an option of a family that had none there
+  (`gender-baseline.json`, written by `audit.ts --gender-baseline` from the pools before #50 part
+  5a); the ones already there are listed as warnings.
 - `b.order(...)`: plan steps whose order is unique.
 - Hints help with the step without doing it; they may show a sub-calculation.
 - **Every equation you write must be true**, in the story, prompts, hints, rows and right
@@ -372,4 +403,4 @@ the answer instead of the start, the other operation, the answer with the other 
 problem that can't have 3 is dropped.
 
 The audit's `story-check.ts` holds these rules (and prices) for the world pool and
-change-left; the other families, and the «Αναρωτιέται» questions, come in #50 part 5.
+change-left; the other families, and the «Αναρωτιέται» questions, come in #50 part 5b.
