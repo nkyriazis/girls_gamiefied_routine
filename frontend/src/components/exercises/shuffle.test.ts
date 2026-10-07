@@ -1,7 +1,7 @@
 // npm test (frontend): options shuffled the same way for the same seed (#48)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { shuffle } from './shuffle.ts';
+import { shuffle } from '../../../../shared/shuffle.ts';
 
 const four = [0, 1, 2, 3];
 
