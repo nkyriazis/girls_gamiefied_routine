@@ -25,6 +25,10 @@ test('a problem: what it paid of its stars, and the counted wrong tries of each 
 test('a plain exercise: right at the 1st, N tries, or its answer shown', () => {
     assert.deepEqual(exerciseOutcome({ attempts: 1, starsAwarded: 1 }, choice), { icon: '📖', amount: '+⭐1 από 1', chips: [{ text: 'σωστό με την 1η' }] });
     assert.deepEqual(exerciseOutcome({ attempts: 3, starsAwarded: 0 }, choice).chips, [{ text: '3 προσπάθειες' }]);
+    // A row finished before `shown` was stored: «Δείξε μου» after one wrong try, or Αυστηρό's true/false
+    // closed after its one try. It paid nothing, so it never reads «σωστό με την 1η».
+    assert.deepEqual(exerciseOutcome({ attempts: 1, starsAwarded: 0 }, choice),
+        { icon: '📖', amount: '⭐0 από 1', chips: [{ text: '1 προσπάθεια' }] });
     assert.deepEqual(exerciseOutcome({ attempts: 1, starsAwarded: 0, shown: [0] }, choice),
         { icon: '📖', amount: '⭐0 από 1', chips: [{ text: '💡 δείχτηκε η απάντηση', shown: true }] });
 });
@@ -33,4 +37,5 @@ test('an exercise gone from the pools: the stars paid alone, a problem told by i
     assert.deepEqual(exerciseOutcome({ attempts: 4, starsAwarded: 2, mistakes: [0, 1, 0] }, null),
         { icon: '✏️', amount: '+⭐2', chips: [{ text: 'βήμα 2: 1' }] });
     assert.deepEqual(exerciseOutcome({ attempts: 1, starsAwarded: 1 }, null).chips, [{ text: 'σωστό με την 1η' }]);
+    assert.deepEqual(exerciseOutcome({ attempts: 1, starsAwarded: 0 }, null).chips, [{ text: '1 προσπάθεια' }]);
 });

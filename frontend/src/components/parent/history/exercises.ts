@@ -3,8 +3,10 @@ import type { ExerciseAssignment, ExerciseSummary } from '@shared/types';
 // How a finished exercise went, as Ιστορικό shows it (#68): what it paid of its stars, like a ledger
 // amount, and counts only, as small chips. A problem: the counted wrong tries of each step that had any
 // («βήμα 4: 3»), 💡 on a step shown worked («Δείξε μου», or Αυστηρό after its tries). A plain exercise:
-// «σωστό με την 1η», «N προσπάθειες», or «💡 δείχτηκε η απάντηση». A 💡 on a step is said once, in
-// the row's line: «💡 δείχτηκε λυμένο» (the same for «Δείξε μου» and Αυστηρό).
+// «σωστό με την 1η» only for one try that paid (a ⭐1 pays only a right first try), else «1 προσπάθεια» or
+// «N προσπάθειες», or «💡 δείχτηκε η απάντηση». A row finished before `shown` was stored has none, so a
+// «Δείξε μου» after one wrong try reads «1 προσπάθεια» with ⭐0, never «σωστό». A 💡 on a step is said
+// once, in the row's line: «💡 δείχτηκε λυμένο» (the same for «Δείξε μου» and Αυστηρό).
 
 export interface ExerciseChip {
     text: string;
@@ -40,5 +42,7 @@ export function exerciseOutcome(a: Done, exercise: ExerciseSummary | null): Exer
         return { icon, amount, chips, ...(shown.length ? { label: '💡 δείχτηκε λυμένο' } : {}) };
     }
     if (shown.includes(0)) return { icon, amount, chips: [{ text: '💡 δείχτηκε η απάντηση', shown: true }] };
-    return { icon, amount, chips: [{ text: a.attempts <= 1 ? 'σωστό με την 1η' : `${a.attempts} προσπάθειες` }] };
+    const tries = Math.max(a.attempts, 1);
+    const text = paid > 0 && tries === 1 ? 'σωστό με την 1η' : tries === 1 ? '1 προσπάθεια' : `${tries} προσπάθειες`;
+    return { icon, amount, chips: [{ text }] };
 }
