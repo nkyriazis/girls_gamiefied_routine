@@ -1,0 +1,17 @@
+# https://<name>.duckdns.org → the frontend's nginx on this host, which serves the app and proxies
+# /api, /ws (WebSocket upgrades pass through) and /uploads. Plain http on FRONTEND_PORT stays as it is.
+{
+	# nginx owns port 80: no http→https redirect server here (plain http keeps working)
+	auto_https disable_redirects
+	http_port {$HTTPS_HTTP_PORT:8780}
+	https_port {$HTTPS_PORT:443}
+}
+
+{$HTTPS_DOMAIN} {
+	tls {
+		dns duckdns {$DUCKDNS_TOKEN}
+		# Check the challenge's TXT record on public DNS: a home router may filter or cache it
+		resolvers 1.1.1.1 9.9.9.9
+	}
+	reverse_proxy 127.0.0.1:{$FRONTEND_PORT:80}
+}

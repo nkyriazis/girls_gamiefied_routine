@@ -18,6 +18,7 @@ backend/logs.jsonl
 backend/*.tmp
 backend/*.invalid-*
 backups/
+https-data/
 backend/uploads/
 backend/test-*.json
 
