@@ -34,13 +34,14 @@ test('a new class drops the place in the old one\'s books', () => {
     assert.deepEqual(withGrade(u, 3).progress, { maths: '12' });
 });
 
-test('the places of a book: the pace first, saying where it is today, then every chapter by unit; no holiday lesson', () => {
+test('the places of a book: the pace first, saying where it is today, then every chapter by unit, each naming its unit; no holiday lesson', () => {
     const maths = placeOptions(3, 'maths', '2026-10-08');
     assert.deepEqual(maths[0], { value: '', label: 'Όπως το βιβλίο (τώρα: κεφ. 8)' });
     assert.deepEqual(maths.find(o => o.value === '12'), { value: '12', label: 'κεφ. 12: Προβλήματα', group: 'Ενότητα 2' });
     const lang = placeOptions(3, 'language', '2026-10-08');
     assert.equal(lang[0].label, 'Όπως το βιβλίο (τώρα: ενότητα 2, μάθημα 1)');
-    assert.deepEqual(lang.find(o => o.value === '2.0'), { value: '2.0', label: 'Λεξιλόγιο', group: 'Ενότητα 2: Στο σπίτι και στη γειτονιά' });
+    assert.deepEqual(lang.find(o => o.value === '2.0'), { value: '2.0', label: 'ενότητα 2, Λεξιλόγιο', group: 'Ενότητα 2: Στο σπίτι και στη γειτονιά' });
+    assert.equal(lang.find(o => o.value === '3.1')?.label, 'ενότητα 3, μάθημα 1: Σπίτι με κήπον', 'a closed select still says which unit');
     assert.ok(!lang.some(o => o.value.startsWith('5.')));
     assert.deepEqual(placeOptions(4, 'maths', '2026-10-08'), [], 'no books for Δ΄ here');
 });

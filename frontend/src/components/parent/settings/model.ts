@@ -99,7 +99,8 @@ export function placeOptions(grade: number | undefined, subject: Subject, today:
         { value: '', label: `Όπως το βιβλίο (τώρα: ${placeLabel(subject, paceAt(grade, subject, today))})` },
         ...book.chapters.filter(c => !c.pinned).map(c => ({
             value: c.id,
-            label: subject === 'maths' ? `κεφ. ${c.id}: ${c.title}` : c.id.endsWith('.0') ? 'Λεξιλόγιο' : `μάθημα ${c.id.split('.')[1]}: ${c.title}`,
+            // The unit is in the label too, not only in its group: a closed select shows the label alone
+            label: subject === 'language' && c.id.endsWith('.0') ? placeLabel(subject, c.id) : `${placeLabel(subject, c.id)}: ${c.title}`,
             group: `Ενότητα ${c.unit}${book.unitTitles?.[c.unit] ? `: ${book.unitTitles[c.unit]}` : ''}`,
         })),
     ];
