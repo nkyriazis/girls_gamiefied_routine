@@ -15,7 +15,7 @@ import { hash, rng } from '../lib.ts';
 import { CURRICULUM, sourceOf } from './curriculum.ts';
 import { MATHS_GRADES, MATHS_TARGET, type MathsGrade } from './grades.ts';
 import { leaks, type Draft, type PlainExercise } from './lib.ts';
-import { revealMax, revealed } from './check.ts';
+import { revealTooLong } from './check.ts';
 
 const arg = (name: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
 const ONLY = arg('--families')?.split(',');
@@ -36,7 +36,7 @@ function generate(g: MathsGrade, target: number) {
     let made = 0;
     for (let tries = 0; made < wanted && tries < wanted * 200; tries++) {
       const d = m.f.make(m.r);
-      if (!d || leaks(d) || revealed(d as PlainExercise).length > revealMax(d) || seen.has(sameness(d))) continue;
+      if (!d || leaks(d) || revealTooLong(d as PlainExercise) || seen.has(sameness(d))) continue;
       seen.add(sameness(d));
       m.n++;
       made++;

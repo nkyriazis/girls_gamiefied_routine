@@ -20,7 +20,8 @@
 //     ευ/εφ, a double letter, the capital) from the right one;
 //   - a fill-blank without exactly one gap, or a gap inside a word (a punctuation mark goes right after one),
 //     or a sentence over FILL_LINE_MAX besides its gap (it would break at the gap);
-//   - a «Δείξε μου» over 60 characters (a match over 40);
+//   - a «Δείξε μου» that doesn't fit the held card (maths/check.ts revealTooLong: over 120 characters, a match
+//     over 4 pairs or a pair line over 21);
 //   - check-gender's words anywhere the child reads (title, body, question, options, items), template
 //     leftovers, stray spaces, a space before punctuation, a Latin letter, a word of two or more
 //     syllables without its accent (μια, για, πιο, δυο… are one syllable);
@@ -33,7 +34,7 @@
 import type { Exercise } from '../../../shared/types.ts';
 import { genderedWords } from '../../../frontend/scripts/gendered.mjs';
 import type { Rng } from '../lib.ts';
-import { revealMax, revealed } from '../maths/check.ts';
+import { revealed, revealTooLong } from '../maths/check.ts';
 import { CURRICULUM, pageExists, placeOf, type LanguageGrade } from './curriculum.ts';
 import { LEXICON, TENSES, type Expression, type Gender, type Lexicon, type Mood, type Person, type Tag, type Tense } from './lexicon.ts';
 
@@ -767,8 +768,8 @@ export function auditLanguage(pools: Pool[]): LanguageAudit {
       }
       if (ex.type === 'match-pairs' && (ex.pairs.length < 3 || new Set(ex.pairs.map(p => p.left)).size !== ex.pairs.length || new Set(ex.pairs.map(p => p.right)).size !== ex.pairs.length)) err('repeated or too few pairs');
       if (ex.type === 'ordering' && (ex.items.length < 3 || new Set(ex.items.map(i => i.content)).size !== ex.items.length)) err('repeated or too few items');
-      const shown = revealed(ex);
-      if (shown.length > revealMax(ex)) err(`«Δείξε μου» would show ${shown.length} characters («${shown}»): keep it to ${revealMax(ex)} at most`);
+      const tooLong = revealTooLong(ex);
+      if (tooLong) err(tooLong);
 
       // The key, derived again from the lexicon and the rule
       const solver = solve[skill];

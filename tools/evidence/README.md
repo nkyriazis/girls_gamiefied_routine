@@ -23,6 +23,11 @@ a long one). `kit.mjs` gives it `open()` (the kids' screen, past the start overl
 the video what is shown), `listen` (waits for a clip to end), `shot` and `finish`. Write the "before"
 scenario first, against master, and play the same one after the fix: the two videos then compare.
 
+`scenarios/reveal-fit.mjs` measures what the held «Η σωστή απάντηση» card fits at 1280×800, 800×480 and
+390×844 (`reveal-fit.json`, and a screenshot of the card holding a run and a match at the caps at each size):
+the numbers behind tools/problem-gen's `REVEAL_*` caps (#72). Its header sets the scene; rerun it after any
+change to the card's size and move the caps to what it finds.
+
 `start(out, { browser: 'webkit', device: 'iPhone 13' })` plays in WebKit, Safari's engine, with the device's
 user agent, mobile viewport and touch (pass `size` to choose the viewport; the scale stays 1). The parents' page is
 phone-first, so a change to it can be checked as on an iPhone too, over a non-localhost address

@@ -321,23 +321,42 @@ export function revealed(ex: Plain): string {
   }
 }
 /**
- * Characters the revealed answer may have: «Η σωστή απάντηση: …» shows it at up to 2.5rem in a box up to 900 px
- * wide, on «Δείξε μου» (forgiving) and after the last try (unforgiving). A line holds about 40 characters at
- * 1280×800 (35 in words), so 60 is two lines. An ordering's items have no spaces, so its line breaks only
- * between them. Since #72 the screen holds the answer until «Εντάξει» (it closed by itself after 4.5 s
- * before), and a match is one pair per line; these caps stay as they were until the follow-up of #72
- * relaxes them, so the pools don't change yet.
+ * What «Η σωστή απάντηση: …» may show. Since #72 the card holds the answer until «Εντάξει» (no reading
+ * timer), on «Δείξε μου» (forgiving) and after the last try (unforgiving), and a match is one pair per line.
+ * The caps are measured on that card (`.feedback-overlay.answer` in frontend AssignmentPlayer.tsx) with
+ * tools/evidence/scenarios/reveal-fit.mjs, which puts test answers into its answer span: a change to the
+ * card's font, padding or width means measuring again. What it found:
+ * - 1280×800: 40 px, about 31 characters of words a line, 6 lines before the card scrolls;
+ * - 800×480: 24 px, about 52 a line, 4 lines;
+ * - 390×844: 24 px, about 22 a line, 13 lines.
+ * A run of answers (anything but a match) at 120 characters takes at most 5 lines at 1280×800, 3 at 800×480
+ * and 8 at 390×844, even in long words, so nothing scrolls and «Εντάξει» stays in sight. An ordering's items
+ * have no spaces (a no-break space before every «→»), so it breaks only between them.
  */
-export const REVEAL_MAX = 60;
+export const REVEAL_MAX = 120;
 /**
- * Until #72 a match showed in one run («9 × 4 – 36, …») that broke at any space, so a match kept to one line:
- * a times table of four pairs (47 characters) left «4 × 3 –» on one line and «12» on the next; three pairs
- * are 34–36. Three pairs of numbers in words came to 75–99 characters, so those families are multiple
- * choice. The screen now shows one pair per line; the cap stays until #72's follow-up brings the
- * number-words match back.
+ * A match's line, «a → b»: 22 characters fit on one line at 390×844, the narrowest of the three, so a pair
+ * never wraps. Numbers in words don't fit: «εξακόσια σαράντα εννιά → 649» (28) takes two lines there, and
+ * «δύο εκατομμύρια δύο χιλιάδες → 2.002.000» (40) at 1280×800 too.
  */
-export const REVEAL_MATCH_MAX = 40;
-export const revealMax = (ex: { type: string }) => (ex.type === 'match-pairs' ? REVEAL_MATCH_MAX : REVEAL_MAX);
+export const REVEAL_PAIR_MAX = 21;
+/**
+ * A match's pairs: the held card shows 4 lines at 800×480 before it scrolls. That is the card's limit; the
+ * match screen's own is tighter: at 800×480 three rows already put «Έλεγχος Ζευγαριών» half off the
+ * screen, so the families ask for 3 (g3.ts tables-match-a, -b).
+ */
+export const REVEAL_PAIRS = 4;
+
+/** Why «Δείξε μου» would not fit the held card, or null when it fits. */
+export function revealTooLong(ex: Plain): string | null {
+  const shown = revealed(ex);
+  if (ex.type === 'match-pairs') {
+    if (ex.pairs.length > REVEAL_PAIRS) return `«Δείξε μου» would show ${ex.pairs.length} pairs: the card shows ${REVEAL_PAIRS} at most`;
+    const line = shown.split('\n').find(l => l.length > REVEAL_PAIR_MAX);
+    return line ? `«Δείξε μου» line «${line}» is ${line.length} characters: a pair keeps to ${REVEAL_PAIR_MAX}, one line on a phone` : null;
+  }
+  return shown.length > REVEAL_MAX ? `«Δείξε μου» would show ${shown.length} characters («${shown}»): keep it to ${REVEAL_MAX} at most` : null;
+}
 
 function textErrors(where: string, text: string, grade: Grade): string[] {
   const c = CURRICULUM[grade];
@@ -450,7 +469,8 @@ export function auditMaths(pools: Pool[]): MathsAudit {
       }
       if (ex.type === 'ordering' && (new Set(ex.items.map(i => i.content)).size !== ex.items.length || ex.items.length < 3)) err('repeated or too few items');
       const shown = revealed(ex);
-      if (shown.length > revealMax(ex)) err(`«Δείξε μου» would show ${shown.length} characters («${shown}»): keep it to ${revealMax(ex)} at most`);
+      const tooLong = revealTooLong(ex);
+      if (tooLong) err(tooLong);
 
       // Solved again from its text
       const solve = SOLVERS[ex.generatorParams.skill];

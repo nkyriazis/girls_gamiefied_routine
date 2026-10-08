@@ -15,7 +15,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { hash, rng } from '../lib.ts';
 import type { PlainExercise } from '../maths/lib.ts';
-import { revealMax, revealed } from '../maths/check.ts';
+import { revealTooLong } from '../maths/check.ts';
 import { lessonAt, parsePlace, sourceOf, type LanguageGrade } from './curriculum.ts';
 import { optionProblems, type Draft, type LanguageFamily } from './lib.ts';
 import { FILL_LINE_MAX } from './check.ts';
@@ -73,8 +73,8 @@ function build(g: LanguageGradeSpec): PlainExercise[] {
       for (const p of optionProblems(d, f.skill)) problems.push(`${id}: ${p}`);
       if (d.type === 'fill-blank' && d.textWithGaps.replace('{0}', '').length > FILL_LINE_MAX) problems.push(`${id}: the sentence is over ${FILL_LINE_MAX} characters besides its gap`);
       const ex = { ...d } as PlainExercise;
-      const shown = revealed(ex);
-      if (shown.length > revealMax(ex)) problems.push(`${id}: «Δείξε μου» would show ${shown.length} characters («${shown}»), over ${revealMax(ex)}`);
+      const tooLong = revealTooLong(ex);
+      if (tooLong) problems.push(`${id}: ${tooLong}`);
       const { type, title, ...rest } = d;
       out.push({
         id, type, category: 'Γλώσσα', title, ...rest, stars: 1,
