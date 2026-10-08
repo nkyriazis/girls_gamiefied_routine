@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../api';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
@@ -14,6 +14,7 @@ import { NumberInputRenderer } from './exercises/NumberInputRenderer';
 import { ProblemPlayer } from './exercises/ProblemPlayer';
 import { help } from '../help/anchors';
 import { HelpButton, HelpScreen } from '../help/HelpProvider';
+import { HelpCovered } from '../help/context';
 import { answerTour, exerciseTour } from './AssignmentPlayer.help';
 import { sfx, sound } from '../sound/sfx';
 import { paysNow } from '@shared/forgiveness';
@@ -29,8 +30,8 @@ interface AssignmentPlayerProps {
 // 'paid': a problem whose last step was shown worked is over: what it paid, in the calm blue, no «Σωστά!»
 type Feedback = { kind: 'correct'; stars: number } | { kind: 'incorrect' } | { kind: 'answer'; text: string } | { kind: 'paid'; stars: number };
 
-// «Η σωστή απάντηση: …» stays until «Εντάξει» or ✕ (#72): she reads it at her own pace. Only a kiosk
-// left with it on screen closes it, after this long, the same way and in silence.
+// «Η σωστή απάντηση: …» has no reading timer (#72): «Εντάξει» or ✕ closes it, at her own pace. Only a
+// kiosk left alone with it on screen closes it, after this long in sight, the same way and in silence.
 const ANSWER_HOLD_MS = 120_000;
 
 export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, user, onClose }) => {
@@ -47,6 +48,18 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     return () => pending.forEach(t => window.clearTimeout(t));
   }, []);
   const later = (fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)); };
+
+  // The right answer's safety close counts only while she can see it. A routine or an alarm over the
+  // screen (Dashboard's <HelpCover covered>, #51) keeps the player as it was, so the count stops there
+  // and starts again from 0 when the cover goes: the answer is still up when her routine ends.
+  const covered = useContext(HelpCovered);
+  const answerUp = feedback?.kind === 'answer';
+  const closeUnread = useEffectEvent(() => onClose());
+  useEffect(() => {
+    if (!answerUp || covered) return;
+    const t = window.setTimeout(() => closeUnread(), ANSWER_HOLD_MS);
+    return () => window.clearTimeout(t);
+  }, [answerUp, covered]);
 
   // The header's ⭐ is what the exercise pays now (shared/forgiveness.ts): after a mistake it
   // drops with a small pulse, silently (no «−1», no red, no sound)
@@ -77,7 +90,6 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         // Unforgiving, and her tries are used: the right answer, until she closes it
         playError();
         setFeedback({ kind: 'answer', text: answerText(exercise) });
-        later(onClose, ANSWER_HOLD_MS);
       } else {
         setFeedback({ kind: 'incorrect' });
         playError();
@@ -101,7 +113,6 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     try {
       await api.revealExerciseAssignment(assignment.id);
       setFeedback({ kind: 'answer', text: answerText(exercise) });
-      later(onClose, ANSWER_HOLD_MS);
     } catch (err) {
       console.error('Could not show the answer:', err);
       setSubmitting(false);
