@@ -10,6 +10,16 @@ test('each kind of exercise says its right answer', () => {
   assert.equal(answerText({ ...base, type: 'true-false', question: 'x', correctValue: false }), 'Λάθος');
   assert.equal(answerText({ ...base, type: 'number-input', question: 'x', correctValue: 1250 }), '1.250');
   assert.equal(answerText({ ...base, type: 'fill-blank', textWithGaps: 'Ο {0} τρώει {1}.', options: [], correctAnswers: ['σκύλος', 'κόκαλο'] }), 'Ο σκύλος τρώει κόκαλο.');
-  assert.equal(answerText({ ...base, type: 'ordering', items: [{ id: 'a', content: '1' }, { id: 'b', content: '2' }] }), '1 → 2');
-  assert.equal(answerText({ ...base, type: 'match-pairs', pairs: [{ left: 'α', right: 'β' }] }), 'α – β');
+});
+
+// #72: a line never starts with «→» (a no-break space before each arrow), and a match is one pair
+// per line with «→» between its sides, never «–», which reads as a minus beside numbers
+test('an ordering is one run, and no line starts with its arrow', () => {
+  assert.equal(answerText({ ...base, type: 'ordering', items: [{ id: 'a', content: '1' }, { id: 'b', content: '2' }, { id: 'c', content: '3' }] }), '1\u00a0→ 2\u00a0→ 3');
+});
+
+test('a match is one pair per line, an arrow between its sides', () => {
+  const pairs = [{ left: 'όμορφος', right: 'ωραίος' }, { left: '9 × 4', right: '36' }];
+  assert.equal(answerText({ ...base, type: 'match-pairs', pairs }), 'όμορφος\u00a0→ ωραίος\n9 × 4\u00a0→ 36');
+  assert.doesNotMatch(answerText({ ...base, type: 'match-pairs', pairs }), /[–,]/);
 });

@@ -385,8 +385,10 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           text-align: center;
         }
 
+        /* a match is one pair per line (answerText.ts): keep its line breaks */
         .feedback-answer {
           color: gold;
+          white-space: pre-line;
         }
 
         .exercise-show {
