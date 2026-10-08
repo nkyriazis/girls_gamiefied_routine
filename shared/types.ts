@@ -575,12 +575,23 @@ export const LAST_REWARDS_GIVEN = 10;
 
 // What was decided (Ιστορικό), from GET /api/history?before=<next>&limit=<n>&userId=<kid>: purchases given
 // or revoked, gifts approved, rejected or cancelled, chores confirmed or rejected (the database keeps those
-// for 7 days), newest first by `at`, the time it was decided. `next` is the cursor of the following page,
-// null on the last one.
+// for 7 days), exercises finished (#68: daily and extra, not the group game), newest first by `at`, the
+// time it was decided. `next` is the cursor of the following page, null on the last one.
 export type HistoryEntry = { at: string } & (
   | { kind: 'spending'; spending: Spending }
   | { kind: 'transfer'; transfer: StarTransfer }
-  | { kind: 'chore'; instance: ChoreInstance });
+  | { kind: 'chore'; instance: ChoreInstance }
+  // `exercise` is null when its id is no longer in the pools
+  | { kind: 'exercise'; assignment: ExerciseAssignment; exercise: ExerciseSummary | null });
+
+// What Ιστορικό shows of an exercise, rather than the whole of it: `steps` for a problem
+export interface ExerciseSummary {
+  title: string;
+  category: string;
+  type: Exercise['type'];
+  stars: number;
+  steps?: number;
+}
 
 export interface HistoryPage {
   entries: HistoryEntry[];

@@ -3,7 +3,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import {
   AppState, Chore, ChoreInstance, ConfigSaveSource, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineExecution, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
-  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ExerciseSummary, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
   Forgiveness, ProblemExercise, ProblemReading, ProblemStep, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
 import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
@@ -547,16 +547,18 @@ export const HISTORY_PAGE = 30;
 
 // The cursor of a page: the last entry's time and id ("<at>|<id>"); the next page starts below it.
 const cursorOf = (e: HistoryEntry) => `${e.at}|${entryId(e)}`;
-const entryId = (e: HistoryEntry) => (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.instance).id;
+const entryId = (e: HistoryEntry) =>
+  (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.kind === 'chore' ? e.instance : e.assignment).id;
 const newestFirst = (a: HistoryEntry, b: HistoryEntry) =>
   a.at !== b.at ? (a.at < b.at ? 1 : -1) : entryId(a) < entryId(b) ? 1 : entryId(a) > entryId(b) ? -1 : 0;
 
 /**
  * What was decided, newest first, a page at a time (Ιστορικό, GET /api/history): purchases given or
- * revoked, gifts approved, rejected or cancelled, and chores confirmed or rejected, each at the time it
- * was decided. `before` is the previous page's `next`; `userId` keeps what names that kid.
+ * revoked, gifts approved, rejected or cancelled, chores confirmed or rejected, and exercises finished
+ * (#68, one entry each, with what Ιστορικό shows of its exercise), each at the time it was decided.
+ * `before` is the previous page's `next`; `userId` keeps what names that kid.
  */
-export function history({ before, limit = HISTORY_PAGE, userId }: { before?: string; limit?: number; userId?: string } = {}): HistoryPage {
+export async function history({ before, limit = HISTORY_PAGE, userId }: { before?: string; limit?: number; userId?: string } = {}): Promise<HistoryPage> {
   const [at, id] = before ? before.split('|') : [];
   // Each table's newest `limit + 1` below the cursor (`kid` takes the one parameter userId); the page is
   // the newest `limit` of them all
@@ -572,10 +574,17 @@ export function history({ before, limit = HISTORY_PAGE, userId }: { before?: str
       .map(transfer => ({ kind: 'transfer' as const, at: transfer.resolvedAt ?? transfer.createdAt, transfer })),
     ...page(store.choreInstances, "status IN ('confirmed', 'rejected')", 'COALESCE(confirmedAt, rejectedAt, availableAt)', 'claimedBy = ?')
       .map(instance => ({ kind: 'chore' as const, at: instance.confirmedAt ?? instance.rejectedAt ?? instance.availableAt, instance })),
+    ...page(store.exerciseAssignments, "status = 'completed'", 'COALESCE(completedAt, assignedAt)', 'userId = ?')
+      .map(assignment => ({ kind: 'exercise' as const, at: assignment.completedAt ?? assignment.assignedAt, assignment, exercise: null })),
   ].sort(newestFirst);
   const shown = entries.slice(0, limit);
+  for (const e of shown) if (e.kind === 'exercise') e.exercise = summaryOf(await exercisePoolProvider.getExerciseById(e.assignment.exerciseId));
   return { entries: shown, next: entries.length > limit ? cursorOf(shown[shown.length - 1]) : null };
 }
+
+const summaryOf = (ex: Exercise | undefined): ExerciseSummary | null => ex ? {
+  title: ex.title, category: ex.category, type: ex.type, stars: ex.stars, ...(ex.type === 'problem' ? { steps: ex.steps.length } : {})
+} : null;
 
 export function readLastLogs(limit: number): ActionLog[] {
   return store.recentLogs(limit);

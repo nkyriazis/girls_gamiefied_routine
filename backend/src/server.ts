@@ -296,7 +296,7 @@ server.get('/api/history', async (request, reply) => {
   const n = limit === undefined ? undefined : Number(limit);
   if (n !== undefined && !(Number.isInteger(n) && n >= 1 && n <= 100)) return reply.code(400).send({ error: 'limit must be 1-100' });
   if (before !== undefined && !/^[^|]+\|[^|]+$/.test(before)) return reply.code(400).send({ error: 'before must be a page\'s next' });
-  return history({ before, limit: n, userId: userId || undefined });
+  return await history({ before, limit: n, userId: userId || undefined });
 });
 
 // Spendings routes
