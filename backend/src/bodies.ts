@@ -68,3 +68,7 @@ export type PushBody = { id: string };
 /** An ISO time or HH:mm (the route reads which). */
 export const timeBody = object({ time: id }, ['time']);
 export type TimeBody = { time: string };
+
+/** The forms' raw cron field asks whether the scheduler can read it (#89). */
+export const validateCronBody = object({ cron: { type: 'string' } }, ['cron']);
+export type ValidateCronBody = { cron: string };

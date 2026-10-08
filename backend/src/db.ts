@@ -11,7 +11,7 @@ import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type Cal
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { cronMatchesAt } from './cron';
-import { changedKeys, config, ConfigFile, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { changedKeys, config, ConfigFile, configError, configWarnings, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { summarize } from './schemas';
 import { Store, Table } from './store';
@@ -54,6 +54,7 @@ export async function appState(): Promise<AppState> {
     config: data.value,
     configVersion: { data: data.version, exercises: exercisesConfig.version() },
     configError: configError(),
+    configWarnings: configWarnings(),
     users: usersView(),
     spendings: recentSpendings(),
     starTransfers: recentTransfers(),
@@ -707,25 +708,34 @@ export function replaceState(state: StateSnapshot): void {
 // CHORES SYSTEM
 // ============================================
 
-// A chore whose cron can't be read is logged once (per chore and cron, until it changes or the server
-// restarts), not every minute: the action log isn't pruned.
-const choreCronErrors = new Map<string, string>();
+// A cron the scheduler can't read (a file on disk can still have one: it loads with a warning, #89) is
+// logged once per schedule or chore and cron (again after it changes or the server restarts), not every
+// minute: the action log isn't pruned.
+const cronErrorsLogged = new Map<string, string>();
 
-function choreDue(chore: Chore, now: Date, timezone: string): boolean {
+/**
+ * Whether `cron` names this minute (cron.ts, in `timezone`). One it can't read is false, logged as
+ * `unreadable.type` with `unreadable.details`, the cron and the reason, once per `unreadable.key` and cron.
+ */
+export function cronDue(cron: string, now: Date, timezone: string,
+  unreadable: { key: string; type: 'SCHEDULE_CRON_ERROR' | 'CHORE_CRON_ERROR'; details: Record<string, unknown> }): boolean {
   try {
-    const due = cronMatchesAt(chore.availabilityCron, now, timezone);
-    choreCronErrors.delete(chore.id);
+    const due = cronMatchesAt(cron, now, timezone);
+    cronErrorsLogged.delete(unreadable.key);
     return due;
   } catch (err) {
     const error = (err as Error).message;
-    const key = `${chore.availabilityCron}\n${error}`;
-    if (choreCronErrors.get(chore.id) !== key) {
-      choreCronErrors.set(chore.id, key);
-      logAction('CHORE_CRON_ERROR', { choreId: chore.id, cron: chore.availabilityCron, error });
+    const memo = `${cron}\n${error}`;
+    if (cronErrorsLogged.get(unreadable.key) !== memo) {
+      cronErrorsLogged.set(unreadable.key, memo);
+      logAction(unreadable.type, { ...unreadable.details, cron, error });
     }
     return false;
   }
 }
+
+const choreDue = (chore: Chore, now: Date, timezone: string) => cronDue(chore.availabilityCron, now, timezone,
+  { key: `chore:${chore.id}`, type: 'CHORE_CRON_ERROR', details: { choreId: chore.id } });
 
 // Generate chore instances when their cron names this minute (cron.ts, settings.timezone). Always the real
 // clock: /api/debug/time doesn't make chores.

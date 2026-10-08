@@ -100,7 +100,7 @@ test('a missing body is a 400, never a TypeError or a 500', async () => {
     ['POST', `/api/chores/${AVAILABLE}/claim`], ['POST', '/api/chores/x/claim'],
     ['POST', '/api/users/u1/stars'], ['POST', '/api/exercise-assignments/extra'], ['POST', `/api/exercise-assignments/${ASSIGNMENT}/answer`],
     ['POST', `/api/exercises/sessions/${GAME}/answer`], ['POST', '/api/exercises/sessions'], ['POST', '/api/help/seen'],
-    ['POST', '/api/hooks/push'], ['POST', '/api/debug/time'],
+    ['POST', '/api/hooks/push'], ['POST', '/api/debug/time'], ['POST', '/api/admin/validate-cron'],
   ] as const) await refused(method, url, undefined, 400, /^body must be object$/);
 });
 
@@ -168,6 +168,7 @@ test('an answer must be there (any JSON value), and the other bodies name what t
   await refused('POST', '/api/help/reset', '{"userId":5}');
   await refused('POST', '/api/hooks/push', '{"id":""}');
   await refused('POST', '/api/executions/x/close', '{"by":"teacher"}');
+  await refused('POST', '/api/admin/validate-cron', '{"cron":5}', 400, /^body\/cron must be string$/);
 });
 
 test('every body the screens send still passes (api.ts), and unknown fields are ignored', async () => {
@@ -209,6 +210,7 @@ test('every body the screens send still passes (api.ts), and unknown fields are 
   await ok('POST', '/api/executions/x/close', {}); // the kids' ✕ (no such run here: a no-op)
   await ok('POST', '/api/executions/x/close'); // no body at all: the same
   await ok('POST', '/api/executions/x/close', { by: 'parent' }); // a parent's «Τέλος» (#63)
+  assert.deepEqual(await ok('POST', '/api/admin/validate-cron', { cron: '0 7 * * 1-5' }), { error: null }); // the forms' raw cron field (#89)
 });
 
 test("the exercises editor's pre-check (#31) names the one mistake and saves nothing", async () => {
