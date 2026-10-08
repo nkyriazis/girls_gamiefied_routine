@@ -321,8 +321,9 @@ be the only longest one (the options are shuffled on screen, so its length is th
 the generator drops such items). Numeric wrong options are whole and at most 100 times off.
 
 **«Δείξε μου».** On a wrong try (forgiving) and after the last try (unforgiving), the screen shows
-`answerText` (`revealed()` in maths/check.ts writes the same) at up to 2.5rem, and since #72 it stays
-until she taps «Εντάξει»: «a → b → …» in one run for an ordering, and a match one pair per line,
+`answerText` (`revealed()` in maths/check.ts writes the same) at up to 2.5rem. Since #72 it has no
+reading timer: «Εντάξει» or ✕ closes it (a 120 s safety close is for a kiosk left alone, and it stops
+while a routine covers the screen). «a → b → …» in one run for an ordering, and a match one pair per line,
 «a → b», with a no-break space before every «→», so no line starts with one. A line holds about 40
 characters at 1280×800 (35 in words). Keep it at most 60 characters, two lines; an ordering's items
 have no spaces, so it breaks only between them. A match keeps to 40 characters, measured as the
@@ -331,7 +332,7 @@ too: `match()` keeps 3 or 4 pairs, as many as fit, and the audit fails a longer 
 of four pairs (47) left «4 × 3 –» on one line and «12» on the next. Three pairs of numbers in words
 came to 75–99 characters, too much for a Γ΄ child in the 4.5 s the screen gave then; so the `words`
 families are multiple choice, the same digits in other places as the options. These caps stay until
-#72's follow-up relaxes them (one pair per line, no timer) and brings the number-words match back;
+#72's follow-up relaxes them (one pair per line, no reading timer) and brings the number-words match back;
 that regenerates the pools, so it is its own PR.
 
 **Greek and realism.** Speak to the child in the imperative or second person («Υπολόγισε»,
