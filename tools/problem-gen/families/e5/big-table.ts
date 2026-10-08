@@ -157,8 +157,10 @@ export const bigTable: Family = {
       steps.push(r.chance(0.5)
         ? b.numbers('check', 'Πώς ελέγχουμε; Από το άθροισμα βγάζουμε τον έναν προσθετέο.', [{ label: `${fmt(sum)} − ${fmt(c)} =`, answer: a }],
           `Αν βρούμε πάλι το ${fmt(a)}, η πρόσθεση είναι σωστή.`)
-        : b.choice('check', 'Αναστοχαζόμαστε: είναι λογική η απάντηση;', `Ναι: περίπου ${fmt(round10k(a))} + ${fmt(round10k(c))} = ${fmt(round10k(a) + round10k(c))}`,
-          [`Όχι: πρέπει να είναι περίπου ${fmt((round10k(a) + round10k(c)) * 10)}`, `Όχι: πρέπει να είναι λιγότερο από ${fmt(Math.max(a, c))}`],
+        // Statements about the answer, not «Ναι»/«Όχι» (#83): a zero too many, or less than one of the two
+        : b.choice('check', 'Αναστοχαζόμαστε: γιατί η απάντηση είναι λογική;', `Είναι περίπου ${fmt(round10k(a))} + ${fmt(round10k(c))} = ${fmt(round10k(a) + round10k(c))}`,
+          [[`Είναι περίπου ${fmt((round10k(a) + round10k(c)) * 10)}, δέκα φορές πιο πολύ`, `Είναι περίπου ${fmt((round10k(a) + round10k(c)) * 10)}`],
+            [`Είναι λιγότερο από ${fmt(Math.max(a, c))}, τον μεγαλύτερο`, `Είναι λιγότερο από ${fmt(Math.max(a, c))}`]],
           'Στρογγυλοποιούμε τους δύο αριθμούς στις δεκάδες χιλιάδες και τους προσθέτουμε με το μυαλό.'));
     } else {
       if (kind === 'which') {

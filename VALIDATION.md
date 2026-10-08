@@ -38,11 +38,20 @@ a schedule or flow starts.
 | `POST /api/admin/validate`, `/api/admin/validate-exercises`, `/api/admin/validate-state` (check only, write nothing) | 200 `{"valid":true}` | 200 `{"valid":false,"errors":[…]}` |
 | `POST /api/admin/data` (data.json) | 200 `{"success":true,"version":"…"}` | 400 `{"error":"Validation failed","errors":[…]}` |
 | `POST /api/admin/exercises` (exercises.json) | 200 `{"success":true,"version":"…"}` | 400 `{"error":"Exercises validation failed: <up to 3 errors on one line>"}` |
-| `POST /api/admin/state` (the database) | 200 `{"success":true}` | 400 `{"error":"State validation failed","errors":[…]}` |
+| `POST /api/admin/state` (the database) | 200 `{"success":true,"version":"…"}` | 400 `{"error":"State validation failed","errors":[…]}` |
 
 `errors` are ajv's error objects: `instancePath`, `schemaPath`, `keyword`, `params`, `message`. The one-line form,
 `<path> <message>; …` with `(+N more)` past three, is what a parent's toast shows (`summarize` in
 `backend/src/schemas.ts`).
+
+One more refusal for the state, writing nothing:
+- **409, stale** (#98): Κατάσταση (JSON) names the version it opened (`?version=`, the first 12 hex of the sha256 of
+  the snapshot's JSON; `GET /api/admin/state` sends it in `X-State-Version`, the hash of exactly the text it
+  returns). The server hashes the live snapshot again in the same transaction as the replace, so if anything
+  changed the state since (a chore confirmed, a task done, another parent's save), the answer is 409
+  `{"error":"Η κατάσταση άλλαξε στο μεταξύ …","conflict":true}`, logged as `STATE_REPLACE_STALE`, and the editor
+  offers Φόρτωσε ξανά. While the kids are busy that is often: on purpose, the editor is a last resort. A save
+  without `?version=` is not checked (scripts, curl).
 
 Two more refusals for the config files, both writing nothing:
 - **409, stale** (#33): a save names the version it was edited from (`?version=`, the first 12 hex of the file's
@@ -54,6 +63,12 @@ Two more refusals for the config files, both writing nothing:
   the state and `GET /api/admin/validation-status`, and saves are refused so no form writes over the file being
   fixed. Only the JSON editor may replace it (`?replace=1`); the broken file is kept beside it as
   `<file>.invalid-<stamp>`.
+
+A hand edit on disk is in Καταγραφή (#98), as the server reloads it (within about 2 s):
+`CONFIG_RELOADED {"file":"data.json","changed":["rewards"]}` (the top-level keys it changed), `CONFIG_INVALID
+{"file":"data.json","message":"data.json failed schema validation: /rewards/0/cost must be integer"}` once per broken
+text, and `CONFIG_RELOADED {…,"changed":[],"restored":true}` when the file goes back to the live text. The
+server's own saves are `CONFIG_SAVED`; the reload at startup logs nothing.
 
 Every other route's request body has its own schema (`backend/src/bodies.ts`, #32): a bad body is a 400
 `{"error":"body/amount must be integer"}` before the handler runs.
@@ -119,6 +134,8 @@ And the saves, all refused, nothing written:
 - `POST /api/admin/exercises` with an exercise missing `id` and another with an extra field: 400
   `{"error":"Exercises validation failed: /exercises/0 must have required property 'id'; /exercises/1 must NOT have additional properties"}`.
 - `POST /api/admin/state` with `u1` at `-50`: 400 `{"error":"State validation failed","errors":[…]}`.
+- `POST /api/admin/state?version=000000000000` with the state as `GET` returned it: 409
+  `{"error":"Η κατάσταση άλλαξε στο μεταξύ (από άλλη οθόνη ή από τα παιδιά). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.","conflict":true}`.
 - `POST /api/admin/data?version=000000000000` with today's valid config: 409
   `{"error":"Το data.json άλλαξε στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.","conflict":true}`.
 

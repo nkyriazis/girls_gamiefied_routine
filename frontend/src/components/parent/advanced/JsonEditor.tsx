@@ -11,10 +11,10 @@ interface Props {
     initial?: Versioned<unknown>; // the document (and its version), when it is already at hand...
     load?: () => Promise<Versioned<unknown>>; // ...or how to fetch it
     loadText?: () => Promise<string>; // ...or the file's own text, when it doesn't parse
-    // Saves the document as edited from `version`; a config file answers its new version
+    // Saves the document as edited from `version`; a config file (and the state) answers its new version
     save: (data: unknown, version?: string) => Promise<unknown>;
     live?: string; // the file's live version (AppState.configVersion): moved past the editor's, it is stale
-    stale?: string; // what the banner says then
+    stale?: string; // what the banner says then (or after a 409, with no `live`: the state, #98)
     onReload?: () => void; // the banner's Φόρτωσε ξανά: open the editor afresh
     schemas?: () => Promise<SchemaFile[]>; // the document's schema first, then the ones it $refs
     validate?: (data: unknown) => Promise<ValidationResult>;
@@ -27,12 +27,17 @@ interface Props {
 // version moves past it (another screen saved, or the file changed on disk) a
 // banner offers to reload, and the server refuses (409) a save that would put
 // the old text over the newer one. After its own save it holds the new version.
+// The state editor has no `live` (#98): only the server's 409 shows its banner.
 //
 // The editor's version can be ahead of `live`: a save's 200 (or the exercises'
 // GET) answers before the STATE that carries the same version, which the server
 // builds a moment after it replies. Until that STATE lands, the live version the
 // editor had before is `behind`, not stale, so the editor's own save never shows
 // the banner, not even for a frame.
+//
+// Before saving it asks the server (`validate`): errors refuse the save and are listed in red; warnings
+// (data.json's checks that let a save through, #104: duplicate ids, links to nothing, blank names, colours)
+// are listed in amber under them, and the save goes on. They stay listed after it, until the next Αποθήκευση.
 export function JsonEditor({ initial, load, loadText, save, live, stale, onReload, schemas, validate, warning }: Props) {
     const { notify } = useFeedback();
     const [text, setText] = useState<string | null>(() => (initial === undefined ? null : JSON.stringify(initial.data, null, 2)));
@@ -43,6 +48,7 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
     const [saving, setSaving] = useState(false);
     const [refused, setRefused] = useState(false); // the server answered 409
     const [errors, setErrors] = useState<string[]>([]);
+    const [warnings, setWarnings] = useState<string[]>([]);
     const [schemaFiles, setSchemaFiles] = useState<SchemaFile[] | null>(null);
 
     useEffect(() => {
@@ -91,9 +97,11 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
             data = JSON.parse(text ?? '');
         } catch (err) {
             setErrors([`Μη έγκυρο JSON: ${(err as Error).message}`]);
+            setWarnings([]);
             return;
         }
-        const result = validate ? await validate(data) : { valid: true };
+        const result: ValidationResult = validate ? await validate(data) : { valid: true };
+        setWarnings((result.warnings ?? []).map(w => `${w.path} ${w.message}`));
         if (!result.valid) {
             setErrors((result.errors ?? []).map(e => `${e.instancePath || '/'} ${e.message}`));
             return;
@@ -144,6 +152,7 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
                     options={{ minimap: { enabled: false }, scrollBeyondLastLine: false, fontSize: 13, tabSize: 2, automaticLayout: true, wordWrap: 'on' }} />
             </div>
             {errors.length > 0 && <ul className="p-errors">{errors.map((e, i) => <li key={i}>{e}</li>)}</ul>}
+            {warnings.length > 0 && <ul className="p-errors warn" aria-label="Προσοχή">{warnings.map((w, i) => <li key={i}>Προσοχή: {w}</li>)}</ul>}
             <div className="p-actions"><button type="button" className="p-btn primary" onClick={submit} disabled={saving}>Αποθήκευση</button></div>
         </div>
     );

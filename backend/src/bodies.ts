@@ -47,12 +47,20 @@ export type GameAnswerBody = { userId: string; exerciseId: string; answer: unkno
 export const answerBody = object({ answer: {} }, ['answer']);
 export type AnswerBody = { answer: unknown };
 
+/** «Δείξε μου»: a plain exercise sends {}, a problem the step on screen (#68). */
+export const revealBody = object({ step: { type: 'integer', minimum: 0 } }, []);
+export type RevealBody = { step?: number };
+
 export const userBody = object({ userId: id }, ['userId']);
 export type UserBody = { userId: string };
 
 /** markHelpSeen checks each id's pattern. */
 export const helpSeenBody = object({ tourIds: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 20 } }, ['tourIds']);
 export type HelpSeenBody = { tourIds: string[] };
+
+/** Who closed a running routine: the kids' screens (no body, or no `by`) or a parent's «Τέλος» (#63). */
+export const closeBody = object({ by: { enum: ['kid', 'parent'] } }, []);
+export type CloseBody = { by?: 'kid' | 'parent' };
 
 /** No userId (or no body at all): every tour. */
 export const helpResetBody = object({ userId: { type: 'string' } }, []);
@@ -64,3 +72,7 @@ export type PushBody = { id: string };
 /** An ISO time or HH:mm (the route reads which). */
 export const timeBody = object({ time: id }, ['time']);
 export type TimeBody = { time: string };
+
+/** The forms' raw cron field asks whether the scheduler can read it (#89). */
+export const validateCronBody = object({ cron: { type: 'string' } }, ['cron']);
+export type ValidateCronBody = { cron: string };

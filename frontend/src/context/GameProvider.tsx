@@ -20,6 +20,7 @@ const EMPTY_STATE: AppState = {
     },
     configVersion: { data: '', exercises: '' },
     configError: null,
+    configWarnings: [],
     users: [],
     spendings: [],
     starTransfers: [],

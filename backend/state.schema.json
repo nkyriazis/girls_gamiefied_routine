@@ -67,7 +67,8 @@
           "starsAwarded": { "type": "integer", "minimum": 0 },
           "stepIndex": { "type": "integer", "minimum": 0 },
           "mistakes": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
-          "extra": { "type": "boolean" }
+          "extra": { "type": "boolean" },
+          "shown": { "type": "array", "items": { "type": "integer", "minimum": 0 } }
         }
       }
     },

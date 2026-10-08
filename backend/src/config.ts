@@ -2,9 +2,11 @@ import { createHash } from 'crypto';
 import { chownSync, constants, copyFileSync, existsSync, readFileSync, renameSync, statSync, unwatchFile, watchFile, writeFileSync } from 'fs';
 import path from 'path';
 import { isDeepStrictEqual } from 'util';
-import { DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
+import type { ErrorObject } from 'ajv';
+import { ConfigWarning, CronWarning, DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
+import { configProblems, refuses } from './configChecks';
 import { DATA_EXAMPLE_FILE, DATA_FILE, EXERCISES_EXAMPLE_FILE, EXERCISES_FILE } from './paths';
-import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
+import { check, dataSchema, exercisesSchema, summarize, ValidationError } from './schemas';
 
 // ============================================================================
 // Config (data.json + exercises.json), cached in memory.
@@ -32,6 +34,19 @@ import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 // save naming an older one is refused as a conflict (the route's 409), so the
 // last save no longer silently wins. A save that names no version is not
 // checked (scripts, and the editor fixing a file that doesn't parse).
+//
+// Some checks the schema can't express: a file's `rules` (data.json's are in
+// configChecks.ts: crons the scheduler can't read, #89; duplicate ids, links
+// to nothing, blank names and titles, colours, #104). Whatever they find in
+// the live file is its `warnings`, which the parents' page shows
+// (AppState.configWarnings). A file on disk that has any still loads
+// (piserve's live file must never stop loading over a check added later).
+// Only a cron refuses a save (configChecks.ts `refuses`): one the save brings
+// in is refused like a schema error, while one already live (the same item
+// with the same cron, never an array index) doesn't block a save that leaves
+// it as it is, so one bad cron never locks out the others' fixes; fixing it
+// is always a save. Every other problem is a warning only: the save goes
+// through, and validate() hands them back for the Advanced editor to list.
 // ============================================================================
 
 /** exercises.json, as described by exercises.schema.json. */
@@ -53,8 +68,8 @@ export interface SaveRefusal extends ValidationError {
   conflict?: boolean;
 }
 
-/** The version of a file's text: the first 12 hex characters of its sha256. */
-const versionOf = (text: string | null): string => createHash('sha256').update(text ?? '').digest('hex').slice(0, 12);
+/** The version of a file's text (or of the state's snapshot, #98): the first 12 hex characters of its sha256. */
+export const versionOf = (text: string | null): string => createHash('sha256').update(text ?? '').digest('hex').slice(0, 12);
 
 /** YYYY-MM-DD_HHMMSS in the process's time zone, like the backups' folders. */
 function localStamp(d: Date): string {
@@ -69,6 +84,15 @@ function deepFreeze<T>(value: T): T {
   }
   return value;
 }
+
+/** The same cron problem in two versions of a file: the same item, the same value. */
+const problemKey = (w: CronWarning) => `${w.kind}\n${w.id}\n${w.cron}`;
+
+/** A refused rule's problem in the shape of a schema error, so the editors list it and summarize() says it. */
+const asSchemaError = (w: CronWarning): ErrorObject => ({
+  instancePath: w.path, schemaPath: '#/cron', keyword: 'cron', params: { cron: w.cron },
+  message: `η ώρα (cron) «${w.cron}» δεν διαβάζεται: ${w.error}`,
+});
 
 /** What is wrong with a config file, as the parents' screen shows it. */
 export interface ConfigProblem extends ValidationError {
@@ -86,11 +110,16 @@ export class ConfigFile<T> {
   /** A valid version was read (or saved) since the start: `value` is the file's, not the fallback. */
   private loaded = false;
   error: ValidationError | null = null;
+  /** Which text `error` is about: its version, or the read error when the file couldn't be read (#98). */
+  errorOf: string | null = null;
+  /** What the rules find in the live value: it loaded anyway (see the header). */
+  warnings: ConfigWarning[] = [];
 
   constructor(
     readonly file: string,
     private readonly schema: typeof dataSchema,
-    private readonly fallback: T
+    private readonly fallback: T,
+    private readonly rules: (value: T) => ConfigWarning[] = () => []
   ) {
     this.value = deepFreeze(structuredClone(fallback));
   }
@@ -119,6 +148,25 @@ export class ConfigFile<T> {
     return this.error && { ...this.error, file: path.basename(this.file), emptyFallback: !this.loaded };
   }
 
+  /**
+   * What a save of `value` would meet. `error`: why it would be refused for its content, or null: the
+   * schema, then the refusing rules' problems it brings in (one already live, the same item with the same
+   * value, doesn't count). `warnings`: every other problem the rules find in it, which the save lets
+   * through (none while the schema refuses it).
+   */
+  validate(value: unknown, message: string): { error: ValidationError | null; warnings: ConfigWarning[] } {
+    const error = check(this.schema, value, message);
+    if (error) return { error, warnings: [] };
+    const live = new Set(this.warnings.filter(refuses).map(problemKey));
+    const problems = this.rules(value as T);
+    const brought = problems.filter(refuses).filter(w => !live.has(problemKey(w)));
+    const refused = new Set<ConfigWarning>(brought);
+    return {
+      error: brought.length ? { message, errors: brought.map(asSchemaError) } : null,
+      warnings: problems.filter(w => !refused.has(w)),
+    };
+  }
+
   /** The file's text as it is on disk now (to fix a file that doesn't parse), or null when missing. */
   text(): string | null {
     try {
@@ -138,12 +186,13 @@ export class ConfigFile<T> {
       text = readFileSync(this.file, 'utf-8');
     } catch (err) {
       this.error = { message: `Cannot read ${path.basename(this.file)}: ${(err as Error).message}`, errors: [] };
+      this.errorOf = this.error.message;
       return 'invalid';
     }
     if (text === this.liveText) {
       // Back to the live version after a broken edit: the error is resolved.
       if (!this.error) return 'unchanged';
-      this.error = null;
+      this.error = this.errorOf = null;
       return 'updated';
     }
 
@@ -152,31 +201,34 @@ export class ConfigFile<T> {
       parsed = JSON.parse(text);
     } catch (err) {
       this.error = { message: `${path.basename(this.file)} is not valid JSON: ${(err as Error).message}`, errors: [] };
+      this.errorOf = versionOf(text);
       return 'invalid';
     }
     const error = check(this.schema, parsed, `${path.basename(this.file)} failed schema validation`);
     if (error) {
       this.error = error;
+      this.errorOf = versionOf(text);
       return 'invalid';
     }
     this.liveText = text;
     this.value = deepFreeze(parsed as T);
+    this.warnings = this.rules(this.value);
     this.loaded = true;
-    this.error = null;
+    this.error = this.errorOf = null;
     return 'updated';
   }
 
   /**
-   * Validate and atomically write a new version, then make it live. Refused
-   * (nothing written) while the file on disk is invalid, unless `replace`
-   * asks to replace it; and never with the empty fallback over a file that
+   * Validate (the schema and the rules, see `validate`) and atomically write
+   * a new version, then make it live. Refused (nothing written) while the
+   * file on disk is invalid, unless `replace` asks to replace it; and never with the empty fallback over a file that
    * was never loaded, nor over a live config that has content. A replaced
    * invalid file is kept as <file>.invalid-<stamp>. When `version` is given
    * and the live version has moved past it, refused as a conflict.
    */
   save(value: unknown, { replace = false, version }: { replace?: boolean; version?: string } = {}): SaveRefusal | null {
     const name = path.basename(this.file);
-    const error = check(this.schema, value, `${name} failed schema validation`);
+    const { error } = this.validate(value, `${name} failed schema validation`);
     if (error) return error;
     if (version !== undefined && version !== this.version()) {
       return { ...refusal(`Το ${name} άλλαξε στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.`), conflict: true };
@@ -205,8 +257,9 @@ export class ConfigFile<T> {
     renameSync(tmp, this.file);
     this.liveText = text;
     this.value = deepFreeze(structuredClone(value as T));
+    this.warnings = this.rules(this.value);
     this.loaded = true;
-    this.error = null;
+    this.error = this.errorOf = null;
     return null;
   }
 }
@@ -218,7 +271,7 @@ export function changedKeys(before: object, after: object): string[] {
 }
 
 // Both files are required: a missing one is an error the parents see, never a silent empty config.
-export const dataConfig = new ConfigFile<DataConfig>(DATA_FILE, dataSchema, EMPTY_DATA);
+export const dataConfig = new ConfigFile<DataConfig>(DATA_FILE, dataSchema, EMPTY_DATA, configProblems);
 export const exercisesConfig = new ConfigFile<ExercisesConfig>(EXERCISES_FILE, exercisesSchema, EMPTY_EXERCISES);
 
 const EXAMPLES = [
@@ -273,14 +326,52 @@ export function configError(): ConfigProblem | null {
   return dataConfig.problem() ?? exercisesConfig.problem();
 }
 
-export type ConfigChange = { type: 'updated' } | { type: 'invalid'; error: ValidationError };
+/** What the checks find in the live data.json (configChecks.ts): it loaded, but these need fixing (#89, #104). */
+export function configWarnings(): ConfigWarning[] {
+  return dataConfig.warnings;
+}
 
-/** Reload both files; reports whether anything changed or failed. */
+/**
+ * What a reload found new in one file, for the action log (#98). `updated`: the live config changed, with
+ * the top-level keys that differ; `restored`: the file went back to the live text after a broken edit, so
+ * nothing live changed. `invalid`: a bad text not reported before (the poll sees it every time something
+ * changes, so each bad text is reported once).
+ */
+export type FileReload =
+  | { file: string; type: 'updated'; changed: string[]; restored?: true }
+  | { file: string; type: 'invalid'; message: string };
+
+export type ConfigChange = ({ type: 'updated' } | { type: 'invalid'; error: ValidationError }) & { files: FileReload[] };
+
+// The bad text each file was last reported for (ConfigFile.errorOf)
+const reportedInvalid = new Map<string, string>();
+
+function reloadFile<T extends object>(config: ConfigFile<T>): { result: ReturnType<ConfigFile<T>['reload']>; report?: FileReload } {
+  const file = path.basename(config.file);
+  const before = config.get();
+  const result = config.reload();
+  if (config.errorOf === null) reportedInvalid.delete(file);
+  if (result === 'updated') {
+    const after = config.get();
+    // The same object: the live text came back after a broken edit, and the live config never changed
+    return { result, report: after === before ? { file, type: 'updated', changed: [], restored: true } : { file, type: 'updated', changed: changedKeys(before, after) } };
+  }
+  if (result === 'invalid' && config.error && config.errorOf !== null && reportedInvalid.get(file) !== config.errorOf) {
+    reportedInvalid.set(file, config.errorOf);
+    const { message, errors } = config.error;
+    return { result, report: { file, type: 'invalid', message: errors.length ? `${message}: ${summarize(errors)}` : message } };
+  }
+  return { result };
+}
+
+/** Reload both files; reports whether anything changed or failed, and per file what is new (`files`). */
 export function reloadConfig(): ConfigChange | null {
-  const results = [dataConfig.reload(), exercisesConfig.reload()];
+  const reloads = [reloadFile(dataConfig), reloadFile(exercisesConfig)];
+  const results = reloads.map(r => r.result);
+  const files = reloads.flatMap(r => (r.report ? [r.report] : []));
   const error = configError();
-  if (results.includes('invalid') && error) return { type: 'invalid', error };
-  if (results.includes('updated')) return { type: 'updated' };
+  if (results.includes('invalid') && error) return { type: 'invalid', error, files };
+  if (results.includes('updated')) return { type: 'updated', files };
   return null;
 }
 

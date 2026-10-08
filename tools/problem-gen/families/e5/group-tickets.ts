@@ -129,8 +129,12 @@ export const groupTickets: Family = {
       { label: 'Όλα μαζί', answer: total, unit: '€' },
       ...(note ? [{ label: ops ? `Ρέστα: ${note} − όλα μαζί =` : 'Ρέστα', answer: note - total, unit: '€' }] : []),
     ]));
-    steps.push(b.choice('check', 'Είναι λογική η απάντηση;', `Ναι: λίγο πάνω από τα ${fmt(pupils * C)} € των μαθητών`,
-      [`Όχι: πρέπει να είναι ${fmt((pupils + teachers) * A)} €, όλοι με τιμή ενήλικα`, `Όχι: πρέπει να είναι λιγότερα από ${fmt(pupils * C)} €`],
+    // Statements about «Όλα μαζί», not «Ναι»/«Όχι» (#83): every ticket at the adults' price, or less than the pupils' alone.
+    // Each wrong one a plain false claim (#50: no «αν …» that holds as said), in wordings longer and shorter than the right one (the place rule)
+    const allAdults = fmt((pupils + teachers) * A);
+    steps.push(b.choice('check', 'Γιατί είναι λογικό το συνολικό ποσό;', `Είναι λίγο πάνω από τα ${fmt(pupils * C)} € των μαθητών`,
+      [[`Είναι ${allAdults} €: όλοι πληρώνουν όσο ένας ενήλικας`, `Είναι ${allAdults} €, όλοι με τιμή ενήλικα`],
+        [`Είναι κάτω από τα ${fmt(pupils * C)} € των μαθητών`, `Είναι λιγότερο από τα ${fmt(pupils * C)} € των μαθητών`, `Είναι κάτω από ${fmt(pupils * C)} €`]],
       'Συγκρίνουμε με το ποσό για τους μαθητές μόνο.'));
     return { title: r.pick(v.title), story, steps };
   },

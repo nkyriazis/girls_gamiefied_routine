@@ -1,5 +1,5 @@
 import type {
-  ActionLog, ChoreInstance, ConfigSaveSource, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
+  ActionLog, ChoreInstance, ConfigSaveSource, ConfigWarning, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
   ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot, TriggerResult
 } from '@shared/types';
 import { UPLOAD_MAX_BYTES, uploadFailed, uploadTooBig } from '@shared/uploads';
@@ -21,6 +21,9 @@ export interface ValidationError {
 export interface ValidationResult {
   valid: boolean;
   errors?: ValidationError[];
+  // data.json only: what the checks find that a save lets through (duplicate ids, links to nothing, blank
+  // names, colours, crons already live; #104)
+  warnings?: ConfigWarning[];
 }
 
 export interface ScheduleDebug {
@@ -76,6 +79,8 @@ export const api = {
   completeTask: (executionId: string, taskId: string) =>
     post<{ success: boolean, starsAwarded: number }>(`/executions/${executionId}/tasks/${taskId}/complete`, {}, 'Failed to complete task'),
   closeRoutine: (executionId: string) => post(`/executions/${executionId}/close`, {}, 'Failed to close routine'),
+  // A parent's «Τέλος» on /parent (#63): the same close; the kids' screens hear it was a parent's
+  endRoutine: (executionId: string) => post(`/executions/${executionId}/close`, { by: 'parent' }, 'Failed to end routine'),
   dismissAlarm: (runId: string, stepIndex: number) => post(`/flow-runs/${runId}/steps/${stepIndex}/dismiss`, {}, 'Failed to dismiss alarm'),
 
   // Stars and rewards
@@ -112,8 +117,14 @@ export const api = {
     post<Saved>(`/admin/data?${saveQuery(version, source, true)}`, data, 'Failed to save data'),
   getConfigText: () => get<{ text: string }>('/admin/data/text', 'Failed to read data.json').then(r => r.text),
   validateConfig: (data: unknown) => post<ValidationResult>('/admin/validate', data, 'Failed to validate config'),
-  getRawState: () => get<StateSnapshot>('/admin/state', 'Failed to fetch state'),
-  saveRawState: (data: unknown) => post('/admin/state', data, 'Failed to save state'),
+  // The forms' raw cron field: why the scheduler can't read it, or null (#89; backend/src/cron.ts reads it)
+  validateCron: (cron: string) => post<{ error: string | null }>('/admin/validate-cron', { cron }, 'Failed to check the cron'),
+  // The whole runtime state and its version (X-State-Version, #98). A save names the version it was opened
+  // with: if the state changed since (a chore confirmed, a task done), the server refuses it with a 409.
+  getRawState: () => send<StateSnapshot>('GET', '/admin/state', undefined, 'Failed to fetch state')
+    .then(({ json, response }): Versioned<StateSnapshot> => ({ data: json, version: response.headers.get('X-State-Version') ?? undefined })),
+  saveRawState: (data: unknown, version?: string) =>
+    post<Saved>(`/admin/state?${new URLSearchParams({ ...(version ? { version } : {}), source: 'advanced' })}`, data, 'Failed to save state'),
   validateState: (data: unknown) => post<ValidationResult>('/admin/validate-state', data, 'Failed to validate state'),
   getRawExercises: () => send<unknown>('GET', '/admin/exercises', undefined, 'Failed to fetch exercises')
     .then(({ json, response }): Versioned<unknown> => ({ data: json, version: response.headers.get('X-Config-Version') ?? undefined })),
@@ -154,8 +165,9 @@ export const api = {
   // Help tours played (the owl stops offering them), and letting it offer again
   markHelpSeen: (tourIds: string[]) => post('/help/seen', { tourIds }, 'Failed to remember help'),
   resetHelp: (userId?: string) => post<{ reset: number }>('/help/reset', { userId }, 'Failed to reset help'),
-  revealExerciseAssignment: (assignmentId: string) =>
-    post<ExerciseAssignmentWithExercise>(`/exercise-assignments/${assignmentId}/reveal`, {}, 'Failed to show the answer'),
+  // «Δείξε μου»: a plain exercise closes with its answer shown; a problem names the step on screen (#68)
+  revealExerciseAssignment: (assignmentId: string, step?: number) =>
+    post<ExerciseAssignmentWithExercise>(`/exercise-assignments/${assignmentId}/reveal`, step === undefined ? {} : { step }, 'Failed to show the answer'),
   answerExerciseAssignment: (assignmentId: string, answer: unknown) =>
     post<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise, wrong?: number[] }>(`/exercise-assignments/${assignmentId}/answer`, { answer }, 'Failed to submit answer'),
 };

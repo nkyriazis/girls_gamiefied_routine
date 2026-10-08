@@ -6,7 +6,8 @@ import { DataConfig, HistoryEntry } from '../../shared/types';
 import { tempDir, uuid } from './helpers';
 
 // Ιστορικό reads what was decided over REST (GET /api/history, #34), a page at a time from a cursor:
-// purchases, gifts and chores, newest first, whatever their age, so STATE needn't carry the archive.
+// purchases, gifts, chores and finished exercises (#68), newest first, whatever their age, so STATE
+// needn't carry the archive.
 const dir = tempDir();
 const icon = { type: 'emoji' as const, value: 'x' };
 const cfg: DataConfig = {
@@ -30,7 +31,8 @@ const { store } = db;
 
 const DAY = 864e5;
 const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString();
-const idOf = (e: HistoryEntry) => (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.instance).id;
+const idOf = (e: HistoryEntry) =>
+  (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.kind === 'chore' ? e.instance : e.assignment).id;
 
 // 60 days of a family, across the 30-day edge of STATE: a purchase a day, a gift every other day,
 // a chore every third day. Some share their time to the millisecond, so the cursor must break ties.
@@ -53,6 +55,15 @@ for (let d = 0; d < 60; d++) {
     store.choreInstances.put(chore);
     expected.push({ at: decided, id: chore.id, kids: [kid] });
   }
+  // An exercise finished every day by each kid (#68), one of them at the very time of the purchase
+  for (const [i, who] of (['u1', 'u2'] as const).entries()) {
+    const done = i ? at : ago(d + 0.35), problem = who === 'u2';
+    const exercise = { id: uuid(++n), userId: who, exerciseId: problem ? 'g3-gen-start-unknown-001' : 'e5-lang-paroimies-003',
+      date: done.slice(0, 10), status: 'completed' as const, attempts: 2, assignedAt: ago(d + 0.7), completedAt: done, starsAwarded: problem ? 2 : 0,
+      ...(problem ? { stepIndex: 5, mistakes: [1, 0, 0, 0, 0], extra: true } : { shown: [0] }) };
+    store.exerciseAssignments.put(exercise);
+    expected.push({ at: done, id: exercise.id, kids: [who] });
+  }
 }
 // The same day, deliberately at the same time as day 10's purchase
 expected.push({ at: expected[15].at, id: uuid(++n), kids: ['u1'] });
@@ -62,14 +73,17 @@ store.spendings.put({ id: uuid(++n), userId: 'u1', rewardId: 'tv', cost: 50, cre
 store.starTransfers.put({ id: uuid(++n), fromUserId: 'u1', toUserId: 'u2', amount: 5, createdAt: ago(90), status: 'pending' });
 store.choreInstances.put({ id: uuid(++n), choreId: 'dishes', status: 'expired', availableAt: ago(2), expiresAt: ago(1.5) });
 store.choreInstances.put({ id: uuid(++n), choreId: 'dishes', status: 'attempted', availableAt: ago(0.2), expiresAt: ago(-0.3), claimedBy: 'u1', attemptedAt: ago(0.1) });
+// …and an exercise not finished, today's or a past day's left undone
+store.exerciseAssignments.put({ id: uuid(++n), userId: 'u1', exerciseId: 'e5-lang-paroimies-003', date: ago(0).slice(0, 10), status: 'pending', attempts: 1, assignedAt: ago(0.1) });
+store.exerciseAssignments.put({ id: uuid(++n), userId: 'u2', exerciseId: 'g3-gen-start-unknown-001', date: ago(3).slice(0, 10), status: 'pending', attempts: 0, assignedAt: ago(3) });
 
 const newestFirst = (rows: typeof expected) => [...rows].sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id)).map(r => r.id);
 
-function readAll(limit: number, userId?: string): { ids: string[]; pages: number } {
+async function readAll(limit: number, userId?: string): Promise<{ ids: string[]; pages: number }> {
   const ids: string[] = [];
   let before: string | undefined, pages = 0;
   for (;;) {
-    const page = db.history({ before, limit, userId });
+    const page = await db.history({ before, limit, userId });
     pages++;
     ids.push(...page.entries.map(idOf));
     if (!page.next) return { ids, pages };
@@ -78,36 +92,51 @@ function readAll(limit: number, userId?: string): { ids: string[]; pages: number
   }
 }
 
-test('paging from the cursor gives every decision once, newest first, past the window’s edge', () => {
-  const { ids, pages } = readAll(7);
+test('paging from the cursor gives every decision once, newest first, past the window’s edge', async () => {
+  const { ids, pages } = await readAll(7);
   assert.deepEqual(ids, newestFirst(expected));
   assert.equal(pages, Math.ceil(expected.length / 7));
 });
 
-test('a page ends the list exactly: no empty page after the last full one', () => {
+test('a page ends the list exactly: no empty page after the last full one', async () => {
   const total = expected.length;
-  const { pages } = readAll(total);
+  const { pages } = await readAll(total);
   assert.equal(pages, 1);
 });
 
-test('the kid filter keeps her purchases, the gifts she gave or got and her chores', () => {
-  const { ids } = readAll(10, 'u1');
+test('the kid filter keeps her purchases, the gifts she gave or got, her chores and her exercises', async () => {
+  const { ids } = await readAll(10, 'u1');
   assert.deepEqual(ids, newestFirst(expected.filter(r => r.kids.includes('u1'))));
 });
 
-test('each entry is placed at the time it was decided', () => {
-  const first = db.history({ limit: 5 }).entries;
+test('each entry is placed at the time it was decided', async () => {
+  const first = (await db.history({ limit: 5 })).entries;
   assert.deepEqual(first.map(e => e.at), newestFirst(expected).slice(0, 5).map(id => expected.find(r => r.id === id)!.at));
 });
 
-test('a purchase records when it was decided, and comes first in the history then', () => {
+test('a purchase records when it was decided, and comes first in the history then', async () => {
   store.setStars('u2', 100);
   const buy = db.buyReward('u2', 'tv');
   assert.equal(buy.resolvedAt, undefined);
   const given = db.resolveSpending(buy.id, 'done');
   assert.ok(given.resolvedAt && given.resolvedAt >= buy.createdAt);
   assert.equal(store.spendings.get(buy.id)?.resolvedAt, given.resolvedAt);
-  const top = db.history({ limit: 1 }).entries[0];
+  const top = (await db.history({ limit: 1 })).entries[0];
   assert.equal(top.kind === 'spending' && top.spending.id, buy.id);
   assert.equal(top.at, given.resolvedAt);
+});
+
+test('a finished exercise is one entry, with what Ιστορικό shows of its exercise; one gone from the pools has none (#68)', async () => {
+  const done = new Date().toISOString();
+  const row = { id: uuid(++n), userId: 'u2', exerciseId: 'g3-gen-start-unknown-001', date: done.slice(0, 10), status: 'completed' as const,
+    attempts: 9, assignedAt: done, completedAt: done, starsAwarded: 1, stepIndex: 5, mistakes: [1, 0, 0, 3, 0], extra: true, shown: [3] };
+  store.exerciseAssignments.put(row);
+  const [top] = (await db.history({ limit: 1, userId: 'u2' })).entries;
+  assert.deepEqual(top, {
+    kind: 'exercise', at: done, assignment: row,
+    exercise: { title: 'Το μυστήριο της αρχής', category: 'Προβλήματα', type: 'problem', stars: 3, steps: 5 }
+  });
+  store.exerciseAssignments.put({ ...row, id: uuid(++n), exerciseId: 'gone-001', completedAt: new Date(Date.now() + 1000).toISOString() });
+  const [gone] = (await db.history({ limit: 1, userId: 'u2' })).entries;
+  assert.equal(gone.kind === 'exercise' && gone.exercise, null);
 });

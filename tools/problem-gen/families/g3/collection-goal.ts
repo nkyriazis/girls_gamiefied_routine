@@ -88,11 +88,11 @@ export const collectionGoal: Family = {
       ? b.choice('check', 'Πώς ελέγχουμε;', `${fmt(sum)} + ${fmt(missing)} = ${fmt(goal)}`,
         [`${fmt(goal)} + ${fmt(sum)} = ${fmt(goal + sum)}`, `${fmt(goal)} − ${fmt(a)} = ${fmt(goal - a)}`],
         'Όσα μάζεψαν μαζί με όσα λείπουν πρέπει να κάνουν τον στόχο.')
-      : b.choice('check', 'Είναι λογική η απάντηση;', 2 * sum > goal
-          ? 'Ναι, λείπουν κάτω από τα μισά'
-          : 'Ναι, λείπουν πάνω από τα μισά',
+      : b.choice('check', 'Γιατί η απάντηση είναι λογική;', 2 * sum > goal
+          ? 'Λείπουν κάτω από τα μισά'
+          : 'Λείπουν πάνω από τα μισά',
         // The halves misjudged (as long as the right one), or the goal and the sum added
-        [2 * sum > goal ? 'Όχι, λείπουν πάνω από τα μισά' : 'Όχι, λείπουν κάτω από τα μισά', `Όχι, λείπουν ${fmt(goal + sum)} ${t.short}`],
+        [2 * sum > goal ? 'Λείπουν πάνω από τα μισά' : 'Λείπουν κάτω από τα μισά', `Λείπουν ${fmt(goal + sum)} ${t.short}`],
         `Τα μισά του στόχου είναι ${fmt(goal / 2)}. Μάζεψαν ${fmt(sum)}.`));
     return { title: r.pick(['Ο στόχος', 'Μαζεύουμε όλοι', 'Η συλλογή', t.why === 'για την ανακύκλωση' ? 'Ανακύκλωση' : 'Για καλό σκοπό']), story, steps };
   },

@@ -1,5 +1,5 @@
 import type { Exercise, Forgiveness } from '@shared/types';
-import { exerciseTour } from '../components/AssignmentPlayer.help';
+import { answerTour, exerciseTour } from '../components/AssignmentPlayer.help';
 import { choresTour } from '../components/ChoresDrawer.help';
 import { homeTour, routineTour } from '../components/Dashboard.help';
 import { gameResultsTour, gameTour } from '../components/ExerciseGame.help';
@@ -21,12 +21,14 @@ const PROBLEM_KINDS: Record<ProblemHelpKind, true> = {
 const types = Object.keys(EXERCISE_TYPES) as Exclude<Exercise['type'], 'problem'>[];
 // The forgiveness ladder: the intros say what mistakes cost on each rung
 const RUNGS: Forgiveness[] = ['forgiving', 'unforgiving'];
+// A revision card on screen or not, an extra problem left on screen or not: the editions of the store and the drawer
+const BOTH = [false, true];
 
 export const allTours = (): Tour[] => [
   homeTour(), routineTour(),
-  storeTour('u'), storeTour('u', true), activityTour('u'), transferTour('u'),
-  choresTour(false), choresTour(true), exercisesTour(), exercisesTour(true),
-  ...types.flatMap(t => RUNGS.map(r => exerciseTour('u', t, r))), ...types.map(t => exerciseTour('u', t, 'forgiving', true)),
+  ...BOTH.flatMap(revision => BOTH.map(extra => storeTour('u', revision, extra))), activityTour('u'), transferTour('u'),
+  choresTour(false), choresTour(true), ...BOTH.flatMap(revision => BOTH.map(extra => exercisesTour(revision, extra))),
+  ...types.flatMap(t => RUNGS.map(r => exerciseTour('u', t, r))), ...types.map(t => exerciseTour('u', t, 'forgiving', true)), answerTour('u'),
   gameSetupTour(), gameTour(undefined), ...types.map(t => gameTour(t)), gameResultsTour(),
   ...(Object.keys(PROBLEM_KINDS) as ProblemHelpKind[]).flatMap(k => RUNGS.flatMap(r => [problemTour('u', k, r), problemTour('u', k, r, true)])),
 ];

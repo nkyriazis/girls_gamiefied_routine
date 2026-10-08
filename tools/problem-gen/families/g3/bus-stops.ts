@@ -112,14 +112,11 @@ export const busStops: Family = {
     steps.push(b.numbers('solve', 'Λύνουμε στάση στάση.', rows.map(x => ({ ...x, unit: v.who })),
       'Σε κάθε στάση: πρώτα αφαιρούμε όσους κατεβαίνουν, μετά προσθέτουμε όσους ανεβαίνουν.'));
     const moreNow = ons > offs;
-    steps.push(b.choice('check', 'Είναι λογική η απάντηση;',
-      moreNow
-        ? 'Ναι, ανέβηκαν πιο πολλοί από όσους κατέβηκαν'
-        : 'Ναι, κατέβηκαν πιο πολλοί από όσους ανέβηκαν',
-      [moreNow
-        ? [`Όχι, πρέπει να είναι λιγότεροι από ${fmt(start)}`, `Όχι, πρέπει να είναι λιγότεροι από τους ${fmt(start)}`]
-        : [`Όχι, πρέπει να είναι περισσότεροι από ${fmt(start)}`, `Όχι, περισσότεροι από ${fmt(start)}`],
-      [`Όχι, πρέπει να είναι ${fmt(start + offs + ons)}, όλοι οι αριθμοί μαζί`, `Όχι, πρέπει να είναι ${fmt(start + offs + ons)}: όλα μαζί`]],
+    // Statements, not «Ναι»/«Όχι» (#83): the reason that holds, the other way round, or every number added
+    const [up, down] = ['Ανέβηκαν πιο πολλοί από όσους κατέβηκαν', 'Κατέβηκαν πιο πολλοί από όσους ανέβηκαν'];
+    steps.push(b.choice('check', 'Γιατί η απάντηση είναι λογική;', moreNow ? up : down,
+      [moreNow ? down : up,
+        [`Είναι ${fmt(start + offs + ons)}: όλοι οι αριθμοί της ιστορίας μαζί`, `Είναι ${fmt(start + offs + ons)}, όλοι οι αριθμοί μαζί`]],
       `Συγκρίνουμε: κατέβηκαν ${fmt(offs)} και ανέβηκαν ${fmt(ons)}.`));
     return { title: r.pick(['Στάση στάση', 'Ανεβαίνουν και κατεβαίνουν', 'Το ταξίδι', 'Πόσοι είναι τώρα;']), story, steps };
   },

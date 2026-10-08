@@ -20,20 +20,20 @@ import {
   writeRawExercises, writeRawConfig, ConfigConflict, type ConfigSave, startExerciseSession, submitExerciseAnswer,
   closeExerciseSession, gameResultsLeaving, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
   logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
-  stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
+  stateText, replaceState, StateConflict, logConfigReload, ensureDailyAssignments, markHelpSeen, resetHelp, cronDue
 } from './db';
-import { config, configError, dataConfig, exercisesConfig, reloadConfig, seedConfig, watchConfig } from './config';
+import { config, configError, configWarnings, dataConfig, exercisesConfig, reloadConfig, seedConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
 import { HEARTBEAT_MS } from './sync';
 import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
 import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
-import { cronMatchesAt, nextCronRun } from './cron';
+import { cronError, nextCronRun } from './cron';
 import {
-  answerBody, AnswerBody, claimBody, ClaimBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
-  helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, spendingBody, SpendingBody, spendingStatusBody,
+  answerBody, AnswerBody, claimBody, ClaimBody, closeBody, CloseBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
+  helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, revealBody, RevealBody, spendingBody, SpendingBody, spendingStatusBody,
   SpendingStatusBody, starsBody, StarsBody, timeBody, TimeBody, transferActionBody, TransferActionBody, transferBody, TransferBody,
-  userBody, UserBody
+  userBody, UserBody, validateCronBody, ValidateCronBody
 } from './bodies';
 
 const pump = util.promisify(pipeline);
@@ -63,16 +63,18 @@ async function checkSchedules(date: Date) {
   const localTime = DateTime.fromJSDate(date).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
   console.log(`Checking schedules for: ${localTime} (${timezone})`);
   
-  // Check regular schedules (flows, routines)
+  // Check regular schedules (flows, routines). A cron it can't read is SCHEDULE_CRON_ERROR, once per
+  // schedule and cron (cronDue); SCHEDULE_ERROR is a schedule that matched and failed to start, every time.
   for (const schedule of schedules) {
+    const due = cronDue(schedule.cron, date, timezone,
+      { key: `schedule:${schedule.id}`, type: 'SCHEDULE_CRON_ERROR', details: { scheduleId: schedule.id } });
+    if (!due) continue;
     try {
-      if (cronMatchesAt(schedule.cron, date, timezone)) {
-        console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
-        logAction('SCHEDULE_MATCH', { scheduleId: schedule.id, targetId: schedule.targetId, cron: schedule.cron, time: localTime });
-        triggerAction(schedule.targetId, `schedule:${schedule.id}`);
-      }
+      console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
+      logAction('SCHEDULE_MATCH', { scheduleId: schedule.id, targetId: schedule.targetId, cron: schedule.cron, time: localTime });
+      triggerAction(schedule.targetId, `schedule:${schedule.id}`);
     } catch (err) {
-      console.error(`Error checking schedule ${schedule.id}:`, err);
+      console.error(`Error starting schedule ${schedule.id}:`, err);
       logAction('SCHEDULE_ERROR', { scheduleId: schedule.id, error: (err as Error).message });
     }
   }
@@ -294,7 +296,7 @@ server.get('/api/history', async (request, reply) => {
   const n = limit === undefined ? undefined : Number(limit);
   if (n !== undefined && !(Number.isInteger(n) && n >= 1 && n <= 100)) return reply.code(400).send({ error: 'limit must be 1-100' });
   if (before !== undefined && !/^[^|]+\|[^|]+$/.test(before)) return reply.code(400).send({ error: 'before must be a page\'s next' });
-  return history({ before, limit: n, userId: userId || undefined });
+  return await history({ before, limit: n, userId: userId || undefined });
 });
 
 // Spendings routes
@@ -374,9 +376,13 @@ server.post('/api/executions/:executionId/tasks/:taskId/complete', async (reques
   return result.success ? result : reply.code(409).send(result);
 });
 
-server.post('/api/executions/:executionId/close', async (request) => {
+// A parent's «Τέλος» on /parent sends { by: 'parent' } (#63): the same close, and her lane says so.
+server.post<{ Body: CloseBody }>('/api/executions/:executionId/close', {
+  schema: { body: closeBody },
+  preValidation: async (request) => { request.body ??= {}; }, // no body at all: the kids' close, as before
+}, async (request) => {
   const { executionId } = request.params as { executionId: string };
-  return { success: closeRoutine(executionId) };
+  return { success: closeRoutine(executionId, request.body.by) };
 });
 
 server.post('/api/flow-runs/:runId/steps/:stepIndex/dismiss', async (request) => {
@@ -457,15 +463,29 @@ server.get('/api/admin/data', async (request, reply) => {
   return value;
 });
 
-// Admin: Validate config against schema
+// Admin: Validate config as a save would (the Advanced editor's pre-check, ConfigFile.validate): the schema,
+// then the crons it brings in that the scheduler can't read are `errors` (the save would be refused); every
+// other problem the checks find (configChecks.ts: duplicate ids, links to nothing, blank names, colours, and
+// crons already live) is a `warning`, which the save lets through (#104)
 server.post('/api/admin/validate', async (request, reply) => {
   try {
-    const error = check(dataSchema, request.body, 'Invalid config');
-    return error ? { valid: false, errors: error.errors } : { valid: true };
+    const { error, warnings } = dataConfig.validate(request.body, 'Invalid config');
+    return error ? { valid: false, errors: error.errors, warnings } : { valid: true, warnings };
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
   }
+});
+
+// The forms' raw cron field (#89): can the scheduler read it, as a save would check it? { error: null } when it
+// can, else why not, in a line the field shows. The schema's shape first (five fields of digits, *, -, comma
+// and /), then cron.ts, the one reader.
+const CRON_PATTERN = new RegExp((dataSchema.schema as { properties: { schedules: { items: { properties: { cron: { pattern: string } } } } } })
+  .properties.schedules.items.properties.cron.pattern);
+server.post<{ Body: ValidateCronBody }>('/api/admin/validate-cron', { schema: { body: validateCronBody } }, async request => {
+  const { cron } = request.body;
+  if (!CRON_PATTERN.test(cron)) return { error: 'Χρειάζονται 5 πεδία (λεπτό ώρα μέρα μήνας μέρα-εβδομάδας) με ψηφία, *, -, κόμμα και /' };
+  return { error: cronError(cron) };
 });
 
 // Admin: Validate state against schema
@@ -540,6 +560,7 @@ server.get('/api/admin/validation-status', async (request, reply) => {
   // State lives in the database now, so there is no state file to be invalid.
   return {
     config: configError(),
+    warnings: configWarnings(), // what the checks find in the live data.json (configChecks.ts; #89, #104)
     state: null
   };
 });
@@ -683,11 +704,12 @@ server.post<{ Params: Id; Body: AnswerBody }>('/api/exercise-assignments/:id/ans
   }
 });
 
-// «Δείξε μου» on a plain exercise after a wrong try: closes it, paying nothing (see revealExerciseAssignment)
-server.post('/api/exercise-assignments/:id/reveal', async (request, reply) => {
+// «Δείξε μου»: a plain exercise after a wrong try closes, paying nothing; a problem's step on screen
+// is recorded as shown (see revealExerciseAssignment)
+server.post<{ Params: Id; Body: RevealBody }>('/api/exercise-assignments/:id/reveal', { schema: { body: revealBody } }, async (request, reply) => {
   try {
-    const { id } = request.params as { id: string };
-    return await revealExerciseAssignment(id);
+    const { id } = request.params;
+    return await revealExerciseAssignment(id, request.body.step);
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
   }
@@ -711,21 +733,30 @@ server.post<{ Body: HelpResetBody }>('/api/help/reset', {
   return { reset: resetHelp(userId || undefined) };
 });
 
-// Admin: Get the full runtime state (from the database, in state.json shape)
-server.get('/api/admin/state', async () => {
-  return stateSnapshot();
+// Admin: Get the full runtime state (from the database, in state.json shape), with its version in
+// X-State-Version: the hash of exactly this text (#98)
+server.get('/api/admin/state', async (request, reply) => {
+  const { text, version } = stateText();
+  return reply.header('X-State-Version', version).type('application/json; charset=utf-8').send(text);
 });
 
-// Admin: Replace the full runtime state
+// Admin: Replace the full runtime state. `?version=`: the X-State-Version it was edited from; if the state
+// changed since, a 409 that writes nothing (#98). None: not checked. `?source=advanced`: the editor, for the
+// log; else 'api'.
 server.post('/api/admin/state', async (request, reply) => {
   const error = check(stateSchema, request.body, 'State validation failed');
   if (error) {
     return reply.code(400).send({ error: error.message, errors: error.errors });
   }
+  const { version, source } = request.query as { version?: string; source?: string };
   try {
-    replaceState(request.body as StateSnapshot);
-    return { success: true };
+    const saved = replaceState(request.body as StateSnapshot, {
+      version: version || undefined,
+      source: source === 'advanced' ? 'advanced' : 'api',
+    });
+    return { success: true, version: saved };
   } catch (err) {
+    if (err instanceof StateConflict) return reply.code(409).send({ error: err.message, conflict: true });
     request.log.error(err);
     return reply.code(500).send({ error: 'Failed to update state' });
   }
@@ -767,6 +798,7 @@ const start = async () => {
     }
     await ensureDailyAssignments();
     watchConfig(change => {
+      logConfigReload(change); // a hand edit on disk is in the action log (#98); the startup reload above isn't
       if (change.type === 'updated') {
         console.log('Config changed on disk; reloaded');
       } else {
@@ -799,7 +831,7 @@ const start = async () => {
 
 // The routes are importable (the tests call them with server.inject against their own data); only
 // running this file (nodemon in dev, `node dist/backend/src/server.js` in the image) starts the server.
-export { server };
+export { server, checkSchedules };
 
 if (require.main === module) {
   // Graceful shutdown (SIGTERM from `docker stop`, SIGINT from Ctrl-C). Every

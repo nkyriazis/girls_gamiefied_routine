@@ -368,27 +368,26 @@ test('a problem is answered step by step: wrong tries count, the last step pays 
   await assert.rejects(answer(3, ['πρώτο', 'δεύτερο', 'τρίτο']), /already completed/);
 });
 
-test('extra problems: fresh ones first, one open at a time, up to the day\'s limit', async () => {
-  const daily = store.exerciseAssignments.all('userId = ?', 'u2').map(a => a.exerciseId);
+test('extra problems: fresh ones first, a new one over one left pending, up to the day\'s limit', async () => {
+  const daily = store.exerciseAssignments.all('userId = ?', 'u2');
   const first = await db.startExtraProblem('u2');
   assert.equal(first.extra, true);
   assert.equal(first.exercise?.type, 'problem');
-  assert.ok(!daily.includes(first.exerciseId), 'the one problem not drawn today');
+  assert.ok(!daily.some(a => a.exerciseId === first.exerciseId), 'the one problem not drawn today');
 
-  // Asking again while it is open returns the same one
-  assert.equal((await db.startExtraProblem('u2')).id, first.id);
+  // Asking again while it is pending (left with ✕, #67) draws another. All three were had today,
+  // so it is the daily one she finished, never one still pending
+  const second = await db.startExtraProblem('u2');
+  assert.notEqual(second.exerciseId, first.exerciseId);
+  assert.deepEqual(daily.filter(a => a.exerciseId === second.exerciseId).map(a => store.exerciseAssignments.get(a.id)!.status), ['completed']);
+  assert.deepEqual(db.extraProblemsToday('u2'), { used: 2, limit: 2 });
+  // Both count toward the limit, finished or not
+  await assert.rejects(db.startExtraProblem('u2'), /No more extra problems today/);
 
+  // The first, finished later, pays as usual
   const starsBefore = db.usersWithStars().find(u => u.id === 'u2')!.stars;
   for (const [i, step] of balloons.steps.entries()) await db.answerExerciseAssignment(first.id, { step: i, value: solution(balloons, step) });
   assert.equal(db.usersWithStars().find(u => u.id === 'u2')!.stars, starsBefore + 3);
-
-  // All three were had today: the next is one of the daily ones, seen before the extra
-  // (both were drawn at the same moment, so either)
-  const second = await db.startExtraProblem('u2');
-  assert.notEqual(second.id, first.id);
-  assert.ok(daily.includes(second.exerciseId));
-  assert.deepEqual(db.extraProblemsToday('u2'), { used: 2, limit: 2, open: store.exerciseAssignments.get(second.id) });
-  for (const [i, step] of balloons.steps.entries()) await db.answerExerciseAssignment(second.id, { step: i, value: solution(balloons, step) });
   await assert.rejects(db.startExtraProblem('u2'), /No more extra problems today/);
 
   // Extras don't count as the daily set: nothing is drawn again
@@ -409,6 +408,8 @@ test('unforgiving: a problem can pay nothing, and a painted reading step costs a
   let r = await answer(3, ['πρώτο', 'δεύτερο', 'τρίτο']);
   assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status], [true, 0, 'completed']);
   assert.deepEqual(r.assignment.mistakes, [2, 2, 2, 0]);
+  // Each of them was shown worked after its two tries: recorded when it was (#68)
+  assert.deepEqual(r.assignment.shown, [0, 1, 2]);
   assert.equal(starsOf('u4'), before);
 
   // u5 paints: a wrong painting costs a star, as a wrong choice does (#50)
@@ -421,7 +422,7 @@ test('unforgiving: a problem can pay nothing, and a painted reading step costs a
   await db.answerExerciseAssignment(b.id, { step: 1, value: 1 });
   await db.answerExerciseAssignment(b.id, { step: 2, value: [8, 1] });
   r = await db.answerExerciseAssignment(b.id, { step: 3, value: ['πρώτο', 'δεύτερο', 'τρίτο'] });
-  assert.deepEqual([r.starsAwarded, r.assignment.mistakes], [1, [1, 1, 0, 0]]);
+  assert.deepEqual([r.starsAwarded, r.assignment.mistakes, r.assignment.shown], [1, [1, 1, 0, 0], undefined], 'one wrong try: nothing shown');
   assert.equal(starsOf('u5'), before5 + 1);
 });
 
@@ -444,14 +445,14 @@ test('a calc slip goes to the server as it happens: a wrong sum or the smaller n
   // After 25 − 7 = 18: 18 + 10 = 27 (math), 10 − 18 (order), 25 + 10 = 35 (right, but nothing here)
   let { counted, paid } = await play('u2', [{ x: 18, op: '+', y: 10, result: 27 }, { x: 10, op: '−', y: 18, result: 8 }, { x: 25, op: '+', y: 10, result: 35 }]);
   assert.deepEqual(counted, [1, 2, 2]);
-  assert.deepEqual([paid.starsAwarded, paid.assignment.mistakes], [2, [0, 2, 0]]);
+  assert.deepEqual([paid.starsAwarded, paid.assignment.mistakes, paid.assignment.shown], [2, [0, 2, 0], undefined]);
   // Only right sums that mean nothing: the full price
   ({ counted, paid } = await play('u2', [{ x: 25, op: '+', y: 10, result: 35 }, { x: 25, op: '+', y: 7, result: 32 }]));
   assert.deepEqual([counted, paid.starsAwarded], [[0, 0], 3]);
   assert.equal(starsOf('u2'), before + 5);
   // Unforgiving: two counted slips, then the step is shown worked (its lines pass), and it costs its star
   ({ counted, paid } = await play('u4', [{ x: 18, op: '+', y: 10, result: 29 }, { x: 18, op: '+', y: 10, result: 27 }]));
-  assert.deepEqual([counted, paid.starsAwarded], [[1, 2], 2]);
+  assert.deepEqual([counted, paid.starsAwarded, paid.assignment.shown], [[1, 2], 2, [1]]);
   // A slip for a step already solved changes nothing
   const a = assign('u2', 'p-pocket');
   await db.answerExerciseAssignment(a.id, { step: 0, value: ['known', 'known', 'known', 'sought'] });
@@ -469,7 +470,7 @@ test('a plain exercise: a wrong first try loses the star; unforgiving closes it 
   r = await db.answerExerciseAssignment(a.id, 3);
   assert.deepEqual([r.correct, r.assignment.status], [false, 'pending']);
   r = await db.answerExerciseAssignment(a.id, 4);
-  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status, r.assignment.starsAwarded], [true, 0, 'completed', 0]);
+  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status, r.assignment.starsAwarded, r.assignment.shown], [true, 0, 'completed', 0, undefined]);
   const b = assign('u1', 'e-3');
   r = await db.answerExerciseAssignment(b.id, 6);
   assert.deepEqual([r.correct, r.starsAwarded], [true, 1]);
@@ -480,16 +481,17 @@ test('a plain exercise: a wrong first try loses the star; unforgiving closes it 
   const tf = assign('u5', 'e-tf');
   r = await db.answerExerciseAssignment(tf.id, false);
   assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status, r.assignment.starsAwarded], [false, 0, 'completed', 0]);
+  assert.deepEqual(r.assignment.shown, [0], 'closed after its tries: the screen shows the answer (#68)');
   await assert.rejects(db.answerExerciseAssignment(tf.id, true), /already completed/);
   const n = assign('u5', 'e-1');
   r = await db.answerExerciseAssignment(n.id, 3);
   assert.deepEqual([r.correct, r.assignment.status], [false, 'pending']);
   r = await db.answerExerciseAssignment(n.id, 2);
-  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status], [true, 0, 'completed']);
+  assert.deepEqual([r.correct, r.starsAwarded, r.assignment.status, r.assignment.shown], [true, 0, 'completed', undefined]);
   const m = assign('u5', 'e-2');
   await db.answerExerciseAssignment(m.id, 1);
   r = await db.answerExerciseAssignment(m.id, 1);
-  assert.deepEqual([r.correct, r.assignment.status, r.assignment.attempts], [false, 'completed', 2]);
+  assert.deepEqual([r.correct, r.assignment.status, r.assignment.attempts, r.assignment.shown], [false, 'completed', 2, [0]]);
   assert.equal(starsOf('u5'), before5);
 });
 
@@ -499,12 +501,41 @@ test('«Δείξε μου» on a plain exercise: only after a wrong try, and it 
   await db.answerExerciseAssignment(a.id, 7);
   const before = starsOf('u1');
   const shown = await db.revealExerciseAssignment(a.id);
-  assert.deepEqual([shown.status, shown.starsAwarded], ['completed', 0]);
+  assert.deepEqual([shown.status, shown.starsAwarded, shown.shown], ['completed', 0, [0]]);
   assert.equal(starsOf('u1'), before);
   await assert.rejects(db.revealExerciseAssignment(a.id), /already completed/);
   const p = assign('u2', 'p-balloons');
   await db.answerExerciseAssignment(p.id, { step: 0, value: [] });
   await assert.rejects(db.revealExerciseAssignment(p.id), /step by step/);
+});
+
+test('«💡 Δείξε μου» on a problem step is recorded at the tap, once, and kept; it pays what the mistakes pay (#68)', async () => {
+  const play = async (show: boolean) => {
+    const a = assign('u2', 'p-balloons');
+    const answer = (step: number, value: unknown) => db.answerExerciseAssignment(a.id, { step, value });
+    await answer(0, ['known', 'known', 'extra', 'sought']);
+    for (let i = 0; i < 3; i++) await answer(1, 0);
+    if (show) {
+      const tapped = await db.revealExerciseAssignment(a.id, 1);
+      assert.deepEqual([tapped.status, tapped.stepIndex, tapped.shown], ['pending', 1, [1]]);
+      // A second tap, another device, a step not on screen (solved, or ahead): nothing more
+      for (const step of [1, 0, 2]) assert.deepEqual((await db.revealExerciseAssignment(a.id, step)).shown, [1], `step ${step}`);
+      // ✕ and back: she types it herself, wrong once more, then right. The 💡 stays
+      assert.deepEqual((await answer(1, 0)).assignment.shown, [1]);
+    } else {
+      await answer(1, 0);
+    }
+    await answer(1, 1);
+    await answer(2, [8, 1]);
+    return answer(3, ['πρώτο', 'δεύτερο', 'τρίτο']);
+  };
+  const before = starsOf('u2');
+  const shown = await play(true), solved = await play(false);
+  assert.deepEqual([shown.assignment.status, shown.assignment.mistakes, shown.assignment.shown], ['completed', [0, 4, 0, 0], [1]]);
+  assert.deepEqual([solved.assignment.mistakes, solved.assignment.shown], [[0, 4, 0, 0], undefined]);
+  assert.deepEqual([shown.starsAwarded, solved.starsAwarded], [2, 2], 'the 💡 costs nothing of its own');
+  assert.equal(starsOf('u2'), before + 4);
+  await assert.rejects(db.revealExerciseAssignment(shown.assignment.id, 3), /already completed/);
 });
 
 test('painting freehand forgives a sloppy stroke, not a wrong fact', () => {
@@ -776,22 +807,22 @@ test('a problem regenerated under its id (#50): progress that no longer fits it 
   // p-balloons has 4 steps. Progress stored for an older version of the problem: a step past
   // the end, or mistakes counted for another number of steps
   const today = (await db.getExerciseAssignments('u4'))[0].date;
-  const put = (exerciseId: string, stepIndex: number, mistakes: number[]) => {
-    const a = { ...assign('u4', exerciseId), date: today, stepIndex, mistakes, attempts: 3 };
+  const put = (exerciseId: string, stepIndex: number, mistakes: number[], shown?: number[]) => {
+    const a = { ...assign('u4', exerciseId), date: today, stepIndex, mistakes, attempts: 3, ...(shown ? { shown } : {}) };
     store.exerciseAssignments.put(a);
     return a;
   };
-  const past = put('p-balloons', 4, [0, 1, 0, 0]);
+  const past = put('p-balloons', 4, [0, 1, 0, 0], [1]);
   const other = put('p-two', 1, [1, 0]);
-  const fits = put('p-three', 2, [1, 0, 0, 0]);
+  const fits = put('p-three', 2, [1, 0, 0, 0], [0]);
   const shown = new Map((await db.getExerciseAssignments('u4')).map(a => [a.id, a]));
-  assert.deepEqual([shown.get(past.id)!.stepIndex, shown.get(past.id)!.mistakes], [0, undefined], 'shown from the start');
+  assert.deepEqual([shown.get(past.id)!.stepIndex, shown.get(past.id)!.mistakes, shown.get(past.id)!.shown], [0, undefined, undefined], 'shown from the start, nothing shown worked (#68)');
   assert.deepEqual([shown.get(other.id)!.stepIndex, shown.get(other.id)!.mistakes], [0, undefined]);
-  assert.deepEqual([shown.get(fits.id)!.stepIndex, shown.get(fits.id)!.mistakes], [2, [1, 0, 0, 0]], 'progress that fits is kept');
+  assert.deepEqual([shown.get(fits.id)!.stepIndex, shown.get(fits.id)!.mistakes, shown.get(fits.id)!.shown], [2, [1, 0, 0, 0], [0]], 'progress that fits is kept');
 
   // Answered from step 0, with mistakes counted afresh
   let r = await db.answerExerciseAssignment(past.id, { step: 0, value: ['known', 'known', 'extra', 'sought'] });
-  assert.deepEqual([r.correct, r.assignment.stepIndex, r.assignment.mistakes], [true, 1, [0, 0, 0, 0]]);
+  assert.deepEqual([r.correct, r.assignment.stepIndex, r.assignment.mistakes, r.assignment.shown], [true, 1, [0, 0, 0, 0], undefined]);
   r = await db.answerExerciseAssignment(other.id, { step: 0, value: ['known', 'known', 'known', 'sought'] });
   assert.deepEqual([r.correct, r.assignment.stepIndex ?? 0, r.assignment.mistakes], [false, 0, [1, 0, 0, 0]]);
   // A fitting one goes on where it was: step 0 again is a repeat

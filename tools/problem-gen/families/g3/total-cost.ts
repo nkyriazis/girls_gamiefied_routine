@@ -151,8 +151,9 @@ export const totalCost: Family = {
               `${prices[2]} + ${prices[0]} + ${prices[0]} = ${prices[2] + 2 * prices[0]}`].filter(o => !o.startsWith(`${[...prices].reverse().join(' + ')} =`))
             : [`${hi} − ${lo} = ${hi - lo}`, `${total} + ${prices[0]} = ${total + prices[0]}`],
           'Προσθέτουμε τις τιμές με άλλη σειρά. Πρέπει να βρούμε το ίδιο.')
-        : b.choice('check', 'Είναι λογική η απάντηση;', 'Ναι, είναι περισσότερα από κάθε τιμή',
-          [`Όχι, πρέπει να κοστίζουν ${Math.max(...prices)} ευρώ`, `Όχι, πρέπει να είναι κάτω από ${Math.max(...prices)} ευρώ`],
+        // Statements about the total, not «Ναι»/«Όχι» (#83)
+        : b.choice('check', 'Γιατί η απάντηση είναι λογική;', 'Είναι περισσότερα από κάθε τιμή',
+          [`Είναι ${Math.max(...prices)} ευρώ, όσο η πιο ακριβή τιμή`, `Είναι λιγότερα από τα ${Math.max(...prices)} ευρώ`],
           'Αν πληρώνουμε πολλά πράγματα, το ποσό μεγαλώνει.'));
     } else {
       const diff = Math.abs(money - total);

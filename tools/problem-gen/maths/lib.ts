@@ -8,7 +8,7 @@
 import type { Exercise, ProblemExercise } from '../../../shared/types.ts';
 import { fmt, type Rng } from '../lib.ts';
 import type { Grade } from './curriculum.ts';
-import { REVEAL_MATCH_MAX } from './check.ts';
+import { REVEAL_PAIRS, revealTooLong } from './check.ts';
 
 export { fmt };
 
@@ -50,16 +50,15 @@ export function mc(r: Rng, title: string, question: string, right: string, wrong
 }
 
 /**
- * Match pairs, as many of `pairs` (at least 3) as «Δείξε μου» can reveal on one line
- * (check.ts REVEAL_MATCH_MAX): it shows them in one run, «a – b, c – d, …».
+ * Match pairs, all of `pairs`: 3, or up to check.ts REVEAL_PAIRS, the lines the held «Δείξε μου» card shows
+ * (#72). It shows them one per line, «a → b», so null when a line is over REVEAL_PAIR_MAX (the family draws
+ * other numbers). It never cuts pairs: asking for more than the card shows is a mistake in the family.
  */
 export function match(title: string, body: string, pairs: [string, string][]): Draft | null {
+  if (pairs.length < 3 || pairs.length > REVEAL_PAIRS) throw new Error(`match of ${pairs.length} pairs: ask for 3 to ${REVEAL_PAIRS}`);
   if (new Set(pairs.map(p => p[0])).size !== pairs.length || new Set(pairs.map(p => p[1])).size !== pairs.length) return null;
-  const line = (ps: [string, string][]) => ps.map(([l, r]) => `${l} – ${r}`).join(', ');
-  let fit = pairs;
-  while (fit.length > 3 && line(fit).length > REVEAL_MATCH_MAX) fit = fit.slice(0, -1);
-  if (line(fit).length > REVEAL_MATCH_MAX) return null;
-  return { type: 'match-pairs', title, body, pairs: fit.map(([left, right]) => ({ left, right })) };
+  const d: Draft = { type: 'match-pairs', title, body, pairs: pairs.map(([left, right]) => ({ left, right })) };
+  return revealTooLong(d as PlainExercise) ? null : d;
 }
 
 /** Ordering: `items` in the right order. */
@@ -172,5 +171,5 @@ export function words(n: number): string {
   return out.join(' ');
 }
 
-/** Words the item may show (match pairs stay short enough to read on one revealed line). */
+/** How many words `s` has. */
 export const wordCount = (s: string) => s.split(' ').length;

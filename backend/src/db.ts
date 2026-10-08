@@ -2,16 +2,17 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import {
-  AppState, Chore, ChoreInstance, ConfigSaveSource, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
-  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
-  ProblemExercise, ProblemReading, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
+  AppState, Chore, ChoreInstance, ConfigSaveSource, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineExecution, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
+  ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ExerciseSummary, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
+  Forgiveness, ProblemExercise, ProblemReading, ProblemStep, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
 import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
-import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
+import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, stepHelp, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
+import { MAX_SET_ASIDE, extraRefusals } from '../../shared/extraProblems';
 import { cronMatchesAt } from './cron';
-import { changedKeys, config, ConfigFile, configError, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { changedKeys, config, ConfigChange, ConfigFile, versionOf, configError, configWarnings, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { summarize } from './schemas';
 import { Store, Table } from './store';
@@ -54,6 +55,7 @@ export async function appState(): Promise<AppState> {
     config: data.value,
     configVersion: { data: data.version, exercises: exercisesConfig.version() },
     configError: configError(),
+    configWarnings: configWarnings(),
     users: usersView(),
     spendings: recentSpendings(),
     starTransfers: recentTransfers(),
@@ -204,6 +206,19 @@ export function writeRawExercises(data: unknown, options: ConfigSave = {}): stri
   return saveConfigFile(exercisesConfig, data, options, 'Exercises validation failed');
 }
 
+/**
+ * Log what the watcher's reload found new on disk (#98): CONFIG_RELOADED { file, changed } for each file
+ * that changed (a hand edit; `restored: true` when a broken edit went back to the live text), CONFIG_INVALID
+ * { file, message } once per bad text. The server's own saves never reach it (the reload after one finds
+ * the text it wrote), and the reload at startup isn't logged.
+ */
+export function logConfigReload(change: ConfigChange | null): void {
+  for (const report of change?.files ?? []) {
+    const { type, ...details } = report;
+    logAction(type === 'updated' ? 'CONFIG_RELOADED' : 'CONFIG_INVALID', details);
+  }
+}
+
 // ============================================
 // ROUTINES AND FLOWS ON SCREEN
 // ============================================
@@ -217,12 +232,15 @@ const ALARM_ONLY: FlowStep[] = [{ type: 'alarm', props: { sound: 'melody' } }];
 
 /**
  * Start a routine assignment or a flow (schedule, push hook); 'alarm' shows
- * a plain alarm. A user already in a routine keeps it; a running flow restarts.
+ * a plain alarm, always, even with an assignment or a flow of that id (#121;
+ * the config checks warn about one). A user already in a routine keeps it; a
+ * running flow restarts. A flow that ended at once started nothing on screen
+ * (its routines busy or done today, or a cycle refused: `cycle`).
  */
 export function triggerAction(id: string, source: string = 'unknown'): TriggerResult | null {
   const { routineAssignments, flows } = config();
   return store.transaction(() => {
-    if (routineAssignments.some(a => a.id === id)) {
+    if (id !== 'alarm' && routineAssignments.some(a => a.id === id)) {
       const run = startRoutine(id);
       logAction(run.started ? 'TRIGGER_ROUTINE' : 'TRIGGER_ROUTINE_SKIPPED', { id, source, runId: run.id });
       return run.started
@@ -231,27 +249,51 @@ export function triggerAction(id: string, source: string = 'unknown'): TriggerRe
     }
     const steps = id === 'alarm' ? ALARM_ONLY : flows.find(f => f.id === id)?.steps;
     if (steps) {
-      logAction('TRIGGER_FLOW', { id, source, runId: startFlow(id, steps) });
-      return { success: true, type: 'flow', id };
+      const refused = cyclesRefused;
+      const runId = startFlow(id, steps);
+      logAction('TRIGGER_FLOW', { id, source, runId });
+      return store.flowRuns.get(runId)
+        ? { success: true, type: 'flow', id }
+        : { success: true, type: 'flow', id, nothingStarted: true, cycle: cyclesRefused > refused };
     }
     logAction('TRIGGER_FAILED', { id, source, reason: 'Not found' });
     return null;
   });
 }
 
-// A user has at most one routine on screen.
+// A user has at most one routine on screen. A flow doesn't start a routine she
+// already finished today (#58); started by itself (push, its own schedule,
+// «Ξεκίνα τώρα» on the routine), it starts again.
 function startRoutine(assignmentId: string, flowRunId?: string): { started: boolean; id: string } {
   const assignment = config().routineAssignments.find(a => a.id === assignmentId);
   if (!assignment) return { started: false, id: '' };
   closeStaleRoutines(assignment.userId);
   const [running] = store.routineRuns.all('userId = ?', assignment.userId);
   if (running) return { started: false, id: running.id };
+  if (flowRunId) {
+    const done = finishedToday(assignment.userId, assignment.routineId);
+    if (done) {
+      logAction('FLOW_ROUTINE_SKIPPED', { assignmentId, userId: assignment.userId, flowRunId, reason: 'done-today', executionId: done.id });
+      return { started: false, id: done.id };
+    }
+  }
 
   const now = new Date().toISOString();
   const id = randomUUID();
   store.routineExecutions.put({ id, userId: assignment.userId, routineId: assignment.routineId, startedAt: now, totalStars: 0 });
   store.routineRuns.put({ id, userId: assignment.userId, routineId: assignmentId, taskIndex: 0, taskStartedAt: now, flowRunId });
   return { started: true, id };
+}
+
+// Her execution of a routine (the routine's id, not the assignment's) started today
+// in settings.timezone, as closeStaleRoutines counts days, and finished (every task done).
+// A start she left with ✕ doesn't count. The latest, if she did it more than once.
+function finishedToday(userId: string, routineId: string): RoutineExecution | undefined {
+  const timezone = config().settings?.timezone || 'Europe/Athens';
+  const done = store.routineExecutions.all(
+    'userId = ? AND routineId = ? AND completedAt IS NOT NULL AND startedAt >= ?',
+    userId, routineId, dayStart(timezone));
+  return done[done.length - 1];
 }
 
 // Triggering a flow that is already running restarts it, so an alarm nobody
@@ -262,9 +304,22 @@ function startFlow(flowId: string, steps: readonly FlowStep[], parentRunId?: str
     if (old.parentRunId) childClosed(old.parentRunId);
   }
   const run: FlowRun = { id: randomUUID(), flowId, steps: structuredClone(steps) as FlowStep[], stepIndex: 0, parentRunId, startedAt: new Date().toISOString() };
-  enterStep(run, 0);
+  startingFlows.push(flowId);
+  try {
+    enterStep(run, 0);
+  } finally {
+    startingFlows.pop();
+  }
   return run.id;
 }
+
+// The flows whose start is under way, outermost first: everything a flow starts before it first waits
+// (an alarm, a routine, a sub-flow that waits) happens inside its startFlow. A flow action naming one of
+// them would start it again from inside itself, for ever (A → A, A → B → A: the stack overflowed, #121),
+// so it starts nothing and the step goes on with its other actions. A flow started again later, after an
+// alarm or a routine (A: alarm, then A), isn't among them: it restarts, as from a schedule.
+const startingFlows: string[] = [];
+let cyclesRefused = 0; // how many actions were refused so, for triggerAction's answer
 
 // Runs whose step is still starting its routines and sub-flows: a sub-flow that
 // ends at once must not move the parent on before its siblings have started.
@@ -281,7 +336,11 @@ function enterStep(run: FlowRun, stepIndex: number): void {
   try {
     for (const action of actions) {
       if (action.type === 'routine') startRoutine(action.routineId, run.id);
-      else {
+      else if (startingFlows.includes(action.flowId)) {
+        cyclesRefused++;
+        const chain = [...startingFlows.slice(startingFlows.indexOf(action.flowId)), action.flowId];
+        logAction('FLOW_CYCLE', { flowId: action.flowId, runId: run.id, stepIndex, chain });
+      } else {
         const flow = config().flows.find(f => f.id === action.flowId);
         if (flow) startFlow(flow.id, flow.steps, run.id);
       }
@@ -344,13 +403,19 @@ export function dismissAlarm(runId: string, stepIndex: number): boolean {
   });
 }
 
-/** A routine left the screen (reward shown, or the kid pressed ✕). Repeats are no-ops. */
-export function closeRoutine(runId: string): boolean {
-  return store.transaction(() => {
+/**
+ * A routine left the screen (reward shown, or the kid pressed ✕), or a parent ended it from
+ * /parent («Τέλος», #63): the same close, and the kids' screens hear it was a parent's, so her
+ * lane says so instead of just vanishing. Repeats are no-ops.
+ */
+export function closeRoutine(runId: string, by: 'kid' | 'parent' = 'kid'): boolean {
+  const run = store.transaction(() => {
     const run = store.routineRuns.get(runId);
     if (run) endRoutine(run, 'ROUTINE_CLOSED');
-    return !!run;
+    return run;
   });
+  if (run && by === 'parent' && !run.finishedAt) sync.notify({ type: 'ROUTINE_ENDED_BY_PARENT', payload: { runId, userId: run.userId, routineId: run.routineId } });
+  return !!run;
 }
 
 function endRoutine(run: Omit<RoutineRun, 'totalStars'>, logType: string): void {
@@ -482,16 +547,18 @@ export const HISTORY_PAGE = 30;
 
 // The cursor of a page: the last entry's time and id ("<at>|<id>"); the next page starts below it.
 const cursorOf = (e: HistoryEntry) => `${e.at}|${entryId(e)}`;
-const entryId = (e: HistoryEntry) => (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.instance).id;
+const entryId = (e: HistoryEntry) =>
+  (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.kind === 'chore' ? e.instance : e.assignment).id;
 const newestFirst = (a: HistoryEntry, b: HistoryEntry) =>
   a.at !== b.at ? (a.at < b.at ? 1 : -1) : entryId(a) < entryId(b) ? 1 : entryId(a) > entryId(b) ? -1 : 0;
 
 /**
  * What was decided, newest first, a page at a time (Ιστορικό, GET /api/history): purchases given or
- * revoked, gifts approved, rejected or cancelled, and chores confirmed or rejected, each at the time it
- * was decided. `before` is the previous page's `next`; `userId` keeps what names that kid.
+ * revoked, gifts approved, rejected or cancelled, chores confirmed or rejected, and exercises finished
+ * (#68, one entry each, with what Ιστορικό shows of its exercise), each at the time it was decided.
+ * `before` is the previous page's `next`; `userId` keeps what names that kid.
  */
-export function history({ before, limit = HISTORY_PAGE, userId }: { before?: string; limit?: number; userId?: string } = {}): HistoryPage {
+export async function history({ before, limit = HISTORY_PAGE, userId }: { before?: string; limit?: number; userId?: string } = {}): Promise<HistoryPage> {
   const [at, id] = before ? before.split('|') : [];
   // Each table's newest `limit + 1` below the cursor (`kid` takes the one parameter userId); the page is
   // the newest `limit` of them all
@@ -507,10 +574,17 @@ export function history({ before, limit = HISTORY_PAGE, userId }: { before?: str
       .map(transfer => ({ kind: 'transfer' as const, at: transfer.resolvedAt ?? transfer.createdAt, transfer })),
     ...page(store.choreInstances, "status IN ('confirmed', 'rejected')", 'COALESCE(confirmedAt, rejectedAt, availableAt)', 'claimedBy = ?')
       .map(instance => ({ kind: 'chore' as const, at: instance.confirmedAt ?? instance.rejectedAt ?? instance.availableAt, instance })),
+    ...page(store.exerciseAssignments, "status = 'completed'", 'COALESCE(completedAt, assignedAt)', 'userId = ?')
+      .map(assignment => ({ kind: 'exercise' as const, at: assignment.completedAt ?? assignment.assignedAt, assignment, exercise: null })),
   ].sort(newestFirst);
   const shown = entries.slice(0, limit);
+  for (const e of shown) if (e.kind === 'exercise') e.exercise = summaryOf(await exercisePoolProvider.getExerciseById(e.assignment.exerciseId));
   return { entries: shown, next: entries.length > limit ? cursorOf(shown[shown.length - 1]) : null };
 }
+
+const summaryOf = (ex: Exercise | undefined): ExerciseSummary | null => ex ? {
+  title: ex.title, category: ex.category, type: ex.type, stars: ex.stars, ...(ex.type === 'problem' ? { steps: ex.steps.length } : {})
+} : null;
 
 export function readLastLogs(limit: number): ActionLog[] {
   return store.recentLogs(limit);
@@ -667,39 +741,97 @@ export function resolveGift(id: string, action: 'approve' | 'reject' | 'cancel')
 // ADMIN STATE EDITOR
 // ============================================
 
+// The Κατάσταση (JSON) editor replaces the whole runtime state, so a save from an editor opened before
+// something else changed it (a chore confirmed on a phone, a task done) would undo that. Like a config
+// save (#33), it names the version it edited (#98): the hash of the snapshot's JSON, exactly as
+// GET /api/admin/state returned it (X-State-Version). The snapshot reads every table in insertion order
+// (ORDER BY rowid; an update keeps a record's rowid), so an untouched state always hashes the same, and
+// the hash is taken only when the editor opens or saves, never per STATE. Strict on purpose: while the
+// kids are busy a save is often refused, and the editor is a last resort.
+
 export function stateSnapshot(): StateSnapshot {
   return store.snapshot();
 }
 
-// Replace the whole runtime state (validated by the caller).
-export function replaceState(state: StateSnapshot): void {
-  store.replaceState(state);
-  logAction('STATE_REPLACED', { source: 'admin' });
+/** The snapshot as GET /api/admin/state sends it, and its version (the hash of exactly that text). */
+export function stateText(): { text: string; version: string } {
+  const text = JSON.stringify(store.snapshot());
+  return { text, version: versionOf(text) };
+}
+
+const stateVersion = (snapshot: StateSnapshot) => versionOf(JSON.stringify(snapshot));
+
+/** A state save that names a version other than the live one: something changed the state since the editor opened. */
+export class StateConflict extends Error {}
+
+export const STATE_STALE = 'Η κατάσταση άλλαξε στο μεταξύ (από άλλη οθόνη ή από τα παιδιά). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.';
+
+export type StateSaveSource = 'advanced' | 'api';
+
+/**
+ * Replace the whole runtime state (validated by the caller); returns its new version. With `version`, the
+ * live state must still be that one, checked in the same transaction as the replace: otherwise nothing is
+ * written, STATE_REPLACE_STALE is logged and StateConflict thrown. Without one it is not checked (scripts,
+ * curl). Every save is logged as STATE_REPLACED: each balance it moved as [before, after] (a kid missing on
+ * one side counts 0), the snapshot's collections that differ, and the flows and routines on screen it ended.
+ */
+export function replaceState(state: StateSnapshot, { version, source = 'api' }: { version?: string; source?: StateSaveSource } = {}): string {
+  const saved = store.transaction(() => {
+    const before = store.snapshot();
+    const current = stateVersion(before);
+    if (version !== undefined && version !== current) {
+      // Nothing written; logged after the transaction (a throw in it would roll the entry back too)
+      return { stale: current };
+    }
+    const cleared = { flowRuns: store.flowRuns.count(), routineRuns: store.routineRuns.count() };
+    store.replaceState(state);
+    const after = store.snapshot();
+    const kids = [...new Set([...Object.keys(before.userStars), ...Object.keys(after.userStars)])];
+    const stars = Object.fromEntries(kids
+      .map(kid => [kid, [before.userStars[kid] ?? 0, after.userStars[kid] ?? 0]])
+      .filter(([, [was, now]]) => was !== now));
+    logAction('STATE_REPLACED', { source, stars, changed: changedKeys(before, after), cleared });
+    return { version: stateVersion(after) };
+  });
+  if ('stale' in saved) {
+    logAction('STATE_REPLACE_STALE', { source, version, current: saved.stale });
+    throw new StateConflict(STATE_STALE);
+  }
+  return saved.version;
 }
 
 // ============================================
 // CHORES SYSTEM
 // ============================================
 
-// A chore whose cron can't be read is logged once (per chore and cron, until it changes or the server
-// restarts), not every minute: the action log isn't pruned.
-const choreCronErrors = new Map<string, string>();
+// A cron the scheduler can't read (a file on disk can still have one: it loads with a warning, #89) is
+// logged once per schedule or chore and cron (again after it changes or the server restarts), not every
+// minute: the action log isn't pruned.
+const cronErrorsLogged = new Map<string, string>();
 
-function choreDue(chore: Chore, now: Date, timezone: string): boolean {
+/**
+ * Whether `cron` names this minute (cron.ts, in `timezone`). One it can't read is false, logged as
+ * `unreadable.type` with `unreadable.details`, the cron and the reason, once per `unreadable.key` and cron.
+ */
+export function cronDue(cron: string, now: Date, timezone: string,
+  unreadable: { key: string; type: 'SCHEDULE_CRON_ERROR' | 'CHORE_CRON_ERROR'; details: Record<string, unknown> }): boolean {
   try {
-    const due = cronMatchesAt(chore.availabilityCron, now, timezone);
-    choreCronErrors.delete(chore.id);
+    const due = cronMatchesAt(cron, now, timezone);
+    cronErrorsLogged.delete(unreadable.key);
     return due;
   } catch (err) {
     const error = (err as Error).message;
-    const key = `${chore.availabilityCron}\n${error}`;
-    if (choreCronErrors.get(chore.id) !== key) {
-      choreCronErrors.set(chore.id, key);
-      logAction('CHORE_CRON_ERROR', { choreId: chore.id, cron: chore.availabilityCron, error });
+    const memo = `${cron}\n${error}`;
+    if (cronErrorsLogged.get(unreadable.key) !== memo) {
+      cronErrorsLogged.set(unreadable.key, memo);
+      logAction(unreadable.type, { ...unreadable.details, cron, error });
     }
     return false;
   }
 }
+
+const choreDue = (chore: Chore, now: Date, timezone: string) => cronDue(chore.availabilityCron, now, timezone,
+  { key: `chore:${chore.id}`, type: 'CHORE_CRON_ERROR', details: { choreId: chore.id } });
 
 // Generate chore instances when their cron names this minute (cron.ts, settings.timezone). Always the real
 // clock: /api/debug/time doesn't make chores.
@@ -1176,6 +1308,22 @@ function localDateStr(timezone: string, date = new Date()): string {
   }).format(date);
 }
 
+// The instant (ISO, UTC, as the tables store times) the local day of `date` began in `timezone`
+export function dayStart(timezone: string, date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone, hourCycle: 'h23',
+    year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric'
+  });
+  // How far ahead of UTC the local clock is at instant t
+  const offset = (t: number) => {
+    const p = Object.fromEntries(parts.formatToParts(t).map(x => [x.type, Number(x.value)]));
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(t / 1000) * 1000;
+  };
+  const midnight = Date.parse(`${localDateStr(timezone, date)}T00:00:00Z`); // local midnight read as UTC
+  const guess = midnight - offset(midnight);
+  return new Date(midnight - offset(guess)).toISOString();
+}
+
 // When a kid last had each exercise (daily or extra), for drawing ones they haven't seen.
 function lastSeen(userId: string): Map<string, string> {
   const seen = new Map<string, string>();
@@ -1196,20 +1344,20 @@ function dailySetsSoFar(userId: string): number {
 // How many extra problems a kid may ask for in a day unless settings.extraProblemsPerDay says otherwise.
 export const DEFAULT_EXTRA_PROBLEMS_PER_DAY = 10;
 
-/** Extra problems today: how many the kid has had, the day's limit, and the one open now, if any. */
-export function extraProblemsToday(userId: string): { used: number; limit: number; open?: ExerciseAssignment } {
+/** Extra problems today: how many the kid has started (finished or set aside), and the day's limit. */
+export function extraProblemsToday(userId: string): { used: number; limit: number } {
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
-  const extras = store.exerciseAssignments.all('userId = ? AND date = ? AND extra = 1', userId, today);
   return {
-    used: extras.length,
-    limit: config().settings?.extraProblemsPerDay ?? DEFAULT_EXTRA_PROBLEMS_PER_DAY,
-    open: extras.find(a => a.status === 'pending')
+    used: store.exerciseAssignments.all('userId = ? AND date = ? AND extra = 1', userId, today).length,
+    limit: config().settings?.extraProblemsPerDay ?? DEFAULT_EXTRA_PROBLEMS_PER_DAY
   };
 }
 
-// A kid asks for one more problem from the dashboard: one they haven't had yet
-// (or had longest ago), paid like any other. An open one is returned instead of a
-// new one, so tapping twice doesn't hand out two; the day's limit caps the rest.
+// A kid asks for one more problem from the dashboard: one she hasn't had yet (or had longest
+// ago), paid like any other. One she left with ✕ stays hers for the day, a card she can
+// reopen where she left it (#67), so asking always draws a new one: never one she has pending
+// today, daily or extra. The day's limit counts every extra she started, finished or not, so
+// setting one aside earns nothing; at most MAX_SET_ASIDE wait at once.
 export async function startExtraProblem(userId: string): Promise<ExerciseAssignmentWithExercise> {
   if (!config().users.some(u => u.id === userId)) throw new Error('Unknown user');
   // Problems of her own grade (revision pools hold none)
@@ -1218,19 +1366,24 @@ export async function startExtraProblem(userId: string): Promise<ExerciseAssignm
 
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
   const assignment = store.transaction(() => {
-    const { used, limit, open } = extraProblemsToday(userId);
-    if (open) return open;
+    const { used, limit } = extraProblemsToday(userId);
     if (used >= limit) throw new Error('No more extra problems today');
-    // Not one of today's own, whether daily or extra
-    const todays = new Set(store.exerciseAssignments.all('userId = ? AND date = ?', userId, today).map(a => a.exerciseId));
-    const candidates = problems.filter(p => !todays.has(p.id));
-    const [problem] = freshLast(candidates.length ? candidates : problems, lastSeen(userId)).slice(-1);
+    const todays = store.exerciseAssignments.all('userId = ? AND date = ?', userId, today);
+    const setAside = todays.filter(a => a.extra && a.status === 'pending').length;
+    if (setAside >= MAX_SET_ASIDE) throw new Error(extraRefusals.setAside);
+    // Not one of today's own, whether daily or extra; once all were, one she finished today
+    const had = new Set(todays.map(a => a.exerciseId));
+    const pending = new Set(todays.filter(a => a.status === 'pending').map(a => a.exerciseId));
+    const fresh = problems.filter(p => !had.has(p.id));
+    const candidates = fresh.length ? fresh : problems.filter(p => !pending.has(p.id));
+    if (candidates.length === 0) throw new Error(extraRefusals.noneLeft);
+    const [problem] = freshLast(candidates, lastSeen(userId)).slice(-1);
     const created: ExerciseAssignment = {
       id: randomUUID(), userId, exerciseId: problem.id, date: today, status: 'pending', attempts: 0,
       assignedAt: new Date().toISOString(), extra: true
     };
     store.exerciseAssignments.put(created);
-    logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit });
+    logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit, setAside });
     return created;
   });
   const exercise = await exercisePoolProvider.getExerciseById(assignment.exerciseId);
@@ -1318,9 +1471,14 @@ export function fitProgress<A extends ExerciseAssignment>(a: A, exercise: Exerci
   if (exercise?.type !== 'problem' || a.status === 'completed') return a;
   const step = a.stepIndex ?? 0;
   if (step < exercise.steps.length && (!a.mistakes || a.mistakes.length === exercise.steps.length)) return a;
-  const { stepIndex: _step, mistakes: _mistakes, ...rest } = a;
+  const { stepIndex: _step, mistakes: _mistakes, shown: _shown, ...rest } = a;
   return { ...rest, stepIndex: 0 } as A;
 }
+
+// A step shown worked, added once (#68): «Δείξε μου», or Αυστηρό after its tries. Ιστορικό reads it;
+// paying never does.
+const withShown = (a: ExerciseAssignment, step: number): ExerciseAssignment =>
+  a.shown?.includes(step) ? a : { ...a, shown: [...(a.shown ?? []), step] };
 
 // The kid's rung on the forgiveness ladder (shared/forgiveness.ts)
 const forgivenessOf = (userId: string) => config().users.find(u => u.id === userId)?.forgiveness ?? DEFAULT_FORGIVENESS;
@@ -1349,13 +1507,15 @@ export async function answerExerciseAssignment(
   const { assignment, starsAwarded } = store.transaction(() => {
     const current = store.exerciseAssignments.get(assignmentId);
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
-    const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1 };
+    let updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1 };
     let stars = 0;
     if (isCorrect || updated.attempts >= plainTries(forgivenessOf(current.userId), exercise.type)) {
       stars = isCorrect ? plainStars(exercise.stars, current.attempts) : 0;
       updated.status = 'completed';
       updated.completedAt = new Date().toISOString();
       updated.starsAwarded = stars;
+      // Closed after its tries (Αυστηρό): the screen shows «Η σωστή απάντηση»
+      if (!isCorrect) updated = withShown(updated, 0);
     }
     store.exerciseAssignments.put(updated);
     if (stars > 0) awardStars(updated.userId, stars);
@@ -1370,24 +1530,55 @@ export async function answerExerciseAssignment(
   return { correct: isCorrect, starsAwarded, assignment };
 }
 
-// «Δείξε μου» on a plain exercise, on the forgiving rung: after a wrong try (so it pays
-// nothing already), she may see the right answer. That closes it, paying nothing.
-export async function revealExerciseAssignment(assignmentId: string): Promise<ExerciseAssignment> {
+// «Δείξε μου» on the forgiving rung. A plain exercise: after a wrong try (so it pays nothing
+// already), she may see the right answer; that closes it, paying nothing, with its answer shown
+// (step 0). A problem's step (`step`, the one on screen): recorded as shown at the tap (#68), and
+// nothing else changes; she still sends the worked answer with «Συνέχεια →», and it pays what its
+// mistakes pay. A tap for another step (solved, a second device) or again changes nothing.
+export async function revealExerciseAssignment(assignmentId: string, step?: number): Promise<ExerciseAssignment> {
   const found = store.exerciseAssignments.get(assignmentId);
   if (!found) throw new Error('Assignment not found');
   const exercise = await exercisePoolProvider.getExerciseById(found.exerciseId);
   if (!exercise) throw new Error('Exercise not found in pool');
-  if (exercise.type === 'problem') throw new Error('A problem is shown step by step');
+  if (exercise.type === 'problem') {
+    if (step === undefined) throw new Error('A problem is shown step by step: name the step');
+    return showProblemStep(assignmentId, exercise, step);
+  }
   const assignment = store.transaction(() => {
     const current = store.exerciseAssignments.get(assignmentId);
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
     if (current.attempts < 1) throw new Error('The answer is shown after a wrong try first');
-    const updated: ExerciseAssignment = { ...current, status: 'completed', completedAt: new Date().toISOString(), starsAwarded: 0 };
+    const updated = withShown({ ...current, status: 'completed', completedAt: new Date().toISOString(), starsAwarded: 0 }, 0);
     store.exerciseAssignments.put(updated);
     return updated;
   });
   logAction('EXERCISE_ASSIGNMENT_REVEAL', { assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId, attempts: assignment.attempts });
   return assignment;
+}
+
+function showProblemStep(assignmentId: string, exercise: ProblemExercise, step: number): ExerciseAssignment {
+  const { assignment, recorded } = store.transaction(() => {
+    const stored = store.exerciseAssignments.get(assignmentId);
+    if (!stored || stored.status === 'completed') throw new Error('Assignment already completed');
+    const current = fitProgress(stored, exercise);
+    if (step !== (current.stepIndex ?? 0) || current.shown?.includes(step)) return { assignment: current, recorded: false };
+    const updated = withShown(current, step);
+    store.exerciseAssignments.put(updated);
+    return { assignment: updated, recorded: true };
+  });
+  if (recorded) {
+    logAction('EXERCISE_PROBLEM_SHOWN', {
+      assignmentId, userId: assignment.userId, exerciseId: exercise.id, step, by: 'tap', mistakes: assignment.mistakes?.[step] ?? 0
+    });
+  }
+  return assignment;
+}
+
+// Αυστηρό shows a step worked once its tries are used (stepHelp, the screen's rule too): from that
+// wrong try on, the step counts as shown (#68)
+function shownAfterTries(a: ExerciseAssignment, step: ProblemStep, stepIndex: number, rung: Forgiveness): ExerciseAssignment {
+  const counted = a.mistakes?.[stepIndex] ?? 0;
+  return stepHelp(rung, step.kind, counted, counted).worked ? withShown(a, stepIndex) : a;
 }
 
 function answerProblemStep(
@@ -1406,7 +1597,7 @@ function answerProblemStep(
     if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true, rung };
 
     const mistakes = exercise.steps.map((_, i) => current.mistakes?.[i] ?? 0);
-    const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
+    let updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
     // Working it out, the screen reads each calculation back as she goes and sends the one she
     // got wrong as it happens: a mistake of the step if it is one that counts (a wrong result,
     // the smaller number first), read back here. It is not an answer: the step stays hers.
@@ -1417,8 +1608,9 @@ function answerProblemStep(
       const slip = line && ['+', '−', '×', ':'].includes(line.op) && [line.x, line.y, line.result].every(Number.isFinite)
         ? calcSlip(step, value.lines, line) : null;
       if (slip && wrongTryCounts(step, slip)) mistakes[stepIndex]++;
-      store.exerciseAssignments.put(updated);
-      return { correct: false, starsAwarded: 0, assignment: updated, stale: false, rung, slip: slip ?? 'none' };
+      const done = shownAfterTries(updated, step, stepIndex, rung);
+      store.exerciseAssignments.put(done);
+      return { correct: false, starsAwarded: 0, assignment: done, stale: false, rung, slip: slip ?? 'none' };
     }
     const reading = config().users.find(u => u.id === current.userId)?.problemReading;
     const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
@@ -1426,6 +1618,7 @@ function answerProblemStep(
     if (!correct) {
       // The same rule as the slips above decides whether this wrong try costs (shared/forgiveness.ts)
       if (wrongTryCounts(step)) mistakes[stepIndex]++;
+      updated = shownAfterTries(updated, step, stepIndex, rung);
     } else if (stepIndex + 1 < exercise.steps.length) {
       updated.stepIndex = stepIndex + 1;
     } else {
@@ -1446,6 +1639,8 @@ function answerProblemStep(
     logAction('EXERCISE_PROBLEM_STEP', {
       assignmentId, userId: reply.assignment.userId, exerciseId: exercise.id, step: answer.step, forgiveness: rung,
       kind: exercise.steps[answer.step]?.kind, correct: reply.correct, wrong: reply.wrong, ...(slip ? { slip, mistakes: reply.assignment.mistakes } : {}),
+      // A step shown worked (#68): its answer is the screen's, not hers
+      ...(reply.assignment.shown?.includes(answer.step) ? { shown: true } : {}),
       completed: reply.assignment.status === 'completed', starsAwarded: reply.starsAwarded
     });
   }

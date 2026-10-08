@@ -90,7 +90,10 @@ export interface RoutineRun {
 // A kid already in a routine keeps it: skipped, with the run on screen (runningId, a RoutineRun id).
 export type TriggerResult =
   | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
-  | { success: true; type: 'assignment' | 'flow'; id: string };
+  | { success: true; type: 'assignment' | 'flow'; id: string }
+  // A flow that ended at once, with nothing of it on screen: its routines busy or done today, or (`cycle`)
+  // a flow it starts was its own start, refused (#121)
+  | { success: true; type: 'flow'; id: string; nothingStarted: true; cycle: boolean };
 
 export interface Reward {
   id: string;
@@ -326,6 +329,11 @@ export interface ExerciseAssignment {
   stepIndex?: number; // problems: the step on screen (the ones before it are solved)
   mistakes?: number[]; // problems: wrong tries per step
   extra?: boolean; // a problem the kid asked for, on top of the daily set
+  // The steps shown worked, in the order shown (#68): a problem's «💡 Δείξε μου» (at the tap) and the
+  // step Αυστηρό shows worked after its tries; a plain exercise's answer is step 0 («Δείξε μου», or
+  // Αυστηρό closing it after its tries). Absent means none (rows from before #68 read so too).
+  // Ιστορικό shows it; paying never reads it.
+  shown?: number[];
 }
 
 // Enriched assignment with the exercise definition for frontend display
@@ -491,6 +499,45 @@ export interface DataConfig {
 export type ConfigSaveSource = 'form' | 'advanced' | 'advanced-fix' | 'api';
 export const CONFIG_SAVE_SOURCES: readonly ConfigSaveSource[] = ['form', 'advanced', 'advanced-fix', 'api'];
 
+// What the server finds in data.json that data.schema.json can't see (backend/src/configChecks.ts). `path` is
+// the field's JSON pointer in data.json, `id` the item's id, `message` what the parents' page says (Greek).
+export type ConfigWarning = CronWarning | CheckWarning;
+
+// A schedule's cron or a chore's availabilityCron that passes the schema (its characters) but that the
+// scheduler (backend/src/cron.ts) can't read, such as «99 20 * * *» (#89); `error` is cron-parser's reason.
+// The one kind a save is refused for when it brings one in.
+export interface CronWarning {
+  path: string;
+  kind: 'schedule' | 'chore';
+  id: string;
+  cron: string;
+  error: string;
+  message: string;
+}
+
+// The other checks (#104), warnings only: a save that brings one in goes through. `list` is the data.json
+// list the item is in, `field` the field the problem is in, `value` that field's value. Kinds:
+// - duplicate-id: a second item with an id already in its list, or a flow with an assignment's id (the two
+//   share one namespace: schedules, pushes and «Ξεκίνα τώρα» name either);
+// - missing-link: an id that names nothing (a kid, routine, task, assignment or flow);
+// - blank: a kid's name or a title that is only spaces;
+// - colour: neither a theme token (shared/themeColours.ts), a hex, a CSS colour function nor a named colour;
+// - flow-cycle (#121): flows that start each other before any wait; at the action that closes the cycle
+//   (`value`, the flow it starts), which the engine refuses (FLOW_CYCLE);
+// - reserved-id (#121): an assignment or a flow whose id is «alarm», which schedules and pushes never start.
+export interface CheckWarning {
+  path: string;
+  kind: 'duplicate-id' | 'missing-link' | 'blank' | 'colour' | 'flow-cycle' | 'reserved-id';
+  list: ConfigList;
+  id: string;
+  field: string;
+  value: string;
+  message: string;
+}
+
+/** The lists of data.json whose items have an id. */
+export type ConfigList = 'users' | 'tasks' | 'routines' | 'routineTasks' | 'routineAssignments' | 'flows' | 'schedules' | 'rewards' | 'chores';
+
 export interface AppState {
   config: DataConfig; // the live data.json
   // The versions of the live data.json (the one in `config`, read with it) and exercises.json: a short hash
@@ -500,6 +547,10 @@ export interface AppState {
   // data.json or exercises.json is invalid on disk: the last valid version stays live, or, when the file
   // couldn't be read since the start (emptyFallback), an empty one. Saving is off until it is fixed.
   configError: { message: string; errors: unknown[]; file: string; emptyFallback: boolean } | null;
+  // What the checks find in the live data.json (#89, #104): the file loaded and is live, but, until it is
+  // fixed, an unreadable cron never fires, a duplicate kid shares another's stars, a link to nothing starts
+  // nothing... Saving stays on.
+  configWarnings: ConfigWarning[];
   users: User[]; // config users with their balance and assigned routines
   // STATE carries the current world, never the archive (#34). Purchases and gifts: every pending one,
   // whatever its age, those decided in the last HISTORY_DAYS (by resolvedAt, else createdAt), and, for
@@ -524,12 +575,23 @@ export const LAST_REWARDS_GIVEN = 10;
 
 // What was decided (Ιστορικό), from GET /api/history?before=<next>&limit=<n>&userId=<kid>: purchases given
 // or revoked, gifts approved, rejected or cancelled, chores confirmed or rejected (the database keeps those
-// for 7 days), newest first by `at`, the time it was decided. `next` is the cursor of the following page,
-// null on the last one.
+// for 7 days), exercises finished (#68: daily and extra, not the group game), newest first by `at`, the
+// time it was decided. `next` is the cursor of the following page, null on the last one.
 export type HistoryEntry = { at: string } & (
   | { kind: 'spending'; spending: Spending }
   | { kind: 'transfer'; transfer: StarTransfer }
-  | { kind: 'chore'; instance: ChoreInstance });
+  | { kind: 'chore'; instance: ChoreInstance }
+  // `exercise` is null when its id is no longer in the pools
+  | { kind: 'exercise'; assignment: ExerciseAssignment; exercise: ExerciseSummary | null });
+
+// What Ιστορικό shows of an exercise, rather than the whole of it: `steps` for a problem
+export interface ExerciseSummary {
+  title: string;
+  category: string;
+  type: Exercise['type'];
+  stars: number;
+  steps?: number;
+}
 
 export interface HistoryPage {
   entries: HistoryEntry[];
@@ -546,6 +608,9 @@ export interface ChoreEventPayload {
 export type ServerEvent =
   | { type: 'CHORE_CONFIRMED'; payload: ChoreEventPayload & { starsAwarded: number } }
   | { type: 'CHORE_REJECTED'; payload: ChoreEventPayload }
-  | { type: 'CHORE_EXPIRED'; payload: ChoreEventPayload };
+  | { type: 'CHORE_EXPIRED'; payload: ChoreEventPayload }
+  // A parent ended a kid's routine from /parent (#63): her lane on the kids' screens says so.
+  // Sent before the STATE without the run; routineId is the run's (as RoutineRun.routineId).
+  | { type: 'ROUTINE_ENDED_BY_PARENT'; payload: { runId: string; userId: string; routineId: string } };
 
 export type ServerMessage = { type: 'STATE'; payload: AppState } | { type: 'HEARTBEAT' } | ServerEvent;

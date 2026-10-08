@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../api';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
@@ -14,7 +14,8 @@ import { NumberInputRenderer } from './exercises/NumberInputRenderer';
 import { ProblemPlayer } from './exercises/ProblemPlayer';
 import { help } from '../help/anchors';
 import { HelpButton, HelpScreen } from '../help/HelpProvider';
-import { exerciseTour } from './AssignmentPlayer.help';
+import { HelpCovered } from '../help/context';
+import { answerTour, exerciseTour } from './AssignmentPlayer.help';
 import { sfx, sound } from '../sound/sfx';
 import { paysNow } from '@shared/forgiveness';
 import { answerText } from './exercises/answerText';
@@ -29,11 +30,36 @@ interface AssignmentPlayerProps {
 // 'paid': a problem whose last step was shown worked is over: what it paid, in the calm blue, no «Σωστά!»
 type Feedback = { kind: 'correct'; stars: number } | { kind: 'incorrect' } | { kind: 'answer'; text: string } | { kind: 'paid'; stars: number };
 
+// «Η σωστή απάντηση: …» has no reading timer (#72): «Εντάξει» or ✕ closes it, at her own pace. Only a
+// kiosk left alone with it on screen closes it, after this long in sight, the same way and in silence.
+const ANSWER_HOLD_MS = 120_000;
+
 export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, user, onClose }) => {
   const { playSuccess, playError } = useAppSounds();
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [attemptKey, setAttemptKey] = useState(0); // remounts the renderer for a clean retry
+
+  // The timers this screen starts (a celebration's close, «Δοκίμασε ξανά»'s reset) go with it: ✕ during
+  // «+⭐1» left one behind that closed the next exercise opened within 1.8 s
+  const timers = useRef<number[]>([]);
+  useEffect(() => {
+    const pending = timers.current;
+    return () => pending.forEach(t => window.clearTimeout(t));
+  }, []);
+  const later = (fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)); };
+
+  // The right answer's safety close counts only while she can see it. A routine or an alarm over the
+  // screen (Dashboard's <HelpCover covered>, #51) keeps the player as it was, so the count stops there
+  // and starts again from 0 when the cover goes: the answer is still up when her routine ends.
+  const covered = useContext(HelpCovered);
+  const answerUp = feedback?.kind === 'answer';
+  const closeUnread = useEffectEvent(() => onClose());
+  useEffect(() => {
+    if (!answerUp || covered) return;
+    const t = window.setTimeout(() => closeUnread(), ANSWER_HOLD_MS);
+    return () => window.clearTimeout(t);
+  }, [answerUp, covered]);
 
   // The header's ⭐ is what the exercise pays now (shared/forgiveness.ts): after a mistake it
   // drops with a small pulse, silently (no «−1», no red, no sound)
@@ -59,17 +85,16 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         playSuccess();
         if (result.starsAwarded > 0) sfx('stars', { delay: 350 });
         // Celebrate briefly, then return to the list
-        setTimeout(() => onClose(), 1800);
+        later(onClose, 1800);
       } else if (result.assignment.status === 'completed') {
-        // Unforgiving, and her tries are used: the right answer, then back to the list
+        // Unforgiving, and her tries are used: the right answer, until she closes it
         playError();
         setFeedback({ kind: 'answer', text: answerText(exercise) });
-        setTimeout(() => onClose(), 4500);
       } else {
         setFeedback({ kind: 'incorrect' });
         playError();
         // Wrong — reset for another try
-        setTimeout(() => {
+        later(() => {
           setFeedback(null);
           setSubmitting(false);
           setAttemptKey(k => k + 1);
@@ -81,14 +106,13 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     }
   };
 
-  // «Δείξε μου»: the right answer, and the exercise is over
+  // «Δείξε μου»: the right answer, and the exercise is over; it stays until she closes it
   const reveal = async () => {
     if (submitting || feedback) return;
     setSubmitting(true);
     try {
       await api.revealExerciseAssignment(assignment.id);
       setFeedback({ kind: 'answer', text: answerText(exercise) });
-      setTimeout(() => onClose(), 4500);
     } catch (err) {
       console.error('Could not show the answer:', err);
       setSubmitting(false);
@@ -99,7 +123,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
   // (or, when the screen worked it, only says what it paid).
   const handleSolved = (stars: number, shown: boolean) => {
     setFeedback(shown ? { kind: 'paid', stars } : { kind: 'correct', stars });
-    setTimeout(() => onClose(), 1800);
+    later(onClose, 1800);
   };
 
   const renderExercise = () => {
@@ -123,9 +147,13 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     }
   };
 
-  // The owl sits in the header; a problem says what each of its steps needs itself
+  // The owl sits in the header; a problem says what each of its steps needs itself. While the right
+  // answer is up, the owl explains only its card (the exercise below is over).
+  const tour = isProblem ? null
+    : feedback?.kind === 'answer' ? answerTour(user.id)
+    : exerciseTour(user.id, exercise.type, user.forgiveness, canShow);
   return (
-    <HelpScreen tour={isProblem ? null : exerciseTour(user.id, exercise.type, user.forgiveness, canShow)} inline>
+    <HelpScreen tour={tour} inline>
     <motion.div
       className="assignment-player"
       initial={{ opacity: 0 }}
@@ -171,21 +199,40 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
             </div>
           </div>
         )}
+
+        {/* The right answer stays until «Εντάξει» or ✕. The backdrop under it, over the stage only (the
+            header's ✕ and owl stay free), takes stray touches in silence: the exercise below is over, and
+            a brush of the screen while she reads closes nothing. The card itself does nothing on a tap. */}
+        {feedback?.kind === 'answer' && (
+          <div className="answer-backdrop">
+            <motion.div
+              className="feedback-overlay answer"
+              {...help('exercise.revealed')}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              <div className="feedback-icon">💡</div>
+              <div className="feedback-text">
+                Η σωστή απάντηση:<br /><span className="feedback-answer">{feedback.text}</span>
+              </div>
+              <button type="button" className="answer-ok" onClick={onClose} {...sound('close')}>Εντάξει</button>
+            </motion.div>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
-        {feedback && (
+        {feedback && feedback.kind !== 'answer' && (
           <motion.div
             className={`feedback-overlay ${feedback.kind}`}
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 1.5, opacity: 0 }}
           >
-            <div className="feedback-icon">{feedback.kind === 'correct' ? '✨' : feedback.kind === 'answer' ? '💡' : feedback.kind === 'paid' ? '🏁' : '❌'}</div>
+            <div className="feedback-icon">{feedback.kind === 'correct' ? '✨' : feedback.kind === 'paid' ? '🏁' : '❌'}</div>
             <div className="feedback-text">
               {feedback.kind === 'correct' ? (feedback.stars > 0 ? `+⭐${feedback.stars}` : '✔ Σωστά!')
                 : feedback.kind === 'paid' ? (feedback.stars > 0 ? `+⭐${feedback.stars}` : '⭐0')
-                : feedback.kind === 'answer' ? <>Η σωστή απάντηση:<br /><span className="feedback-answer">{feedback.text}</span></>
                 : 'Δοκίμασε ξανά!'}
             </div>
           </motion.div>
@@ -207,7 +254,11 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           overflow: hidden;
         }
 
+        /* Above the answer's backdrop (.answer-backdrop, z-index 10): ✕, the owl and its «Να σου δείξω;»,
+           which hangs below the header over the stage, stay free to tap */
         .assignment-header {
+          position: relative;
+          z-index: 11;
           padding: 1rem 1.5rem;
           display: flex;
           justify-content: space-between;
@@ -258,6 +309,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
 
         /* A fixed frame: the stage never scrolls as a whole, only the part that needs to */
         .assignment-stage {
+          position: relative;
           flex: 1;
           min-height: 0;
           display: flex;
@@ -312,6 +364,16 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
            Side by side, the renderer's auto margins already keep them apart. */
         .exercise-show {
           margin-top: 1.5rem;
+        }
+
+        /* The small kiosk (800×480) and other short screens: tighter spacing, so the answer, its check and
+           «Δείξε μου» all fit with no scrolling (#129: a 3-pair match left «Δείξε μου» 91 px below the screen) */
+        @media (max-height: 520px) {
+          .assignment-header { padding: 0.5rem 1.5rem; }
+          .assignment-stage { padding: 0.5rem 1.5rem; }
+          .assignment-split { gap: 0.75rem; }
+          .assignment-ask, .assignment-renderer { gap: 0.75rem; }
+          .exercise-show { margin-top: 0.75rem; }
         }
 
         @media (min-width: 900px) and (orientation: landscape) {
@@ -385,8 +447,62 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           text-align: center;
         }
 
+        /* Over the stage, under the header; it dims the exercise that is over */
+        .answer-backdrop {
+          position: absolute;
+          inset: 0;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: clamp(0.5rem, 2vmin, 1rem);
+          background: rgba(0, 0, 0, 0.35);
+        }
+
+        /* The answer card fits the stage on a phone and a small kiosk too: it scales with the screen,
+           and a long answer scrolls inside it while «Εντάξει» stays in sight. tools/problem-gen's
+           REVEAL_* caps (maths/check.ts) are measured on this card: after a change to its font, padding
+           or width, rerun tools/evidence/scenarios/reveal-fit.mjs and move them (#72) */
+        .feedback-overlay.answer {
+          position: relative;
+          inset: auto;
+          margin: 0;
+          z-index: auto;
+          height: auto;
+          max-height: 100%;
+          max-width: min(92vw, 900px);
+          padding: clamp(1rem, 6vh, 3rem) clamp(1.25rem, 5vw, 5rem);
+          gap: clamp(0.5rem, 2vh, 1rem);
+          pointer-events: auto;
+        }
+        .feedback-overlay.answer .feedback-icon {
+          flex-shrink: 0;
+          font-size: clamp(2.5rem, min(12vw, 10vh), 5rem);
+          line-height: 1;
+        }
+        .feedback-overlay.answer .feedback-text {
+          min-height: 0;
+          overflow-y: auto;
+          font-size: clamp(1.5rem, min(6vw, 5vh), 2.5rem);
+        }
+        .answer-ok {
+          flex-shrink: 0;
+          min-height: 48px;
+          padding: 0.5rem 2.5rem;
+          border-radius: 1.2rem;
+          font-size: clamp(1.15rem, 3vmin, 1.5rem);
+          font-weight: bold;
+          cursor: pointer;
+          color: #1e2470;
+          background: white;
+          border: none;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        }
+
+        /* a match is one pair per line (answerText.ts): keep its line breaks */
         .feedback-answer {
           color: gold;
+          white-space: pre-line;
         }
 
         .exercise-show {

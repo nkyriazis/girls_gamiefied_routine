@@ -21,12 +21,14 @@ const stateSchemas = () => api.getSchema('state').then((schema): SchemaFile[] =>
 const exerciseSchemas = () => Promise.all([api.getExerciseSchema(), api.getSchema('data')])
     .then(([exercises, data]): SchemaFile[] => [{ file: 'exercises.schema.json', schema: exercises }, { file: 'data.schema.json', schema: data }]);
 
-const loadState = () => api.getRawState().then(data => ({ data }));
 // Fixing a file that doesn't parse: no live version it was edited from
 const saveConfigFix = (data: unknown) => api.saveRawConfig(data, undefined, 'advanced-fix');
 const saveExercisesFix = (data: unknown) => api.saveRawExercises(data, undefined, 'advanced-fix');
 
 const STALE_CONFIG = 'Οι ρυθμίσεις άλλαξαν στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά: οι αλλαγές σου εδώ θα χαθούν.';
+// The state has no live version on screen (hashing the whole history per STATE would cost too much): the
+// banner shows when the server refuses a save as stale (409, #98)
+const STALE_STATE = 'Η κατάσταση άλλαξε στο μεταξύ (αστέρια, δουλειές, ρουτίνες…). Φόρτωσε ξανά: οι αλλαγές σου εδώ θα χαθούν.';
 const STALE_EXERCISES = 'Οι ασκήσεις άλλαξαν στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά: οι αλλαγές σου εδώ θα χαθούν.';
 
 // Rare admin work: raw JSON for everything the forms don't cover, files, the log.
@@ -65,7 +67,8 @@ export default function AdvancedView() {
                 ? <LazyJsonEditor key="exercises-text" loadText={api.getExercisesText} save={saveExercisesFix} schemas={exerciseSchemas} validate={api.validateExercises} warning={fixWarning('exercises.json')} />
                 : <LazyJsonEditor key={`exercises-${opened}`} load={api.getRawExercises} save={api.saveRawExercises}
                     live={configVersion.exercises} stale={STALE_EXERCISES} onReload={reopen} schemas={exerciseSchemas} validate={api.validateExercises} />)}
-            {panel === 'state' && <LazyJsonEditor key="state" load={loadState} save={api.saveRawState} schemas={stateSchemas} validate={api.validateState}
+            {panel === 'state' && <LazyJsonEditor key={`state-${opened}`} load={api.getRawState} save={api.saveRawState}
+                stale={STALE_STATE} onReload={reopen} schemas={stateSchemas} validate={api.validateState}
                 warning="Αντικαθιστά όλη την κατάσταση: αστέρια, ιστορικό και ό,τι τρέχει τώρα. Για αλλαγές αστεριών χρησιμοποίησε την καρτέλα Σήμερα." />}
             {panel === 'uploads' && <UploadsPanel />}
             {panel === 'log' && <LogPanel />}

@@ -34,9 +34,10 @@ export const G3_MATHS: MathsFamily[] = [
   g3({
     id: 'words-places', chapter: '1', skill: 'words',
     make(r) {
-      // The workbook's «Γράφω τους αριθμούς με ψηφία» matches numbers made of the same digits:
-      // the other orders of those digits are the options. (A match of three numbers in words is
-      // too long for «Δείξε μου» to show on one line: check.ts REVEAL_MATCH_MAX.)
+      // The workbook's «Γράφω τους παρακάτω αριθμούς με ψηφία» (Τετράδιο Εργασιών Α΄, σ. 10, 2) has her
+      // write the number, with no match; here the other orders of the same digits are the options. Not a
+      // match (#72): the book doesn't match them, and a pair in words («εξακόσια σαράντα εννιά → 649», 28)
+      // wraps on a phone's «Δείξε μου» (check.ts REVEAL_PAIR_MAX).
       const [a, b] = r.sample([1, 2, 3, 4, 5, 6, 7, 8, 9], 2);
       const c = r.chance(0.5) ? 0 : r.int(1, 9);
       if (c === a || c === b) return null;
@@ -92,8 +93,10 @@ export const G3_MATHS: MathsFamily[] = [
     make(r) {
       const t = r.pick([2, 3, 4, 5, 10]);
       const ks = r.sample([2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
-      return match(`Προπαίδεια του ${t}`, 'Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.',
-        ks.map(k => (r.chance(0.5) ? [`${t} × ${k}`, fmt(t * k)] : [`${k} × ${t}`, fmt(t * k)])));
+      const pairs = ks.map((k): [string, string] => (r.chance(0.5) ? [`${t} × ${k}`, fmt(t * k)] : [`${k} × ${t}`, fmt(t * k)]));
+      // Three pairs: a fourth row would put «Έλεγχος Ζευγαριών» off the 800×480 screen (#72). It draws
+      // four, as it did when match() cut them to three, so the pool stays as it was.
+      return match(`Προπαίδεια του ${t}`, 'Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.', pairs.slice(0, 3));
     },
   }),
   g3({
@@ -101,8 +104,10 @@ export const G3_MATHS: MathsFamily[] = [
     make(r) {
       const t = r.pick([6, 7, 8, 9]);
       const ks = r.sample([2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
-      return match(`Προπαίδεια του ${t}`, 'Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.',
-        ks.map(k => (r.chance(0.5) ? [`${t} × ${k}`, fmt(t * k)] : [`${k} × ${t}`, fmt(t * k)])));
+      const pairs = ks.map((k): [string, string] => (r.chance(0.5) ? [`${t} × ${k}`, fmt(t * k)] : [`${k} × ${t}`, fmt(t * k)]));
+      // Three pairs: a fourth row would put «Έλεγχος Ζευγαριών» off the 800×480 screen (#72). It draws
+      // four, as it did when match() cut them to three, so the pool stays as it was.
+      return match(`Προπαίδεια του ${t}`, 'Σύνδεσε κάθε πολλαπλασιασμό με το αποτέλεσμά του.', pairs.slice(0, 3));
     },
   }),
   g3({

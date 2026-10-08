@@ -120,10 +120,11 @@ export const busesNeeded: Family = {
     }
 
     if (steps.length < 5 && r.chance(0.5)) {
-      const wrong = [`${fmt(total)} : ${seats} = ${q}, άρα ${q} λεωφορεία`, `Ναι: ${need} + ${seats} = ${fmt(need + seats)} θέσεις`];
+      const wrong = [`${fmt(total)} : ${seats} = ${q}, άρα ${q} λεωφορεία`, `Έχουν ${need} + ${seats} = ${fmt(need + seats)} θέσεις`];
       if (withoutSmall && withoutSmall !== need) wrong.push(`Οι ${fmt(counts[0])} χωράνε σε ${withoutSmall} λεωφορεία`);
-      steps.push(b.choice('check', 'Αναστοχαζόμαστε: φτάνουν τα λεωφορεία;',
-        `Ναι: ${need} × ${seats} = ${fmt(need * seats)} θέσεις`, wrong,
+      // How we know, not «φτάνουν;» (#83): they always do, so «Ναι» was always right
+      steps.push(b.choice('check', 'Αναστοχαζόμαστε: πώς ξέρουμε ότι φτάνουν τα λεωφορεία;',
+        `Έχουν ${need} × ${seats} = ${fmt(need * seats)} θέσεις`, wrong,
         'Πόσες θέσεις έχουν όλα τα λεωφορεία μαζί;'));
     } else if (steps.length < 5) {
       steps.push(b.numbers('check', 'Αναστοχαζόμαστε: βγαίνουν πάλι όλοι οι επιβάτες;', [{ label: `${seats} × ${q} + ${rest} =`, answer: total }],

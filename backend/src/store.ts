@@ -99,6 +99,11 @@ const MIGRATIONS: string[] = [
   // When a parent gave or revoked a purchase (STATE keeps the recently decided ones, #34)
   `
   ALTER TABLE spendings ADD COLUMN resolvedAt TEXT;
+  `,
+  // The steps of an exercise shown worked («Δείξε μου», Αυστηρό after its tries), for Ιστορικό (#68).
+  // NULL, as in every row from before, reads as none.
+  `
+  ALTER TABLE exercise_assignments ADD COLUMN shown TEXT;
   `
 ];
 
@@ -236,7 +241,7 @@ export class Store {
     });
     this.exerciseAssignments = new Table<ExerciseAssignment>(db, 'exercise_assignments', onChange, {
       id: 'text', userId: 'text', exerciseId: 'text', date: 'text', status: 'text', attempts: 'int',
-      assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json', extra: 'bool'
+      assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json', extra: 'bool', shown: 'json'
     });
     this.flowRuns = new Table<Omit<FlowRun, 'userIds'>>(db, 'flow_runs', onChange, {
       id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text', stepStartedAt: 'text'

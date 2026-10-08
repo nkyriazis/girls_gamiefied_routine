@@ -411,7 +411,9 @@
   "say": "Τα αστέρια σου. Τόσα αστέρια έχεις μαζέψει.",
   "where": [
    "store/store.balance",
-   "store-revision/store.balance"
+   "store-extra/store.balance",
+   "store-revision/store.balance",
+   "store-revision-extra/store.balance"
   ],
   "id": "ee65c56cf446",
   "ok": true,
@@ -444,7 +446,9 @@
   "say": "Κέρδισε αστέρια. Οι ασκήσεις σου για σήμερα. Πάτα μία για να ξεκινήσεις.",
   "where": [
    "store/store.earn",
-   "store-revision/store.earn"
+   "store-extra/store.earn",
+   "store-revision/store.earn",
+   "store-revision-extra/store.earn"
   ],
   "id": "06f72bfcffb5",
   "ok": true,
@@ -473,42 +477,47 @@
   "lufs": -16.2
  },
  {
-  "say": "Κι άλλο πρόβλημα. Τελείωσες τις σημερινές; Εδώ ζητάς κι άλλο πρόβλημα, για κι άλλα αστέρια. Αν έχεις αρχίσει ένα, εδώ το συνεχίζεις.",
+  "say": "Κι άλλο πρόβλημα. Τελείωσες τις σημερινές; Εδώ ζητάς κι άλλο πρόβλημα, για κι άλλα αστέρια. Αν κλείσεις ένα στη μέση, μένει εδώ για μετά.",
   "where": [
    "store/exercises.more",
-   "store-revision/exercises.more"
+   "store-extra/exercises.more",
+   "store-revision/exercises.more",
+   "store-revision-extra/exercises.more"
   ],
-  "id": "ffaf8b8284fb",
+  "id": "bc7c6282c514",
   "ok": true,
   "takes": 3,
-  "seed": 2,
-  "heard": "Κι άλλο πρόβλημα. Τελείωσες τις σημερινές. Εδώ ζητάς κι άλλο πρόβλημα για κι άλλα αστέρια. Αν έχεις αρχίσει ένα, εδώ το συνεχίζεις.",
+  "tried": 3,
+  "seed": 1,
+  "heard": "Κι άλλο πρόβλημα. Τελείωσες τις σημερινές. Εδώ ζητάς κι άλλο πρόβλημα για κι άλλα αστέρια. Αν κλείσεις ένα στη μέση, μένει εδώ για μετά.",
   "cer": 0.0,
   "language": "el",
-  "greek": 0.9966,
-  "f0": 274,
-  "lively": 6.43,
-  "secs": 7.99,
-  "peak": 0.566,
-  "rate": 16.5,
-  "same_voice": 0.947,
-  "clip": "help-voice/ffaf8b8284fb.mp3",
-  "shipped_cer": 0.0,
-  "shipped_heard": "Κι άλλο πρόβλημα. Τελείωσες τις σημερινές. Εδώ ζητάς κι άλλο πρόβλημα για κι άλλα αστέρια. Αν έχεις αρχίσει ένα, εδώ το συνεχίζεις.",
-  "kb": 62.9,
+  "greek": 0.9976,
+  "f0": 250,
+  "lively": 5.2,
+  "secs": 8.44,
+  "peak": 0.808,
+  "rate": 16.2,
   "clean": {
-   "pesq": 3.84,
-   "stoi": 0.993,
-   "si_sdr": 24.5,
+   "pesq": 3.85,
+   "stoi": 0.988,
+   "si_sdr": 26.8,
    "outlier": false
   },
+  "same_voice": 0.946,
+  "clip": "help-voice/bc7c6282c514.mp3",
+  "shipped_cer": 0.0,
+  "shipped_heard": "Κι άλλο πρόβλημα. Τελείωσες τις σημερινές, εδώ ζητάς κι άλλο πρόβλημα για κι άλλα αστέρια. Αν κλείσεις ένα στη μέση, μένει εδώ για μετά.",
+  "kb": 66.6,
   "lufs": -16.2
  },
  {
   "say": "Ανταμοιβές. Πάτα μια ανταμοιβή και μετά «Ναι» για να την πάρεις με τα αστέρια σου. Οι γκρίζες θέλουν περισσότερα αστέρια.",
   "where": [
    "store/store.rewards",
-   "store-revision/store.rewards"
+   "store-extra/store.rewards",
+   "store-revision/store.rewards",
+   "store-revision-extra/store.rewards"
   ],
   "id": "11f2d02869e3",
   "ok": true,
@@ -541,7 +550,9 @@
   "say": "Δώσε αστέρια. Μπορείς να χαρίσεις αστέρια σε ένα άλλο παιδί. Ένας γονιός το εγκρίνει.",
   "where": [
    "store/store.give",
-   "store-revision/store.give"
+   "store-extra/store.give",
+   "store-revision/store.give",
+   "store-revision-extra/store.give"
   ],
   "id": "dc841545ceef",
   "ok": true,
@@ -574,7 +585,9 @@
   "say": "Δραστηριότητα. Τι έχεις πάρει και τι περιμένει έγκριση.",
   "where": [
    "store/store.activity",
-   "store-revision/store.activity"
+   "store-extra/store.activity",
+   "store-revision/store.activity",
+   "store-revision-extra/store.activity"
   ],
   "id": "ba17651906cd",
   "ok": true,
@@ -606,7 +619,9 @@
   "say": "Κλείσιμο. Από εδώ γυρνάς στην αρχική οθόνη.",
   "where": [
    "store/store.close",
-   "store-revision/store.close"
+   "store-extra/store.close",
+   "store-revision/store.close",
+   "store-revision-extra/store.close"
   ],
   "id": "b757876ac67e",
   "ok": true,
@@ -636,10 +651,47 @@
   "lufs": -16.2
  },
  {
+  "say": "Για μετά. Ένα έξτρα πρόβλημα που άνοιξες. Πάτα το και συνεχίζεις από εκεί που έμεινες.",
+  "where": [
+   "store-extra/exercises.extra",
+   "store-revision-extra/exercises.extra",
+   "exercises-extra/exercises.extra",
+   "exercises-revision-extra/exercises.extra"
+  ],
+  "id": "8cc921ee84a3",
+  "ok": true,
+  "takes": 3,
+  "tried": 3,
+  "seed": 2,
+  "heard": "Για μετά, ένα έξτρα πρόβλημα που άνοιξες, πάτα το και συνεχίζεις από εκεί που έμεινες.",
+  "cer": 0.0,
+  "language": "el",
+  "greek": 0.9985,
+  "f0": 271,
+  "lively": 5.74,
+  "secs": 4.99,
+  "peak": 0.517,
+  "rate": 17.2,
+  "clean": {
+   "pesq": 3.69,
+   "stoi": 0.993,
+   "si_sdr": 31.3,
+   "outlier": false
+  },
+  "same_voice": 0.922,
+  "clip": "help-voice/8cc921ee84a3.mp3",
+  "shipped_cer": 0.0,
+  "shipped_heard": "Για μετά, ένα έξτρα πρόβλημα που άνοιξες, πάτα το και συνεχίζεις από εκεί που έμεινες.",
+  "kb": 39.4,
+  "lufs": -16.1
+ },
+ {
   "say": "Επανάληψη. Μια άσκηση από την προηγούμενη τάξη, για να θυμάσαι όσα έμαθες.",
   "where": [
    "store-revision/exercises.revision",
-   "exercises-revision/exercises.revision"
+   "store-revision-extra/exercises.revision",
+   "exercises-revision/exercises.revision",
+   "exercises-revision-extra/exercises.revision"
   ],
   "id": "b54ae5aa6869",
   "ok": true,
@@ -989,7 +1041,9 @@
   "say": "Οι ασκήσεις σου. Κάθε παιδί έχει τις δικές του ασκήσεις για σήμερα.",
   "where": [
    "exercises/exercises.kid",
-   "exercises-revision/exercises.kid"
+   "exercises-extra/exercises.kid",
+   "exercises-revision/exercises.kid",
+   "exercises-revision-extra/exercises.kid"
   ],
   "id": "9e092ab97845",
   "ok": true,
@@ -1021,7 +1075,9 @@
   "say": "Μια άσκηση. Πάτα την για να την ξεκινήσεις. Δεξιά βλέπεις πόσα αστέρια δίνει.",
   "where": [
    "exercises/exercises.card",
-   "exercises-revision/exercises.card"
+   "exercises-extra/exercises.card",
+   "exercises-revision/exercises.card",
+   "exercises-revision-extra/exercises.card"
   ],
   "id": "17307bcbe838",
   "ok": true,
@@ -1053,7 +1109,9 @@
   "say": "Κι άλλο πρόβλημα. Τελείωσες; Ζήτα κι άλλο πρόβλημα, για κι άλλα αστέρια.",
   "where": [
    "exercises/exercises.more",
-   "exercises-revision/exercises.more"
+   "exercises-extra/exercises.more",
+   "exercises-revision/exercises.more",
+   "exercises-revision-extra/exercises.more"
   ],
   "id": "88fe115c6902",
   "ok": true,
@@ -1410,38 +1468,74 @@
   "lufs": -17.0
  },
  {
-  "say": "Και μετά, αυτό που του ταιριάζει δεξιά. Όταν ταιριάξουν όλα, τελειώνεις!",
+  "say": "Και μετά, αυτό που του ταιριάζει δεξιά. Για να αλλάξεις ένα ζευγάρι, πάτα το.",
   "where": [
    "exercise-match-pairs/answer.match-right",
    "exercise-match-pairs/answer.match-right",
    "exercise-show/answer.match-right",
    "game-match-pairs/answer.match-right"
   ],
-  "id": "12f3cb5e16be",
+  "id": "5f29c819cb25",
   "ok": true,
   "takes": 3,
+  "tried": 3,
   "seed": 2,
-  "heard": "Και μετά, αυτό που του ταιριάζει δεξιά. Όταν ταιριάξουν όλα, τελειώνεις.",
+  "heard": "Και μετά, αυτό που του ταιριάζει δεξιά. Για να αλλάξεις ένα ζευγάρι, πάτα το.",
   "cer": 0.0,
   "language": "el",
-  "greek": 0.9888,
-  "f0": 236,
-  "lively": 5.07,
-  "secs": 4.73,
-  "peak": 0.503,
-  "rate": 15.2,
-  "same_voice": 0.908,
-  "clip": "help-voice/12f3cb5e16be.mp3",
-  "shipped_cer": 0.0,
-  "shipped_heard": "Και μετά, αυτό που του ταιριάζει δεξιά. Όταν ταιριάξουν όλα, τελειώνεις.",
-  "kb": 37.4,
+  "greek": 0.9976,
+  "f0": 247,
+  "lively": 4.12,
+  "secs": 4.72,
+  "peak": 0.504,
+  "rate": 16.3,
   "clean": {
-   "pesq": 4.13,
-   "stoi": 0.998,
-   "si_sdr": 29.0,
+   "pesq": 3.83,
+   "stoi": 0.988,
+   "si_sdr": 26.6,
    "outlier": false
   },
+  "same_voice": 0.945,
+  "clip": "help-voice/5f29c819cb25.mp3",
+  "shipped_cer": 0.0,
+  "shipped_heard": "Και μετά, αυτό που του ταιριάζει δεξιά. Για να αλλάξεις ένα ζευγάρι, πάτα το.",
+  "kb": 37.4,
   "lufs": -16.2
+ },
+ {
+  "say": "Τελείωσες; Κοίτα τα ζευγάρια. Αν είναι σωστά, πάτα εδώ.",
+  "where": [
+   "exercise-match-pairs/answer.match-check",
+   "exercise-match-pairs/answer.match-check",
+   "exercise-show/answer.match-check",
+   "game-match-pairs/answer.match-check"
+  ],
+  "id": "b5e2ea1ef792",
+  "ok": true,
+  "takes": 3,
+  "tried": 3,
+  "seed": 3,
+  "heard": "Τελείωσες. Κοίτα τα ζευγάρια. Αν είναι σωστά, πάτα εδώ.",
+  "cer": 0.0,
+  "language": "el",
+  "greek": 0.9946,
+  "f0": 197,
+  "lively": 5.64,
+  "secs": 4.68,
+  "peak": 0.603,
+  "rate": 11.8,
+  "clean": {
+   "pesq": 4.23,
+   "stoi": 0.999,
+   "si_sdr": 29.5,
+   "outlier": false
+  },
+  "same_voice": 0.916,
+  "clip": "help-voice/b5e2ea1ef792.mp3",
+  "shipped_cer": 0.0,
+  "shipped_heard": "Τελείωσες. Κοίτα τα ζευγάρια. Αν είναι σωστά πάτα εδώ.",
+  "kb": 37.2,
+  "lufs": -16.4
  },
  {
   "say": "Βάλε σειρά. Σύρε κάθε κουτί με το δάχτυλο στη θέση του, από πάνω προς τα κάτω.",
@@ -1720,6 +1814,38 @@
   "shipped_cer": 0.0,
   "shipped_heard": "Δείξε μου. Θες να δεις τη σωστή απάντηση? Πάτα εδώ.",
   "kb": 28.0,
+  "lufs": -16.3
+ },
+ {
+  "say": "Η σωστή απάντηση. Διάβασέ τη όσο θες. Όταν τελειώσεις, πάτα «Εντάξει».",
+  "where": [
+   "exercise-answer/exercise.revealed"
+  ],
+  "id": "974e2bbdf7bc",
+  "ok": true,
+  "takes": 3,
+  "tried": 6,
+  "seed": 6,
+  "heard": "Η σωστή απάντηση. Διάβασέ τη όσο θες. Όταν τελειώσεις, πάτα «Εντάξει».",
+  "cer": 0.0,
+  "language": "el",
+  "greek": 0.9805,
+  "f0": 219,
+  "lively": 4.77,
+  "secs": 5.46,
+  "peak": 0.591,
+  "rate": 12.8,
+  "clean": {
+   "pesq": 4.1,
+   "stoi": 0.996,
+   "si_sdr": 24.6,
+   "outlier": false
+  },
+  "same_voice": 0.934,
+  "clip": "help-voice/974e2bbdf7bc.mp3",
+  "shipped_cer": 0.0185,
+  "shipped_heard": "Η σωστή απάντηση. Διάβασέ τι όσο θες. Όταν τελειώσεις, πάτα «Εντάξει».",
+  "kb": 43.1,
   "lufs": -16.3
  },
  {

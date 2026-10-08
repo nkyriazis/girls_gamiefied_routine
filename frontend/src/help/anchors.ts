@@ -14,12 +14,12 @@ export const ANCHORS = [
   'store.balance', 'store.earn', 'store.rewards', 'store.give', 'store.activity', 'store.close',
   'activity.list', 'transfer.to', 'transfer.amount', 'transfer.send',
   // Exercises of the day (her screen and the drawer)
-  'exercises.kid', 'exercises.card', 'exercises.revision', 'exercises.more',
+  'exercises.kid', 'exercises.card', 'exercises.revision', 'exercises.extra', 'exercises.more',
   // Chores and bonus activities
   'chores.card', 'chores.claim', 'chores.done', 'chores.waiting', 'chores.empty',
   // One exercise, and the ways to answer one
-  'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit', 'exercise.show',
-  'answer.options', 'answer.truefalse', 'answer.match-left', 'answer.match-right', 'answer.order', 'answer.order-submit',
+  'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit', 'exercise.show', 'exercise.revealed',
+  'answer.options', 'answer.truefalse', 'answer.match-left', 'answer.match-right', 'answer.match-check', 'answer.order', 'answer.order-submit',
   'answer.blank', 'answer.words', 'answer.blank-check', 'answer.number', 'answer.numpad',
   // The group game
   'game.players', 'game.subjects', 'game.length', 'game.start',
