@@ -11,5 +11,5 @@
     "typeRoots": ["../../backend/node_modules/@types"],
     "skipLibCheck": true
   },
-  "include": ["**/*.ts", "../../shared/types.ts"]
+  "include": ["**/*.ts", "../../shared/types.ts", "../../shared/curriculum.ts"]
 }
