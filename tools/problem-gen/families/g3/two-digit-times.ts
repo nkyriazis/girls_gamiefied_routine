@@ -75,7 +75,8 @@ const KPHRASE: Record<string, (k: number) => string> = {
 export const twoDigitTimes: Family = {
   id: 'two-digit-times',
   grade: 3,
-  unit: 2,
+  chapter: '11',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Γ΄, κεφ. 11 «Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό»',
   make(r, b) {
     const p = r.pick(PEOPLE);

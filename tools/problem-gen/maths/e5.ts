@@ -48,7 +48,7 @@ function rounding(r: Rng, n: number, p: number) {
 export const E5_MATHS: MathsFamily[] = [
   // ---- 1.4 Natural numbers ------------------------------------------------------
   e5({
-    id: 'words-digits', chapter: '1.4', skill: 'words',
+    id: 'words-digits', chapter: '1.4', topic: 'Αριθμοί', skill: 'words',
     make(r) {
       const m = r.chance(0.7) ? r.int(1, 9) : r.int(10, 99);
       const k = r.pick([0, r.int(1, 9), r.step(10, 90, 10), r.step(100, 900, 100), r.int(101, 999)]);
@@ -65,7 +65,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'words-places', chapter: '1.4', skill: 'words',
+    id: 'words-places', chapter: '1.4', topic: 'Αριθμοί', skill: 'words',
     make(r) {
       // The same digit in different places: «διακόσιες χιλιάδες», «δύο εκατομμύρια δύο χιλιάδες»;
       // the options are the same digit in the other places. Not a match (#72): the workbook has her
@@ -81,7 +81,7 @@ export const E5_MATHS: MathsFamily[] = [
 
   // ---- 1.5 Place value ---------------------------------------------------------
   e5({
-    id: 'digit-value', chapter: '1.5', skill: 'digit-value',
+    id: 'digit-value', chapter: '1.5', topic: 'Αριθμοί', skill: 'digit-value',
     make(r) {
       const n = sevenDigits(r);
       const ds = digits(n);
@@ -96,7 +96,7 @@ export const E5_MATHS: MathsFamily[] = [
 
   // ---- 1.6 Comparing and ordering ---------------------------------------------
   e5({
-    id: 'neighbours', chapter: '1.6', skill: 'neighbour',
+    id: 'neighbours', chapter: '1.6', topic: 'Αριθμοί', skill: 'neighbour',
     make(r) {
       const next = r.chance(0.5);
       const base = r.pick([r.step(1e6, 9e6, 1e5), r.step(100_000, 990_000, 10_000), r.step(1e6, 9e6, 1e6)]);
@@ -108,7 +108,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'compare', chapter: '1.6', skill: 'compare', weight: 0.6,
+    id: 'compare', chapter: '1.6', topic: 'Αριθμοί', skill: 'compare', weight: 0.6,
     make(r) {
       const a = sevenDigits(r);
       const b = r.pick(swaps(a));
@@ -120,7 +120,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'largest', chapter: '1.6', skill: 'extreme',
+    id: 'largest', chapter: '1.6', topic: 'Αριθμοί', skill: 'extreme',
     make(r) {
       const n = sevenDigits(r);
       const set = [n, ...r.sample(swaps(n), 3)];
@@ -130,7 +130,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'order', chapter: '1.6', skill: 'order',
+    id: 'order', chapter: '1.6', topic: 'Αριθμοί', skill: 'order',
     make(r) {
       const n = r.chance(0.5) ? sevenDigits(r) : Math.floor(sevenDigits(r) / 10);
       const set = [n, ...r.sample(swaps(n), 3)];
@@ -140,7 +140,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'count-by', chapter: '1.6', skill: 'count-by',
+    id: 'count-by', chapter: '1.6', topic: 'Αριθμοί', skill: 'count-by',
     make(r) {
       // «2.400.000, 2.600.000, 2.800.000, …», «660.000, 659.500, 659.000, …», «25.795, 25.895, 25.995, …»
       const step = r.pick([100, 500, 1_000, 10_000, 25_000, 50_000, 200_000]);
@@ -158,7 +158,7 @@ export const E5_MATHS: MathsFamily[] = [
 
   // ---- 1.7 Rounding --------------------------------------------------------------
   e5({
-    id: 'round', chapter: '1.7', skill: 'round',
+    id: 'round', chapter: '1.7', topic: 'Αριθμοί', skill: 'round',
     make(r) {
       const n = r.pick([sevenDigits(r), r.int(10_000, 999_999)]);
       const [p, where] = r.pick(ROUND_TO.filter(([q]) => 10 ** (q + 1) < n));
@@ -168,7 +168,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'round-small', chapter: '1.7', skill: 'round',
+    id: 'round-small', chapter: '1.7', topic: 'Αριθμοί', skill: 'round',
     make(r) {
       const n = r.int(1_000, 9_499);
       const [p, where] = r.pick(ROUND_TO.slice(0, 3));
@@ -180,7 +180,7 @@ export const E5_MATHS: MathsFamily[] = [
 
   // ---- 2.8 Addition and subtraction -------------------------------------------------
   e5({
-    id: 'add-sub', chapter: '2.8', skill: 'calc',
+    id: 'add-sub', chapter: '2.8', topic: 'Πρόσθεση', skill: 'calc',
     make(r) {
       if (r.chance(0.5)) {
         // «2.999 + 1.456», or any two four-digit numbers with a carry
@@ -196,7 +196,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'add-sub-big', chapter: '2.8', skill: 'calc',
+    id: 'add-sub-big', chapter: '2.8', topic: 'Πρόσθεση', skill: 'calc',
     make(r) {
       const add = r.chance(0.5);
       const a = r.int(12_000, 900_000), b = r.int(5_000, add ? 900_000 : a - 1_000);
@@ -210,7 +210,7 @@ export const E5_MATHS: MathsFamily[] = [
 
   // ---- 2.9 Multiplication -------------------------------------------------------------
   e5({
-    id: 'times-10', chapter: '2.9', skill: 'calc',
+    id: 'times-10', chapter: '2.9', topic: 'Πολλαπλασιασμός', skill: 'calc',
     make(r) {
       const [a, f] = r.chance(0.6) ? [r.int(12, 9_999), r.pick([10, 100, 1_000])] : [r.step(20, 90, 10), r.step(200, 900, 100)];
       const right = a * f;
@@ -220,7 +220,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'times-2d', chapter: '2.9', skill: 'calc',
+    id: 'times-2d', chapter: '2.9', topic: 'Πολλαπλασιασμός', skill: 'calc',
     make(r) {
       const a = r.int(13, 99), b = r.int(12, 99);
       if (a * b >= 10_000) return null;
@@ -228,7 +228,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'times-3x2', chapter: '2.9', skill: 'calc',
+    id: 'times-3x2', chapter: '2.9', topic: 'Πολλαπλασιασμός', skill: 'calc',
     make(r) {
       const a = r.int(123, 987), b = r.int(23, 98);
       const right = a * b;
@@ -242,7 +242,7 @@ export const E5_MATHS: MathsFamily[] = [
 
   // ---- 2.10 Multiples and divisors -----------------------------------------------------
   e5({
-    id: 'multiples', chapter: '2.10', skill: 'multiple',
+    id: 'multiples', chapter: '2.10', topic: 'Πολλαπλασιασμός', skill: 'multiple',
     make(r) {
       if (r.chance(0.5)) {
         const n = r.int(3, 12), right = n * r.int(4, 12);
@@ -258,7 +258,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'lcm', chapter: '2.10', skill: 'lcm',
+    id: 'lcm', chapter: '2.10', topic: 'Πολλαπλασιασμός', skill: 'lcm',
     make(r) {
       if (r.chance(0.3)) {
         const [a, b, c] = r.sample([2, 3, 4, 5, 6, 8, 9, 10], 3).sort((x, y) => x - y);
@@ -275,7 +275,7 @@ export const E5_MATHS: MathsFamily[] = [
 
   // ---- 2.11 Divisibility -------------------------------------------------------------
   e5({
-    id: 'divisible', chapter: '2.11', skill: 'divisible', weight: 0.6,
+    id: 'divisible', chapter: '2.11', topic: 'Διαίρεση', skill: 'divisible', weight: 0.6,
     make(r) {
       const d = r.pick([2, 3, 5, 9, 10]);
       const truth = divisibleTruth();
@@ -289,7 +289,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'divisible-choice', chapter: '2.11', skill: 'divisible',
+    id: 'divisible-choice', chapter: '2.11', topic: 'Διαίρεση', skill: 'divisible',
     make(r) {
       const d = r.pick([3, 9, 5, 2]);
       const pool = Array.from({ length: 400 }, () => r.int(1_000, 9_999));
@@ -302,7 +302,7 @@ export const E5_MATHS: MathsFamily[] = [
 
   // ---- 2.12 Division -----------------------------------------------------------------
   e5({
-    id: 'division', chapter: '2.12', skill: 'division-part',
+    id: 'division', chapter: '2.12', topic: 'Διαίρεση', skill: 'division-part',
     make(r) {
       const d = r.chance(0.6) ? r.int(3, 9) : r.int(12, 48);
       const q = r.int(d < 10 ? 101 : 12, d < 10 ? 999 : 199), rem = r.chance(0.4) ? 0 : r.int(1, d - 1);
@@ -313,14 +313,14 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'dividend', chapter: '2.12', skill: 'dividend',
+    id: 'dividend', chapter: '2.12', topic: 'Διαίρεση', skill: 'dividend',
     make(r) {
       const d = r.int(6, 60), q = r.int(3, 40), rem = r.int(1, d - 1);
       return num('Ευκλείδεια διαίρεση', `Σε μια διαίρεση ο διαιρέτης είναι ${d}, το πηλίκο ${q} και το υπόλοιπο ${rem}. Βρες τον διαιρετέο.`, d * q + rem);
     },
   }),
   e5({
-    id: 'euclid-gap', chapter: '2.12', skill: 'equation',
+    id: 'euclid-gap', chapter: '2.12', topic: 'Διαίρεση', skill: 'equation',
     make(r) {
       // Δ = δ × π + υ with one of them missing
       const d = r.int(4, 25), q = r.int(12, 95), rem = r.int(1, d - 1);
@@ -336,7 +336,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'bad-remainder', chapter: '2.12', skill: 'bad-remainder',
+    id: 'bad-remainder', chapter: '2.12', topic: 'Διαίρεση', skill: 'bad-remainder',
     make(r) {
       const d = r.int(4, 15);
       const right = r.pick([d, d + 1, d + 2]);
@@ -346,7 +346,7 @@ export const E5_MATHS: MathsFamily[] = [
     },
   }),
   e5({
-    id: 'division-check', chapter: '2.12', skill: 'div-check', weight: 0.6,
+    id: 'division-check', chapter: '2.12', topic: 'Διαίρεση', skill: 'div-check', weight: 0.6,
     make(r) {
       const d = r.int(3, 12), q = r.int(8, 40), rem = r.int(1, d - 1);
       const n = d * q + rem;

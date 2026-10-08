@@ -64,7 +64,8 @@ const SETTINGS: Setting[] = [
 export const distanceTime: Family = {
   id: 'distance-time',
   grade: 5,
-  unit: 2,
+  chapter: '2.12',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Ε΄, κεφ. 2.9 «Ο πολλαπλασιασμός» και 2.12 «Η διαίρεση στους φυσικούς αριθμούς»',
   make(r, b) {
     const s = r.pick(SETTINGS);

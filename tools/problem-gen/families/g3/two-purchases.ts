@@ -70,7 +70,8 @@ const SETTINGS: Setting[] = [
 export const twoPurchases: Family = {
   id: 'two-purchases',
   grade: 3,
-  unit: 2,
+  chapter: '10',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών» («Το μαγαζί της τάξης»)',
   make(r, b) {
     const p = r.pick(PEOPLE);

@@ -209,7 +209,8 @@ function savings(r: Rng, p: Person): Chain | null {
 export const orderThePlan: Family = {
   id: 'order-the-plan',
   grade: 3,
-  unit: 3,
+  chapter: '19',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Γ΄, κεφ. 19 «Προβλήματα» 2 «Η συναυλία» και κεφ. 12 «Προβλήματα»',
   make(r, b): Draft | null {
     const p = r.pick(PEOPLE);

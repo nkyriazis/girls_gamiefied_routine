@@ -78,7 +78,8 @@ const SETTINGS: Setting[] = [
 export const totalCost: Family = {
   id: 'total-cost',
   grade: 3,
-  unit: 1,
+  chapter: '2',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Γ΄, κεφ. 2 «Προσθέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const p = r.pick(PEOPLE);
@@ -171,6 +172,7 @@ export const totalCost: Family = {
           : { label: `Λείπουν: ${total} − ${fmt(money)} =`, answer: diff, unit: 'ευρώ' },
       ], mode === 'enough' ? 'Από όσα έχει, βγάζουμε όσα πληρώνει.' : `Πόσα ευρώ χρειάζονται ακόμα από τα ${fmt(money)} ως τα ${total};`));
     }
-    return { title: r.pick(['Πόσο κοστίζουν;', 'Στο ταμείο', 'Ψώνια', 'Όλα μαζί']), story, steps };
+    // With money to compare, what is left or missing is a subtraction: ch. 10
+    return { title: r.pick(['Πόσο κοστίζουν;', 'Στο ταμείο', 'Ψώνια', 'Όλα μαζί']), story, steps, ...(mode === 'total' ? {} : { chapter: '10' }) };
   },
 };

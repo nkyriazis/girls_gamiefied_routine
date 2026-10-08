@@ -16,6 +16,8 @@ import { CURRICULUM, sourceOf } from './curriculum.ts';
 import { MATHS_GRADES, MATHS_TARGET, type MathsGrade } from './grades.ts';
 import { leaks, type Draft, type PlainExercise } from './lib.ts';
 import { revealTooLong } from './check.ts';
+import { mathsLevel } from '../difficulty.ts';
+import { TOPICS } from '../../../shared/curriculum.ts';
 
 const arg = (name: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
 const ONLY = arg('--families')?.split(',');
@@ -50,6 +52,9 @@ function generate(g: MathsGrade, target: number) {
         ...rest,
         stars: 1,
         source: sourceOf(g.grade, m.f.chapter),
+        chapter: m.f.chapter,
+        topic: m.f.topic,
+        difficulty: mathsLevel(g.grade, d),
         generatorParams: { family: m.f.id, unit: chapter.unit, skill: m.f.skill },
       } as PlainExercise);
     }
@@ -87,6 +92,7 @@ for (const g of MATHS_GRADES) {
     ids.add(f.id);
     const chapter = g.toc.find(c => c.ch === f.chapter);
     if (!chapter || !g.units.includes(chapter.unit)) throw new Error(`${f.id}: chapter ${f.chapter} is not in units ${g.units.join(', ')} of the ${g.label} book`);
+    if (!TOPICS.maths.includes(f.topic)) throw new Error(`${f.id}: topic «${f.topic}» is not one of shared/curriculum.ts TOPICS.maths`);
   }
   const { items, report } = generate({ ...g, families }, TARGET);
   console.log(`\n${g.prefix}: ${items.length}/${TARGET} maths items from ${families.length} families`);

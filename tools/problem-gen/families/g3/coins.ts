@@ -61,7 +61,8 @@ function noise(r: Rng, his: string) {
 export const coins: Family = {
   id: 'coins',
   grade: 3,
-  unit: 2,
+  chapter: '12',
+  topic: 'Χρήματα',
   source: 'Μαθηματικά Γ΄, κεφ. 12 «Προβλήματα» 3 (τρία νομίσματα συνολικής αξίας 72 λεπτών) και κεφ. 13 «Επαναληπτικό μάθημα»',
   make(r, b) {
     const p = r.pick(PEOPLE);

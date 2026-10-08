@@ -90,7 +90,8 @@ const withUnit = (s: Setting, n: number) => s.unit === '€' ? `${fmt(n)} €` :
 export const sumDifference: Family = {
   id: 'sum-difference',
   grade: 5,
-  unit: 1,
+  chapter: '1.3',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Ε΄, κεφ. 1.3 «Πώς λύνουμε ένα πρόβλημα» (στρατηγική «Παρουσιάζω το πρόβλημα»)',
   make(r, b) {
     const s = r.pick(SETTINGS);

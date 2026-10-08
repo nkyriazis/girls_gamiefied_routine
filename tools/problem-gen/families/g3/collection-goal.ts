@@ -31,7 +31,8 @@ const tin = (c: string) => `${c === 'Ε΄' ? 'την' : 'τη'} ${c}`; // "απ�
 export const collectionGoal: Family = {
   id: 'collection-goal',
   grade: 3,
-  unit: 3,
+  chapter: '15',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Γ΄, κεφ. 15 «Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών» και κεφ. 14 «Αριθμοί μέχρι το 3.000»',
   make(r, b) {
     const t = r.pick(THINGS);

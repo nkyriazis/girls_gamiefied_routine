@@ -32,7 +32,7 @@ function withZero(r: Rng): number {
 export const G3_MATHS: MathsFamily[] = [
   // ---- Unit 1 -----------------------------------------------------------------
   g3({
-    id: 'words-places', chapter: '1', skill: 'words',
+    id: 'words-places', chapter: '1', topic: 'Αριθμοί', skill: 'words',
     make(r) {
       // The workbook's «Γράφω τους παρακάτω αριθμούς με ψηφία» (Τετράδιο Εργασιών Α΄, σ. 10, 2) has her
       // write the number, with no match; here the other orders of the same digits are the options. Not a
@@ -50,7 +50,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'tens-in', chapter: '1', skill: 'group-count',
+    id: 'tens-in', chapter: '1', topic: 'Αριθμοί', skill: 'group-count',
     make(r) {
       const n = r.int(120, 999);
       if (n % 10 === 0) return null;
@@ -58,7 +58,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'add-mental', chapter: '2', skill: 'calc',
+    id: 'add-mental', chapter: '2', topic: 'Πρόσθεση', skill: 'calc',
     make(r) {
       // «34 + 6 + 20», «45 + 5 + 34»: a pair that makes a ten, then the rest
       const a = r.int(12, 78), b = 10 - (a % 10), c = r.step(10, 60, 10);
@@ -68,7 +68,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'money', chapter: '2', skill: 'money',
+    id: 'money', chapter: '2', topic: 'Χρήματα', skill: 'money',
     make(r) {
       if (r.chance(0.5)) {
         // Euros: notes and coins, «Πόσα ευρώ είναι όλα τα χαρτονομίσματα μαζί;»
@@ -89,7 +89,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'tables-match-a', chapter: '4', skill: 'calc',
+    id: 'tables-match-a', chapter: '4', topic: 'Πολλαπλασιασμός', skill: 'calc',
     make(r) {
       const t = r.pick([2, 3, 4, 5, 10]);
       const ks = r.sample([2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
@@ -100,7 +100,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'tables-match-b', chapter: '5', skill: 'calc',
+    id: 'tables-match-b', chapter: '5', topic: 'Πολλαπλασιασμός', skill: 'calc',
     make(r) {
       const t = r.pick([6, 7, 8, 9]);
       const ks = r.sample([2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
@@ -111,7 +111,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'table-gap', chapter: '6', skill: 'equation',
+    id: 'table-gap', chapter: '6', topic: 'Πολλαπλασιασμός', skill: 'equation',
     make(r) {
       // «6 × _ = 42», «_ × 7 = 56», «42 : _ = 6»: the other number of the family
       const a = r.int(3, 9), b = r.int(3, 9);
@@ -125,14 +125,14 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'divide', chapter: '6', skill: 'calc',
+    id: 'divide', chapter: '6', topic: 'Διαίρεση', skill: 'calc',
     make(r) {
       const d = r.int(2, 9), q = r.int(2, 10);
       return num('Διαίρεση', `Πόσο κάνει ${fmt(d * q)} : ${d};`, q);
     },
   }),
   g3({
-    id: 'fact-family', chapter: '6', skill: 'fact-family',
+    id: 'fact-family', chapter: '6', topic: 'Διαίρεση', skill: 'fact-family',
     make(r) {
       const a = r.int(3, 9), b = r.int(3, 9);
       if (a === b) return null;
@@ -146,7 +146,7 @@ export const G3_MATHS: MathsFamily[] = [
 
   // ---- Unit 2 -----------------------------------------------------------------
   g3({
-    id: 'length', chapter: '8', skill: 'length',
+    id: 'length', chapter: '8', topic: 'Μετρήσεις', skill: 'length',
     make(r) {
       switch (r.int(0, 3)) {
         case 0: { const cm = r.int(2, 30); return num('Εκατοστά και χιλιοστά', `Πόσα χιλιοστά είναι ${cm} εκατοστά;`, cm * 10); }
@@ -157,7 +157,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'subtract', chapter: '10', skill: 'calc',
+    id: 'subtract', chapter: '10', topic: 'Αφαίρεση', skill: 'calc',
     make(r) {
       const a = r.int(200, 999), b = r.int(r.chance(0.4) ? 15 : 101, a - 20);
       // with borrowing: a digit of b is larger than the one above it
@@ -167,7 +167,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'times-2x1', chapter: '11', skill: 'calc',
+    id: 'times-2x1', chapter: '11', topic: 'Πολλαπλασιασμός', skill: 'calc',
     make(r) {
       const a = r.int(12, 49), d = r.int(2, 9);
       if ((a % 10) * d < 10) return null;   // with a carry
@@ -175,7 +175,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'table-11', chapter: '11', skill: 'calc',
+    id: 'table-11', chapter: '11', topic: 'Πολλαπλασιασμός', skill: 'calc',
     make(r) {
       const k = r.int(2, 10);
       const [x, y] = r.chance(0.5) ? [11, k] : [k, 11];
@@ -185,7 +185,7 @@ export const G3_MATHS: MathsFamily[] = [
 
   // ---- Unit 3 -----------------------------------------------------------------
   g3({
-    id: 'words-digits', chapter: '14', skill: 'words',
+    id: 'words-digits', chapter: '14', topic: 'Αριθμοί', skill: 'words',
     make(r) {
       const n = withZero(r);
       if (n > MAX) return null;
@@ -195,7 +195,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'neighbours', chapter: '14', skill: 'neighbour',
+    id: 'neighbours', chapter: '14', topic: 'Αριθμοί', skill: 'neighbour',
     make(r) {
       // Around the tens, hundreds and thousands, where the digits change
       const base = r.pick([r.step(110, 2_990, 10), r.step(200, 2_900, 100), r.pick([1_000, 2_000, 3_000])]);
@@ -206,7 +206,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'hundreds-in', chapter: '14', skill: 'group-count',
+    id: 'hundreds-in', chapter: '14', topic: 'Αριθμοί', skill: 'group-count',
     make(r) {
       const n = r.int(1_010, MAX);
       if (n % 100 === 0) return null;
@@ -214,7 +214,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'digit-value', chapter: '14', skill: 'digit-value',
+    id: 'digit-value', chapter: '14', topic: 'Αριθμοί', skill: 'digit-value',
     make(r) {
       const n = r.int(1_023, 2_987);
       const ds = digits(n);
@@ -225,7 +225,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'digits-extreme', chapter: '14', skill: 'digits-extreme',
+    id: 'digits-extreme', chapter: '14', topic: 'Αριθμοί', skill: 'digits-extreme',
     make(r) {
       const ds = r.sample([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 3);
       const big = r.chance(0.5);
@@ -236,7 +236,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'compare', chapter: '14', skill: 'compare', weight: 0.9,
+    id: 'compare', chapter: '14', topic: 'Αριθμοί', skill: 'compare', weight: 0.9,
     make(r) {
       const a = r.int(1_000, MAX);
       const b = r.pick(swaps(a).filter(x => x <= MAX && x !== a));
@@ -250,7 +250,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'order', chapter: '14', skill: 'order',
+    id: 'order', chapter: '14', topic: 'Αριθμοί', skill: 'order',
     make(r) {
       const n = r.int(1_000, MAX);
       const set = [n, ...r.sample(swaps(n).filter(x => x <= MAX), 3)];
@@ -261,7 +261,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'expanded', chapter: '14', skill: 'calc',
+    id: 'expanded', chapter: '14', topic: 'Αριθμοί', skill: 'calc',
     make(r) {
       // «(2 × 1.000) + (5 × 100) + 8», some places empty
       const n = withZero(r);
@@ -273,7 +273,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'count-by', chapter: '14', skill: 'count-by',
+    id: 'count-by', chapter: '14', topic: 'Αριθμοί', skill: 'count-by',
     make(r) {
       const step = r.pick([10, 50, 100, 200, 250, 500]);
       const up = r.chance(0.7);
@@ -285,7 +285,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'add-sub-choice', chapter: '15', skill: 'calc',
+    id: 'add-sub-choice', chapter: '15', topic: 'Πρόσθεση', skill: 'calc',
     make(r): Draft | null {
       const add = r.chance(0.5);
       if (add) {
@@ -305,7 +305,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'add', chapter: '15', skill: 'calc',
+    id: 'add', chapter: '15', topic: 'Πρόσθεση', skill: 'calc',
     make(r) {
       const a = r.int(105, 1_900), b = r.int(15, 999);
       if (a + b > MAX || forgotCarry(a, b) === a + b) return null;   // with a carry
@@ -313,7 +313,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'times-choice', chapter: '17', skill: 'calc',
+    id: 'times-choice', chapter: '17', topic: 'Πολλαπλασιασμός', skill: 'calc',
     make(r) {
       const a = r.int(13, 99), d = r.int(3, 9);
       const right = a * d;
@@ -324,7 +324,7 @@ export const G3_MATHS: MathsFamily[] = [
     },
   }),
   g3({
-    id: 'divide-remainder', chapter: '18', skill: 'div-rem',
+    id: 'divide-remainder', chapter: '18', topic: 'Διαίρεση', skill: 'div-rem',
     make(r) {
       const d = r.int(3, 9), q = r.int(2, 9), rem = r.int(1, d - 1);
       const n = d * q + rem;

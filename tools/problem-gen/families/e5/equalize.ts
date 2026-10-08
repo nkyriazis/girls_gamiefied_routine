@@ -14,7 +14,8 @@ const COLLECTIONS = [
 export const equalize: Family = {
   id: 'equalize-by-giving',
   grade: 5,
-  unit: 2,
+  chapter: '2.8',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 2, 2ο πρόβλημα',
   make(r, b) {
     const [a, other] = people(r, 2);

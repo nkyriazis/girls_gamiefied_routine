@@ -20,7 +20,8 @@ const RIDES = [
 export const remainder: Family = {
   id: 'division-remainder',
   grade: 3,
-  unit: 1,
+  chapter: '12',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 12 «Προβλήματα», 2 «Τα μπαλόνια»',
   make(r, b) {
     if (r.chance(0.55)) {
@@ -74,6 +75,7 @@ export const remainder: Family = {
           [`${left}, το υπόλοιπο της διαίρεσης`, `${left}, όσο το υπόλοιπο`, `${left}, όσο είναι το υπόλοιπο της διαίρεσης`]],
         left === 1 ? 'Και ένας που περισσεύει δεν μπορεί να μείνει πίσω.' : `Οι ${left} που περισσεύουν δεν μπορούν να μείνουν πίσω.`),
     ];
-    return { title: r.pick(['Όλοι μαζί', 'Φτάνουν οι θέσεις;', `${cap(the(v, false))} ${v.many}`]), story, steps };
+    // One more car for the ones left: what the remainder means is ch. 18 «Διαιρέσεις» (the money variant is ch. 12's own problem)
+    return { title: r.pick(['Όλοι μαζί', 'Φτάνουν οι θέσεις;', `${cap(the(v, false))} ${v.many}`]), story, steps, chapter: '18' };
   },
 };

@@ -51,7 +51,8 @@ const SETTINGS: Setting[] = [
 export const startUnknown: Family = {
   id: 'start-unknown',
   grade: 3,
-  unit: 2,
+  chapter: '12',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 12 «Προβλήματα» και κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const [p, q] = people(r, 2);

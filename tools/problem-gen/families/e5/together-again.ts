@@ -178,7 +178,8 @@ const SETTINGS: Setting[] = [
 export const togetherAgain: Family = {
   id: 'together-again',
   grade: 5,
-  unit: 2,
+  chapter: '2.10',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Ε΄, κεφ. 2.10 «Πολλαπλάσια και διαιρέτες» (Ε.Κ.Π.) και Επαναληπτικό 2, 5ο πρόβλημα',
   make(r, b) {
     const s = r.pick(SETTINGS);

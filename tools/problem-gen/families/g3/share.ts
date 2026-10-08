@@ -16,7 +16,8 @@ const GROWNUPS = ['Ο μπαμπάς', 'Η μαμά', 'Η γιαγιά', 'Ο π�
 export const share: Family = {
   id: 'share-equally',
   grade: 3,
-  unit: 1,
+  chapter: '6',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 6 «Πολλαπλασιασμός και διαίρεση» και κεφ. 51 «Προβλήματα»',
   make(r, b) {
     const kid = r.pick(PEOPLE);

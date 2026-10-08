@@ -77,7 +77,8 @@ const left = (u: number, t: Thing) => (u === 1 ? `περίσσεψε 1 ${t.one}`
 export const divisionCheck: Family = {
   id: 'division-check',
   grade: 5,
-  unit: 2,
+  chapter: '2.12',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Ε΄, κεφ. 2.12 «Η διαίρεση στους φυσικούς αριθμούς» (Ευκλείδεια διαίρεση)',
   make(r, b) {
     const s = r.pick(SETTINGS);

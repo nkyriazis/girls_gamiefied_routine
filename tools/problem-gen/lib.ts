@@ -764,14 +764,21 @@ export interface Draft {
   title: string;
   story: string;
   steps: ProblemStep[];
+  /** A variant that needs a later chapter than its family's (Family.chapter): division-remainder's seats need ch. 18. */
+  chapter?: string;
 }
 
 export interface Family {
   /** Short, unique, kebab-case: part of every problem id. */
   id: string;
   grade: 3 | 5;
-  /** The textbook unit whose skills it needs (the pool can later be limited to units done). */
-  unit: number;
+  /**
+   * The latest chapter of the grade's maths book (shared/curriculum.ts) whose skill it needs: where the
+   * skill is taught, not where the story was found (#71). A kid gets it once her class has reached it.
+   */
+  chapter: string;
+  /** What it is about, by its main operation: one of shared/curriculum.ts TOPICS.maths. */
+  topic: string;
   /** Where in the textbooks this kind of problem comes from. */
   source: string;
   /** One problem, or null to skip these numbers (the generator then tries again). */

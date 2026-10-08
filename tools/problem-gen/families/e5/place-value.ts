@@ -146,7 +146,8 @@ function places(r: Rng, b: Builder, p: Person): { title: string; story: string; 
 export const placeValue: Family = {
   id: 'place-value',
   grade: 5,
-  unit: 1,
+  chapter: '1.6',
+  topic: 'Αριθμοί',
   source: 'Μαθηματικά Ε΄, κεφ. 1.5 «Αξία θέσης ψηφίου στους φυσικούς αριθμούς» και 1.6 «Σύγκριση και διάταξη», Επαναληπτικό 1',
   make(r, b) {
     const [p] = people(r, 1);

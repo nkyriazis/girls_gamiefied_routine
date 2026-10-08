@@ -105,7 +105,8 @@ const SETTINGS: Setting[] = [
 export const exchangeRate: Family = {
   id: 'exchange-rate',
   grade: 3,
-  unit: 3,
+  chapter: '18',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Γ΄, κεφ. 17 «Πολλαπλασιασμοί» και κεφ. 18 «Διαιρέσεις»',
   make(r, b) {
     const s = r.pick(SETTINGS);

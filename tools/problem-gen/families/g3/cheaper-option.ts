@@ -43,7 +43,8 @@ const from = (shop: string) => shop.replace(/^στο /, 'από το ').replace(
 export const cheaperOption: Family = {
   id: 'cheaper-option',
   grade: 3,
-  unit: 2,
+  chapter: '11',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Γ΄, κεφ. 11 «Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό» και κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const pr = r.pick(PRODUCTS);

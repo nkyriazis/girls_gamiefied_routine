@@ -123,7 +123,8 @@ const SETTINGS: Setting[] = [
 export const daysToGoal: Family = {
   id: 'days-to-goal',
   grade: 3,
-  unit: 3,
+  chapter: '18',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 18 «Διαιρέσεις» και κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const s = r.pick(SETTINGS);

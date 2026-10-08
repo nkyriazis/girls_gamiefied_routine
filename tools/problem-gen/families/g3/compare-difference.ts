@@ -57,7 +57,8 @@ const SETTINGS: Setting[] = [
 export const compareDifference: Family = {
   id: 'compare-difference',
   grade: 3,
-  unit: 2,
+  chapter: '10',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const [p, q] = people(r, 2);

@@ -132,7 +132,8 @@ function party(r: Rng, p: Person, friends: boolean): { subject: string; along: s
 export const tripCosts: Family = {
   id: 'trip-costs',
   grade: 5,
-  unit: 2,
+  chapter: '2.9',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Ε΄, κεφ. 2.8 και 2.9 (πράξεις με φυσικούς αριθμούς), προβλήματα πολλών βημάτων',
   make(r, b) {
     const s = r.pick(SETTINGS);

@@ -19,6 +19,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "words-places",
     "unit": 1,
@@ -40,6 +43,9 @@
    "correctIndex": 1,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "words-places",
     "unit": 1,
@@ -61,6 +67,9 @@
    "correctIndex": 1,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "words-places",
     "unit": 1,
@@ -82,6 +91,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "words-places",
     "unit": 1,
@@ -103,6 +115,9 @@
    "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "words-places",
     "unit": 1,
@@ -118,6 +133,9 @@
    "correctValue": 55,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "tens-in",
     "unit": 1,
@@ -133,6 +151,9 @@
    "correctValue": 13,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "tens-in",
     "unit": 1,
@@ -148,6 +169,9 @@
    "correctValue": 12,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "tens-in",
     "unit": 1,
@@ -163,6 +187,9 @@
    "correctValue": 99,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "tens-in",
     "unit": 1,
@@ -178,6 +205,9 @@
    "correctValue": 92,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 1: Αριθμοί μέχρι το 1.000",
+   "chapter": "1",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "tens-in",
     "unit": 1,
@@ -193,6 +223,9 @@
    "correctValue": 70,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Πρόσθεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "add-mental",
     "unit": 1,
@@ -208,6 +241,9 @@
    "correctValue": 60,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Πρόσθεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "add-mental",
     "unit": 1,
@@ -223,6 +259,9 @@
    "correctValue": 40,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Πρόσθεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "add-mental",
     "unit": 1,
@@ -238,6 +277,9 @@
    "correctValue": 80,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Πρόσθεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "add-mental",
     "unit": 1,
@@ -253,6 +295,9 @@
    "correctValue": 70,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Πρόσθεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "add-mental",
     "unit": 1,
@@ -268,6 +313,9 @@
    "correctValue": 50,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Χρήματα",
+   "difficulty": 1,
    "generatorParams": {
     "family": "money",
     "unit": 1,
@@ -283,6 +331,9 @@
    "correctValue": 40,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Χρήματα",
+   "difficulty": 1,
    "generatorParams": {
     "family": "money",
     "unit": 1,
@@ -298,6 +349,9 @@
    "correctValue": 62,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Χρήματα",
+   "difficulty": 1,
    "generatorParams": {
     "family": "money",
     "unit": 1,
@@ -313,6 +367,9 @@
    "correctValue": 68,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Χρήματα",
+   "difficulty": 1,
    "generatorParams": {
     "family": "money",
     "unit": 1,
@@ -328,6 +385,9 @@
    "correctValue": 360,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 2: Προσθέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "2",
+   "topic": "Χρήματα",
+   "difficulty": 2,
    "generatorParams": {
     "family": "money",
     "unit": 1,
@@ -356,6 +416,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "chapter": "4",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-a",
     "unit": 1,
@@ -384,6 +447,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "chapter": "4",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-a",
     "unit": 1,
@@ -412,6 +478,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "chapter": "4",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-a",
     "unit": 1,
@@ -440,6 +509,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "chapter": "4",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-a",
     "unit": 1,
@@ -468,6 +540,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)",
+   "chapter": "4",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-a",
     "unit": 1,
@@ -496,6 +571,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "chapter": "5",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-b",
     "unit": 1,
@@ -524,6 +602,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "chapter": "5",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-b",
     "unit": 1,
@@ -552,6 +633,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "chapter": "5",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-b",
     "unit": 1,
@@ -580,6 +664,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "chapter": "5",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-b",
     "unit": 1,
@@ -608,6 +695,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 5: Πολλαπλασιασμός, προπαίδεια (ΙΙ)",
+   "chapter": "5",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "tables-match-b",
     "unit": 1,
@@ -632,6 +722,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-gap",
     "unit": 1,
@@ -656,6 +749,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-gap",
     "unit": 1,
@@ -680,6 +776,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-gap",
     "unit": 1,
@@ -704,6 +803,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-gap",
     "unit": 1,
@@ -728,6 +830,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-gap",
     "unit": 1,
@@ -743,6 +848,9 @@
    "correctValue": 10,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide",
     "unit": 1,
@@ -758,6 +866,9 @@
    "correctValue": 2,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide",
     "unit": 1,
@@ -773,6 +884,9 @@
    "correctValue": 5,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide",
     "unit": 1,
@@ -788,6 +902,9 @@
    "correctValue": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide",
     "unit": 1,
@@ -803,6 +920,9 @@
    "correctValue": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide",
     "unit": 1,
@@ -824,6 +944,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "fact-family",
     "unit": 1,
@@ -845,6 +968,9 @@
    "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "fact-family",
     "unit": 1,
@@ -866,6 +992,9 @@
    "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "fact-family",
     "unit": 1,
@@ -887,6 +1016,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "fact-family",
     "unit": 1,
@@ -908,6 +1040,9 @@
    "correctIndex": 1,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 6: Πολλαπλασιασμός και διαίρεση",
+   "chapter": "6",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "fact-family",
     "unit": 1,
@@ -923,6 +1058,9 @@
    "correctValue": 20,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "chapter": "8",
+   "topic": "Μετρήσεις",
+   "difficulty": 1,
    "generatorParams": {
     "family": "length",
     "unit": 2,
@@ -938,6 +1076,9 @@
    "correctValue": 700,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "chapter": "8",
+   "topic": "Μετρήσεις",
+   "difficulty": 2,
    "generatorParams": {
     "family": "length",
     "unit": 2,
@@ -953,6 +1094,9 @@
    "correctValue": 152,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "chapter": "8",
+   "topic": "Μετρήσεις",
+   "difficulty": 2,
    "generatorParams": {
     "family": "length",
     "unit": 2,
@@ -968,6 +1112,9 @@
    "correctValue": 353,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "chapter": "8",
+   "topic": "Μετρήσεις",
+   "difficulty": 2,
    "generatorParams": {
     "family": "length",
     "unit": 2,
@@ -983,6 +1130,9 @@
    "correctValue": 230,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 8: Μέτρηση μηκών με εκατοστά και χιλιοστά",
+   "chapter": "8",
+   "topic": "Μετρήσεις",
+   "difficulty": 2,
    "generatorParams": {
     "family": "length",
     "unit": 2,
@@ -998,6 +1148,9 @@
    "correctValue": 461,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "10",
+   "topic": "Αφαίρεση",
+   "difficulty": 2,
    "generatorParams": {
     "family": "subtract",
     "unit": 2,
@@ -1013,6 +1166,9 @@
    "correctValue": 183,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "10",
+   "topic": "Αφαίρεση",
+   "difficulty": 2,
    "generatorParams": {
     "family": "subtract",
     "unit": 2,
@@ -1028,6 +1184,9 @@
    "correctValue": 36,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "10",
+   "topic": "Αφαίρεση",
+   "difficulty": 2,
    "generatorParams": {
     "family": "subtract",
     "unit": 2,
@@ -1043,6 +1202,9 @@
    "correctValue": 149,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "10",
+   "topic": "Αφαίρεση",
+   "difficulty": 2,
    "generatorParams": {
     "family": "subtract",
     "unit": 2,
@@ -1058,6 +1220,9 @@
    "correctValue": 368,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 10: Αφαιρέσεις διψήφιων και τριψήφιων αριθμών",
+   "chapter": "10",
+   "topic": "Αφαίρεση",
+   "difficulty": 2,
    "generatorParams": {
     "family": "subtract",
     "unit": 2,
@@ -1073,6 +1238,9 @@
    "correctValue": 256,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "times-2x1",
     "unit": 2,
@@ -1088,6 +1256,9 @@
    "correctValue": 162,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "times-2x1",
     "unit": 2,
@@ -1103,6 +1274,9 @@
    "correctValue": 135,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "times-2x1",
     "unit": 2,
@@ -1118,6 +1292,9 @@
    "correctValue": 75,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "times-2x1",
     "unit": 2,
@@ -1133,6 +1310,9 @@
    "correctValue": 132,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "times-2x1",
     "unit": 2,
@@ -1148,6 +1328,9 @@
    "correctValue": 33,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-11",
     "unit": 2,
@@ -1163,6 +1346,9 @@
    "correctValue": 77,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-11",
     "unit": 2,
@@ -1178,6 +1364,9 @@
    "correctValue": 22,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-11",
     "unit": 2,
@@ -1193,6 +1382,9 @@
    "correctValue": 110,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "table-11",
     "unit": 2,
@@ -1208,6 +1400,9 @@
    "correctValue": 77,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 11: Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό",
+   "chapter": "11",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 1,
    "generatorParams": {
     "family": "table-11",
     "unit": 2,
@@ -1228,6 +1423,9 @@
    "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "words-digits",
     "unit": 3,
@@ -1248,6 +1446,9 @@
    "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "words-digits",
     "unit": 3,
@@ -1268,6 +1469,9 @@
    "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "words-digits",
     "unit": 3,
@@ -1289,6 +1493,9 @@
    "correctIndex": 1,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "words-digits",
     "unit": 3,
@@ -1310,6 +1517,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "words-digits",
     "unit": 3,
@@ -1325,6 +1535,9 @@
    "correctValue": 1099,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "neighbours",
     "unit": 3,
@@ -1340,6 +1553,9 @@
    "correctValue": 1790,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "neighbours",
     "unit": 3,
@@ -1355,6 +1571,9 @@
    "correctValue": 1999,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "neighbours",
     "unit": 3,
@@ -1370,6 +1589,9 @@
    "correctValue": 1000,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "neighbours",
     "unit": 3,
@@ -1385,6 +1607,9 @@
    "correctValue": 2590,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "neighbours",
     "unit": 3,
@@ -1400,6 +1625,9 @@
    "correctValue": 14,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "hundreds-in",
     "unit": 3,
@@ -1415,6 +1643,9 @@
    "correctValue": 21,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "hundreds-in",
     "unit": 3,
@@ -1430,6 +1661,9 @@
    "correctValue": 24,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "hundreds-in",
     "unit": 3,
@@ -1445,6 +1679,9 @@
    "correctValue": 10,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "hundreds-in",
     "unit": 3,
@@ -1460,6 +1697,9 @@
    "correctValue": 13,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "hundreds-in",
     "unit": 3,
@@ -1475,6 +1715,9 @@
    "correctValue": 2000,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "digit-value",
     "unit": 3,
@@ -1490,6 +1733,9 @@
    "correctValue": 80,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "digit-value",
     "unit": 3,
@@ -1505,6 +1751,9 @@
    "correctValue": 900,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "digit-value",
     "unit": 3,
@@ -1520,6 +1769,9 @@
    "correctValue": 10,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "digit-value",
     "unit": 3,
@@ -1535,6 +1787,9 @@
    "correctValue": 129,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "digits-extreme",
     "unit": 3,
@@ -1550,6 +1805,9 @@
    "correctValue": 607,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "digits-extreme",
     "unit": 3,
@@ -1565,6 +1823,9 @@
    "correctValue": 942,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "digits-extreme",
     "unit": 3,
@@ -1580,6 +1841,9 @@
    "correctValue": 875,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "digits-extreme",
     "unit": 3,
@@ -1595,6 +1859,9 @@
    "correctValue": true,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "compare",
     "unit": 3,
@@ -1610,6 +1877,9 @@
    "correctValue": false,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "compare",
     "unit": 3,
@@ -1625,6 +1895,9 @@
    "correctValue": true,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "compare",
     "unit": 3,
@@ -1640,6 +1913,9 @@
    "correctValue": false,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "compare",
     "unit": 3,
@@ -1672,6 +1948,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "order",
     "unit": 3,
@@ -1704,6 +1983,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "order",
     "unit": 3,
@@ -1736,6 +2018,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "order",
     "unit": 3,
@@ -1768,6 +2053,9 @@
    ],
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "order",
     "unit": 3,
@@ -1783,6 +2071,9 @@
    "correctValue": 2206,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "expanded",
     "unit": 3,
@@ -1798,6 +2089,9 @@
    "correctValue": 1107,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "expanded",
     "unit": 3,
@@ -1813,6 +2107,9 @@
    "correctValue": 2048,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "expanded",
     "unit": 3,
@@ -1828,6 +2125,9 @@
    "correctValue": 1108,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "expanded",
     "unit": 3,
@@ -1843,6 +2143,9 @@
    "correctValue": 600,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "count-by",
     "unit": 3,
@@ -1858,6 +2161,9 @@
    "correctValue": 1950,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "count-by",
     "unit": 3,
@@ -1873,6 +2179,9 @@
    "correctValue": 1210,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 3,
    "generatorParams": {
     "family": "count-by",
     "unit": 3,
@@ -1888,6 +2197,9 @@
    "correctValue": 320,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 14: Αριθμοί μέχρι το 3.000",
+   "chapter": "14",
+   "topic": "Αριθμοί",
+   "difficulty": 2,
    "generatorParams": {
     "family": "count-by",
     "unit": 3,
@@ -1909,6 +2221,9 @@
    "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "chapter": "15",
+   "topic": "Πρόσθεση",
+   "difficulty": 2,
    "generatorParams": {
     "family": "add-sub-choice",
     "unit": 3,
@@ -1930,6 +2245,9 @@
    "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "chapter": "15",
+   "topic": "Πρόσθεση",
+   "difficulty": 2,
    "generatorParams": {
     "family": "add-sub-choice",
     "unit": 3,
@@ -1951,6 +2269,9 @@
    "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "chapter": "15",
+   "topic": "Πρόσθεση",
+   "difficulty": 3,
    "generatorParams": {
     "family": "add-sub-choice",
     "unit": 3,
@@ -1972,6 +2293,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "chapter": "15",
+   "topic": "Πρόσθεση",
+   "difficulty": 3,
    "generatorParams": {
     "family": "add-sub-choice",
     "unit": 3,
@@ -1987,6 +2311,9 @@
    "correctValue": 2204,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "chapter": "15",
+   "topic": "Πρόσθεση",
+   "difficulty": 3,
    "generatorParams": {
     "family": "add",
     "unit": 3,
@@ -2002,6 +2329,9 @@
    "correctValue": 1758,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "chapter": "15",
+   "topic": "Πρόσθεση",
+   "difficulty": 3,
    "generatorParams": {
     "family": "add",
     "unit": 3,
@@ -2017,6 +2347,9 @@
    "correctValue": 1631,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "chapter": "15",
+   "topic": "Πρόσθεση",
+   "difficulty": 3,
    "generatorParams": {
     "family": "add",
     "unit": 3,
@@ -2032,6 +2365,9 @@
    "correctValue": 1703,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 15: Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών",
+   "chapter": "15",
+   "topic": "Πρόσθεση",
+   "difficulty": 3,
    "generatorParams": {
     "family": "add",
     "unit": 3,
@@ -2053,6 +2389,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί",
+   "chapter": "17",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "times-choice",
     "unit": 3,
@@ -2074,6 +2413,9 @@
    "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί",
+   "chapter": "17",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "times-choice",
     "unit": 3,
@@ -2095,6 +2437,9 @@
    "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί",
+   "chapter": "17",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "times-choice",
     "unit": 3,
@@ -2116,6 +2461,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 17: Πολλαπλασιασμοί",
+   "chapter": "17",
+   "topic": "Πολλαπλασιασμός",
+   "difficulty": 2,
    "generatorParams": {
     "family": "times-choice",
     "unit": 3,
@@ -2137,6 +2485,9 @@
    "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις",
+   "chapter": "18",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide-remainder",
     "unit": 3,
@@ -2158,6 +2509,9 @@
    "correctIndex": 0,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις",
+   "chapter": "18",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide-remainder",
     "unit": 3,
@@ -2179,6 +2533,9 @@
    "correctIndex": 2,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις",
+   "chapter": "18",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide-remainder",
     "unit": 3,
@@ -2200,6 +2557,9 @@
    "correctIndex": 3,
    "stars": 1,
    "source": "Μαθηματικά Γ΄, κεφ. 18: Διαιρέσεις",
+   "chapter": "18",
+   "topic": "Διαίρεση",
+   "difficulty": 1,
    "generatorParams": {
     "family": "divide-remainder",
     "unit": 3,

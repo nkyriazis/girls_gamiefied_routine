@@ -83,7 +83,8 @@ function build(r: Rng, p: Person, q: Person, doubled: boolean): Setup | null {
 export const doubleHalf: Family = {
   id: 'double-half',
   grade: 3,
-  unit: 2,
+  chapter: '11',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 6 «Πολλαπλασιασμός και διαίρεση» και κεφ. 11 «Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό»',
   make(r, b) {
     const [p, q] = people(r, 2);

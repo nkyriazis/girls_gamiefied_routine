@@ -22,7 +22,8 @@ const ROLLS: Roll[] = [
 export const lengthCm: Family = {
   id: 'length-cm',
   grade: 3,
-  unit: 2,
+  chapter: '10',
+  topic: 'Μετρήσεις',
   source: 'Μαθηματικά Γ΄, κεφ. 8 «Μέτρηση μηκών με εκατοστά και χιλιοστά»',
   make(r, b) {
     const [p, q] = people(r, 2);

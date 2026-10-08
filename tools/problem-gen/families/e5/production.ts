@@ -63,7 +63,8 @@ const MONTHS = ['τον Μάρτιο', 'τον Οκτώβριο', 'τον Μάι
 export const production: Family = {
   id: 'production',
   grade: 5,
-  unit: 2,
+  chapter: '2.12',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Ε΄, κεφ. 2.9 «Ο πολλαπλασιασμός στους φυσικούς αριθμούς»',
   make(r, b) {
     const s = r.pick(SETTINGS);

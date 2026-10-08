@@ -32,7 +32,8 @@ const every = (t: Thing) => (t.g === 'n' ? 'όλα τα' : t.g === 'f' ? 'όλε
 export const buyAndChange: Family = {
   id: 'buy-and-change',
   grade: 3,
-  unit: 2,
+  chapter: '11',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Γ΄, κεφ. 11 «Πολλαπλασιασμός διψήφιου με μονοψήφιο αριθμό» και κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const p = r.pick(PEOPLE);

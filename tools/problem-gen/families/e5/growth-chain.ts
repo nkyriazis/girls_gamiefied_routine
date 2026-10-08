@@ -61,7 +61,8 @@ const DAYS_ACC = ['την πρώτη', 'τη δεύτερη', 'την τρίτη
 export const growthChain: Family = {
   id: 'growth-chain',
   grade: 5,
-  unit: 2,
+  chapter: '2.9',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 1, 4ο πρόβλημα (τα πορτοκάλια της κυρίας Μαρίας)',
   make(r, b) {
     const s = r.pick(SETTINGS);

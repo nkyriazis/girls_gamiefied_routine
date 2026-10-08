@@ -114,7 +114,8 @@ const round10k = (n: number) => Math.round(n / 10_000) * 10_000;
 export const bigTable: Family = {
   id: 'big-table',
   grade: 5,
-  unit: 2,
+  chapter: '2.8',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Ε΄, κεφ. 2.8 «Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς» (οι επισκέπτες του Μουσείου της Ακρόπολης)',
   make(r, b) {
     const s = r.pick(SETTINGS);

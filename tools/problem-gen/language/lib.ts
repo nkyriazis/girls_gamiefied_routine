@@ -21,8 +21,10 @@ export interface LanguageFamily {
   /** Short, unique within its grade, kebab-case: part of every item id. */
   id: string;
   grade: LanguageGrade;
-  /** The rule check.ts derives the key from (its solvers are keyed by skill). */
+  /** The rule check.ts derives the key from (its solvers are keyed by skill); also its difficulty (../difficulty.ts). */
   skill: string;
+  /** What it is about: one of shared/curriculum.ts TOPICS.language. */
+  topic: string;
   items: LanguageItem[];
 }
 

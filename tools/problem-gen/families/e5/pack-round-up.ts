@@ -84,7 +84,8 @@ const SETTINGS: Setting[] = [
 export const packRoundUp: Family = {
   id: 'pack-round-up',
   grade: 5,
-  unit: 2,
+  chapter: '2.12',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 2, 1ο πρόβλημα; κεφ. 2.12 «Η διαίρεση στους φυσικούς αριθμούς»',
   make(r, b) {
     const s = r.pick(SETTINGS);

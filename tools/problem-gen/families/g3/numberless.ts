@@ -146,7 +146,8 @@ const TALES = [gift, sold, compare, parts, spend, twoTimes];
 export const numberless: Family = {
   id: 'numberless',
   grade: 3,
-  unit: 2,
+  chapter: '12',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 12 «Προβλήματα»',
   make(r, b) {
     const [p, q] = people(r, 2);

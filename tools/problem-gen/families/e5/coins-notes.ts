@@ -99,7 +99,8 @@ const SETTINGS: Setting[] = [
 export const coinsNotes: Family = {
   id: 'coins-notes',
   grade: 5,
-  unit: 2,
+  chapter: '2.12',
+  topic: 'Χρήματα',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 1, 3ο πρόβλημα (τα κέρματα των 50 λεπτών)',
   make(r, b) {
     const s = r.pick(SETTINGS);
