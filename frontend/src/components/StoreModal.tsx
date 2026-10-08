@@ -31,6 +31,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   const revision = exerciseAssignments.some(a => a.userId === user.id && a.revision && !a.extra);
   // An extra problem she left with ✕: the edition that explains its card (#67)
   const extra = exerciseAssignments.some(a => a.userId === user.id && a.extra && a.status === 'pending');
+  // A retry of an item shown worked among hers: the edition that explains its pill (#136)
+  const retry = exerciseAssignments.some(a => a.userId === user.id && a.retryOf && !a.extra);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   // A purchase asks first, inside the reward's own card: a kid can't undo it (only a parent can)
   const [askingId, setAskingId] = useState<string | null>(null);
@@ -130,7 +132,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   };
 
   return (
-    <HelpScreen tour={storeTour(user.id, revision, extra)}>
+    <HelpScreen tour={storeTour(user.id, revision, extra, retry)}>
       <motion.div
         className="store-overlay"
         initial={{ opacity: 0 }}

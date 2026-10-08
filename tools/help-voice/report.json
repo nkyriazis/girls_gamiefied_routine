@@ -412,8 +412,12 @@
   "where": [
    "store/store.balance",
    "store-extra/store.balance",
+   "store-retry/store.balance",
+   "store-retry-extra/store.balance",
    "store-revision/store.balance",
-   "store-revision-extra/store.balance"
+   "store-revision-extra/store.balance",
+   "store-revision-retry/store.balance",
+   "store-revision-retry-extra/store.balance"
   ],
   "id": "ee65c56cf446",
   "ok": true,
@@ -447,8 +451,12 @@
   "where": [
    "store/store.earn",
    "store-extra/store.earn",
+   "store-retry/store.earn",
+   "store-retry-extra/store.earn",
    "store-revision/store.earn",
-   "store-revision-extra/store.earn"
+   "store-revision-extra/store.earn",
+   "store-revision-retry/store.earn",
+   "store-revision-retry-extra/store.earn"
   ],
   "id": "06f72bfcffb5",
   "ok": true,
@@ -481,8 +489,12 @@
   "where": [
    "store/exercises.more",
    "store-extra/exercises.more",
+   "store-retry/exercises.more",
+   "store-retry-extra/exercises.more",
    "store-revision/exercises.more",
-   "store-revision-extra/exercises.more"
+   "store-revision-extra/exercises.more",
+   "store-revision-retry/exercises.more",
+   "store-revision-retry-extra/exercises.more"
   ],
   "id": "bc7c6282c514",
   "ok": true,
@@ -516,8 +528,12 @@
   "where": [
    "store/store.rewards",
    "store-extra/store.rewards",
+   "store-retry/store.rewards",
+   "store-retry-extra/store.rewards",
    "store-revision/store.rewards",
-   "store-revision-extra/store.rewards"
+   "store-revision-extra/store.rewards",
+   "store-revision-retry/store.rewards",
+   "store-revision-retry-extra/store.rewards"
   ],
   "id": "11f2d02869e3",
   "ok": true,
@@ -551,8 +567,12 @@
   "where": [
    "store/store.give",
    "store-extra/store.give",
+   "store-retry/store.give",
+   "store-retry-extra/store.give",
    "store-revision/store.give",
-   "store-revision-extra/store.give"
+   "store-revision-extra/store.give",
+   "store-revision-retry/store.give",
+   "store-revision-retry-extra/store.give"
   ],
   "id": "dc841545ceef",
   "ok": true,
@@ -586,8 +606,12 @@
   "where": [
    "store/store.activity",
    "store-extra/store.activity",
+   "store-retry/store.activity",
+   "store-retry-extra/store.activity",
    "store-revision/store.activity",
-   "store-revision-extra/store.activity"
+   "store-revision-extra/store.activity",
+   "store-revision-retry/store.activity",
+   "store-revision-retry-extra/store.activity"
   ],
   "id": "ba17651906cd",
   "ok": true,
@@ -620,8 +644,12 @@
   "where": [
    "store/store.close",
    "store-extra/store.close",
+   "store-retry/store.close",
+   "store-retry-extra/store.close",
    "store-revision/store.close",
-   "store-revision-extra/store.close"
+   "store-revision-extra/store.close",
+   "store-revision-retry/store.close",
+   "store-revision-retry-extra/store.close"
   ],
   "id": "b757876ac67e",
   "ok": true,
@@ -654,9 +682,13 @@
   "say": "Για μετά. Ένα έξτρα πρόβλημα που άνοιξες. Πάτα το και συνεχίζεις από εκεί που έμεινες.",
   "where": [
    "store-extra/exercises.extra",
+   "store-retry-extra/exercises.extra",
    "store-revision-extra/exercises.extra",
+   "store-revision-retry-extra/exercises.extra",
    "exercises-extra/exercises.extra",
-   "exercises-revision-extra/exercises.extra"
+   "exercises-retry-extra/exercises.extra",
+   "exercises-revision-extra/exercises.extra",
+   "exercises-revision-retry-extra/exercises.extra"
   ],
   "id": "8cc921ee84a3",
   "ok": true,
@@ -686,12 +718,55 @@
   "lufs": -16.1
  },
  {
+  "say": "Ξανά. Σε μια τέτοια σε βοήθησα. Τώρα δοκίμασε χωρίς βοήθεια!",
+  "where": [
+   "store-retry/exercises.retry",
+   "store-retry-extra/exercises.retry",
+   "store-revision-retry/exercises.retry",
+   "store-revision-retry-extra/exercises.retry",
+   "exercises-retry/exercises.retry",
+   "exercises-retry-extra/exercises.retry",
+   "exercises-revision-retry/exercises.retry",
+   "exercises-revision-retry-extra/exercises.retry"
+  ],
+  "id": "2d1aca9e77e5",
+  "ok": true,
+  "takes": 3,
+  "tried": 3,
+  "seed": 2,
+  "heard": "Ξανά! Σε μια τέτοια σε βοήθησα. Τώρα δοκίμασε χωρίς βοήθεια.",
+  "cer": 0.0,
+  "language": "el",
+  "greek": 0.9941,
+  "f0": 318,
+  "lively": 6.13,
+  "secs": 4.25,
+  "peak": 0.585,
+  "rate": 14.1,
+  "clean": {
+   "pesq": 4.08,
+   "stoi": 0.987,
+   "si_sdr": 30.6,
+   "outlier": false
+  },
+  "same_voice": 0.914,
+  "clip": "help-voice/2d1aca9e77e5.mp3",
+  "shipped_cer": 0.0,
+  "shipped_heard": "Ξανά! Σε μια τέτοια σε βοήθησα. Τώρα δοκίμασε χωρίς βοήθεια.",
+  "kb": 33.7,
+  "lufs": -16.1
+ },
+ {
   "say": "Επανάληψη. Μια άσκηση από την προηγούμενη τάξη, για να θυμάσαι όσα έμαθες.",
   "where": [
    "store-revision/exercises.revision",
    "store-revision-extra/exercises.revision",
+   "store-revision-retry/exercises.revision",
+   "store-revision-retry-extra/exercises.revision",
    "exercises-revision/exercises.revision",
-   "exercises-revision-extra/exercises.revision"
+   "exercises-revision-extra/exercises.revision",
+   "exercises-revision-retry/exercises.revision",
+   "exercises-revision-retry-extra/exercises.revision"
   ],
   "id": "b54ae5aa6869",
   "ok": true,
@@ -1042,8 +1117,12 @@
   "where": [
    "exercises/exercises.kid",
    "exercises-extra/exercises.kid",
+   "exercises-retry/exercises.kid",
+   "exercises-retry-extra/exercises.kid",
    "exercises-revision/exercises.kid",
-   "exercises-revision-extra/exercises.kid"
+   "exercises-revision-extra/exercises.kid",
+   "exercises-revision-retry/exercises.kid",
+   "exercises-revision-retry-extra/exercises.kid"
   ],
   "id": "9e092ab97845",
   "ok": true,
@@ -1076,8 +1155,12 @@
   "where": [
    "exercises/exercises.card",
    "exercises-extra/exercises.card",
+   "exercises-retry/exercises.card",
+   "exercises-retry-extra/exercises.card",
    "exercises-revision/exercises.card",
-   "exercises-revision-extra/exercises.card"
+   "exercises-revision-extra/exercises.card",
+   "exercises-revision-retry/exercises.card",
+   "exercises-revision-retry-extra/exercises.card"
   ],
   "id": "17307bcbe838",
   "ok": true,
@@ -1110,8 +1193,12 @@
   "where": [
    "exercises/exercises.more",
    "exercises-extra/exercises.more",
+   "exercises-retry/exercises.more",
+   "exercises-retry-extra/exercises.more",
    "exercises-revision/exercises.more",
-   "exercises-revision-extra/exercises.more"
+   "exercises-revision-extra/exercises.more",
+   "exercises-revision-retry/exercises.more",
+   "exercises-revision-retry-extra/exercises.more"
   ],
   "id": "88fe115c6902",
   "ok": true,
