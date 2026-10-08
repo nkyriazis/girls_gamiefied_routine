@@ -114,6 +114,8 @@ export const api = {
     post<Saved>(`/admin/data?${saveQuery(version, source, true)}`, data, 'Failed to save data'),
   getConfigText: () => get<{ text: string }>('/admin/data/text', 'Failed to read data.json').then(r => r.text),
   validateConfig: (data: unknown) => post<ValidationResult>('/admin/validate', data, 'Failed to validate config'),
+  // The forms' raw cron field: why the scheduler can't read it, or null (#89; backend/src/cron.ts reads it)
+  validateCron: (cron: string) => post<{ error: string | null }>('/admin/validate-cron', { cron }, 'Failed to check the cron'),
   getRawState: () => get<StateSnapshot>('/admin/state', 'Failed to fetch state'),
   saveRawState: (data: unknown) => post('/admin/state', data, 'Failed to save state'),
   validateState: (data: unknown) => post<ValidationResult>('/admin/validate-state', data, 'Failed to validate state'),

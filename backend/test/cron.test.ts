@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cronMatchesAt, nextCronRun } from '../src/cron';
+import { cronError, cronMatchesAt, nextCronRun } from '../src/cron';
 
 const ATHENS = 'Europe/Athens';
 const at = (iso: string) => new Date(iso);
@@ -77,4 +77,16 @@ test('an expression that is not a cron throws', () => {
 test('nextCronRun: the next time, strictly after', () => {
   assert.equal(nextCronRun('0 18 * * 1-3,5', ATHENS, at('2026-10-07T15:00:00Z')).toISOString(), '2026-10-09T15:00:00.000Z');
   assert.equal(nextCronRun('0 18 * * *', ATHENS, at('2026-10-07T14:59:30Z')).toISOString(), '2026-10-07T15:00:00.000Z');
+});
+
+test('cronError: null for a cron the scheduler reads, its reason for one it can\'t (#89)', () => {
+  // All of these pass data.schema.json's pattern (digits, *, -, comma and / in five fields)
+  for (const expr of ['61 18 * * *', '0 25 * * *', '5-1 * * * *', '99 20 * * *', '*/0 * * * *', '0 0 31 2 *']) {
+    assert.equal(typeof cronError(expr), 'string', expr);
+    assert.throws(() => cronMatchesAt(expr, new Date(), ATHENS), expr); // the same reading
+  }
+  assert.match(cronError('5-1 * * * *')!, /5-1/);
+  for (const expr of ['0 7 * * 1-5', '0-30/10 7 * * *', '0 0 * * 7', '*/15 * * * *', '0 9 1 * 1']) {
+    assert.equal(cronError(expr), null, expr);
+  }
 });

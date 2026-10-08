@@ -491,6 +491,17 @@ export interface DataConfig {
 export type ConfigSaveSource = 'form' | 'advanced' | 'advanced-fix' | 'api';
 export const CONFIG_SAVE_SOURCES: readonly ConfigSaveSource[] = ['form', 'advanced', 'advanced-fix', 'api'];
 
+// A schedule's cron or a chore's availabilityCron that passes data.schema.json (its characters) but that the
+// scheduler (backend/src/cron.ts) can't read, such as «99 20 * * *». `path` is the field's JSON pointer in
+// data.json, `error` cron-parser's reason.
+export interface ConfigWarning {
+  path: string;
+  kind: 'schedule' | 'chore';
+  id: string;
+  cron: string;
+  error: string;
+}
+
 export interface AppState {
   config: DataConfig; // the live data.json
   // The versions of the live data.json (the one in `config`, read with it) and exercises.json: a short hash
@@ -500,6 +511,9 @@ export interface AppState {
   // data.json or exercises.json is invalid on disk: the last valid version stays live, or, when the file
   // couldn't be read since the start (emptyFallback), an empty one. Saving is off until it is fixed.
   configError: { message: string; errors: unknown[]; file: string; emptyFallback: boolean } | null;
+  // Crons in the live data.json that the scheduler can't read (#89): the file loaded and is live, but that
+  // schedule never fires and that chore never appears until it is fixed. Saving stays on.
+  configWarnings: ConfigWarning[];
   users: User[]; // config users with their balance and assigned routines
   // STATE carries the current world, never the archive (#34). Purchases and gifts: every pending one,
   // whatever its age, those decided in the last HISTORY_DAYS (by resolvedAt, else createdAt), and, for

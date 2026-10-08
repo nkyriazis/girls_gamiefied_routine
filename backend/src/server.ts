@@ -20,20 +20,20 @@ import {
   writeRawExercises, writeRawConfig, ConfigConflict, type ConfigSave, startExerciseSession, submitExerciseAnswer,
   closeExerciseSession, gameResultsLeaving, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
   logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
-  stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp
+  stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp, cronDue
 } from './db';
-import { config, configError, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
+import { config, configError, configWarnings, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
 import { HEARTBEAT_MS } from './sync';
 import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
 import { BackupJob, scheduleBackups } from './backupSchedule';
 import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
-import { cronMatchesAt, nextCronRun } from './cron';
+import { cronError, nextCronRun } from './cron';
 import {
   answerBody, AnswerBody, claimBody, ClaimBody, closeBody, CloseBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
   helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, spendingBody, SpendingBody, spendingStatusBody,
   SpendingStatusBody, starsBody, StarsBody, timeBody, TimeBody, transferActionBody, TransferActionBody, transferBody, TransferBody,
-  userBody, UserBody
+  userBody, UserBody, validateCronBody, ValidateCronBody
 } from './bodies';
 
 const pump = util.promisify(pipeline);
@@ -63,16 +63,18 @@ async function checkSchedules(date: Date) {
   const localTime = DateTime.fromJSDate(date).setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss');
   console.log(`Checking schedules for: ${localTime} (${timezone})`);
   
-  // Check regular schedules (flows, routines)
+  // Check regular schedules (flows, routines). A cron it can't read is SCHEDULE_CRON_ERROR, once per
+  // schedule and cron (cronDue); SCHEDULE_ERROR is a schedule that matched and failed to start, every time.
   for (const schedule of schedules) {
+    const due = cronDue(schedule.cron, date, timezone,
+      { key: `schedule:${schedule.id}`, type: 'SCHEDULE_CRON_ERROR', details: { scheduleId: schedule.id } });
+    if (!due) continue;
     try {
-      if (cronMatchesAt(schedule.cron, date, timezone)) {
-        console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
-        logAction('SCHEDULE_MATCH', { scheduleId: schedule.id, targetId: schedule.targetId, cron: schedule.cron, time: localTime });
-        triggerAction(schedule.targetId, `schedule:${schedule.id}`);
-      }
+      console.log(`Triggering schedule ${schedule.id} for target ${schedule.targetId}`);
+      logAction('SCHEDULE_MATCH', { scheduleId: schedule.id, targetId: schedule.targetId, cron: schedule.cron, time: localTime });
+      triggerAction(schedule.targetId, `schedule:${schedule.id}`);
     } catch (err) {
-      console.error(`Error checking schedule ${schedule.id}:`, err);
+      console.error(`Error starting schedule ${schedule.id}:`, err);
       logAction('SCHEDULE_ERROR', { scheduleId: schedule.id, error: (err as Error).message });
     }
   }
@@ -461,15 +463,27 @@ server.get('/api/admin/data', async (request, reply) => {
   return value;
 });
 
-// Admin: Validate config against schema
+// Admin: Validate config as a save would (the Advanced editor's pre-check): the schema, then the crons
+// it brings in that the scheduler can't read (ConfigFile.validate)
 server.post('/api/admin/validate', async (request, reply) => {
   try {
-    const error = check(dataSchema, request.body, 'Invalid config');
+    const error = dataConfig.validate(request.body, 'Invalid config');
     return error ? { valid: false, errors: error.errors } : { valid: true };
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
   }
+});
+
+// The forms' raw cron field (#89): can the scheduler read it, as a save would check it? { error: null } when it
+// can, else why not, in a line the field shows. The schema's shape first (five fields of digits, *, -, comma
+// and /), then cron.ts, the one reader.
+const CRON_PATTERN = new RegExp((dataSchema.schema as { properties: { schedules: { items: { properties: { cron: { pattern: string } } } } } })
+  .properties.schedules.items.properties.cron.pattern);
+server.post<{ Body: ValidateCronBody }>('/api/admin/validate-cron', { schema: { body: validateCronBody } }, async request => {
+  const { cron } = request.body;
+  if (!CRON_PATTERN.test(cron)) return { error: 'Χρειάζονται 5 πεδία (λεπτό ώρα μέρα μήνας μέρα-εβδομάδας) με ψηφία, *, -, κόμμα και /' };
+  return { error: cronError(cron) };
 });
 
 // Admin: Validate state against schema
@@ -544,6 +558,7 @@ server.get('/api/admin/validation-status', async (request, reply) => {
   // State lives in the database now, so there is no state file to be invalid.
   return {
     config: configError(),
+    warnings: configWarnings(), // crons in the live data.json the scheduler can't read (#89)
     state: null
   };
 });
@@ -796,7 +811,7 @@ const start = async () => {
 
 // The routes are importable (the tests call them with server.inject against their own data); only
 // running this file (nodemon in dev, `node dist/backend/src/server.js` in the image) starts the server.
-export { server };
+export { server, checkSchedules };
 
 if (require.main === module) {
   // Graceful shutdown (SIGTERM from `docker stop`, SIGINT from Ctrl-C). Every

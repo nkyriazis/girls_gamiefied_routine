@@ -68,6 +68,9 @@
 .p-hint { margin: 0; font-size: 0.85rem; color: var(--color-text-muted); }
 .p-warning { color: var(--color-warning); }
 .p-banner { margin-bottom: 1.25rem; padding: 0.9rem 1rem; border-radius: 1rem; background: rgba(255, 0, 80, 0.15); border: 1px solid var(--color-danger); }
+.p-banner.warn { background: rgba(255, 170, 0, 0.14); border-color: var(--color-warning); }
+.p-banner-list { margin: 0.5rem 0 0.75rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 4px; overflow-wrap: anywhere; }
+.p-banner-list .p-hint { display: inline; }
 
 .p-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .p-row {
