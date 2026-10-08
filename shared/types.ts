@@ -433,6 +433,11 @@ export interface ConfigUser {
   grade?: SchoolGrade;
   problemReading?: ProblemReading; // default "marked"
   forgiveness?: Forgiveness; // default "forgiving"
+  // #71: how far her class has got, per book (a chapter or lesson id of shared/curriculum.ts), set by a
+  // parent; unset, the pace of the book for today. Her daily set comes only from what that reaches.
+  progress?: { maths?: string; language?: string };
+  // The hardest her exercises are while there are enough (1 easy … 3 hard); unset, all
+  difficulty?: 1 | 2 | 3;
 }
 
 export interface ConfigTask {

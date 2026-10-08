@@ -6,7 +6,7 @@ import {
   ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ExerciseSummary, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
   Forgiveness, ProblemExercise, ProblemReading, ProblemStep, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
-import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
+import { drawDailySet, drawGate, exercisePoolProvider, exercisesPerDay, fallbackOf, gateOrder, storyMarks } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, stepHelp, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
@@ -1359,31 +1359,35 @@ export function extraProblemsToday(userId: string): { used: number; limit: numbe
 // today, daily or extra. The day's limit counts every extra she started, finished or not, so
 // setting one aside earns nothing; at most MAX_SET_ASIDE wait at once.
 export async function startExtraProblem(userId: string): Promise<ExerciseAssignmentWithExercise> {
-  if (!config().users.some(u => u.id === userId)) throw new Error('Unknown user');
+  const user = config().users.find(u => u.id === userId);
+  if (!user) throw new Error('Unknown user');
   // Problems of her own grade (revision pools hold none)
   const problems = (await exercisePoolProvider.getPoolsForUser(userId)).own.filter(e => e.type === 'problem');
   if (problems.length === 0) throw new Error('No problems for this kid (is their class set?)');
 
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
+  // What her class has reached, at her difficulty, as the daily set (#71)
+  const { gate } = drawGate(user, today);
   const assignment = store.transaction(() => {
     const { used, limit } = extraProblemsToday(userId);
     if (used >= limit) throw new Error('No more extra problems today');
     const todays = store.exerciseAssignments.all('userId = ? AND date = ?', userId, today);
     const setAside = todays.filter(a => a.extra && a.status === 'pending').length;
     if (setAside >= MAX_SET_ASIDE) throw new Error(extraRefusals.setAside);
-    // Not one of today's own, whether daily or extra; once all were, one she finished today
-    const had = new Set(todays.map(a => a.exerciseId));
+    // Never one pending today; one she had today (daily or extra) only once every other was had more
+    // recently: today's are the latest seen, so the gate's order puts them last within their tier
     const pending = new Set(todays.filter(a => a.status === 'pending').map(a => a.exerciseId));
-    const fresh = problems.filter(p => !had.has(p.id));
-    const candidates = fresh.length ? fresh : problems.filter(p => !pending.has(p.id));
+    const candidates = problems.filter(p => !pending.has(p.id));
     if (candidates.length === 0) throw new Error(extraRefusals.noneLeft);
-    const [problem] = freshLast(candidates, lastSeen(userId)).slice(-1);
+    const [best] = gateOrder(candidates, gate, lastSeen(userId)).slice(-1);
+    const problem = best.ex;
     const created: ExerciseAssignment = {
       id: randomUUID(), userId, exerciseId: problem.id, date: today, status: 'pending', attempts: 0,
       assignedAt: new Date().toISOString(), extra: true
     };
     store.exerciseAssignments.put(created);
-    logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit, setAside });
+    const fallback = fallbackOf(best.tier);
+    logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit, setAside, ...(fallback ? { fallback } : {}) });
     return created;
   });
   const exercise = await exercisePoolProvider.getExerciseById(assignment.exerciseId);
@@ -1403,7 +1407,9 @@ export async function ensureDailyAssignments(): Promise<boolean> {
     if (hasToday) continue;
 
     const pools = await exercisePoolProvider.getPoolsForUser(user.id);
-    const { drawn, revision } = drawDailySet(pools, exercisesPerDay(), lastSeen(user.id), dailySetsSoFar(user.id));
+    // Only what her class has reached (her progress, else the book's pace), at her difficulty (#71)
+    const { gate, progress, pace } = drawGate(user, today);
+    const { drawn, revision, fallback } = drawDailySet(pools, exercisesPerDay(), lastSeen(user.id), dailySetsSoFar(user.id), gate);
     if (drawn.length === 0) continue;
 
     // Re-check after the await: a concurrent request may have drawn already.
@@ -1422,7 +1428,9 @@ export async function ensureDailyAssignments(): Promise<boolean> {
       }
       created = true;
       logAction('EXERCISE_ASSIGNMENTS_CREATED', {
-        userId: user.id, date: today, exerciseIds: drawn.map(e => e.id), ...(revision.length ? { revision } : {})
+        userId: user.id, date: today, exerciseIds: drawn.map(e => e.id), ...(revision.length ? { revision } : {}),
+        ...(progress ? { progress } : {}), ...(pace?.length ? { pace } : {}), ...(user.difficulty ? { difficulty: user.difficulty } : {}),
+        ...(Object.keys(fallback).length ? { fallback } : {})
       });
     });
   }

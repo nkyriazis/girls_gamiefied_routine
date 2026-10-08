@@ -1,5 +1,6 @@
 import type { CheckWarning, ConfigList, ConfigWarning, CronWarning, DataConfig, FlowAction, FlowStep } from '../../shared/types';
 import { THEME_COLOR_TOKENS } from '../../shared/themeColours';
+import { hasCurriculum, isPosition, SUBJECTS } from '../../shared/curriculum';
 import { unreadableCrons } from './cron';
 
 // What data.json can have that data.schema.json can't see: the rules of data.json's ConfigFile (config.ts).
@@ -11,7 +12,9 @@ import { unreadableCrons } from './cron';
 //   is one too (unless both are «alarm»: reserved-id says it);
 // - missing-link: an id that names nothing. The backend skips it without a word (usersView,
 //   assignmentTasks, triggerAction's TRIGGER_FAILED, enterStep), so a routine loses a task, a schedule or
-//   a flow step starts nothing, a chore limited to missing kids can be done by nobody;
+//   a flow step starts nothing, a chore limited to missing kids can be done by nobody; and a kid's progress
+//   (#71) that is no place in her grade's book (shared/curriculum.ts), which the draw then reads as unset
+//   (the book's pace);
 // - blank: a kid's name, or a task's, routine's, reward's or chore's title, that is only spaces (the
 //   schema's minLength lets «  » through);
 // - colour: a kid's or a routine's colour that is none (isColour), which the kids' screen
@@ -32,7 +35,7 @@ export const refuses = (w: ConfigWarning): w is CronWarning => w.kind === 'sched
 
 /** Every problem the rules find in `data`, the most harmful kinds first. */
 export function configProblems(data: DataConfig): ConfigWarning[] {
-  return [...duplicateIds(data), ...missingLinks(data), ...flowCycles(data), ...reservedIds(data), ...blanks(data),
+  return [...duplicateIds(data), ...missingLinks(data), ...progressPlaces(data), ...flowCycles(data), ...reservedIds(data), ...blanks(data),
     ...unreadableCrons(data), ...colours(data)];
 }
 
@@ -243,6 +246,21 @@ function reservedIds(d: DataConfig): CheckWarning[] {
   });
   reserved('routineAssignments', d.routineAssignments, 'αυτή τη ρουτίνα');
   reserved('flows', d.flows, 'αυτή τη ροή');
+  return found;
+}
+
+// A kid's progress names a chapter (maths) or lesson (language) of her grade's book, as the parents' form sets it
+function progressPlaces(d: DataConfig): CheckWarning[] {
+  const found: CheckWarning[] = [];
+  d.users.forEach((u, i) => {
+    for (const subject of SUBJECTS) {
+      const id = u.progress?.[subject];
+      if (id === undefined || (hasCurriculum(u.grade) && isPosition(u.grade, subject, id))) continue;
+      const [book, place] = subject === 'maths' ? ['Μαθηματικά', 'κεφάλαιο'] : ['Γλώσσα', 'μάθημα'];
+      found.push(problem('missing-link', 'users', i, u.id, 'progress', id,
+        `Το «${id}» (${book}) του παιδιού ${label(u)} δεν είναι ${place} του βιβλίου της τάξης του: οι ασκήσεις ακολουθούν τον ρυθμό του βιβλίου.`, `/${subject}`));
+    }
+  });
   return found;
 }
 
