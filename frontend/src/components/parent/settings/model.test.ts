@@ -1,8 +1,8 @@
 // npm test (frontend): the kids' form (#36) saves kids that look like the hand-written ones
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { ConfigUser } from '@shared/types';
-import { kidIsValid, newKid, THEME_COLORS, tidyUser } from './model.ts';
+import type { ConfigUser, DataConfig } from '@shared/types';
+import { kidIsValid, newKid, targetsOf, THEME_COLORS, tidyUser } from './model.ts';
 
 const kid = (over: Partial<ConfigUser> = {}): ConfigUser => ({
     id: 'u1', name: 'Ηλέκτρα', avatar: { type: 'emoji', value: '🦊' }, color: 'var(--color-accent)', ...over,
@@ -51,4 +51,15 @@ test('a new kid\'s id must be unused; an edited kid keeps hers', () => {
     assert.equal(kidIsValid(kid({ id: 'u2' }), users, false), true);
     assert.equal(kidIsValid(kid({ id: 'u2' }), users, true), false);
     assert.equal(kidIsValid(kid({ id: 'kid-new' }), users, true), true);
+});
+
+test('targetsOf never offers an assignment or a flow whose id is «alarm» (#121)', () => {
+    const icon = { type: 'emoji' as const, value: 'x' };
+    const config = {
+        users: [], tasks: [], routineTasks: [], schedules: [], rewards: [],
+        routines: [{ id: 'r1', title: 'Βραδινή', themeColor: 'red', icon }],
+        routineAssignments: [{ id: 'alarm', userId: 'u1', routineId: 'r1' }, { id: 'a1', userId: 'u1', routineId: 'r1' }],
+        flows: [{ id: 'alarm', steps: [] }, { id: 'f1', steps: [] }],
+    } as DataConfig;
+    assert.deepEqual(targetsOf(config, [{ id: 'u1', name: 'Ηλέκτρα' }] as never).map(t => t.id), ['f1', 'a1']);
 });

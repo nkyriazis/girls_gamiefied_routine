@@ -26,11 +26,14 @@ export const asFormIcon = (icon: IconValue): FormIcon =>
 
 export interface Target { id: string; type: Schedule['type']; label: string }
 
-// What a schedule (or "start now") can start: flows, and a kid's routine.
+// What a schedule (or "start now") can start: flows, and a kid's routine. Not an item whose id is «alarm»:
+// a schedule or push with «alarm» rings the plain alarm (triggerAction, #121), so it would never start it;
+// the forms show the server's reserved-id warning instead.
 export function targetsOf(config: DataConfig, users: User[]): Target[] {
+    const startable = <T extends { id: string }>(items: T[]) => items.filter(x => x.id !== 'alarm');
     return [
-        ...config.flows.map(f => ({ id: f.id, type: 'flow' as const, label: f.id })),
-        ...config.routineAssignments.map(a => ({
+        ...startable(config.flows).map(f => ({ id: f.id, type: 'flow' as const, label: f.id })),
+        ...startable(config.routineAssignments).map(a => ({
             id: a.id, type: 'routine' as const,
             label: `${users.find(u => u.id === a.userId)?.name ?? a.userId}: ${config.routines.find(r => r.id === a.routineId)?.title ?? a.routineId}`,
         })),
