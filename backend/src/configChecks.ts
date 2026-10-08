@@ -1,4 +1,4 @@
-import type { CheckWarning, ConfigList, ConfigWarning, CronWarning, DataConfig } from '../../shared/types';
+import type { CheckWarning, ConfigList, ConfigWarning, CronWarning, DataConfig, FlowAction, FlowStep } from '../../shared/types';
 import { THEME_COLOR_TOKENS } from '../../shared/themeColours';
 import { unreadableCrons } from './cron';
 
@@ -150,62 +150,87 @@ function missingLinks(d: DataConfig): CheckWarning[] {
   return found.filter((w, i) => !(w.list === 'chores' && found.findIndex(x => x.list === 'chores' && x.id === w.id && x.message === w.message) !== i));
 }
 
-// The flows a flow starts before it first waits for sure, with where: what the engine starts while that
-// flow's own start is still under way (db.ts, startFlow). Every action of a step starts in turn; the steps
-// after an alarm, or after a step that starts a flow which waits at an alarm, come only once it is dismissed.
-// A routine may wait or not (a kid busy or done today is skipped), so it doesn't stop the walk.
-function startsAtOnce(d: DataConfig): Map<string, { flowId: string; step: number; action: number }[]> {
+// The flows a flow starts while its own start is still under way, with where (db.ts, startFlow, which
+// refuses those: a flow already starting above starts nothing). Every action of a step starts in turn;
+// the steps after an alarm, or after a step that starts a flow which waits at an alarm, come only once it
+// is dismissed, so the walk stops there. A routine is no such sure wait: one that starts holds the next
+// step until it closes, one that is skipped (the kid in another routine, or done with it today) doesn't.
+// So the walk goes on past it, and marks what comes after `afterRoutine`: at once only if every routine
+// before it was skipped; otherwise later, and then the flow named starts over (startFlow restarts it).
+type Start = { flowId: string; step: number; action: number; afterRoutine: boolean };
+function startsAtOnce(d: DataConfig): Map<string, Start[]> {
   const byId = new Map(d.flows.map(f => [f.id, f]));
-  const alarms = new Map<string, boolean>();
-  const hasAlarm = (id: string): boolean => {
-    if (alarms.has(id)) return alarms.get(id)!;
-    alarms.set(id, false); // a flow inside its own walk: refused, so it adds no wait
-    const flow = byId.get(id);
-    const found = !!flow?.steps.some(s => s.type === 'alarm' || (s.type === 'parallel' && s.actions.some(a => a.type === 'flow' && hasAlarm(a.flowId))));
-    alarms.set(id, found);
-    return found;
+  const assignments = new Set(d.routineAssignments.map(a => a.id));
+  // What a step starts, as enterStep reads it (the schema has no routine step, the type does)
+  const starts = (s: FlowStep): FlowAction[] => s.type === 'parallel' ? s.actions : s.type === 'routine' ? [{ type: 'routine', userId: '', routineId: s.routineId }] : [];
+  const routineIn = (s: FlowStep) => starts(s).some(a => a.type === 'routine' && assignments.has(a.routineId));
+  // Whether a flow, or a flow it starts, has a step that `own` holds; a flow inside its own walk is refused, so it adds nothing
+  const reach = (own: (s: FlowStep) => boolean) => {
+    const memo = new Map<string, boolean>();
+    const deeper = (id: string): boolean => {
+      if (memo.has(id)) return memo.get(id)!;
+      memo.set(id, false);
+      const found = !!byId.get(id)?.steps.some(s => own(s) || starts(s).some(a => a.type === 'flow' && deeper(a.flowId)));
+      memo.set(id, found);
+      return found;
+    };
+    return deeper;
   };
-  const edges = new Map<string, { flowId: string; step: number; action: number }[]>();
+  const hasAlarm = reach(s => s.type === 'alarm');
+  const mayWait = reach(routineIn);
+  const edges = new Map<string, Start[]>();
   for (const f of d.flows) {
-    const out: { flowId: string; step: number; action: number }[] = [];
+    const out: Start[] = [];
+    let afterRoutine = false;
     for (const [n, step] of f.steps.entries()) {
       if (step.type === 'alarm') break;
-      if (step.type !== 'parallel') continue;
-      step.actions.forEach((a, k) => { if (a.type === 'flow' && byId.has(a.flowId)) out.push({ flowId: a.flowId, step: n, action: k }); });
-      if (step.actions.some(a => a.type === 'flow' && hasAlarm(a.flowId))) break;
+      const actions = starts(step);
+      actions.forEach((a, k) => { if (a.type === 'flow' && byId.has(a.flowId)) out.push({ flowId: a.flowId, step: n, action: k, afterRoutine }); });
+      if (actions.some(a => a.type === 'flow' && hasAlarm(a.flowId))) break;
+      if (routineIn(step) || actions.some(a => a.type === 'flow' && mayWait(a.flowId))) afterRoutine = true;
     }
     if (!edges.has(f.id)) edges.set(f.id, out);
   }
   return edges;
 }
 
+// One warning per cycle, at the action that closes it. With no routine on the way the engine refuses that
+// action every time, and the message says only that. With one («rr»: her routine, then «rr» again),
+// it says both outcomes: every routine skipped, the action starts nothing; one started, the cycle starts
+// over when it closes, so a routine she leaves with ✕ (or a parent ends) comes back, every time.
 function flowCycles(d: DataConfig): CheckWarning[] {
   const edges = startsAtOnce(d);
   const index = new Map<string, number>();
   d.flows.forEach((f, i) => { if (!index.has(f.id)) index.set(f.id, i); });
   const found: CheckWarning[] = [];
   const done = new Set<string>();
-  const path: string[] = []; // the flows being walked (grey), in order
-  const walk = (id: string): void => {
-    path.push(id);
+  const path: Start[] = []; // the starts being walked (grey), in order; the first is the walk's root
+  const walk = (id: string, via: Start): void => {
+    path.push(via);
     for (const e of edges.get(id) ?? []) {
-      const at = path.indexOf(e.flowId);
+      const at = path.findIndex(p => p.flowId === e.flowId);
       if (at >= 0) {
-        const ring = [...path.slice(at), e.flowId];
+        const ring = [...path.slice(at).map(p => p.flowId), e.flowId];
         const names = ring.slice(0, -1).map(x => `«${x}»`);
-        const message = ring.length === 2
-          ? `Η ροή «${id}», βήμα ${e.step + 1}, ξεκινά τον εαυτό της (${ring.join(' → ')}): αυτή η ενέργεια δεν ξεκινά τίποτα.`
-          : `Οι ροές ${names.slice(0, -1).join(', ')} και ${names[names.length - 1]} ξεκινούν η μία την άλλη (${ring.join(' → ')}): `
-            + 'η ενέργεια που κλείνει τον κύκλο δεν ξεκινά τίποτα.';
+        const self = ring.length === 2;
+        const routine = e.afterRoutine || path.slice(at + 1).some(p => p.afterRoutine);
+        const head = self
+          ? `Η ροή «${id}», βήμα ${e.step + 1}, ξεκινά τον εαυτό της (${ring.join(' → ')})`
+          : `Οι ροές ${names.slice(0, -1).join(', ')} και ${names[names.length - 1]} ξεκινούν η μία την άλλη (${ring.join(' → ')})`;
+        const nothing = self ? 'αυτή η ενέργεια δεν ξεκινά τίποτα' : 'η ενέργεια που κλείνει τον κύκλο δεν ξεκινά τίποτα';
+        const message = routine
+          ? `${head}, μετά από ρουτίνα. Αν δεν ξεκινήσει καμία ρουτίνα (το παιδί είναι ήδη σε ρουτίνα ή την έχει τελειώσει σήμερα), ${nothing}. `
+            + `Αν ξεκινήσει, ${self ? 'η ροή' : 'ο κύκλος'} ξεκινά από την αρχή μόλις κλείσει η ρουτίνα: μια ρουτίνα που έκλεισε με ✕ ή «Τέλος» ξαναβγαίνει, κάθε φορά.`
+          : `${head}: ${nothing}.`;
         found.push(problem('flow-cycle', 'flows', index.get(id)!, id, 'steps', e.flowId, message, `/${e.step}/actions/${e.action}/flowId`));
       } else if (!done.has(e.flowId)) {
-        walk(e.flowId);
+        walk(e.flowId, e);
       }
     }
     path.pop();
     done.add(id);
   };
-  for (const f of d.flows) if (!done.has(f.id)) walk(f.id);
+  for (const f of d.flows) if (!done.has(f.id)) walk(f.id, { flowId: f.id, step: -1, action: -1, afterRoutine: false });
   return found;
 }
 

@@ -46,7 +46,9 @@ const cfg: DataConfig = {
     { id: 'loop', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'loop' }] }] },
     { id: 'ping', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'pong' }] }] },
     { id: 'pong', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'ping' }] }] },
-    { id: 'again', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'flow', flowId: 'again' }] }] }
+    { id: 'again', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'flow', flowId: 'again' }] }] },
+    // #121: her routine, then itself (configChecks warns, with both outcomes)
+    { id: 'rr', steps: [{ type: 'parallel', actions: [{ type: 'routine', userId: 'u1', routineId: 'a1' }] }, { type: 'parallel', actions: [{ type: 'flow', flowId: 'rr' }] }] }
   ],
   schedules: [], rewards: [], settings: { timezone: 'Europe/Athens' }
 };
@@ -313,6 +315,30 @@ test('she is in her routine and dismisses her alarm: her routine goes on, nothin
 
 // #58: a flow doesn't start a routine the kid already finished today
 // u1 did her routine by hand: started, both tasks done, closed
+test('#121: rr (her routine, then rr): her ✕ starts it over with her routine; finished, it ends; busy, it starts nothing', () => {
+  reset();
+  const since = new Date().toISOString();
+  db.triggerAction('rr');
+  for (let i = 0; i < 2; i++) {
+    const run = flowRun('rr');
+    db.closeRoutine(routineRun('u1').id); // ✕
+    assert.notEqual(flowRun('rr').id, run.id, 'rr started over');
+    assert.equal(routineRun('u1').routineId, 'a1', 'with her routine again');
+  }
+  assert.deepEqual(cycles(since), []);
+  const run = routineRun('u1');
+  db.completeTask(run.id, 't1');
+  db.completeTask(run.id, 't2');
+  db.closeRoutine(run.id);
+  // rr started over, skipped the routine she finished today, and its own start was refused
+  assert.equal(routineRun('u1'), undefined);
+  assert.equal(store.flowRuns.count(), 0);
+  assert.deepEqual(cycles(since).map(c => c.chain), [['rr', 'rr']]);
+  reset();
+  db.triggerAction('a1'); // u1 busy
+  assert.deepEqual(db.triggerAction('rr'), { success: true, type: 'flow', id: 'rr', nothingStarted: true, cycle: true });
+});
+
 function doneByHand() {
   db.triggerAction('a1');
   const run = routineRun('u1');
