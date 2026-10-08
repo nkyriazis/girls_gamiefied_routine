@@ -29,6 +29,10 @@ interface AssignmentPlayerProps {
 // 'paid': a problem whose last step was shown worked is over: what it paid, in the calm blue, no «Σωστά!»
 type Feedback = { kind: 'correct'; stars: number } | { kind: 'incorrect' } | { kind: 'answer'; text: string } | { kind: 'paid'; stars: number };
 
+// «Η σωστή απάντηση: …» stays until «Εντάξει» or ✕ (#72): she reads it at her own pace. Only a kiosk
+// left with it on screen closes it, after this long, the same way and in silence.
+const ANSWER_HOLD_MS = 120_000;
+
 export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, user, onClose }) => {
   const { playSuccess, playError } = useAppSounds();
   const [submitting, setSubmitting] = useState(false);
@@ -70,10 +74,10 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         // Celebrate briefly, then return to the list
         later(onClose, 1800);
       } else if (result.assignment.status === 'completed') {
-        // Unforgiving, and her tries are used: the right answer, then back to the list
+        // Unforgiving, and her tries are used: the right answer, until she closes it
         playError();
         setFeedback({ kind: 'answer', text: answerText(exercise) });
-        later(onClose, 4500);
+        later(onClose, ANSWER_HOLD_MS);
       } else {
         setFeedback({ kind: 'incorrect' });
         playError();
@@ -90,14 +94,14 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     }
   };
 
-  // «Δείξε μου»: the right answer, and the exercise is over
+  // «Δείξε μου»: the right answer, and the exercise is over; it stays until she closes it
   const reveal = async () => {
     if (submitting || feedback) return;
     setSubmitting(true);
     try {
       await api.revealExerciseAssignment(assignment.id);
       setFeedback({ kind: 'answer', text: answerText(exercise) });
-      later(onClose, 4500);
+      later(onClose, ANSWER_HOLD_MS);
     } catch (err) {
       console.error('Could not show the answer:', err);
       setSubmitting(false);
@@ -180,21 +184,39 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
             </div>
           </div>
         )}
+
+        {/* The right answer stays until «Εντάξει» or ✕. The backdrop under it, over the stage only (the
+            header's ✕ and owl stay free), takes stray touches in silence: the exercise below is over, and
+            a brush of the screen while she reads closes nothing. The card itself does nothing on a tap. */}
+        {feedback?.kind === 'answer' && (
+          <div className="answer-backdrop">
+            <motion.div
+              className="feedback-overlay answer"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              <div className="feedback-icon">💡</div>
+              <div className="feedback-text">
+                Η σωστή απάντηση:<br /><span className="feedback-answer">{feedback.text}</span>
+              </div>
+              <button type="button" className="answer-ok" onClick={onClose} {...sound('close')}>Εντάξει</button>
+            </motion.div>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
-        {feedback && (
+        {feedback && feedback.kind !== 'answer' && (
           <motion.div
             className={`feedback-overlay ${feedback.kind}`}
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 1.5, opacity: 0 }}
           >
-            <div className="feedback-icon">{feedback.kind === 'correct' ? '✨' : feedback.kind === 'answer' ? '💡' : feedback.kind === 'paid' ? '🏁' : '❌'}</div>
+            <div className="feedback-icon">{feedback.kind === 'correct' ? '✨' : feedback.kind === 'paid' ? '🏁' : '❌'}</div>
             <div className="feedback-text">
               {feedback.kind === 'correct' ? (feedback.stars > 0 ? `+⭐${feedback.stars}` : '✔ Σωστά!')
                 : feedback.kind === 'paid' ? (feedback.stars > 0 ? `+⭐${feedback.stars}` : '⭐0')
-                : feedback.kind === 'answer' ? <>Η σωστή απάντηση:<br /><span className="feedback-answer">{feedback.text}</span></>
                 : 'Δοκίμασε ξανά!'}
             </div>
           </motion.div>
@@ -216,7 +238,11 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           overflow: hidden;
         }
 
+        /* Above the answer's backdrop (.answer-backdrop, z-index 10): ✕, the owl and its «Να σου δείξω;»,
+           which hangs below the header over the stage, stay free to tap */
         .assignment-header {
+          position: relative;
+          z-index: 11;
           padding: 1rem 1.5rem;
           display: flex;
           justify-content: space-between;
@@ -267,6 +293,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
 
         /* A fixed frame: the stage never scrolls as a whole, only the part that needs to */
         .assignment-stage {
+          position: relative;
           flex: 1;
           min-height: 0;
           display: flex;
@@ -392,6 +419,56 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           box-shadow: 0 0 50px rgba(120, 130, 255, 0.4);
           max-width: min(80vw, 900px);
           text-align: center;
+        }
+
+        /* Over the stage, under the header; it dims the exercise that is over */
+        .answer-backdrop {
+          position: absolute;
+          inset: 0;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: clamp(0.5rem, 2vmin, 1rem);
+          background: rgba(0, 0, 0, 0.35);
+        }
+
+        /* The answer card fits the stage on a phone and a small kiosk too: it scales with the screen,
+           and a long answer scrolls inside it while «Εντάξει» stays in sight */
+        .feedback-overlay.answer {
+          position: relative;
+          inset: auto;
+          margin: 0;
+          z-index: auto;
+          height: auto;
+          max-height: 100%;
+          max-width: min(92vw, 900px);
+          padding: clamp(1rem, 6vh, 3rem) clamp(1.25rem, 5vw, 5rem);
+          gap: clamp(0.5rem, 2vh, 1rem);
+          pointer-events: auto;
+        }
+        .feedback-overlay.answer .feedback-icon {
+          flex-shrink: 0;
+          font-size: clamp(2.5rem, min(12vw, 10vh), 5rem);
+          line-height: 1;
+        }
+        .feedback-overlay.answer .feedback-text {
+          min-height: 0;
+          overflow-y: auto;
+          font-size: clamp(1.5rem, min(6vw, 5vh), 2.5rem);
+        }
+        .answer-ok {
+          flex-shrink: 0;
+          min-height: 48px;
+          padding: 0.5rem 2.5rem;
+          border-radius: 1.2rem;
+          font-size: clamp(1.15rem, 3vmin, 1.5rem);
+          font-weight: bold;
+          cursor: pointer;
+          color: #1e2470;
+          background: white;
+          border: none;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
         }
 
         /* a match is one pair per line (answerText.ts): keep its line breaks */
