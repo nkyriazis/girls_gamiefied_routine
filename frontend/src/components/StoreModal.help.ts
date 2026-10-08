@@ -1,17 +1,18 @@
 import type { Tour } from '../help/tour';
-import { REVISION } from './ExercisesDrawer.help';
+import { EXTRA, REVISION, editionId } from './ExercisesDrawer.help';
 
 // The owl on a kid's own screen (from her avatar), and on its two popups.
 
-// With a revision card on screen, its own edition (see REVISION)
-export const storeTour = (userId: string, revision = false): Tour => ({
-  id: revision ? 'store-revision' : 'store',
+// With a revision card, or an extra problem she left, on screen: its own edition (see REVISION, EXTRA)
+export const storeTour = (userId: string, revision = false, extra = false): Tour => ({
+  id: editionId('store', revision, extra),
   user: userId,
   steps: [
     { el: 'store.balance', title: 'Τα αστέρια σου', text: 'Τόσα αστέρια έχεις μαζέψει.', side: 'bottom' },
     { el: 'store.earn', title: 'Κέρδισε αστέρια', text: 'Οι ασκήσεις σου για σήμερα. Πάτα μία για να ξεκινήσεις.', side: 'right' },
     ...(revision ? [REVISION] : []),
-    { el: 'exercises.more', title: 'Κι άλλο πρόβλημα', text: 'Τελείωσες τις σημερινές; Εδώ ζητάς κι άλλο πρόβλημα, για κι άλλα αστέρια. Αν έχεις αρχίσει ένα, εδώ το συνεχίζεις.', side: 'top', demo: 'tap' },
+    ...(extra ? [EXTRA] : []),
+    { el: 'exercises.more', title: 'Κι άλλο πρόβλημα', text: 'Τελείωσες τις σημερινές; Εδώ ζητάς κι άλλο πρόβλημα, για κι άλλα αστέρια. Αν κλείσεις ένα στη μέση, μένει εδώ για μετά.', side: 'top', demo: 'tap' },
     { el: 'store.rewards', title: 'Ανταμοιβές', text: 'Πάτα μια ανταμοιβή και μετά «Ναι» για να την πάρεις με τα αστέρια σου. Οι γκρίζες θέλουν περισσότερα αστέρια.', side: 'left' },
     { el: 'store.give', title: 'Δώσε αστέρια', text: 'Μπορείς να χαρίσεις αστέρια σε ένα άλλο παιδί. Ένας γονιός το εγκρίνει.', side: 'bottom' },
     { el: 'store.activity', title: 'Δραστηριότητα', text: 'Τι έχεις πάρει και τι περιμένει έγκριση.', side: 'bottom' },

@@ -22,9 +22,11 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
     const shown = kidsShown(users, exerciseAssignments, extraLimit);
     // A revision card on screen: the tour's edition that explains its pill
     const revision = exerciseAssignments.some(a => a.revision && !a.extra && shown.some(u => u.id === a.userId));
+    // An extra problem left with ✕ on screen: the edition that explains its card (#67)
+    const extra = exerciseAssignments.some(a => a.extra && a.status === 'pending' && shown.some(u => u.id === a.userId));
 
     return (
-        <HelpScreen tour={isOpen ? exercisesTour(revision) : null}>
+        <HelpScreen tour={isOpen ? exercisesTour(revision, extra) : null}>
         <AnimatePresence>
             {isOpen && (
                 <>

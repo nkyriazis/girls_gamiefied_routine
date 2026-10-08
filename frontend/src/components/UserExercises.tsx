@@ -6,12 +6,15 @@ import { api, ApiError } from '../api';
 import { AssignmentPlayer } from './AssignmentPlayer';
 import { help } from '../help/anchors';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
+import { MAX_SET_ASIDE, extraRefusals, finishOneFirst } from '@shared/extraProblems';
 import { sfx, sound } from '../sound/sfx';
 import { paysNow } from '@shared/forgiveness';
 
 // One kid's exercises: today's set and «Κι άλλο πρόβλημα» for more stars. On her own
 // screen (the store, from her avatar) and in the exercises drawer. The player opens
 // over everything, through a portal, so it isn't caught inside a scaled modal.
+// An extra problem she leaves with ✕ stays a card («Έξτρα») until she finishes it or the
+// day ends, and the button draws a new one (#67): at most MAX_SET_ASIDE wait at once.
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Μαθηματικά': '🔢',
@@ -41,11 +44,13 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
   const daily = mine.filter(a => !a.extra);
   const extras = mine.filter(a => a.extra);
   const extrasDone = extras.filter(a => a.status === 'completed');
-  const openExtra = extras.find(a => a.status === 'pending');
+  const extrasWaiting = extras.filter(a => a.status === 'pending');
   const canAsk = !!user.grade && extraLimit > 0;
+  const atLimit = extras.length >= extraLimit;
+  const tooMany = extrasWaiting.length >= MAX_SET_ASIDE;
   const completed = daily.filter(a => a.status === 'completed').length;
 
-  // One more problem, on top of the daily set: the open one if there is one, else a fresh one
+  // One more problem, on top of the daily set: always a new one (one she left is a card above)
   const askForProblem = async () => {
     if (asking) return;
     setAsking(true);
@@ -60,6 +65,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
       const why = err instanceof ApiError ? err.message : '';
       const text = why.startsWith('No problems for this kid') ? 'Δεν υπάρχουν ακόμα προβλήματα για την τάξη σου.'
         : why === 'No more extra problems today' ? 'Για σήμερα φτάνει! Αύριο κι άλλα.'
+        : (Object.values(extraRefusals) as string[]).includes(why) ? why
         : 'Κάτι πήγε στραβά. Δοκίμασε ξανά.';
       setRefusal(text);
       setTimeout(() => setRefusal(current => current === text ? null : current), 3500);
@@ -80,71 +86,40 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
         </div>
       )}
       <div className="assignment-list">
-        {daily.map(assignment => {
-          const ex = assignment.exercise;
-          if (!ex) return null;
-          const isDone = assignment.status === 'completed';
-          // What it pays now (less after mistakes), or what it paid
-          const pays = paysNow(assignment, ex, user);
-          return (
-            <motion.button
-              key={assignment.id}
-              data-assignment={assignment.id}
-              {...help('exercises.card')}
-              {...sound('open')}
-              className={`assignment-card ${isDone ? 'completed' : ''}`}
-              onClick={() => !isDone && setPlayingId(assignment.id)}
-              disabled={isDone}
-              whileTap={!isDone ? { scale: 0.97 } : {}}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="assignment-icon">{CATEGORY_ICONS[ex.category] || '📚'}</div>
-              <div className="assignment-info">
-                <h4>
-                  {ex.title}
-                  {/* From a lower grade's pool, when hers has nothing in this category (#49) */}
-                  {assignment.revision && <span className="revision-pill" {...help('exercises.revision')}>Επανάληψη</span>}
-                </h4>
-                <span className="assignment-meta">
-                  {ex.category} · {TYPE_LABELS[ex.type] || ex.type}
-                  {ex.type === 'problem' && !isDone && (assignment.stepIndex ?? 0) > 0 &&
-                    ` · βήμα ${(assignment.stepIndex ?? 0) + 1} από ${ex.steps.length}`}
-                </span>
-              </div>
-              <div className="assignment-status">
-                {/* Done and paid ✓; done and paid nothing (the answer shown): no ✓ */}
-                {isDone
-                  ? pays > 0 ? <span className="done-badge">✓ ⭐{pays}</span> : <span className="missed-badge">○ ⭐0</span>
-                  : <span className="star-badge">⭐ {pays}</span>}
-              </div>
-            </motion.button>
-          );
-        })}
+        {daily.map(assignment => (
+          <AssignmentCard key={assignment.id} assignment={assignment} user={user} anchor={help('exercises.card')} onPlay={setPlayingId} />
+        ))}
       </div>
 
-      {canAsk && (
+      {(canAsk || extrasWaiting.length > 0) && (
         <div className="extra-problems">
           {extrasDone.length > 0 && (
             <span className="extra-done">
               🧩 Έξτρα σήμερα: {extrasDone.length} · ⭐{extrasDone.reduce((n, a) => n + (a.starsAwarded ?? 0), 0)}
             </span>
           )}
-          <motion.button
-            className="extra-btn"
-            data-extra={user.id}
-            {...help('exercises.more')}
-            {...sound('open')}
-            disabled={asking || (!openExtra && extras.length >= extraLimit)}
-            whileTap={{ scale: 0.97 }}
-            onClick={askForProblem}
-          >
-            {openExtra
-              ? <>▶ Συνέχισε το πρόβλημα</>
-              : extras.length >= extraLimit
+          {/* The ones she left with ✕: hers until she finishes them or the day ends, drawn even if a
+              parent has since turned extras off or cleared her class */}
+          {extrasWaiting.map(assignment => (
+            <AssignmentCard key={assignment.id} assignment={assignment} user={user} anchor={help('exercises.extra')} extra onPlay={setPlayingId} />
+          ))}
+          {canAsk && (
+            <motion.button
+              className="extra-btn"
+              data-extra={user.id}
+              {...help('exercises.more')}
+              {...sound('open')}
+              disabled={asking || atLimit || tooMany}
+              whileTap={{ scale: 0.97 }}
+              onClick={askForProblem}
+            >
+              {atLimit
                 ? <>Για σήμερα φτάνει! 🎉</>
-                : <>🧩 Κι άλλο πρόβλημα <span className="extra-count">{extras.length}/{extraLimit}</span></>}
-          </motion.button>
+                : tooMany
+                  ? <>{finishOneFirst}</>
+                  : <>🧩 Κι άλλο πρόβλημα <span className="extra-count">{extras.length}/{extraLimit}</span></>}
+            </motion.button>
+          )}
           <AnimatePresence>
             {refusal && (
               <motion.div className="ue-refusal" role="alert"
@@ -180,6 +155,7 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
           border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 0.8rem 1rem; color: white; cursor: pointer;
           text-align: left; transition: all 0.2s; }
         .assignment-card:hover:not(:disabled) { border-color: rgba(255, 214, 10, 0.5); background: rgba(255, 214, 10, 0.05); }
+        .assignment-card.extra-card { border-style: dashed; border-color: rgba(255, 214, 10, 0.45); }
         .assignment-card.completed { opacity: 0.6; cursor: default; border-color: rgba(6, 214, 160, 0.4); background: rgba(6, 214, 160, 0.05); }
         .assignment-icon { font-size: 1.8rem; flex-shrink: 0; }
         .assignment-info { flex: 1; min-width: 0; }
@@ -193,5 +169,54 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
         .missed-badge { color: rgba(255, 255, 255, 0.55); font-size: 0.95rem; }
       `}</style>
     </section>
+  );
+};
+
+// One card: a daily exercise, or an extra problem she left (`extra`: «Έξτρα» and the step she is at).
+// `anchor` is the owl's {...help(…)}, written where the card is placed so check-help sees it
+const AssignmentCard: React.FC<{
+  assignment: ExerciseAssignmentWithExercise; user: User; anchor: ReturnType<typeof help>; extra?: boolean; onPlay: (id: string) => void;
+}> = ({ assignment, user, anchor, extra = false, onPlay }) => {
+  const ex = assignment.exercise;
+  if (!ex) return null;
+  const isDone = assignment.status === 'completed';
+  // What it pays now (less after mistakes), or what it paid
+  const pays = paysNow(assignment, ex, user);
+  // The step she is at, once past the first (a card at its start says nothing about steps)
+  const step = ex.type === 'problem' && !isDone && (assignment.stepIndex ?? 0) > 0
+    ? `βήμα ${(assignment.stepIndex ?? 0) + 1} από ${ex.steps.length}` : null;
+  return (
+    <motion.button
+      data-assignment={assignment.id}
+      {...(extra ? { 'data-extra-card': assignment.userId } : {})}
+      {...anchor}
+      {...sound('open')}
+      className={`assignment-card ${isDone ? 'completed' : ''} ${extra ? 'extra-card' : ''}`}
+      onClick={() => !isDone && onPlay(assignment.id)}
+      disabled={isDone}
+      whileTap={!isDone ? { scale: 0.97 } : {}}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="assignment-icon">{CATEGORY_ICONS[ex.category] || '📚'}</div>
+      <div className="assignment-info">
+        <h4>
+          {ex.title}
+          {/* From a lower grade's pool, when hers has nothing in this category (#49) */}
+          {assignment.revision && <span className="revision-pill" {...help('exercises.revision')}>Επανάληψη</span>}
+        </h4>
+        <span className="assignment-meta">
+          {extra
+            ? ['Έξτρα', step].filter(Boolean).join(' · ')
+            : <>{ex.category} · {TYPE_LABELS[ex.type] || ex.type}{step && ` · ${step}`}</>}
+        </span>
+      </div>
+      <div className="assignment-status">
+        {/* Done and paid ✓; done and paid nothing (the answer shown): no ✓ */}
+        {isDone
+          ? pays > 0 ? <span className="done-badge">✓ ⭐{pays}</span> : <span className="missed-badge">○ ⭐0</span>
+          : <span className="star-badge">⭐ {pays}</span>}
+      </div>
+    </motion.button>
   );
 };
