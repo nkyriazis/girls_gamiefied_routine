@@ -1,0 +1,212 @@
+import type { CheckWarning, ConfigList, ConfigWarning, CronWarning, DataConfig } from '../../shared/types';
+import { THEME_COLOR_TOKENS } from '../../shared/themeColours';
+import { unreadableCrons } from './cron';
+
+// What data.json can have that data.schema.json can't see: the rules of data.json's ConfigFile (config.ts).
+// The schema checks each item's shape; these check the items against each other and against the theme:
+// - duplicate-id: two items in one list with the same id. The backend finds an item with find(), so the
+//   second is never found, and stars, history and runs are keyed by the id: a second kid «u1» shows and
+//   spends the first one's stars. Assignments and flows share one namespace (a schedule, a push and
+//   «Ξεκίνα τώρα» name either; triggerAction tries assignments first), so a flow with an assignment's id
+//   is one too;
+// - missing-link: an id that names nothing. The backend skips it without a word (usersView,
+//   assignmentTasks, triggerAction's TRIGGER_FAILED, enterStep), so a routine loses a task, a schedule or
+//   a flow step starts nothing, a chore limited to missing kids can be done by nobody;
+// - blank: a kid's name, or a task's, routine's, reward's or chore's title, that is only spaces (the
+//   schema's minLength lets «  » through);
+// - colour: a kid's or a routine's colour that is none (isColour), which the kids' screen
+//   then draws without one;
+// - and #89's crons the scheduler can't read (cron.ts).
+// Only the crons refuse a save that brings one in (refuses()); every other kind is a warning: the save goes
+// through and the parents' page lists it until it is fixed (#104 left refusing out of scope). A file on disk
+// with any of them still loads. A new check goes here, with its case in test/configChecks.test.ts.
+
+/** The one kind a save that brings it in is refused for: a cron the scheduler can't read (#89). */
+export const refuses = (w: ConfigWarning): w is CronWarning => w.kind === 'schedule' || w.kind === 'chore';
+
+/** Every problem the rules find in `data`, the most harmful kinds first. */
+export function configProblems(data: DataConfig): ConfigWarning[] {
+  return [...duplicateIds(data), ...missingLinks(data), ...blanks(data), ...unreadableCrons(data), ...colours(data)];
+}
+
+// How a list's item is named in a message: its noun (with its article) and the plural for the list
+const NOUN: Record<ConfigList, [string, string]> = {
+  users: ['το παιδί', 'παιδιά'],
+  tasks: ['η εργασία', 'εργασίες'],
+  routines: ['η ρουτίνα', 'ρουτίνες'],
+  routineTasks: ['η εργασία ρουτίνας', 'εργασίες ρουτινών (routineTasks)'],
+  routineAssignments: ['η ανάθεση ρουτίνας', 'αναθέσεις ρουτινών (routineAssignments)'],
+  flows: ['η ροή', 'ροές'],
+  schedules: ['το πρόγραμμα', 'προγράμματα'],
+  rewards: ['το δώρο', 'δώρα'],
+  chores: ['η δουλειά', 'δουλειές'],
+};
+const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+type Item = { id: string; name?: string; title?: string };
+const lists = (d: DataConfig): [ConfigList, Item[]][] => [
+  ['users', d.users], ['tasks', d.tasks], ['routines', d.routines], ['routineTasks', d.routineTasks],
+  ['routineAssignments', d.routineAssignments], ['flows', d.flows], ['schedules', d.schedules],
+  ['rewards', d.rewards], ['chores', d.chores ?? []],
+];
+/** An item as the parents know it: «name» for a kid, «title» for what has one, else «id». */
+const label = (item: Item) => `«${item.name ?? item.title ?? item.id}»`;
+
+const problem = (kind: CheckWarning['kind'], list: ConfigList, index: number, id: string, field: string, value: string,
+  message: string, rest = ''): CheckWarning =>
+  ({ path: `/${list}/${index}/${field}${rest}`, kind, list, id, field, value, message });
+
+function duplicateIds(d: DataConfig): CheckWarning[] {
+  const found: CheckWarning[] = [];
+  for (const [list, items] of lists(d)) {
+    const first = new Map<string, Item>();
+    items.forEach((item, i) => {
+      const before = first.get(item.id);
+      if (!before) return void first.set(item.id, item);
+      const [, plural] = NOUN[list];
+      const why = list === 'users'
+        ? 'μοιράζονται αστέρια, ιστορικό και ρουτίνες'
+        : `ό,τι ψάχνει ένα από αυτά με το id βρίσκει μόνο το πρώτο, ${label(before)}`;
+      found.push(problem('duplicate-id', list, i, item.id, 'id', item.id, `Δύο ${plural} έχουν το id «${item.id}» (${label(before)}, ${label(item)}): ${why}.`));
+    });
+  }
+  const assignments = new Set(d.routineAssignments.map(a => a.id));
+  d.flows.forEach((f, i) => {
+    if (assignments.has(f.id)) {
+      found.push(problem('duplicate-id', 'flows', i, f.id, 'id', f.id,
+        `Η ροή «${f.id}» έχει το id μιας ανάθεσης ρουτίνας: ένα πρόγραμμα ή το «Ξεκίνα τώρα» ξεκινά πάντα την ανάθεση, η ροή δεν ξεκινά ποτέ.`));
+    }
+  });
+  return found;
+}
+
+function missingLinks(d: DataConfig): CheckWarning[] {
+  const ids = (items: { id: string }[]) => new Set(items.map(x => x.id));
+  const users = ids(d.users), tasks = ids(d.tasks), routines = ids(d.routines), assignments = ids(d.routineAssignments), flows = ids(d.flows);
+  const routineTitle = (id: string) => `«${d.routines.find(r => r.id === id)?.title ?? id}»`;
+  const found: CheckWarning[] = [];
+  const missing = (list: ConfigList, i: number, id: string, field: string, value: string, message: string, rest = '') =>
+    found.push(problem('missing-link', list, i, id, field, value, message, rest));
+
+  d.routineAssignments.forEach((a, i) => {
+    if (!users.has(a.userId)) {
+      missing('routineAssignments', i, a.id, 'userId', a.userId,
+        `Η ανάθεση ρουτίνας «${a.id}» είναι για το παιδί «${a.userId}», που δεν υπάρχει: δεν τη βλέπει κανένα παιδί.`);
+    }
+    if (!routines.has(a.routineId)) {
+      missing('routineAssignments', i, a.id, 'routineId', a.routineId,
+        `Η ανάθεση ρουτίνας «${a.id}» είναι της ρουτίνας «${a.routineId}», που δεν υπάρχει: δεν εμφανίζεται.`);
+    }
+  });
+  d.routineTasks.forEach((rt, i) => {
+    if (!routines.has(rt.routineId)) {
+      missing('routineTasks', i, rt.id, 'routineId', rt.routineId,
+        `Η εργασία ρουτίνας «${rt.id}» ανήκει στη ρουτίνα «${rt.routineId}», που δεν υπάρχει: δεν εμφανίζεται πουθενά.`);
+    }
+    if (!tasks.has(rt.taskId)) {
+      missing('routineTasks', i, rt.id, 'taskId', rt.taskId,
+        `Η ρουτίνα ${routineTitle(rt.routineId)} έχει την εργασία «${rt.taskId}», που δεν υπάρχει: η ρουτίνα δείχνεται χωρίς αυτήν.`);
+    }
+  });
+  d.schedules.forEach((s, i) => {
+    if (s.targetId !== 'alarm' && !assignments.has(s.targetId) && !flows.has(s.targetId)) {
+      missing('schedules', i, s.id, 'targetId', s.targetId,
+        `Το πρόγραμμα «${s.id}» (${s.cron}) ξεκινά το «${s.targetId}», που δεν είναι ούτε ανάθεση ρουτίνας ούτε ροή: στην ώρα του δεν ξεκινά τίποτα.`);
+    }
+  });
+  // The schema lets a flow's steps be alarms and parallel steps only (no routine step)
+  d.flows.forEach((f, i) => f.steps.forEach((step, n) => {
+    const where = `Η ροή «${f.id}», βήμα ${n + 1},`;
+    if (step.type !== 'parallel') return;
+    step.actions.forEach((action, k) => {
+      if (action.type === 'routine' && !assignments.has(action.routineId)) {
+        missing('flows', i, f.id, 'steps', action.routineId,
+          `${where} ξεκινά την ανάθεση ρουτίνας «${action.routineId}», που δεν υπάρχει: αυτή η ρουτίνα δεν ξεκινά.`, `/${n}/actions/${k}/routineId`);
+      }
+      if (action.type === 'flow' && !flows.has(action.flowId)) {
+        missing('flows', i, f.id, 'steps', action.flowId,
+          `${where} ξεκινά τη ροή «${action.flowId}», που δεν υπάρχει: αυτή η ροή δεν ξεκινά.`, `/${n}/actions/${k}/flowId`);
+      }
+    });
+  }));
+  (d.chores ?? []).forEach((c, i) => {
+    const eligible = c.eligibleUsers ?? [];
+    const nobody = eligible.length > 0 && eligible.every(u => !users.has(u));
+    eligible.forEach((u, k) => {
+      if (users.has(u)) return;
+      missing('chores', i, c.id, 'eligibleUsers', u, nobody
+        ? `Η δουλειά «${c.title}» είναι μόνο για ${eligible.length === 1 ? 'το παιδί' : 'τα παιδιά'} ${eligible.map(x => `«${x}»`).join(', ')}, που δεν ${eligible.length === 1 ? 'υπάρχει' : 'υπάρχουν'}: δεν μπορεί να την κάνει κανένα παιδί.`
+        : `Η δουλειά «${c.title}» είναι και για το παιδί «${u}», που δεν υπάρχει (τα άλλα παιδιά της την κάνουν κανονικά).`, `/${k}`);
+    });
+  });
+  // The same chore's every kid missing: one problem per kid would say «nobody» twice; keep the first
+  return found.filter((w, i) => !(w.list === 'chores' && found.findIndex(x => x.list === 'chores' && x.id === w.id && x.message === w.message) !== i));
+}
+
+function blanks(d: DataConfig): CheckWarning[] {
+  const found: CheckWarning[] = [];
+  for (const [list, items] of lists(d)) {
+    const field = list === 'users' ? 'name' : 'title';
+    items.forEach((item, i) => {
+      const value = (item as Record<string, unknown>)[field];
+      if (typeof value !== 'string' || value.trim() !== '') return;
+      const [noun] = NOUN[list];
+      found.push(problem('blank', list, i, item.id, field, value,
+        `${capital(noun)} «${item.id}» δεν έχει ${list === 'users' ? 'όνομα: στην οθόνη των παιδιών φαίνεται χωρίς όνομα' : 'τίτλο: φαίνεται χωρίς τίτλο'}.`));
+    });
+  }
+  return found;
+}
+
+function colours(d: DataConfig): CheckWarning[] {
+  const found: CheckWarning[] = [];
+  const check = (list: ConfigList, i: number, item: Item, field: string, value: string | undefined, whose: string) => {
+    if (value === undefined || isColour(value)) return;
+    const typo = /^var\(\s*--color-/.test(value) ? 'δεν είναι χρώμα του θέματος' : 'δεν είναι χρώμα';
+    found.push(problem('colour', list, i, item.id, field, value, `Το χρώμα «${value}» ${whose} ${typo}: στην οθόνη των παιδιών φαίνεται χωρίς χρώμα.`));
+  };
+  d.users.forEach((u, i) => check('users', i, u, 'color', u.color, `του παιδιού ${label(u)}`));
+  d.routines.forEach((r, i) => check('routines', i, r, 'themeColor', r.themeColor, `της ρουτίνας ${label(r)}`));
+  // (an assignment's themeColor, in the type, is one the schema doesn't allow)
+  return found;
+}
+
+const TOKENS = new Set<string>(THEME_COLOR_TOKENS);
+// CSS colour functions, accepted by name (what is inside them is the browser's to read)
+const FUNCTION = /^(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|light-dark)\(.*\)$/i;
+const HEX = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+// The theme's tokens, with an optional fallback: var(--color-accent), var(--color-x, #fff)
+const VAR = /^var\(\s*--color-([\w-]+)\s*(?:,\s*(.*?)\s*)?\)$/;
+
+/**
+ * A colour the kids' screen can draw: a theme token var(--color-…) from shared/themeColours.ts (or any var()
+ * with a colour as its fallback), a hex, a CSS colour function or a CSS named colour.
+ */
+export function isColour(value: string): boolean {
+  const v = value.trim();
+  const token = VAR.exec(v);
+  if (token) return TOKENS.has(token[1]) || (token[2] !== undefined && isColour(token[2]));
+  return HEX.test(v) || FUNCTION.test(v) || NAMED.has(v.toLowerCase());
+}
+
+// CSS Color Module Level 4's named colours, plus transparent and currentcolor
+const NAMED = new Set([
+  'transparent', 'currentcolor',
+  'aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond', 'blue',
+  'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue', 'cornsilk',
+  'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgray', 'darkgreen', 'darkgrey', 'darkkhaki',
+  'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon', 'darkseagreen', 'darkslateblue',
+  'darkslategray', 'darkslategrey', 'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue', 'dimgray', 'dimgrey',
+  'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite', 'gold', 'goldenrod',
+  'gray', 'green', 'greenyellow', 'grey', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory', 'khaki', 'lavender',
+  'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow',
+  'lightgray', 'lightgreen', 'lightgrey', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray',
+  'lightslategrey', 'lightsteelblue', 'lightyellow', 'lime', 'limegreen', 'linen', 'magenta', 'maroon',
+  'mediumaquamarine', 'mediumblue', 'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue',
+  'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin',
+  'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen',
+  'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple',
+  'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell',
+  'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'slategrey', 'snow', 'springgreen', 'steelblue', 'tan', 'teal',
+  'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'white', 'whitesmoke', 'yellow', 'yellowgreen',
+]);

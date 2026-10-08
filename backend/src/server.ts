@@ -463,12 +463,14 @@ server.get('/api/admin/data', async (request, reply) => {
   return value;
 });
 
-// Admin: Validate config as a save would (the Advanced editor's pre-check): the schema, then the crons
-// it brings in that the scheduler can't read (ConfigFile.validate)
+// Admin: Validate config as a save would (the Advanced editor's pre-check, ConfigFile.validate): the schema,
+// then the crons it brings in that the scheduler can't read are `errors` (the save would be refused); every
+// other problem the checks find (configChecks.ts: duplicate ids, links to nothing, blank names, colours, and
+// crons already live) is a `warning`, which the save lets through (#104)
 server.post('/api/admin/validate', async (request, reply) => {
   try {
-    const error = dataConfig.validate(request.body, 'Invalid config');
-    return error ? { valid: false, errors: error.errors } : { valid: true };
+    const { error, warnings } = dataConfig.validate(request.body, 'Invalid config');
+    return error ? { valid: false, errors: error.errors, warnings } : { valid: true, warnings };
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: 'Validation failed', details: (error as Error).message });
@@ -558,7 +560,7 @@ server.get('/api/admin/validation-status', async (request, reply) => {
   // State lives in the database now, so there is no state file to be invalid.
   return {
     config: configError(),
-    warnings: configWarnings(), // crons in the live data.json the scheduler can't read (#89)
+    warnings: configWarnings(), // what the checks find in the live data.json (configChecks.ts; #89, #104)
     state: null
   };
 });

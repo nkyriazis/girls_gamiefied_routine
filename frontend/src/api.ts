@@ -1,5 +1,5 @@
 import type {
-  ActionLog, ChoreInstance, ConfigSaveSource, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
+  ActionLog, ChoreInstance, ConfigSaveSource, ConfigWarning, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
   ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot, TriggerResult
 } from '@shared/types';
 import { UPLOAD_MAX_BYTES, uploadFailed, uploadTooBig } from '@shared/uploads';
@@ -21,6 +21,9 @@ export interface ValidationError {
 export interface ValidationResult {
   valid: boolean;
   errors?: ValidationError[];
+  // data.json only: what the checks find that a save lets through (duplicate ids, links to nothing, blank
+  // names, colours, crons already live; #104)
+  warnings?: ConfigWarning[];
 }
 
 export interface ScheduleDebug {

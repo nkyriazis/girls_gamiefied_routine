@@ -50,7 +50,7 @@ const withCron = (data: DataConfig, id: string, cron: string): DataConfig => ({
   schedules: data.schedules.map(s => (s.id === id ? { ...s, cron } : s)),
   chores: (data.chores ?? []).map(c => (c.id === id ? { ...c, availabilityCron: cron } : c)),
 });
-const warnings = async () => (await db.appState()).configWarnings.map(w => `${w.path} ${w.cron}`);
+const warnings = async () => (await db.appState()).configWarnings.map(w => `${w.path} ${'cron' in w ? w.cron : w.value}`);
 const logged = (type: string) => db.readLastLogs(200).filter(l => l.type === type);
 
 test('a save that brings in an unreadable cron is a 400 naming the field, and writes nothing', async () => {
@@ -68,7 +68,7 @@ test("the Advanced editor's pre-check lists it like a schema error", async () =>
   const res = await post('/api/admin/validate', withCron(withCron(live(), 'sch-evening', '5-1 * * * *'), 'plants', '61 18 * * *'));
   assert.equal(res.body.valid, false);
   assert.deepEqual((res.body.errors as { instancePath: string }[]).map(e => e.instancePath), ['/schedules/1/cron', '/chores/1/availabilityCron']);
-  assert.deepEqual((await post('/api/admin/validate', live())).body, { valid: true });
+  assert.deepEqual((await post('/api/admin/validate', live())).body, { valid: true, warnings: [] });
 });
 
 test('a data.json on disk with unreadable crons still loads, and says which ones', async () => {
@@ -77,9 +77,11 @@ test('a data.json on disk with unreadable crons still loads, and says which ones
   assert.equal(configError(), null);
   assert.equal(config().schedules[1].cron, '99 20 * * *'); // live, as it is
   const state = await db.appState();
-  assert.deepEqual(state.configWarnings.map(({ error, ...w }) => ({ ...w, error: typeof error })), [
-    { path: '/schedules/1/cron', kind: 'schedule', id: 'sch-evening', cron: '99 20 * * *', error: 'string' },
-    { path: '/chores/0/availabilityCron', kind: 'chore', id: 'dishes', cron: '0 25 * * *', error: 'string' },
+  assert.deepEqual(state.configWarnings.map(w => ('cron' in w ? { ...w, error: typeof w.error } : w)), [
+    { path: '/schedules/1/cron', kind: 'schedule', id: 'sch-evening', cron: '99 20 * * *', error: 'string',
+      message: `Το πρόγραμμα «sch-evening» δεν θα ξεκινά: η ώρα (cron) «99 20 * * *» δεν διαβάζεται (${(state.configWarnings[0] as { error: string }).error})` },
+    { path: '/chores/0/availabilityCron', kind: 'chore', id: 'dishes', cron: '0 25 * * *', error: 'string',
+      message: `Η δουλειά «Πιάτα» δεν θα εμφανίζεται: η ώρα (cron) «0 25 * * *» δεν διαβάζεται (${(state.configWarnings[1] as { error: string }).error})` },
   ]);
   const status = (await server.inject({ method: 'GET', url: '/api/admin/validation-status' })).json();
   assert.equal(status.config, null);
@@ -92,7 +94,10 @@ test('while they are live, a save that leaves them as they are saves', async () 
   assert.equal(live().rewards[0].cost, 20);
   assert.equal(live().schedules[1].cron, '99 20 * * *');
   assert.deepEqual(await warnings(), ['/schedules/1/cron 99 20 * * *', '/chores/0/availabilityCron 0 25 * * *']);
-  assert.deepEqual((await post('/api/admin/validate', live())).body, { valid: true });
+  // the editor's pre-check: valid, with the live ones as warnings
+  const check = (await post('/api/admin/validate', live())).body;
+  assert.equal(check.valid, true);
+  assert.deepEqual((check.warnings as { path: string }[]).map(w => w.path), ['/schedules/1/cron', '/chores/0/availabilityCron']);
 });
 
 test('but changing one to another unreadable cron, or adding one more, is refused', async () => {

@@ -1,4 +1,5 @@
 import type { ConfigUser, DataConfig, Forgiveness, IconValue, ProblemReading, Schedule, User } from '@shared/types';
+import { themeColor } from '../../../../../shared/themeColours.ts'; // relative, so node --test runs it too
 
 // Pure helpers for the config forms.
 
@@ -55,12 +56,13 @@ export const FORGIVENESS: { value: Forgiveness; label: string; says: string }[] 
 
 // A kid's colour: one of the theme's (styles/variables.css), which read well on the dark kids' screen.
 // Saved as the var(), as data.json has always had it, so a theme change carries the kids along.
+// The tokens come from shared/themeColours.ts, the list the backend's config checks accept (#104).
 export const THEME_COLORS: { value: string; label: string }[] = [
-    { value: 'var(--color-primary)', label: 'Κυανό' },
-    { value: 'var(--color-secondary)', label: 'Ροζ' },
-    { value: 'var(--color-accent)', label: 'Χρυσό' },
-    { value: 'var(--color-success)', label: 'Πράσινο' },
-    { value: 'var(--color-warning)', label: 'Πορτοκαλί' },
+    { value: themeColor('primary'), label: 'Κυανό' },
+    { value: themeColor('secondary'), label: 'Ροζ' },
+    { value: themeColor('accent'), label: 'Χρυσό' },
+    { value: themeColor('success'), label: 'Πράσινο' },
+    { value: themeColor('warning'), label: 'Πορτοκαλί' },
 ];
 
 // A kid as data.json keeps it: the name trimmed, and the fields at their default left out

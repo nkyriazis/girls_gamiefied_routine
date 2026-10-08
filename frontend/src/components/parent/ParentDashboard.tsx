@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import type { AppState, ConfigWarning } from '@shared/types';
+import type { AppState, ConfigWarning, CronWarning } from '@shared/types';
 import { useSearchParams } from 'react-router-dom';
 import { useGame } from '../../context/GameContext';
 import { FeedbackProvider } from './feedback';
@@ -48,8 +48,9 @@ export function ParentDashboard() {
                         <span className={isConnected ? 'p-live on' : 'p-live'}>{isConnected ? 'Συνδεδεμένο' : 'Επανασύνδεση…'}</span>
                     </header>
                     {configError && <ConfigBanner error={configError} />}
-                    {configWarnings.length > 0 && <CronBanner warnings={configWarnings}
-                        onOpen={view === 'settings' ? undefined : () => setParams({ view: 'settings' })} />}
+                    {configWarnings.length > 0 && <WarningsBanner warnings={configWarnings}
+                        openSettings={view === 'settings' ? undefined : () => setParams({ view: 'settings' })}
+                        openJson={view === 'advanced' ? undefined : () => setParams({ view: 'advanced' })} />}
                     {view === 'today' && <TodayView />}
                     {view === 'history' && <HistoryView />}
                     {view === 'settings' && <SettingsView />}
@@ -60,27 +61,46 @@ export function ParentDashboard() {
     );
 }
 
-// Crons in the live data.json the scheduler can't read (#89): the file loaded, so everything else runs and
-// saves, but these never fire. Names each by what the parent sees in Ρυθμίσεις, where its row has a ⚠.
-function CronBanner({ warnings, onOpen }: { warnings: ConfigWarning[]; onOpen?: () => void }) {
+const isCron = (w: ConfigWarning): w is CronWarning => w.kind === 'schedule' || w.kind === 'chore';
+
+// What the checks find in the live data.json (backend/src/configChecks.ts; #89, #104): the file loaded, so
+// everything else runs and saves, but each one needs fixing. A cron the scheduler can't read is named by what
+// the parent sees in Ρυθμίσεις, where its row has a ⚠, and fixed there; every other problem is said as the
+// server words it, with its place in the file, and fixed in Προχωρημένα → Ρυθμίσεις (JSON).
+function WarningsBanner({ warnings, openSettings, openJson }: {
+    warnings: ConfigWarning[]; openSettings?: () => void; openJson?: () => void;
+}) {
     const { config, users } = useGame();
     const targets = targetsOf(config, users);
-    const name = (w: ConfigWarning) => {
+    const cronName = (w: CronWarning) => {
         if (w.kind === 'chore') return `Η δουλειά «${config.chores?.find(c => c.id === w.id)?.title ?? w.id}» δεν θα εμφανίζεται`;
         const targetId = config.schedules.find(s => s.id === w.id)?.targetId;
         return `Το πρόγραμμα «${targets.find(t => t.id === targetId)?.label ?? targetId ?? w.id}» δεν θα ξεκινά`;
     };
+    const crons = warnings.some(isCron);
+    const others = warnings.some(w => !isCron(w));
+    const one = warnings.length === 1;
     return (
         <div className="p-banner warn" role="status">
-            <strong>{warnings.length === 1 ? 'Μια ώρα (cron) δεν διαβάζεται.' : `${warnings.length} ώρες (cron) δεν διαβάζονται.`}</strong>{' '}
-            Οι ρυθμίσεις φόρτωσαν και τα υπόλοιπα δουλεύουν κανονικά, αλλά μέχρι να {warnings.length === 1 ? 'διορθωθεί' : 'διορθωθούν'} στις
-            Ρυθμίσεις (εκεί {warnings.length === 1 ? 'έχει' : 'έχουν'} ⚠):
+            <strong>{one ? 'Ένα πρόβλημα στις ρυθμίσεις.' : `${warnings.length} προβλήματα στις ρυθμίσεις.`}</strong>{' '}
+            Οι ρυθμίσεις φόρτωσαν και τα υπόλοιπα δουλεύουν κανονικά, αλλά {one ? 'χρειάζεται' : 'χρειάζονται'} διόρθωση:
             <ul className="p-banner-list">
-                {warnings.map(w => (
-                    <li key={w.path}>{name(w)}: «{w.cron}» <span className="p-hint">({w.error})</span></li>
+                {warnings.map((w, i) => (
+                    <li key={`${i}${w.path}`}>{isCron(w)
+                        ? <>{cronName(w)}: «{w.cron}» <span className="p-hint">({w.error})</span></>
+                        : <>{w.message} <span className="p-hint">({w.path})</span></>}</li>
                 ))}
             </ul>
-            {onOpen && <button type="button" className="p-btn small" onClick={onOpen}>Άνοιγμα Ρυθμίσεων</button>}
+            <p className="p-hint p-banner-where">
+                {crons && <>Οι ώρες (cron) διορθώνονται στις Ρυθμίσεις, όπου έχουν ⚠. </>}
+                {others && <>{crons ? 'Τα υπόλοιπα' : 'Διορθώνονται'} στα Προχωρημένα → Ρυθμίσεις (JSON), στη θέση που δείχνει η παρένθεση.</>}
+            </p>
+            {((crons && openSettings) || (others && openJson)) && (
+                <div className="p-banner-actions">
+                    {crons && openSettings && <button type="button" className="p-btn small" onClick={openSettings}>Άνοιγμα Ρυθμίσεων</button>}
+                    {others && openJson && <button type="button" className="p-btn small" onClick={openJson}>Άνοιγμα JSON</button>}
+                </div>
+            )}
         </div>
     );
 }

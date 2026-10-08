@@ -33,6 +33,10 @@ interface Props {
 // builds a moment after it replies. Until that STATE lands, the live version the
 // editor had before is `behind`, not stale, so the editor's own save never shows
 // the banner, not even for a frame.
+//
+// Before saving it asks the server (`validate`): errors refuse the save and are listed in red; warnings
+// (data.json's checks that let a save through, #104: duplicate ids, links to nothing, blank names, colours)
+// are listed in amber under them, and the save goes on. They stay listed after it, until the next Αποθήκευση.
 export function JsonEditor({ initial, load, loadText, save, live, stale, onReload, schemas, validate, warning }: Props) {
     const { notify } = useFeedback();
     const [text, setText] = useState<string | null>(() => (initial === undefined ? null : JSON.stringify(initial.data, null, 2)));
@@ -43,6 +47,7 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
     const [saving, setSaving] = useState(false);
     const [refused, setRefused] = useState(false); // the server answered 409
     const [errors, setErrors] = useState<string[]>([]);
+    const [warnings, setWarnings] = useState<string[]>([]);
     const [schemaFiles, setSchemaFiles] = useState<SchemaFile[] | null>(null);
 
     useEffect(() => {
@@ -91,9 +96,11 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
             data = JSON.parse(text ?? '');
         } catch (err) {
             setErrors([`Μη έγκυρο JSON: ${(err as Error).message}`]);
+            setWarnings([]);
             return;
         }
-        const result = validate ? await validate(data) : { valid: true };
+        const result: ValidationResult = validate ? await validate(data) : { valid: true };
+        setWarnings((result.warnings ?? []).map(w => `${w.path} ${w.message}`));
         if (!result.valid) {
             setErrors((result.errors ?? []).map(e => `${e.instancePath || '/'} ${e.message}`));
             return;
@@ -144,6 +151,7 @@ export function JsonEditor({ initial, load, loadText, save, live, stale, onReloa
                     options={{ minimap: { enabled: false }, scrollBeyondLastLine: false, fontSize: 13, tabSize: 2, automaticLayout: true, wordWrap: 'on' }} />
             </div>
             {errors.length > 0 && <ul className="p-errors">{errors.map((e, i) => <li key={i}>{e}</li>)}</ul>}
+            {warnings.length > 0 && <ul className="p-errors warn" aria-label="Προσοχή">{warnings.map((w, i) => <li key={i}>Προσοχή: {w}</li>)}</ul>}
             <div className="p-actions"><button type="button" className="p-btn primary" onClick={submit} disabled={saving}>Αποθήκευση</button></div>
         </div>
     );

@@ -3,8 +3,8 @@ import { copyFileSync, existsSync, readFileSync, renameSync, unwatchFile, watchF
 import path from 'path';
 import { isDeepStrictEqual } from 'util';
 import type { ErrorObject } from 'ajv';
-import { ConfigWarning, DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
-import { unreadableCrons } from './cron';
+import { ConfigWarning, CronWarning, DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
+import { configProblems, refuses } from './configChecks';
 import { DATA_FILE, EXERCISES_FILE } from './paths';
 import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 
@@ -31,15 +31,18 @@ import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
 // last save no longer silently wins. A save that names no version is not
 // checked (scripts, and the editor fixing a file that doesn't parse).
 //
-// Some checks the schema can't express: a file's `rules` (data.json: every
-// cron the scheduler reads must be one it can read, cron.ts; #89). A save
-// that brings in a problem they find is refused like a schema error. A file
-// on disk that has one still loads (piserve's live file must never stop
-// loading over a check added later): it goes live and its problems are
-// `warnings`, which the parents' page shows (AppState.configWarnings). And a
-// problem already live (the same item with the same value) doesn't block a
-// save that leaves it as it is, so one bad cron never locks out the others'
-// fixes; fixing it is always a save.
+// Some checks the schema can't express: a file's `rules` (data.json's are in
+// configChecks.ts: crons the scheduler can't read, #89; duplicate ids, links
+// to nothing, blank names and titles, colours, #104). Whatever they find in
+// the live file is its `warnings`, which the parents' page shows
+// (AppState.configWarnings). A file on disk that has any still loads
+// (piserve's live file must never stop loading over a check added later).
+// Only a cron refuses a save (configChecks.ts `refuses`): one the save brings
+// in is refused like a schema error, while one already live (the same item
+// with the same cron, never an array index) doesn't block a save that leaves
+// it as it is, so one bad cron never locks out the others' fixes; fixing it
+// is always a save. Every other problem is a warning only: the save goes
+// through, and validate() hands them back for the Advanced editor to list.
 // ============================================================================
 
 /** exercises.json, as described by exercises.schema.json. */
@@ -78,11 +81,11 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
-/** The same problem in two versions of a file: the same item, the same value. */
-const problemKey = (w: ConfigWarning) => `${w.kind}\n${w.id}\n${w.cron}`;
+/** The same cron problem in two versions of a file: the same item, the same value. */
+const problemKey = (w: CronWarning) => `${w.kind}\n${w.id}\n${w.cron}`;
 
-/** A rule's problem in the shape of a schema error, so the editors list it and summarize() says it. */
-const asSchemaError = (w: ConfigWarning): ErrorObject => ({
+/** A refused rule's problem in the shape of a schema error, so the editors list it and summarize() says it. */
+const asSchemaError = (w: CronWarning): ErrorObject => ({
   instancePath: w.path, schemaPath: '#/cron', keyword: 'cron', params: { cron: w.cron },
   message: `η ώρα (cron) «${w.cron}» δεν διαβάζεται: ${w.error}`,
 });
@@ -141,15 +144,22 @@ export class ConfigFile<T> {
   }
 
   /**
-   * Why a save of `value` would be refused for its content, or null: the schema, then the rules' problems
-   * it brings in (one already live, the same item with the same value, doesn't count).
+   * What a save of `value` would meet. `error`: why it would be refused for its content, or null: the
+   * schema, then the refusing rules' problems it brings in (one already live, the same item with the same
+   * value, doesn't count). `warnings`: every other problem the rules find in it, which the save lets
+   * through (none while the schema refuses it).
    */
-  validate(value: unknown, message: string): ValidationError | null {
+  validate(value: unknown, message: string): { error: ValidationError | null; warnings: ConfigWarning[] } {
     const error = check(this.schema, value, message);
-    if (error) return error;
-    const live = new Set(this.warnings.map(problemKey));
-    const brought = this.rules(value as T).filter(w => !live.has(problemKey(w)));
-    return brought.length ? { message, errors: brought.map(asSchemaError) } : null;
+    if (error) return { error, warnings: [] };
+    const live = new Set(this.warnings.filter(refuses).map(problemKey));
+    const problems = this.rules(value as T);
+    const brought = problems.filter(refuses).filter(w => !live.has(problemKey(w)));
+    const refused = new Set<ConfigWarning>(brought);
+    return {
+      error: brought.length ? { message, errors: brought.map(asSchemaError) } : null,
+      warnings: problems.filter(w => !refused.has(w)),
+    };
   }
 
   /** The file's text as it is on disk now (to fix a file that doesn't parse), or null when missing. */
@@ -214,7 +224,7 @@ export class ConfigFile<T> {
    */
   save(value: unknown, { replace = false, version }: { replace?: boolean; version?: string } = {}): SaveRefusal | null {
     const name = path.basename(this.file);
-    const error = this.validate(value, `${name} failed schema validation`);
+    const { error } = this.validate(value, `${name} failed schema validation`);
     if (error) return error;
     if (version !== undefined && version !== this.version()) {
       return { ...refusal(`Το ${name} άλλαξε στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.`), conflict: true };
@@ -256,7 +266,7 @@ export function changedKeys(before: object, after: object): string[] {
   return keys.filter(k => !isDeepStrictEqual((before as Record<string, unknown>)[k], (after as Record<string, unknown>)[k]));
 }
 
-export const dataConfig = new ConfigFile<DataConfig>(DATA_FILE, dataSchema, EMPTY_DATA, false, unreadableCrons);
+export const dataConfig = new ConfigFile<DataConfig>(DATA_FILE, dataSchema, EMPTY_DATA, false, configProblems);
 export const exercisesConfig = new ConfigFile<ExercisesConfig>(EXERCISES_FILE, exercisesSchema, EMPTY_EXERCISES, true);
 
 /** The live data.json config. */
@@ -274,7 +284,7 @@ export function configError(): ConfigProblem | null {
   return dataConfig.problem() ?? exercisesConfig.problem();
 }
 
-/** Crons in the live data.json that the scheduler can't read: it loaded, but they never fire (#89). */
+/** What the checks find in the live data.json (configChecks.ts): it loaded, but these need fixing (#89, #104). */
 export function configWarnings(): ConfigWarning[] {
   return dataConfig.warnings;
 }
