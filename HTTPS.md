@@ -6,16 +6,19 @@ Nothing comes in from the internet. The name points at the Pi's **LAN** address,
 
 ## Turn it on (once)
 
-1. Sign in at <https://www.duckdns.org> (Google or GitHub), add a name (e.g. `kyriazis-home`), and copy the **token** shown at the top of the page. Leave the IP field alone: the Pi sets it.
-2. Add three lines to the Pi's `.env`:
-   ```
-   COMPOSE_PROFILES=https
-   HTTPS_DOMAIN=kyriazis-home.duckdns.org
-   DUCKDNS_TOKEN=<the token>
-   ```
-3. Deploy (`./deploy-rpi.sh`). Then `docker logs routine-https-1` (or `docker-compose ... logs https`) shows `https: kyriazis-home.duckdns.org → 192.168.x.y`, and within a minute Caddy logs `certificate obtained successfully`.
+The settings live encrypted in the repo (`secrets.env.age`, `tools/secrets/vault.sh`), so the Pi's `.env` is never edited by hand:
 
-Open `https://kyriazis-home.duckdns.org` on any device on the home Wi-Fi. `http://<pi>/` keeps working as before; nothing redirects to https.
+1. Sign in at <https://www.duckdns.org> (Google or GitHub), add a name (e.g. `kyriazis-home`), and save the **token** shown at the top of the page into `~/.routine-duckdns-token` on the dev machine. Leave the IP field alone: the Pi sets it.
+2. On the dev machine, in a terminal: `tools/secrets/vault.sh edit`. It opens the vault prefilled with `COMPOSE_PROFILES=https`, `HTTPS_DOMAIN=<name>.duckdns.org` and the token from that file. Put your name in, save, and choose a passphrase (age asks twice; make it long, the repo is public). Commit `secrets.env.age`.
+3. On the Pi: `./deploy-rpi.sh`. It sees a new vault, asks the passphrase once, and writes the settings into a marked block of `.env` (the rest of `.env` stays as it was). Later deploys don't ask, until the vault changes. Then `docker logs` of the https container shows `https: kyriazis-home.duckdns.org → 192.168.x.y`, and within a minute Caddy logs `certificate obtained successfully`.
+
+Without the vault, the same three lines can go into `.env` by hand. Open `https://kyriazis-home.duckdns.org` on any device on the home Wi-Fi. `http://<pi>/` keeps working as before; nothing redirects to https.
+
+## The vault
+
+- `tools/secrets/vault.sh edit`: decrypt, edit, encrypt again (dev machine). Change a secret, commit, deploy: the new vault makes the deploy ask the passphrase again.
+- `tools/secrets/vault.sh provision`: what `deploy-rpi.sh` runs after updating the code. It copies the vault into `.env` when the vault's sha256 differs from the stamp on the block, giving 3 tries at the passphrase; a deploy with nobody at the keyboard keeps the old block and says so.
+- age (age-encryption.org) runs in a throwaway `alpine` container, so neither machine installs it. A forgotten passphrase means making a new vault with `edit` (delete `secrets.env.age` first): the token is still on DuckDNS's page.
 
 ## What it does
 
