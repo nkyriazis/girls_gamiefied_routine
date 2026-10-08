@@ -1,0 +1,153 @@
+e-dimotikou-generated.json
+  big-table «Αναστοχαζόμαστε: είναι λογική η απάντηση;» n=3
+      ok   lone     right in    4 of  4 (fair 1.3, a fair die at most 4)
+      ok   a «Ναι»  right in    4 of  4 (fair 1.3, a fair die at most 4)
+      ok   an «Όχι» right in    0 of  4 (fair 1.3, a fair die at most 4)
+      e.g. e5-gen-big-table-005 step 2: Όχι: πρέπει να είναι λιγότερο από 293.815 | Όχι: πρέπει να είναι περίπου 4.800.000 | ✔Ναι: περίπου 190.000 + 290.000 = 480.000
+  big-table «Ποια πράξη κάνουμε;» n=3
+      ok   lone     right in    0 of  6 (fair 2.0, a fair die at most 5)
+      e.g. e5-gen-big-table-007 step 1: Πρόσθεση: 276.153 + 140.210 | Αφαίρεση: 140.210 − 276.153 | ✔Αφαίρεση: 276.153 − 140.210
+  budget «Φτάνουν τα χρήματά της;» n=3
+      ok   lone     right in    3 of  5 (fair 1.7, a fair die at most 4)
+      ok   a «Ναι»  right in    1 of  5 (fair 1.7, a fair die at most 4)
+      ok   an «Όχι» right in    3 of  5 (fair 1.7, a fair die at most 4)
+      e.g. e5-gen-budget-001 step 2: Ναι, γιατί 1.494 < 2.550 | ✔Όχι, γιατί 2.693 > 2.550 | Ναι, γιατί 2.693 < 2.550
+  budget «Φτάνουν τα χρήματά τους;» n=3
+      ok   lone     right in    4 of  8 (fair 2.7, a fair die at most 6)
+      ok   a «Ναι»  right in    2 of  8 (fair 2.7, a fair die at most 6)
+      ok   an «Όχι» right in    4 of  8 (fair 2.7, a fair die at most 6)
+      e.g. e5-gen-budget-002 step 2: Ναι, γιατί 384 < 650 | ✔Ναι, γιατί 549 < 650 | Όχι, γιατί 549 > 650
+  budget «Φτάνουν τα χρήματα του συλλόγου;» n=3
+      ok   lone     right in    3 of  4 (fair 1.3, a fair die at most 4)
+      ok   a «Ναι»  right in  0.5 of  4 (fair 1.3, a fair die at most 4)
+      ok   an «Όχι» right in    3 of  4 (fair 1.3, a fair die at most 4)
+      e.g. e5-gen-budget-008 step 2: Ναι, γιατί 869 < 700 | ✔Όχι, γιατί 869 > 700 | Ναι, γιατί 635 < 700
+  budget «Φτάνουν τα χρήματα του σχολείου;» n=3
+      ok   lone     right in    2 of  3 (fair 1.0, a fair die at most 3)
+      ok   a «Ναι»  right in  0.5 of  3 (fair 1.0, a fair die at most 3)
+      ok   an «Όχι» right in    2 of  3 (fair 1.0, a fair die at most 3)
+      e.g. e5-gen-budget-003 step 3: Ναι, γιατί 764 < 1.000 | ✔Όχι, γιατί 1.072 > 1.000 | Ναι, γιατί 1.072 < 1.000
+  buses-needed «Αναστοχαζόμαστε: φτάνουν τα λεωφορεία;» n=4
+      ok   lone     right in    0 of  4 (fair 1.0, a fair die at most 3)
+      ok   a «Ναι»  right in    2 of  4 (fair 1.0, a fair die at most 3)
+      e.g. e5-gen-buses-needed-006 step 2: ✔Ναι: 4 × 55 = 220 θέσεις | Ναι: 4 + 55 = 59 θέσεις | 192 : 55 = 3, άρα 3 λεωφορεία | Οι 122 χωράνε σε 3 λεωφορεία
+  compare-offers «Ποια συσκευασία συμφέρει;» n=3
+      ok   lone     right in    0 of 20 (fair 6.7, a fair die at most 12)
+      e.g. e5-gen-compare-offers-001 step 2: ✔Το κουτί των 6 | Το κουτί των 4 | Συμφέρουν το ίδιο
+  group-tickets «Είναι λογική η απάντηση;» n=3
+      warn lone     right in    5 of  5 (fair 1.7, a fair die at most 4)
+      warn a «Ναι»  right in    5 of  5 (fair 1.7, a fair die at most 4)
+      ok   an «Όχι» right in    0 of  5 (fair 1.7, a fair die at most 4)
+      e.g. e5-gen-group-tickets-002 step 3: ✔Ναι: λίγο πάνω από τα 648 € των μαθητών | Όχι: πρέπει να είναι λιγότερα από 648 € | Όχι: πρέπει να είναι 992 €, όλοι με τιμή ενήλικα
+  missing-info «Κάποιος απάντησε «# €». Τι ξέχασε;» n=3
+      ok   lone     right in    0 of  3 (fair 1.0, a fair die at most 3)
+      e.g. e5-gen-missing-info-015 step 3: Τίποτα, η απάντηση στέκει | ✔Να μετρήσει και τον Πυθαγόρα | Να μετρήσει και το ποπ κορν
+  missing-info «Μπορούμε να λύσουμε αυτό το πρόβλημα; Τι λείπει;» n=4
+      ok   lone     right in  0.5 of 15 (fair 3.8, a fair die at most 8)
+      e.g. e5-gen-missing-info-001 step 0: Πόσοι ζαχαροπλάστες δουλεύουν εκεί | Πόσα σοκολατάκια έφτιαξε τη δεύτερη ημέρα | Πόσο κοστίζει κάθε κουτί στο μαγαζί | ✔Πόσα σοκολατάκια χωράει κάθε κουτί
+  round-estimate «Έχει δίκιο @;» n=3
+      ok   lone     right in    4 of  7 (fair 2.3, a fair die at most 5)
+      ok   a «Ναι»  right in    4 of  7 (fair 2.3, a fair die at most 5)
+      ok   an «Όχι» right in  1.5 of  7 (fair 2.3, a fair die at most 5)
+      e.g. e5-gen-round-estimate-003 step 2: Όχι, είναι περίπου 0 | Όχι, ακριβώς 1.000 | ✔Ναι, είναι περίπου τόσο
+  sum-difference «Κάποιος απάντησε «# και #». Γιατί είναι λάθος;» n=3
+      ok   lone     right in    3 of  7 (fair 2.3, a fair die at most 5)
+      e.g. e5-gen-sum-difference-001 step 3: Δεν κάνουν 13.900 μαζί | Δεν είναι λάθος καθόλου | ✔Γιατί δεν έχουν διαφορά 2.200
+  together-again «Έχει δίκιο @;» n=3
+      ok   lone     right in    0 of  3 (fair 1.0, a fair die at most 3)
+      ok   a «Ναι»  right in    0 of  3 (fair 1.0, a fair die at most 3)
+      ok   an «Όχι» right in  1.5 of  3 (fair 1.0, a fair die at most 3)
+      e.g. e5-gen-together-again-006 step 3: Ναι: τους πολλαπλασιάζουμε | Όχι: έπρεπε να προσθέσει 8 + 30 = 38 | ✔Όχι: συμπίπτουν νωρίτερα, στο 120
+  together-again «Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;» n=4
+      ok   lone     right in    0 of  7 (fair 1.8, a fair die at most 5)
+      e.g. e5-gen-together-again-002 step 3: ✔Είναι το μικρότερο που διαιρείται με το 4 και το 10 | Είναι μεγαλύτερο από το 4 και το 10 | Είναι το μεγαλύτερο που διαιρείται με το 4 και το 10 | Διαιρείται με το 4 και το 10
+  together-again «Ποιο εργαλείο μας βοηθά περισσότερο;» n=3
+      ok   lone     right in    0 of  5 (fair 1.7, a fair die at most 4)
+      e.g. e5-gen-together-again-002 step 1: Ένας κατάλογος με τους διαιρέτες των 4 και 10 | Μια διαίρεση, 10 : 4, και κρατάω το πηλίκο | ✔Ένας κατάλογος με τα πολλαπλάσια των 4 και 10
+  together-again «Τι ψάχνουμε στην ουσία;» n=4
+      ok   lone     right in    0 of  8 (fair 2.0, a fair die at most 5)
+      e.g. e5-gen-together-again-001 step 1: Το άθροισμα 9 + 10 | Το 10, τον μεγαλύτερο | Έναν διαιρέτη τους | ✔Το Ε.Κ.Π. των 9 και 10
+  trip-costs «Αναστοχαζόμαστε: κάποιος βρήκε # €. Τι ξέχασε;» n=3
+      ok   lone     right in    4 of  4 (fair 1.3, a fair die at most 4)
+      e.g. e5-gen-trip-costs-008 step 2: ✔Τα διόδια της επιστροφής | Τη βενζίνη του γυρισμού | Τη δεύτερη νύχτα στον ξενώνα
+  unit-rate «Είναι λογική η απάντηση;» n=3
+      FAIL lone     right in   20 of 20 (fair 6.7, a fair die at most 12)
+      FAIL a «Ναι»  right in   20 of 20 (fair 6.7, a fair die at most 12)
+      ok   an «Όχι» right in    0 of 20 (fair 6.7, a fair die at most 12)
+      e.g. e5-gen-unit-rate-001 step 3: Όχι: πρέπει να είναι κάτω από 521 | ✔Ναι: είναι περίπου 520 × 22 = 11.440 | Όχι: πρέπει να είναι περίπου 114.400
+g-dimotikou-generated.json
+  ages «Θα αλλάξει η διαφορά των # χρόνων όταν μεγαλώσουν;» n=3
+      FAIL lone     right in    6 of  6 (fair 2.0, a fair die at most 5)
+      ok   a «Ναι»  right in    0 of  6 (fair 2.0, a fair die at most 5)
+      FAIL an «Όχι» right in    6 of  6 (fair 2.0, a fair die at most 5)
+      e.g. g3-gen-ages-007 step 3: Ναι, θα γίνεται μικρότερη | ✔Όχι, μεγαλώνουν και οι δύο | Ναι, θα μεγαλώνει κι αυτή
+  bus-stops «Είναι λογική η απάντηση;» n=3
+      FAIL lone     right in   20 of 20 (fair 6.7, a fair die at most 12)
+      FAIL a «Ναι»  right in   20 of 20 (fair 6.7, a fair die at most 12)
+      ok   an «Όχι» right in    0 of 20 (fair 6.7, a fair die at most 12)
+      e.g. g3-gen-bus-stops-001 step 2: Όχι, πρέπει να είναι λιγότεροι από τους 335 | Όχι, πρέπει να είναι 787, όλοι οι αριθμοί μαζί | ✔Ναι, ανέβηκαν πιο πολλοί από όσους κατέβηκαν
+  buy-and-change «Είναι λογική η απάντηση;» n=3
+      FAIL lone     right in    7 of  7 (fair 2.3, a fair die at most 5)
+      FAIL a «Ναι»  right in    7 of  7 (fair 2.3, a fair die at most 5)
+      ok   an «Όχι» right in    0 of  7 (fair 2.3, a fair die at most 5)
+      e.g. g3-gen-buy-and-change-001 step 2: ✔Ναι, είναι λιγότερα από τα 100 ευρώ | Όχι, θα είναι πάνω από 100 ευρώ | Όχι, πρέπει να είναι 91 ευρώ
+  change-left «Είναι λογική η απάντηση;» n=3
+      FAIL lone     right in   12 of 12 (fair 4.0, a fair die at most 8)
+      FAIL a «Ναι»  right in   12 of 12 (fair 4.0, a fair die at most 8)
+      ok   an «Όχι» right in    0 of 12 (fair 4.0, a fair die at most 8)
+      e.g. g3-gen-change-left-001 step 3: ✔Ναι, είναι λιγότερα από τα 335 ευρώ | Όχι, θα είναι πάνω από 335 ευρώ | Όχι, πρέπει να είναι 495 ευρώ
+  cheaper-option «Ποιο παιδί πλήρωσε λιγότερα;» n=3
+      ok   lone     right in    0 of  3 (fair 1.0, a fair die at most 3)
+      e.g. g3-gen-cheaper-option-005 step 2: Ακριβώς ίσα | ✔Ο Αλέξης | Ο Νίκος
+  cheaper-option «Ποιος τρόπος είναι φθηνότερος;» n=3
+      ok   lone     right in    0 of 12 (fair 4.0, a fair die at most 8)
+      e.g. g3-gen-cheaper-option-002 step 3: ✔Από το σούπερ μάρκετ | Κοστίζουν το ίδιο παντού | Από το περίπτερο
+  collection-goal «Είναι λογική η απάντηση;» n=3
+      FAIL lone     right in    8 of  8 (fair 2.7, a fair die at most 6)
+      FAIL a «Ναι»  right in    8 of  8 (fair 2.7, a fair die at most 6)
+      ok   an «Όχι» right in    0 of  8 (fair 2.7, a fair die at most 6)
+      e.g. g3-gen-collection-goal-003 step 2: Όχι, λείπουν 1.386 μπαταρίες | Όχι, λείπουν πάνω από τα μισά | ✔Ναι, λείπουν κάτω από τα μισά
+  collection-goal «Ποιες πράξεις μας βοηθούν;» n=3
+      ok   lone     right in    0 of  4 (fair 1.3, a fair die at most 4)
+      e.g. g3-gen-collection-goal-010 step 1: Πρώτα αφαίρεση, μετά πρόσθεση | ✔Πρώτα πρόσθεση, μετά αφαίρεση | Μόνο πρόσθεση, όλα μαζί
+  equal-groups «Μπορούμε να απαντήσουμε;» n=3
+      FAIL lone     right in    7 of  7 (fair 2.3, a fair die at most 5)
+      ok   a «Ναι»  right in    0 of  7 (fair 2.3, a fair die at most 5)
+      FAIL an «Όχι» right in    7 of  7 (fair 2.3, a fair die at most 5)
+      e.g. g3-gen-equal-groups-003 step 0: Ναι, αρκεί να μετρήσουμε τις σειρές | Ναι, είναι 4 καρέκλες, όσες και οι σειρές | ✔Όχι, δεν λέει πόσες έχει κάθε σειρά
+  estimate-first «Είναι λογικό το αποτέλεσμα;» n=3
+      FAIL lone     right in   10 of 10 (fair 3.3, a fair die at most 7)
+      FAIL a «Ναι»  right in   10 of 10 (fair 3.3, a fair die at most 7)
+      ok   an «Όχι» right in    0 of 10 (fair 3.3, a fair die at most 7)
+      e.g. g3-gen-estimate-first-002 step 3: Όχι, έπρεπε να βγει περίπου 500 | ✔Ναι, είναι αρκετά κοντά στο 200 | Όχι, έπρεπε να είναι 200
+  missing-info «Μπορούμε να απαντήσουμε; Τι μας λείπει;» n=3
+      ok   lone     right in    0 of  4 (fair 1.3, a fair die at most 4)
+      e.g. g3-gen-missing-info-001 step 0: Πόσα ευρώ θα πάρει αύριο | Από ποιο μαγαζί την αγόρασε | ✔Πόσα ευρώ είχε στην αρχή
+  missing-info «Μπορούμε να απαντήσουμε; Τι μας λείπει;» n=4
+      ok   lone     right in    0 of  6 (fair 1.5, a fair die at most 4)
+      e.g. g3-gen-missing-info-003 step 0: Πόσα κουλουράκια έψησε | Πόσων χρονών είναι ο παππούς | ✔Πόσα εγγόνια έχει ο παππούς | Τι ώρα ήταν το απόγευμα
+  numberless «Διαβάζουμε την ιστορία χωρίς αριθμούς. Ποια ερώτηση ταιριάζει;» n=3
+      ok   lone     right in    1 of 11 (fair 3.7, a fair die at most 7)
+      e.g. g3-gen-numberless-001 step 0: ✔Πόσες περισσότερες σελίδες διάβασε η Ελένη από τη Χαρά; | Πόσες περισσότερες σελίδες διάβασε η Χαρά από την Ελένη; | Πόσες σελίδες διάβασε η Ελένη από ένα βιβλίο χθες;
+  total-cost «Φτάνουν τα # ευρώ;» n=3
+      ok   lone     right in    6 of 14 (fair 4.7, a fair die at most 9)
+      ok   a «Ναι»  right in    4 of 14 (fair 4.7, a fair die at most 9)
+      ok   an «Όχι» right in    6 of 14 (fair 4.7, a fair die at most 9)
+      e.g. g3-gen-total-cost-002 step 3: Όχι, θα λείπουν χρήματα | Ναι, ακριβώς όσα χρειάζονται | ✔Ναι, και θα περισσέψουν
+  two-digit-times «Είναι κοντά στην εκτίμηση;» n=3
+      FAIL lone     right in   10 of 10 (fair 3.3, a fair die at most 7)
+      FAIL a «Ναι»  right in   10 of 10 (fair 3.3, a fair die at most 7)
+      ok   an «Όχι» right in    0 of 10 (fair 3.3, a fair die at most 7)
+      e.g. g3-gen-two-digit-times-001 step 3: ✔Ναι, το 54 είναι κοντά στο 60 | Όχι, βγαίνει 38, όσο 3 × 10 + 8 | Όχι, βγαίνει 21, όσο 3 + 18
+  two-digit-times «Είναι λογική η απάντηση;» n=3
+      FAIL lone     right in    6 of  6 (fair 2.0, a fair die at most 5)
+      FAIL a «Ναι»  right in    6 of  6 (fair 2.0, a fair die at most 5)
+      ok   an «Όχι» right in    0 of  6 (fair 2.0, a fair die at most 5)
+      e.g. g3-gen-two-digit-times-004 step 3: Όχι, έπρεπε να βγει 26, όσο 5 + 21 | Όχι, έπρεπε να βγει 101, όσο 5 × 20 + 1 | ✔Ναι, είναι ανάμεσα στο 100 και στο 150
+  two-purchases «Είναι λογική η απάντηση;» n=3
+      FAIL lone     right in    9 of  9 (fair 3.0, a fair die at most 6)
+      FAIL a «Ναι»  right in    9 of  9 (fair 3.0, a fair die at most 6)
+      ok   an «Όχι» right in    0 of  9 (fair 3.0, a fair die at most 6)
+      e.g. g3-gen-two-purchases-002 step 3: Όχι, θα είναι πάνω από 50 ευρώ | ✔Ναι, είναι λιγότερα από τα 50 ευρώ | Όχι, πρέπει να είναι 70 ευρώ
+
+1383 choices where some options share their first word; 22 ways that fail, 2 warnings

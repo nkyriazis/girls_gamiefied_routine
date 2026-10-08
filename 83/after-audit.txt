@@ -1,0 +1,7 @@
+# The lead rule on this branch's pools: node tools/problem-gen/audit.ts, exit 0
+Tapping by the first word («Ναι»/«Σωστό», «Όχι»/«Λάθος», or the lone one), per pool: right in, of the choices it applies to
+  e-dimotikou-generated n=3    the lone one 16 of 27, a «Ναι» 8 of 27, an «Όχι» 13.5 of 27   (at random 33.3%)
+  g-dimotikou-generated n=3    the lone one 6 of 14, a «Ναι» 4 of 14, an «Όχι» 6 of 14   (at random 33.3%)
+
+
+0 errors, 86 warnings
