@@ -1,0 +1,32 @@
+# before, routine-frontend:issue-100-before: GET with Accept-Encoding: gzip, deflate, br
+path                                         code content-type             encoding  vary                   wire   identity
+/                                             200 text/html                                                  789        789
+/parent                                       200 text/html                                                  789        789
+/assets/index-DpsZ32TL.js                     200 application/javascript                                  720770     720770
+/assets/index-DuryaEQL.css                    200 text/css                                                 23523      23523
+/assets/JsonEditor-DNJ4sr5w.js                200 application/javascript                                 3982094    3982094
+/assets/JsonEditor--wwQ80g0.css               200 text/css                                                186532     186532
+/assets/json.worker-BggoxaER.js               200 application/javascript                                  406907     406907
+/assets/codicon-DF1abBS2.ttf                  200 application/octet-stream                                153228     153228
+/sw.js                                        200 application/javascript                                   10543      10543
+/manifest.webmanifest                         200 application/octet-stream                                   553        553
+/logo.svg                                     200 image/svg+xml                                              532        532
+/favicon.ico                                  200 image/x-icon                                              5599       5599
+/pwa-512x512.png                              200 image/png                                               254208     254208
+/sfx/close.wav                                200 application/octet-stream                                 20244      20244
+/help-voice/0148e14992d1.mp3                  200 audio/mpeg                                               65245      65245
+/api/admin/data                               200 application/json                   Origin                 5481       5481
+/api/admin/exercises                          200 application/json                   Origin                 1593       1593
+/api/debug/logs                               200 application/json                   Origin                  745        745
+
+# curl -sI -H "Accept-Encoding: gzip" on the kids' entry (the issue's check)
+HTTP/1.1 200 OK
+Server: nginx/1.31.6
+Date: Thu, 08 Oct 2026 07:53:07 GMT
+Content-Type: application/javascript
+Content-Length: 720770
+Last-Modified: Thu, 08 Oct 2026 07:38:19 GMT
+Connection: keep-alive
+ETag: "6ac7486b-aff82"
+Accept-Ranges: bytes
+

@@ -1,0 +1,14 @@
+# before, routine-frontend:issue-100-before
+## 1. /ws handshake (curl, 2 s)
+HTTP/1.1 101 Switching Protocols
+Connection: upgrade
+Upgrade: websocket
+Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+Sec-WebSocket-Extensions: permessage-deflate
+## 2. upload 2 MB through nginx, then fetch it back
+{"success":true,"url":"http://localhost/uploads/1791445989080-gz100.mp3","filename":"1791445989080-gz100.mp3"} -> HTTP 200
+GET /uploads/1791445989080-gz100.mp3: HTTP/1.1 200 OK, Content-Encoding: , byte for byte: yes
+## 3. already-compressed media, asked with Accept-Encoding: gzip
+/pwa-512x512.png                         HTTP/1.1 200 OK, Content-Encoding: 
+/help-voice/0148e14992d1.mp3             HTTP/1.1 200 OK, Content-Encoding: 
+/uploads/1763893864988-1.png             HTTP/1.1 200 OK, Content-Encoding: 

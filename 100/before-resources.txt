@@ -1,0 +1,18 @@
+[before] kids' screen, first visit (js, css, html): 4 files, 750.8 kB over the wire for 750.8 kB of files
+  /assets/index-DpsZ32TL.js                       720.8 kB    720.8 kB
+  /assets/index-DuryaEQL.css                       23.5 kB     23.5 kB
+  /assets/workbox-window.prod.es5-BBnX5xw4.js       5.7 kB      5.7 kB
+  /                                                 0.8 kB      0.8 kB
+[before] service worker active: true; precache «workbox-precache-v2-http://localhost:8100/»: 119 entries
+  cached /assets/workbox-window.prod.es5-BBnX5xw4.js      5748 chars, same as the file: true
+  cached /assets/index-DuryaEQL.css                   23523 chars, same as the file: true
+  cached /assets/index-DpsZ32TL.js                   697890 chars, same as the file: true
+  cached /assets/AdvancedView-C_4nss5p.js              6988 chars, same as the file: true
+[before] offline reload: kids' screen drawn from the precache: true
+[before] Προχωρημένα → Ρυθμίσεις (JSON), editor up: true; Monaco's files: 6 files, 5058.6 kB over the wire for 5058.6 kB of files
+  /assets/JsonEditor-DNJ4sr5w.js                 3982.1 kB   3982.1 kB
+  /assets/JsonEditor--wwQ80g0.css                 186.5 kB    186.5 kB
+  /assets/jsonMode-vRA84BWb.js                     54.2 kB     54.2 kB
+  /assets/json.worker-BggoxaER.js                 406.9 kB    406.9 kB
+  /assets/editor.worker-CHzQTjO0.js               275.6 kB    275.6 kB
+  /assets/codicon-DF1abBS2.ttf                    153.2 kB    153.2 kB

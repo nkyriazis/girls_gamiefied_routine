@@ -1,0 +1,91 @@
+✖ gzip is on for the whole server, with the precompressed files first (1.056516ms)
+✖ gzip_types names the scripts, styles, JSON and SVG (0.252475ms)
+✔ gzip_types names no media: mp3, wav, png, ico and uploads go as they are (0.282801ms)
+✖ the WebSocket is never gzipped: /ws turns gzip off (0.224853ms)
+✖ the image's builder writes the .gz files gzip_static serves, after the build and keeping the originals (0.117491ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 1
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.259667
+
+✖ failing tests:
+
+test at src/nginxGzip.test.ts:17:1
+✖ gzip is on for the whole server, with the precompressed files first (1.056516ms)
+  AssertionError [ERR_ASSERTION]: no `gzip on;` at the server level of frontend/nginx.conf
+  
+  undefined !== 'on'
+  
+      at TestContext.<anonymous> (file:///app/src/nginxGzip.test.ts:18:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'on',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src/nginxGzip.test.ts:27:1
+✖ gzip_types names the scripts, styles, JSON and SVG (0.252475ms)
+  AssertionError [ERR_ASSERTION]: gzip_types leaves out application/javascript
+      at TestContext.<anonymous> (file:///app/src/nginxGzip.test.ts:29:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at src/nginxGzip.test.ts:38:1
+✖ the WebSocket is never gzipped: /ws turns gzip off (0.224853ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 'off'
+  
+      at TestContext.<anonymous> (file:///app/src/nginxGzip.test.ts:41:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'off',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src/nginxGzip.test.ts:44:1
+✖ the image's builder writes the .gz files gzip_static serves, after the build and keeping the originals (0.117491ms)
+  AssertionError [ERR_ASSERTION]: frontend/Dockerfile writes no .gz files (gzip -9 -k -n)
+      at TestContext.<anonymous> (file:///app/src/nginxGzip.test.ts:48:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
