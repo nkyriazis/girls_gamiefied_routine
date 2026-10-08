@@ -133,6 +133,11 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
           cursor: default;
         }
 
+        /* A tapped item stays enabled now: the focus ring (index.css) would hide its pair's colour */
+        .match-item:focus:not(:focus-visible) {
+          outline: none;
+        }
+
         .match-item.selected {
           border-color: gold;
           background: rgba(255, 215, 0, 0.2);
