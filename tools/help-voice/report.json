@@ -1817,6 +1817,38 @@
   "lufs": -16.3
  },
  {
+  "say": "Η σωστή απάντηση. Διάβασέ τη όσο θες. Όταν τελειώσεις, πάτα «Εντάξει».",
+  "where": [
+   "exercise-answer/exercise.revealed"
+  ],
+  "id": "974e2bbdf7bc",
+  "ok": true,
+  "takes": 3,
+  "tried": 6,
+  "seed": 6,
+  "heard": "Η σωστή απάντηση. Διάβασέ τη όσο θες. Όταν τελειώσεις, πάτα «Εντάξει».",
+  "cer": 0.0,
+  "language": "el",
+  "greek": 0.9805,
+  "f0": 219,
+  "lively": 4.77,
+  "secs": 5.46,
+  "peak": 0.591,
+  "rate": 12.8,
+  "clean": {
+   "pesq": 4.1,
+   "stoi": 0.996,
+   "si_sdr": 24.6,
+   "outlier": false
+  },
+  "same_voice": 0.934,
+  "clip": "help-voice/974e2bbdf7bc.mp3",
+  "shipped_cer": 0.0185,
+  "shipped_heard": "Η σωστή απάντηση. Διάβασέ τι όσο θες. Όταν τελειώσεις, πάτα «Εντάξει».",
+  "kb": 43.1,
+  "lufs": -16.3
+ },
+ {
   "say": "Ποια παιδιά παίζουν; Πατήστε τα παιδιά που θα παίξουν μαζί.",
   "where": [
    "game-setup/game.players"

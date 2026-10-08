@@ -1,5 +1,5 @@
 import type { Exercise, Forgiveness } from '@shared/types';
-import { exerciseTour } from '../components/AssignmentPlayer.help';
+import { answerTour, exerciseTour } from '../components/AssignmentPlayer.help';
 import { choresTour } from '../components/ChoresDrawer.help';
 import { homeTour, routineTour } from '../components/Dashboard.help';
 import { gameResultsTour, gameTour } from '../components/ExerciseGame.help';
@@ -28,7 +28,7 @@ export const allTours = (): Tour[] => [
   homeTour(), routineTour(),
   ...BOTH.flatMap(revision => BOTH.map(extra => storeTour('u', revision, extra))), activityTour('u'), transferTour('u'),
   choresTour(false), choresTour(true), ...BOTH.flatMap(revision => BOTH.map(extra => exercisesTour(revision, extra))),
-  ...types.flatMap(t => RUNGS.map(r => exerciseTour('u', t, r))), ...types.map(t => exerciseTour('u', t, 'forgiving', true)),
+  ...types.flatMap(t => RUNGS.map(r => exerciseTour('u', t, r))), ...types.map(t => exerciseTour('u', t, 'forgiving', true)), answerTour('u'),
   gameSetupTour(), gameTour(undefined), ...types.map(t => gameTour(t)), gameResultsTour(),
   ...(Object.keys(PROBLEM_KINDS) as ProblemHelpKind[]).flatMap(k => RUNGS.flatMap(r => [problemTour('u', k, r), problemTour('u', k, r, true)])),
 ];

@@ -14,7 +14,7 @@ import { NumberInputRenderer } from './exercises/NumberInputRenderer';
 import { ProblemPlayer } from './exercises/ProblemPlayer';
 import { help } from '../help/anchors';
 import { HelpButton, HelpScreen } from '../help/HelpProvider';
-import { exerciseTour } from './AssignmentPlayer.help';
+import { answerTour, exerciseTour } from './AssignmentPlayer.help';
 import { sfx, sound } from '../sound/sfx';
 import { paysNow } from '@shared/forgiveness';
 import { answerText } from './exercises/answerText';
@@ -136,9 +136,13 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     }
   };
 
-  // The owl sits in the header; a problem says what each of its steps needs itself
+  // The owl sits in the header; a problem says what each of its steps needs itself. While the right
+  // answer is up, the owl explains only its card (the exercise below is over).
+  const tour = isProblem ? null
+    : feedback?.kind === 'answer' ? answerTour(user.id)
+    : exerciseTour(user.id, exercise.type, user.forgiveness, canShow);
   return (
-    <HelpScreen tour={isProblem ? null : exerciseTour(user.id, exercise.type, user.forgiveness, canShow)} inline>
+    <HelpScreen tour={tour} inline>
     <motion.div
       className="assignment-player"
       initial={{ opacity: 0 }}
@@ -192,6 +196,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           <div className="answer-backdrop">
             <motion.div
               className="feedback-overlay answer"
+              {...help('exercise.revealed')}
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
             >
