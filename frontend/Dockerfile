@@ -6,9 +6,11 @@ WORKDIR /app/frontend
 RUN npm ci --prefer-offline --no-audit
 COPY frontend/ .
 RUN npm run build
-# The .gz nginx's gzip_static serves (nginx.conf, #100): scripts and styles over 1 kB in assets/, the originals
-# kept for clients without gzip. Not sw.js or workbox-*.js: they stay exactly as Workbox wrote them.
-RUN find dist/assets -type f \( -name '*.js' -o -name '*.css' -o -name '*.svg' -o -name '*.json' -o -name '*.html' \) -size +1k -exec gzip -9 -k -n {} +
+# The .gz nginx's gzip_static serves (nginx.conf, #100): what dist/assets holds over 1 kB, its scripts, styles
+# and Monaco's codicon .ttf (nginx:alpine sends ttf as octet-stream, which gzip_types never reaches; gzip_static
+# serves a .gz whatever the type), the originals kept for clients without gzip. Not sw.js or workbox-*.js in the
+# root: they stay exactly as Workbox wrote them.
+RUN find dist/assets -type f \( -name '*.js' -o -name '*.css' -o -name '*.ttf' \) -size +1k -exec gzip -9 -k -n {} +
 
 FROM nginx:alpine
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html

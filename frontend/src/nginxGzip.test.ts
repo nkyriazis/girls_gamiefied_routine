@@ -1,8 +1,9 @@
 // npm test (frontend): nginx sends scripts, styles and JSON gzipped, and never touches media or /ws (#100).
 // nginx:alpine leaves gzip off, so the Pi sent the kids' 720 kB entry and Monaco's 4 MB raw. The image's
-// builder writes a .gz beside every script and style in dist/assets (gzip_static serves those, so the Pi
-// compresses nothing big per request); what isn't precompressed (/api JSON, index.html) goes through gzip
-// at level 5. Media is already compressed and keeps its byte ranges; the WebSocket has its own deflate.
+// builder writes a .gz beside every script, style and font (Monaco's codicon .ttf) in dist/assets (gzip_static
+// serves those, so the Pi compresses nothing big per request); what isn't precompressed (/api JSON, index.html)
+// goes through gzip at level 5. Media is already compressed and keeps its byte ranges; the WebSocket has its
+// own deflate.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -29,10 +30,12 @@ test('gzip_types names the scripts, styles, JSON and SVG', () => {
     assert.ok(types().includes(t), `gzip_types leaves out ${t}`);
 });
 
+// font/ is out too: woff2 is compressed already, and the one ttf (Monaco's codicon) is precompressed by the
+// Dockerfile, since nginx:alpine sends ttf as application/octet-stream, which no gzip_types entry can reach.
 test('gzip_types names no media: mp3, wav, png, ico and uploads go as they are', () => {
   for (const t of types())
     assert.doesNotMatch(t, /^(audio|video|font)\/|^image\/(?!svg\+xml$)|^application\/(octet-stream|zip|gzip|pdf)$|^\*$/,
-      `gzip_types names ${t}, which is already compressed (or everything)`);
+      `gzip_types names ${t}: media is already compressed, a font is precompressed in the Dockerfile, octet-stream or * is everything`);
 });
 
 test('the WebSocket is never gzipped: /ws turns gzip off', () => {
@@ -49,4 +52,7 @@ test("the image's builder writes the .gz files gzip_static serves, after the bui
   assert.ok(gz.index > build, 'the .gz files are written before the build that makes the files');
   assert.match(gz[0], /dist\/assets/, 'only dist/assets: sw.js and workbox stay as Workbox wrote them');
   assert.match(gz[0], /-size \+1k/, 'files under 1 kB are not worth a .gz (gzip_min_length 1024)');
+  for (const ext of ['js', 'css', 'ttf'])
+    assert.match(gz[0], new RegExp(`-name '\\*\\.${ext}'`), `the .gz step leaves out *.${ext}` +
+      (ext === 'ttf' ? ": Monaco's codicon (150 kB) would go raw, nginx sends ttf as octet-stream" : ''));
 });
