@@ -1,0 +1,10 @@
+# Before: parent A's Κατάσταση (JSON) opened with u1 = 100; parent B confirmed chore c4073000-0000-4000-8000-791430024371 (u1 -> 120);
+# A then saved the editor with u2 20 -> 25; then data.json was edited on disk (Γλυκό 30 -> 35)
+GET /api/admin/state before B: userStars {"u1":100,"u2":20}, chore attempted
+GET /api/admin/state after A's save: userStars {"u1":100,"u2":25}, chore attempted
+GET /api/admin/data after the hand edit: Γλυκό costs 35
+GET /api/debug/logs -> entries since the scenario started: 3
+  2026-10-08T03:27:24.598Z STATE_REPLACED {"source":"admin"}
+  2026-10-08T03:27:18.803Z CHORE_CONFIRMED {"instanceId":"c4073000-0000-4000-8000-791430024371","choreId":"chore-dishes","userId":"u1","starsAwarded":20}
+  2026-10-08T03:27:18.798Z AWARD_STARS {"userId":"u1","amount":20,"newBalance":120}
+entries of type STATE_*: 1; of type CONFIG_*: 0

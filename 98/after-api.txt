@@ -1,0 +1,17 @@
+# After: parent A's Κατάσταση (JSON) opened with u1 = 100; parent B confirmed chore c4073000-0000-4000-8000-791431329277 (u1 -> 120);
+# A then saved the editor with u2 20 -> 25 (refused; then reloaded and saved again; B then saved from the phone); then data.json was edited on disk (Γλυκό 30 -> 35)
+GET /api/admin/state before B: userStars {"u1":100,"u2":20}, chore attempted
+GET /api/admin/state after A's save: userStars {"u1":120,"u2":20}, chore confirmed
+GET /api/admin/state after A reloaded and saved: userStars {"u1":120,"u2":25}, chore confirmed
+# A's save from the editor opened before B confirmed: banner "Η κατάσταση άλλαξε στο μεταξύ (αστέρια, δουλειές, ρουτίνες…). Φόρτωσε ξανά: οι αλλαγές σου εδώ θα χαθούν.", errors ["Η κατάσταση άλλαξε στο μεταξύ (από άλλη οθόνη ή από τα παιδιά). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι."]
+# A after Φόρτωσε ξανά (u1 shown 120), same change saved: banner null, errors [], stale banners seen since the reload: 0
+# B's save from the phone's editor, opened before A's save: banner "Η κατάσταση άλλαξε στο μεταξύ (αστέρια, δουλειές, ρουτίνες…). Φόρτωσε ξανά: οι αλλαγές σου εδώ θα χαθούν.", errors ["Η κατάσταση άλλαξε στο μεταξύ (από άλλη οθόνη ή από τα παιδιά). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι."]
+GET /api/admin/data after the hand edit: Γλυκό costs 35
+GET /api/debug/logs -> entries since the scenario started: 6
+  2026-10-08T03:49:26.996Z CONFIG_RELOADED {"file":"data.json","changed":["rewards"]}
+  2026-10-08T03:49:21.539Z STATE_REPLACE_STALE {"source":"advanced","version":"d450816fc249","current":"b873c01660ed"}
+  2026-10-08T03:49:18.553Z STATE_REPLACED {"source":"advanced","stars":{"u2":[20,25]},"changed":["userStars"],"cleared":{"flowRuns":0,"routineRuns":0}}
+  2026-10-08T03:49:04.960Z STATE_REPLACE_STALE {"source":"advanced","version":"b23a26f55740","current":"d450816fc249"}
+  2026-10-08T03:48:59.471Z CHORE_CONFIRMED {"instanceId":"c4073000-0000-4000-8000-791431329277","choreId":"chore-dishes","userId":"u1","starsAwarded":20}
+  2026-10-08T03:48:59.466Z AWARD_STARS {"userId":"u1","amount":20,"newBalance":120}
+entries of type STATE_*: 3; of type CONFIG_*: 1
