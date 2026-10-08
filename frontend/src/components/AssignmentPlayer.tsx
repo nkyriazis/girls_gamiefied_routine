@@ -366,6 +366,16 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
           margin-top: 1.5rem;
         }
 
+        /* The small kiosk (800×480) and other short screens: tighter spacing, so the answer, its check and
+           «Δείξε μου» all fit with no scrolling (#129: a 3-pair match left «Δείξε μου» 91 px below the screen) */
+        @media (max-height: 520px) {
+          .assignment-header { padding: 0.5rem 1.5rem; }
+          .assignment-stage { padding: 0.5rem 1.5rem; }
+          .assignment-split { gap: 0.75rem; }
+          .assignment-ask, .assignment-renderer { gap: 0.75rem; }
+          .exercise-show { margin-top: 0.75rem; }
+        }
+
         @media (min-width: 900px) and (orientation: landscape) {
           .assignment-split {
             flex-direction: row;
