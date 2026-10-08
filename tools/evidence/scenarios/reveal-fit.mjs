@@ -9,8 +9,9 @@
 // opens the answer at 1280×800, then resizes to 800×480 and 390×844 (the card is sized by the viewport
 // alone). At each size it puts test answers into the card's answer span (the same span, font and box),
 // counts its line boxes and checks that the card doesn't scroll and «Εντάξει» stays hittable. Out:
-// reveal-fit.json and reveal-fit-<w>x<h>.png. The reveal uses the assignment up: set the scene again
-// before another run.
+// reveal-fit.json; reveal-fit-<w>x<h>.png, the card with the item's own answer; and
+// reveal-fit-<w>x<h>-run.png and -match.png, the card holding the run of long words and the match at the
+// caps. The reveal uses the assignment up: set the scene again before another run.
 import { start, API } from '../kit.mjs';
 import fs from 'fs';
 
@@ -39,7 +40,7 @@ const out = { item: EX, caps: CAPS, sizes: {} };
 for (const [w, h] of SIZES) {
   await page.setViewportSize({ width: w, height: h }); await pause(800);
   await shot(`reveal-fit-${w}x${h}`);
-  out.sizes[`${w}×${h}`] = await page.evaluate(async caps => {
+  const { m: measured, samples } = await page.evaluate(async caps => {
     const span = document.querySelector('.feedback-answer'), text = document.querySelector('.feedback-overlay.answer .feedback-text');
     const ok = document.querySelector('.answer-ok');
     const real = span.textContent;
@@ -73,18 +74,24 @@ for (const [w, h] of SIZES) {
     const pairs = [['εξακόσια εξήντα', 660], ['διακόσια είκοσι', 220], ['εφτακόσια εφτά', 707], ['οχτακόσια οχτώ', 808]]
       .map(([l, r]) => `${l}${NB}${r}`).filter(p => p.length <= caps.pairLine).slice(0, caps.pairs);
     m.atCaps = {};
+    const samples = { run: run(`${longWords} ${longWords}`, caps.run), match: pairs.join('\n') };
     for (const [name, s, want] of [
-      ['run of long words', run(`${longWords} ${longWords}`, caps.run)],
+      ['run of long words', samples.run],
       ['ten 7-digit numbers in order', Array.from({ length: 10 }, (_, i) => (9876543 - i * 876543).toLocaleString('el-GR')).join(NB)],
-      ['match', pairs.join('\n'), pairs.length],
+      ['match', samples.match, pairs.length],
     ]) {
       const r = await put(s);
       m.atCaps[`${name} (${s.length}${want ? '; lines ' + s.split('\n').map(l => l.length).join(', ') : ''})`] = { ...r, fits: !r.scrolls && r.ok && (!want || r.lines === want) };
     }
     await put(real);
-    return m;
+    return { m, samples };
   }, CAPS);
-  log(`${w}×${h}`, JSON.stringify(out.sizes[`${w}×${h}`]));
+  out.sizes[`${w}×${h}`] = measured;
+  log(`${w}×${h}`, JSON.stringify(measured));
+  // The card holding what the caps allow, as she would see it
+  const hold = text => page.evaluate(t => { document.querySelector('.feedback-answer').textContent = t; }, text);
+  for (const [name, text] of Object.entries(samples)) { await hold(text); await pause(400); await shot(`reveal-fit-${w}x${h}-${name}`); }
+  await hold(measured.real.text); await pause(300);
 }
 fs.writeFileSync('reveal-fit.json', JSON.stringify(out, null, 1));
 const misfits = Object.entries(out.sizes).flatMap(([size, m]) => Object.entries(m.atCaps).filter(([, r]) => !r.fits).map(([k]) => `${size}: ${k}`));
