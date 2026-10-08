@@ -6,7 +6,7 @@ import {
   ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, ExerciseSummary, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
   Forgiveness, ProblemExercise, ProblemReading, ProblemStep, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
-import { drawDailySet, drawGate, exercisePoolProvider, exercisesPerDay, fallbackOf, gateOrder, storyMarks } from './exercisePool';
+import { DrawGate, drawDailySet, drawGate, exercisePoolProvider, exercisesPerDay, fallbackOf, gateOrder, RetryMatch, retryFor, storyMarks, UserPools } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, stepHelp, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
@@ -1394,6 +1394,41 @@ export async function startExtraProblem(userId: string): Promise<ExerciseAssignm
   return { ...fitProgress(assignment, exercise), exercise };
 }
 
+// Shown, then do (#136). An item shown worked to her («Δείξε μου», or Αυστηρό's worked step) is owed
+// back as one she does herself: every assignment with a step shown, daily or extra, finished or left
+// pending, assigned in the last RETRY_DAYS and before today, that is not itself a retry (a retry shown
+// again owes nothing more), until a retry of it is completed (one left undone keeps it owed). Owed
+// items expire after RETRY_DAYS, so a day of 💡 doesn't queue retries for weeks.
+export const RETRY_DAYS = 7;
+
+function owedRetries(userId: string, today: string, now = new Date()): ExerciseAssignment[] {
+  const since = new Date(now.getTime() - RETRY_DAYS * 86400_000).toISOString();
+  const paid = new Set(store.exerciseAssignments.all("userId = ? AND retryOf IS NOT NULL AND status = 'completed'", userId).map(a => a.retryOf));
+  return store.exerciseAssignments.all('userId = ? AND shown IS NOT NULL AND retryOf IS NULL AND assignedAt >= ? AND date < ?', userId, since, today)
+    .filter(a => a.shown?.length && !paid.has(a.id))
+    .sort((a, b) => a.assignedAt.localeCompare(b.assignedAt));
+}
+
+// At most one retry a day, the oldest owed that can come back: it takes the first slot of its
+// category in the day's set (`drawn`, changed in place), so the mix and the count stay as drawn. With
+// no slot of its category (1 or 2 a day) it waits, still owed; with nothing of its kind (retryFor) a
+// problem is passed over. Says where it went, for the stored row and the log.
+async function placeRetry(userId: string, today: string, drawn: Exercise[], pools: UserPools, gate: DrawGate, seen: Map<string, string>):
+  Promise<{ slot: number; of: string; ofExercise: string; match: RetryMatch } | undefined> {
+  for (const owed of owedRetries(userId, today)) {
+    const shown = await exercisePoolProvider.getExerciseById(owed.exerciseId);
+    if (!shown) continue;
+    const slot = drawn.findIndex(e => e.category === shown.category);
+    if (slot < 0) continue;
+    // The item in the slot may be the retry itself; the rest of the set may not
+    const pick = retryFor(shown, pools, gate, seen, new Set(drawn.filter((_, i) => i !== slot).map(e => e.id)));
+    if (!pick) continue;
+    drawn[slot] = pick.ex;
+    return { slot, of: owed.id, ofExercise: owed.exerciseId, match: pick.match };
+  }
+  return undefined;
+}
+
 // Make sure every user has today's assignments drawn from their pool, in the
 // daily mix (drawDailySet, exercisePool.ts). They are stored in that order, and
 // read back in it (rowid), so the problem comes first on her screens.
@@ -1409,13 +1444,16 @@ export async function ensureDailyAssignments(): Promise<boolean> {
     const pools = await exercisePoolProvider.getPoolsForUser(user.id);
     // Only what her class has reached (her progress, else the book's pace), at her difficulty (#71)
     const { gate, progress, pace } = drawGate(user, today);
-    const { drawn, revision, fallback } = drawDailySet(pools, exercisesPerDay(), lastSeen(user.id), dailySetsSoFar(user.id), gate);
+    const seen = lastSeen(user.id);
+    const { drawn, revision, fallback } = drawDailySet(pools, exercisesPerDay(), seen, dailySetsSoFar(user.id), gate);
     if (drawn.length === 0) continue;
+    // One item shown to her comes back as one she does herself, in its category's slot (#136)
+    const retry = await placeRetry(user.id, today, drawn, pools, gate, seen);
 
     // Re-check after the await: a concurrent request may have drawn already.
     store.transaction(() => {
       if (store.exerciseAssignments.all(`userId = ? AND date = ? AND ${DAILY}`, user.id, today).length > 0) return;
-      for (const exercise of drawn) {
+      for (const [i, exercise] of drawn.entries()) {
         store.exerciseAssignments.put({
           id: randomUUID(),
           userId: user.id,
@@ -1423,14 +1461,20 @@ export async function ensureDailyAssignments(): Promise<boolean> {
           date: today,
           status: 'pending',
           attempts: 0,
-          assignedAt: new Date().toISOString()
+          assignedAt: new Date().toISOString(),
+          ...(retry?.slot === i ? { retryOf: retry.of } : {})
         });
       }
       created = true;
+      // What the draw said of the item the retry replaced goes with it
+      const ids = new Set(drawn.map(e => e.id));
+      const drawnRevision = revision.filter(id => ids.has(id));
+      const drawnFallback = Object.fromEntries(Object.entries(fallback).filter(([id]) => ids.has(id)));
       logAction('EXERCISE_ASSIGNMENTS_CREATED', {
-        userId: user.id, date: today, exerciseIds: drawn.map(e => e.id), ...(revision.length ? { revision } : {}),
+        userId: user.id, date: today, exerciseIds: drawn.map(e => e.id), ...(drawnRevision.length ? { revision: drawnRevision } : {}),
         ...(progress ? { progress } : {}), ...(pace?.length ? { pace } : {}), ...(user.difficulty ? { difficulty: user.difficulty } : {}),
-        ...(Object.keys(fallback).length ? { fallback } : {})
+        ...(Object.keys(drawnFallback).length ? { fallback: drawnFallback } : {}),
+        ...(retry ? { retry: { exerciseId: drawn[retry.slot].id, of: retry.of, ofExercise: retry.ofExercise, match: retry.match } } : {})
       });
     });
   }
