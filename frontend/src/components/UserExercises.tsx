@@ -107,7 +107,9 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
             <motion.button
               className="extra-btn"
               data-extra={user.id}
-              {...help('exercises.more')}
+              // The owl tells her to tap it only while she can: at the day's limit or with
+              // MAX_SET_ASIDE waiting it has no anchor, so the step is skipped and its own words say why
+              {...(atLimit || tooMany ? {} : help('exercises.more'))}
               {...sound('open')}
               disabled={asking || atLimit || tooMany}
               whileTap={{ scale: 0.97 }}
