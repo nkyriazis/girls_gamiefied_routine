@@ -23,7 +23,7 @@ type Props<T extends { id: string }> = Saving<T> & {
     empty: string;
     items: T[];
     create: () => T;
-    row: (item: T) => { icon: IconValue; title: string; sub: ReactNode };
+    row: (item: T) => { icon: IconValue; title: string; sub: ReactNode; warning?: string }; // warning: a line marked ⚠
     Form: (props: FormProps<T>) => ReactNode;
     isValid: (item: T, isNew: boolean) => boolean;
     // false: the sheet has no Διαγραφή (the kids: their stars and history hang on the id). A function says,
@@ -99,6 +99,7 @@ export function CollectionEditor<T extends { id: string }>({ title, addLabel, em
                                 <span className="p-row-main">
                                     <span className="p-row-title">{r.title}</span>
                                     <span className="p-row-sub">{r.sub}</span>
+                                    {r.warning && <span className="p-row-sub p-warning">⚠ {r.warning}</span>}
                                 </span>
                                 <span className="p-chevron" aria-hidden>›</span>
                             </button>
