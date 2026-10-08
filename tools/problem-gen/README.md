@@ -31,9 +31,10 @@ The builder's own pieces have tests that run with Node alone: `$N node --test to
 ## Writing a family
 
 Copy the shape of `families/g3/change.ts` or `families/e5/parts.ts`: a `Family` with `id`,
-`grade`, `unit` (textbook unit whose skills it needs), `source` (chapter it comes from) and
-`make(r, b)`. It returns `{ title, story, steps }`, or `null` to skip numbers that don't
-work (the generator tries again).
+`grade`, `chapter` (the latest chapter of the maths book whose skill it needs, see «Chapter, topic
+and difficulty»), `topic`, `source` (chapter it comes from) and `make(r, b)`. It returns
+`{ title, story, steps }`, or `null` to skip numbers that don't work (the generator tries again);
+a variant that needs a later chapter than its family returns its own `chapter` too.
 
 ### Story
 - Mark every phrase the tag step asks about: `known(...)`, `sought(...)`, `extra(...)`.
@@ -270,10 +271,10 @@ autumn (Γ΄ 1–3, Ε΄ 1–2, as for the problems), the largest number (Γ΄ 3
 the tables' limit (Γ΄: one factor at most 11, divisors at most 11) and the book's chapters, as
 committed data (from the student book's contents; nothing reads `materials/`). `maths/grades.ts`
 gives each grade its families, id prefix and file. Δ΄ or ΣΤ΄ is one entry in each, plus a file of
-families. No month gating yet: every family of the covered units plays from September (follow-up).
+families. The chapters themselves are `shared/curriculum.ts`'s (#71), which a kid's daily draw is gated by.
 
-**A family** (`maths/g3.ts`, `maths/e5.ts`): `{ id, grade, chapter, skill, weight?, make(r) }`.
-`chapter` is a chapter of the TOC within the grade's units; it becomes the item's `source`
+**A family** (`maths/g3.ts`, `maths/e5.ts`): `{ id, grade, chapter, topic, skill, weight?, make(r) }`.
+`chapter` is a chapter of the TOC within the grade's units; it becomes the item's `chapter`, `source`
 («Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)») and `generatorParams.unit`. `make`
 picks numbers and returns one item through the builders in `maths/lib.ts` (`num`, `mc`, `tf`,
 `match`, `order`, `fill`), or `null` to try other numbers. List the right option first; the
@@ -360,7 +361,7 @@ The daily language card of the Γ΄ and Ε΄ kids (#49 parts 3a and 3b): plain e
 types, no new widget. Unlike the maths, the items are **written by hand**, close to the book's own
 sentences, because templated Greek reads badly: `language/g3.ts` lists 80 of them from «Τα απίθανα
 μολύβια», units 1–3, and `language/e5.ts` 68 from «Της γλώσσας ρόδι και ροδάνι», units 1–2 (each to
-about the end of October; later units come with #71's month gating). `language/gen-language.ts` writes
+about the end of October; a kid gets an item once her class has reached its lesson, #71; later units are still to write). `language/gen-language.ts` writes
 them to `backend/exercise-pools/g-dimotikou-language.json` and `e-dimotikou-language.json` with their
 ids (`g3-lang-*`, `e5-lang-*`), source and generatorParams, shuffling the options seeded by the id.
 
@@ -459,7 +460,47 @@ audit knows μια, για, πιο, δυο… as one syllable); no Latin letters
 **Counts.** 60–80 good items rather than padded ones; the audit fails under 60. Γ΄ has 80, so an item
 comes back after 80 days; Ε΄ has 68, back after 68.
 
+## Chapter, topic and difficulty (#71)
+
+Every item of a Γ΄ or Ε΄ pool carries three fields the generators write (never edit them in a pool), so a
+kid's daily set and extra problems come only from what her class has reached, at her difficulty
+(`backend/src/exercisePool.ts`):
+
+- **`chapter`**: a chapter or lesson id of `shared/curriculum.ts`, the one table of the books' chapters
+  and lessons (`maths/curriculum.ts` and `language/curriculum.ts` take theirs from it and add the range
+  and the pages). Maths items: their family's chapter. Language items: the lesson of their page («2.3»;
+  «2.0» is the unit's Λεξιλόγιο). Problems: the **latest chapter whose skill the problem needs: where
+  the skill is taught, not where the story was found** (a family that cites an «Επαναληπτικό» or ch. 12
+  «Προβλήματα» for its story still needs the operations of the chapters before). A variant may need a later
+  one and returns its own `chapter` in the draft: division-remainder's seats («one more car») is ch. 18,
+  its money ch. 12 (the book's own problem); total-cost with money to compare is ch. 10 (a subtraction).
+  World problems (`world/gen-world.ts`) take theirs from their operations: + ch. 2, × within the tables
+  ch. 5, : ch. 6, − ch. 10, × with a factor past 10 ch. 11, counting the answer's own operation as she
+  does it (36 + ? = 50 is a subtraction). `generatorParams.unit` is the chapter's unit.
+- **`topic`**: one of `shared/curriculum.ts` `TOPICS` (part 2's picker reads them). Maths by family;
+  problems by their main operation (Πρόσθεση, Αφαίρεση, Πολλαπλασιασμός, Διαίρεση, or Χρήματα, Μετρήσεις,
+  Αριθμοί); language by family (Μέρη του λόγου, Ουσιαστικά, Άρθρα, Επίθετα, Ρήματα, …).
+- **`difficulty`**, 1 to 3, by fixed rules whose numbers are in `difficulty.ts` (`SIZE`, `STEPS`,
+  `OPERATIONS`, `POINTS`, `LANGUAGE_LEVEL`): plain maths by the largest number against the grade's range
+  (Γ΄ up to 100 / 1.000 / more, Ε΄ 1.000 / 100.000 / more); problems by that number's points plus their
+  work's (steps: 3, 4, 5+; with a calc step, the operations on the way to the answer: 1, 2, 3+), 0–1 easy,
+  2 middling, 3–4 hard; language by skill (recognising easy, choosing a form middling, agreement,
+  spelling, moods, sayings and definitions hard). A new language skill needs its line in `LANGUAGE_LEVEL`.
+
+The 16 curated problems (`*-problems.json`) carry the same fields, set by hand to the same rules.
+`audit.ts` fails on an item whose chapter is not in its book, whose topic is not listed, or whose
+difficulty differs from what it derives again from the item as written (its own code, `difficulty.ts`'s
+numbers), and prints the spread per grade and category; so does the backend's `dailyMix.test.ts`.
+
+**The pace** (`shared/curriculum.ts`): each chapter and lesson has the Monday of the week a class likely
+starts it, the year's teaching days shared out in book order by the teacher's books' hours (Μαθηματικά Ε΄
+10-0213: 2 h a chapter and each unit's review; Γλώσσα Γ΄ 10-0053 and Ε΄ 10-0115: hours per unit, holiday
+lessons pinned to 28 October and 17 November). **Μαθηματικά Γ΄ (10-0064) gives no plan, so its pace is our
+estimate, an even one over the book's 59 chapters**; a parent's setting in the kid's sheet is what makes it
+right for a class. A new grade's books go there, with their sources in its header.
+
 ## Layout
+- `difficulty.ts`: the difficulty rules' numbers and the generators' side of them.
 - `lib.ts`: randomness, names, counted nouns, step builders, `Family`.
 - `families/g3/`, `families/e5/`: one file per family; `index.ts` lists them (sets
   `set-*.ts` group families written together).
