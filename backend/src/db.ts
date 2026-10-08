@@ -10,6 +10,7 @@ import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMa
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
+import { MAX_SET_ASIDE, extraRefusals } from '../../shared/extraProblems';
 import { cronMatchesAt } from './cron';
 import { changedKeys, config, ConfigChange, ConfigFile, versionOf, configError, configWarnings, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
@@ -1334,20 +1335,20 @@ function dailySetsSoFar(userId: string): number {
 // How many extra problems a kid may ask for in a day unless settings.extraProblemsPerDay says otherwise.
 export const DEFAULT_EXTRA_PROBLEMS_PER_DAY = 10;
 
-/** Extra problems today: how many the kid has had, the day's limit, and the one open now, if any. */
-export function extraProblemsToday(userId: string): { used: number; limit: number; open?: ExerciseAssignment } {
+/** Extra problems today: how many the kid has started (finished or set aside), and the day's limit. */
+export function extraProblemsToday(userId: string): { used: number; limit: number } {
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
-  const extras = store.exerciseAssignments.all('userId = ? AND date = ? AND extra = 1', userId, today);
   return {
-    used: extras.length,
-    limit: config().settings?.extraProblemsPerDay ?? DEFAULT_EXTRA_PROBLEMS_PER_DAY,
-    open: extras.find(a => a.status === 'pending')
+    used: store.exerciseAssignments.all('userId = ? AND date = ? AND extra = 1', userId, today).length,
+    limit: config().settings?.extraProblemsPerDay ?? DEFAULT_EXTRA_PROBLEMS_PER_DAY
   };
 }
 
-// A kid asks for one more problem from the dashboard: one they haven't had yet
-// (or had longest ago), paid like any other. An open one is returned instead of a
-// new one, so tapping twice doesn't hand out two; the day's limit caps the rest.
+// A kid asks for one more problem from the dashboard: one she hasn't had yet (or had longest
+// ago), paid like any other. One she left with ✕ stays hers for the day, a card she can
+// reopen where she left it (#67), so asking always draws a new one: never one she has pending
+// today, daily or extra. The day's limit counts every extra she started, finished or not, so
+// setting one aside earns nothing; at most MAX_SET_ASIDE wait at once.
 export async function startExtraProblem(userId: string): Promise<ExerciseAssignmentWithExercise> {
   if (!config().users.some(u => u.id === userId)) throw new Error('Unknown user');
   // Problems of her own grade (revision pools hold none)
@@ -1356,19 +1357,24 @@ export async function startExtraProblem(userId: string): Promise<ExerciseAssignm
 
   const today = localDateStr(config().settings?.timezone || 'Europe/Athens');
   const assignment = store.transaction(() => {
-    const { used, limit, open } = extraProblemsToday(userId);
-    if (open) return open;
+    const { used, limit } = extraProblemsToday(userId);
     if (used >= limit) throw new Error('No more extra problems today');
-    // Not one of today's own, whether daily or extra
-    const todays = new Set(store.exerciseAssignments.all('userId = ? AND date = ?', userId, today).map(a => a.exerciseId));
-    const candidates = problems.filter(p => !todays.has(p.id));
-    const [problem] = freshLast(candidates.length ? candidates : problems, lastSeen(userId)).slice(-1);
+    const todays = store.exerciseAssignments.all('userId = ? AND date = ?', userId, today);
+    const setAside = todays.filter(a => a.extra && a.status === 'pending').length;
+    if (setAside >= MAX_SET_ASIDE) throw new Error(extraRefusals.setAside);
+    // Not one of today's own, whether daily or extra; once all were, one she finished today
+    const had = new Set(todays.map(a => a.exerciseId));
+    const pending = new Set(todays.filter(a => a.status === 'pending').map(a => a.exerciseId));
+    const fresh = problems.filter(p => !had.has(p.id));
+    const candidates = fresh.length ? fresh : problems.filter(p => !pending.has(p.id));
+    if (candidates.length === 0) throw new Error(extraRefusals.noneLeft);
+    const [problem] = freshLast(candidates, lastSeen(userId)).slice(-1);
     const created: ExerciseAssignment = {
       id: randomUUID(), userId, exerciseId: problem.id, date: today, status: 'pending', attempts: 0,
       assignedAt: new Date().toISOString(), extra: true
     };
     store.exerciseAssignments.put(created);
-    logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit });
+    logAction('EXERCISE_EXTRA_PROBLEM', { userId, exerciseId: problem.id, number: used + 1, limit, setAside });
     return created;
   });
   const exercise = await exercisePoolProvider.getExerciseById(assignment.exerciseId);
