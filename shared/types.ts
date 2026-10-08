@@ -491,16 +491,41 @@ export interface DataConfig {
 export type ConfigSaveSource = 'form' | 'advanced' | 'advanced-fix' | 'api';
 export const CONFIG_SAVE_SOURCES: readonly ConfigSaveSource[] = ['form', 'advanced', 'advanced-fix', 'api'];
 
-// A schedule's cron or a chore's availabilityCron that passes data.schema.json (its characters) but that the
-// scheduler (backend/src/cron.ts) can't read, such as «99 20 * * *». `path` is the field's JSON pointer in
-// data.json, `error` cron-parser's reason.
-export interface ConfigWarning {
+// What the server finds in data.json that data.schema.json can't see (backend/src/configChecks.ts). `path` is
+// the field's JSON pointer in data.json, `id` the item's id, `message` what the parents' page says (Greek).
+export type ConfigWarning = CronWarning | CheckWarning;
+
+// A schedule's cron or a chore's availabilityCron that passes the schema (its characters) but that the
+// scheduler (backend/src/cron.ts) can't read, such as «99 20 * * *» (#89); `error` is cron-parser's reason.
+// The one kind a save is refused for when it brings one in.
+export interface CronWarning {
   path: string;
   kind: 'schedule' | 'chore';
   id: string;
   cron: string;
   error: string;
+  message: string;
 }
+
+// The other checks (#104), warnings only: a save that brings one in goes through. `list` is the data.json
+// list the item is in, `field` the field the problem is in, `value` that field's value. Kinds:
+// - duplicate-id: a second item with an id already in its list, or a flow with an assignment's id (the two
+//   share one namespace: schedules, pushes and «Ξεκίνα τώρα» name either);
+// - missing-link: an id that names nothing (a kid, routine, task, assignment or flow);
+// - blank: a kid's name or a title that is only spaces;
+// - colour: neither a theme token (shared/themeColours.ts), a hex, a CSS colour function nor a named colour.
+export interface CheckWarning {
+  path: string;
+  kind: 'duplicate-id' | 'missing-link' | 'blank' | 'colour';
+  list: ConfigList;
+  id: string;
+  field: string;
+  value: string;
+  message: string;
+}
+
+/** The lists of data.json whose items have an id. */
+export type ConfigList = 'users' | 'tasks' | 'routines' | 'routineTasks' | 'routineAssignments' | 'flows' | 'schedules' | 'rewards' | 'chores';
 
 export interface AppState {
   config: DataConfig; // the live data.json
@@ -511,8 +536,9 @@ export interface AppState {
   // data.json or exercises.json is invalid on disk: the last valid version stays live, or, when the file
   // couldn't be read since the start (emptyFallback), an empty one. Saving is off until it is fixed.
   configError: { message: string; errors: unknown[]; file: string; emptyFallback: boolean } | null;
-  // Crons in the live data.json that the scheduler can't read (#89): the file loaded and is live, but that
-  // schedule never fires and that chore never appears until it is fixed. Saving stays on.
+  // What the checks find in the live data.json (#89, #104): the file loaded and is live, but, until it is
+  // fixed, an unreadable cron never fires, a duplicate kid shares another's stars, a link to nothing starts
+  // nothing... Saving stays on.
   configWarnings: ConfigWarning[];
   users: User[]; // config users with their balance and assigned routines
   // STATE carries the current world, never the archive (#34). Purchases and gifts: every pending one,

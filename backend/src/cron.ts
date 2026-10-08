@@ -1,5 +1,5 @@
 import { CronExpressionParser } from 'cron-parser';
-import type { ConfigWarning, DataConfig } from '../../shared/types';
+import type { CronWarning, DataConfig } from '../../shared/types';
 
 // One reading of cron for the whole backend: schedules (routines, flows, alarms) and chores both match
 // with cronMatchesAt, in settings.timezone. This is the only file that parses a cron to decide when
@@ -43,13 +43,15 @@ export function cronError(expr: string): string | null {
 }
 
 /** Every schedule's cron and chore's availabilityCron in `data` that the scheduler can't read. */
-export function unreadableCrons(data: DataConfig): ConfigWarning[] {
+export function unreadableCrons(data: DataConfig): CronWarning[] {
   const crons = [
-    ...(data.schedules ?? []).map((s, i) => ({ path: `/schedules/${i}/cron`, kind: 'schedule' as const, id: s.id, cron: s.cron })),
-    ...(data.chores ?? []).map((c, i) => ({ path: `/chores/${i}/availabilityCron`, kind: 'chore' as const, id: c.id, cron: c.availabilityCron })),
+    ...(data.schedules ?? []).map((s, i) => ({ path: `/schedules/${i}/cron`, kind: 'schedule' as const, id: s.id, cron: s.cron,
+      what: `Το πρόγραμμα «${s.id}» δεν θα ξεκινά` })),
+    ...(data.chores ?? []).map((c, i) => ({ path: `/chores/${i}/availabilityCron`, kind: 'chore' as const, id: c.id, cron: c.availabilityCron,
+      what: `Η δουλειά «${c.title}» δεν θα εμφανίζεται` })),
   ];
-  return crons.flatMap(c => {
+  return crons.flatMap(({ what, ...c }) => {
     const error = cronError(c.cron);
-    return error === null ? [] : [{ ...c, error }];
+    return error === null ? [] : [{ ...c, error, message: `${what}: η ώρα (cron) «${c.cron}» δεν διαβάζεται (${error})` }];
   });
 }

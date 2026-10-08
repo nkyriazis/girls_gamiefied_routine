@@ -71,6 +71,8 @@
 .p-banner.warn { background: rgba(255, 170, 0, 0.14); border-color: var(--color-warning); }
 .p-banner-list { margin: 0.5rem 0 0.75rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 4px; overflow-wrap: anywhere; }
 .p-banner-list .p-hint { display: inline; }
+.p-banner-where { margin-bottom: 0.75rem; }
+.p-banner-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .p-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .p-row {
