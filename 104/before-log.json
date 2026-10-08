@@ -1,0 +1,17 @@
+{
+ "validate": {
+  "status": 200,
+  "body": {
+   "valid": true
+  }
+ },
+ "editorSave": {
+  "liveHasMistakes": true,
+  "listed": []
+ },
+ "status": {
+  "config": null,
+  "warnings": [],
+  "state": null
+ }
+}

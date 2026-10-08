@@ -1,0 +1,17 @@
+== loop
+reload: {"type":"updated"} null
+flows: morning-flow,u1-morning-flow,u2-morning-flow,loop assignments has alarm: false
+loop configWarnings: 0 configError: false
+triggerAction threw: RangeError Maximum call stack size exceeded
+== alarm-assign
+reload: {"type":"updated"} null
+flows: morning-flow,u1-morning-flow,u2-morning-flow assignments has alarm: true
+alarm-assign configWarnings: 0 configError: false
+[ACTION:TRIGGER_ROUTINE] {"id":"alarm","source":"repro","runId":"6b822d3f-c817-461b-b2a2-bf6eb33534d4"}
+triggerAction: {"success":true,"type":"assignment","id":"alarm"}
+== alarm-flow
+reload: {"type":"updated"} null
+flows: morning-flow,u1-morning-flow,u2-morning-flow,alarm assignments has alarm: false
+alarm-flow configWarnings: 0 configError: false
+[ACTION:TRIGGER_FLOW] {"id":"alarm","source":"repro","runId":"94ebfc2d-9e99-4c94-a0b4-958a72020620"}
+triggerAction: {"success":true,"type":"flow","id":"alarm"}

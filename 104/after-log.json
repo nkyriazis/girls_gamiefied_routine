@@ -1,0 +1,192 @@
+{
+ "validate": {
+  "status": 200,
+  "body": {
+   "valid": true,
+   "warnings": [
+    {
+     "path": "/users/2/id",
+     "kind": "duplicate-id",
+     "list": "users",
+     "id": "u1",
+     "field": "id",
+     "value": "u1",
+     "message": "Δύο παιδιά έχουν το id «u1» («Ηλέκτρα», «Τρίτη»): μοιράζονται αστέρια, ιστορικό και ρουτίνες."
+    },
+    {
+     "path": "/rewards/1/id",
+     "kind": "duplicate-id",
+     "list": "rewards",
+     "id": "rew-tv",
+     "field": "id",
+     "value": "rew-tv",
+     "message": "Δύο δώρα έχουν το id «rew-tv» («1 Ώρα Τηλεόραση», «Γλυκό»): ό,τι ψάχνει ένα από αυτά με το id βρίσκει μόνο το πρώτο, «1 Ώρα Τηλεόραση»."
+    },
+    {
+     "path": "/routineAssignments/3/userId",
+     "kind": "missing-link",
+     "list": "routineAssignments",
+     "id": "u3-assign-morning",
+     "field": "userId",
+     "value": "u3",
+     "message": "Η ανάθεση ρουτίνας «u3-assign-morning» είναι για το παιδί «u3», που δεν υπάρχει: δεν τη βλέπει κανένα παιδί."
+    },
+    {
+     "path": "/routineTasks/0/taskId",
+     "kind": "missing-link",
+     "list": "routineTasks",
+     "id": "rt-1",
+     "field": "taskId",
+     "value": "t-missing",
+     "message": "Η ρουτίνα «Πρωινή Ρουτίνα» έχει την εργασία «t-missing», που δεν υπάρχει: η ρουτίνα δείχνεται χωρίς αυτήν."
+    },
+    {
+     "path": "/schedules/2/targetId",
+     "kind": "missing-link",
+     "list": "schedules",
+     "id": "sch-ghost",
+     "field": "targetId",
+     "value": "no-such-flow",
+     "message": "Το πρόγραμμα «sch-ghost» (0 18 * * *) ξεκινά το «no-such-flow», που δεν είναι ούτε ανάθεση ρουτίνας ούτε ροή: στην ώρα του δεν ξεκινά τίποτα."
+    },
+    {
+     "path": "/flows/2/steps/1/actions/0/routineId",
+     "kind": "missing-link",
+     "list": "flows",
+     "id": "u2-morning-flow",
+     "field": "steps",
+     "value": "u2-assign-mornin",
+     "message": "Η ροή «u2-morning-flow», βήμα 2, ξεκινά την ανάθεση ρουτίνας «u2-assign-mornin», που δεν υπάρχει: αυτή η ρουτίνα δεν ξεκινά."
+    },
+    {
+     "path": "/chores/0/eligibleUsers/0",
+     "kind": "missing-link",
+     "list": "chores",
+     "id": "chore-dishes",
+     "field": "eligibleUsers",
+     "value": "u3",
+     "message": "Η δουλειά «Πλύσιμο Πιάτων» είναι μόνο για το παιδί «u3», που δεν υπάρχει: δεν μπορεί να την κάνει κανένα παιδί."
+    },
+    {
+     "path": "/users/3/name",
+     "kind": "blank",
+     "list": "users",
+     "id": "u4",
+     "field": "name",
+     "value": "  ",
+     "message": "Το παιδί «u4» δεν έχει όνομα: στην οθόνη των παιδιών φαίνεται χωρίς όνομα."
+    },
+    {
+     "path": "/users/1/color",
+     "kind": "colour",
+     "list": "users",
+     "id": "u2",
+     "field": "color",
+     "value": "var(--color-secondry)",
+     "message": "Το χρώμα «var(--color-secondry)» του παιδιού «Ιφιγένεια» δεν είναι χρώμα του θέματος: στην οθόνη των παιδιών φαίνεται χωρίς χρώμα."
+    }
+   ]
+  }
+ },
+ "editorSave": {
+  "liveHasMistakes": true,
+  "listed": [
+   "Προσοχή: /users/2/id Δύο παιδιά έχουν το id «u1» («Ηλέκτρα», «Τρίτη»): μοιράζονται αστέρια, ιστορικό και ρουτίνες.",
+   "Προσοχή: /rewards/1/id Δύο δώρα έχουν το id «rew-tv» («1 Ώρα Τηλεόραση», «Γλυκό»): ό,τι ψάχνει ένα από αυτά με το id βρίσκει μόνο το πρώτο, «1 Ώρα Τηλεόραση».",
+   "Προσοχή: /routineAssignments/3/userId Η ανάθεση ρουτίνας «u3-assign-morning» είναι για το παιδί «u3», που δεν υπάρχει: δεν τη βλέπει κανένα παιδί.",
+   "Προσοχή: /routineTasks/0/taskId Η ρουτίνα «Πρωινή Ρουτίνα» έχει την εργασία «t-missing», που δεν υπάρχει: η ρουτίνα δείχνεται χωρίς αυτήν.",
+   "Προσοχή: /schedules/2/targetId Το πρόγραμμα «sch-ghost» (0 18 * * *) ξεκινά το «no-such-flow», που δεν είναι ούτε ανάθεση ρουτίνας ούτε ροή: στην ώρα του δεν ξεκινά τίποτα.",
+   "Προσοχή: /flows/2/steps/1/actions/0/routineId Η ροή «u2-morning-flow», βήμα 2, ξεκινά την ανάθεση ρουτίνας «u2-assign-mornin», που δεν υπάρχει: αυτή η ρουτίνα δεν ξεκινά.",
+   "Προσοχή: /chores/0/eligibleUsers/0 Η δουλειά «Πλύσιμο Πιάτων» είναι μόνο για το παιδί «u3», που δεν υπάρχει: δεν μπορεί να την κάνει κανένα παιδί.",
+   "Προσοχή: /users/3/name Το παιδί «u4» δεν έχει όνομα: στην οθόνη των παιδιών φαίνεται χωρίς όνομα.",
+   "Προσοχή: /users/1/color Το χρώμα «var(--color-secondry)» του παιδιού «Ιφιγένεια» δεν είναι χρώμα του θέματος: στην οθόνη των παιδιών φαίνεται χωρίς χρώμα."
+  ]
+ },
+ "status": {
+  "config": null,
+  "warnings": [
+   {
+    "path": "/users/2/id",
+    "kind": "duplicate-id",
+    "list": "users",
+    "id": "u1",
+    "field": "id",
+    "value": "u1",
+    "message": "Δύο παιδιά έχουν το id «u1» («Ηλέκτρα», «Τρίτη»): μοιράζονται αστέρια, ιστορικό και ρουτίνες."
+   },
+   {
+    "path": "/rewards/1/id",
+    "kind": "duplicate-id",
+    "list": "rewards",
+    "id": "rew-tv",
+    "field": "id",
+    "value": "rew-tv",
+    "message": "Δύο δώρα έχουν το id «rew-tv» («1 Ώρα Τηλεόραση», «Γλυκό»): ό,τι ψάχνει ένα από αυτά με το id βρίσκει μόνο το πρώτο, «1 Ώρα Τηλεόραση»."
+   },
+   {
+    "path": "/routineAssignments/3/userId",
+    "kind": "missing-link",
+    "list": "routineAssignments",
+    "id": "u3-assign-morning",
+    "field": "userId",
+    "value": "u3",
+    "message": "Η ανάθεση ρουτίνας «u3-assign-morning» είναι για το παιδί «u3», που δεν υπάρχει: δεν τη βλέπει κανένα παιδί."
+   },
+   {
+    "path": "/routineTasks/0/taskId",
+    "kind": "missing-link",
+    "list": "routineTasks",
+    "id": "rt-1",
+    "field": "taskId",
+    "value": "t-missing",
+    "message": "Η ρουτίνα «Πρωινή Ρουτίνα» έχει την εργασία «t-missing», που δεν υπάρχει: η ρουτίνα δείχνεται χωρίς αυτήν."
+   },
+   {
+    "path": "/schedules/2/targetId",
+    "kind": "missing-link",
+    "list": "schedules",
+    "id": "sch-ghost",
+    "field": "targetId",
+    "value": "no-such-flow",
+    "message": "Το πρόγραμμα «sch-ghost» (0 18 * * *) ξεκινά το «no-such-flow», που δεν είναι ούτε ανάθεση ρουτίνας ούτε ροή: στην ώρα του δεν ξεκινά τίποτα."
+   },
+   {
+    "path": "/flows/2/steps/1/actions/0/routineId",
+    "kind": "missing-link",
+    "list": "flows",
+    "id": "u2-morning-flow",
+    "field": "steps",
+    "value": "u2-assign-mornin",
+    "message": "Η ροή «u2-morning-flow», βήμα 2, ξεκινά την ανάθεση ρουτίνας «u2-assign-mornin», που δεν υπάρχει: αυτή η ρουτίνα δεν ξεκινά."
+   },
+   {
+    "path": "/chores/0/eligibleUsers/0",
+    "kind": "missing-link",
+    "list": "chores",
+    "id": "chore-dishes",
+    "field": "eligibleUsers",
+    "value": "u3",
+    "message": "Η δουλειά «Πλύσιμο Πιάτων» είναι μόνο για το παιδί «u3», που δεν υπάρχει: δεν μπορεί να την κάνει κανένα παιδί."
+   },
+   {
+    "path": "/users/3/name",
+    "kind": "blank",
+    "list": "users",
+    "id": "u4",
+    "field": "name",
+    "value": "  ",
+    "message": "Το παιδί «u4» δεν έχει όνομα: στην οθόνη των παιδιών φαίνεται χωρίς όνομα."
+   },
+   {
+    "path": "/users/1/color",
+    "kind": "colour",
+    "list": "users",
+    "id": "u2",
+    "field": "color",
+    "value": "var(--color-secondry)",
+    "message": "Το χρώμα «var(--color-secondry)» του παιδιού «Ιφιγένεια» δεν είναι χρώμα του θέματος: στην οθόνη των παιδιών φαίνεται χωρίς χρώμα."
+   }
+  ],
+  "state": null
+ }
+}
