@@ -189,6 +189,14 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
             gap: 1.5rem;
           }
         }
+
+        /* Short screens (#129): smaller rows, still a finger's 44 px and more */
+        @media (max-height: 520px) {
+          .match-container { gap: 1rem; }
+          .match-column { gap: 0.6rem; }
+          .match-item { padding: 0.8rem; }
+          .match-check { padding: 0.7rem 2.5rem; }
+        }
       `}</style>
     </div>
   );
