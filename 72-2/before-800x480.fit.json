@@ -1,0 +1,51 @@
+{
+ "viewport": "800×480",
+ "item": "g3-math-tables-match-a-005",
+ "real": {
+  "text": "9 × 4 → 36\n4 × 5 → 20\n10 × 4 → 40",
+  "lines": 3,
+  "scrolls": false,
+  "ok": true
+ },
+ "font": "24px",
+ "lineHeight": "36px",
+ "lineWords": 52,
+ "lineNumbers": 47,
+ "pairLines": {
+  "10 × 10 → 100 (13)": 1,
+  "εξακόσια σαράντα εννιά → 649 (28)": 1,
+  "διακόσιες χιλιάδες → 200.000 (28)": 1,
+  "δύο εκατομμύρια δύο χιλιάδες → 2.002.000 (40)": 1,
+  "εφτακόσιες χιλιάδες εφτακόσια → 700.700 (39)": 1
+ },
+ "linesBeforeScroll": 4,
+ "charsBeforeScroll": 208,
+ "charsBeforeScrollLines": 4,
+ "atCap": {
+  "run of long words (76)": {
+   "lines": 2,
+   "scrolls": false,
+   "ok": true
+  },
+  "run of long words (119)": {
+   "lines": 3,
+   "scrolls": false,
+   "ok": true
+  },
+  "seven 7-digit numbers in order (81)": {
+   "lines": 2,
+   "scrolls": false,
+   "ok": true
+  },
+  "ten 7-digit numbers in order (117)": {
+   "lines": 3,
+   "scrolls": false,
+   "ok": true
+  },
+  "match of 4 (86; lines 21, 21, 21, 20)": {
+   "lines": 4,
+   "scrolls": false,
+   "ok": true
+  }
+ }
+}

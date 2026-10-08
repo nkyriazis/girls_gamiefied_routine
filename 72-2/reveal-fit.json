@@ -1,0 +1,127 @@
+{
+ "item": "g3-math-tables-match-a-005",
+ "caps": {
+  "run": 120,
+  "pairLine": 21,
+  "pairs": 4
+ },
+ "sizes": {
+  "1280×800": {
+   "real": {
+    "text": "9 × 4 → 36\n4 × 5 → 20\n10 × 4 → 40",
+    "lines": 3,
+    "scrolls": false,
+    "ok": true
+   },
+   "font": "40px",
+   "lineHeight": "60px",
+   "lineWords": 31,
+   "lineNumbers": 35,
+   "pairLines": {
+    "10 × 10 → 100 (13)": 1,
+    "εξακόσια εξήντα → 660 (21)": 1,
+    "εξακόσια σαράντα εννιά → 649 (28)": 1,
+    "δύο εκατομμύρια δύο χιλιάδες → 2.002.000 (40)": 2
+   },
+   "linesBeforeScroll": 6,
+   "atCaps": {
+    "run of long words (119)": {
+     "lines": 5,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    },
+    "ten 7-digit numbers in order (117)": {
+     "lines": 4,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    },
+    "match (85; lines 21, 21, 20, 20)": {
+     "lines": 4,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    }
+   }
+  },
+  "800×480": {
+   "real": {
+    "text": "9 × 4 → 36\n4 × 5 → 20\n10 × 4 → 40",
+    "lines": 3,
+    "scrolls": false,
+    "ok": true
+   },
+   "font": "24px",
+   "lineHeight": "36px",
+   "lineWords": 52,
+   "lineNumbers": 47,
+   "pairLines": {
+    "10 × 10 → 100 (13)": 1,
+    "εξακόσια εξήντα → 660 (21)": 1,
+    "εξακόσια σαράντα εννιά → 649 (28)": 1,
+    "δύο εκατομμύρια δύο χιλιάδες → 2.002.000 (40)": 1
+   },
+   "linesBeforeScroll": 4,
+   "atCaps": {
+    "run of long words (119)": {
+     "lines": 3,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    },
+    "ten 7-digit numbers in order (117)": {
+     "lines": 3,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    },
+    "match (85; lines 21, 21, 20, 20)": {
+     "lines": 4,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    }
+   }
+  },
+  "390×844": {
+   "real": {
+    "text": "9 × 4 → 36\n4 × 5 → 20\n10 × 4 → 40",
+    "lines": 3,
+    "scrolls": false,
+    "ok": true
+   },
+   "font": "24px",
+   "lineHeight": "36px",
+   "lineWords": 22,
+   "lineNumbers": 23,
+   "pairLines": {
+    "10 × 10 → 100 (13)": 1,
+    "εξακόσια εξήντα → 660 (21)": 1,
+    "εξακόσια σαράντα εννιά → 649 (28)": 2,
+    "δύο εκατομμύρια δύο χιλιάδες → 2.002.000 (40)": 2
+   },
+   "linesBeforeScroll": 13,
+   "atCaps": {
+    "run of long words (119)": {
+     "lines": 8,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    },
+    "ten 7-digit numbers in order (117)": {
+     "lines": 5,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    },
+    "match (85; lines 21, 21, 20, 20)": {
+     "lines": 4,
+     "scrolls": false,
+     "ok": true,
+     "fits": true
+    }
+   }
+  }
+ }
+}

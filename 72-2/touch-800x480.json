@@ -1,0 +1,25 @@
+{
+ "before": {
+  "show": {
+   "top": 519,
+   "bottom": 571
+  },
+  "inView": false,
+  "hit": false,
+  "scrollTop": 0,
+  "scrollable": 108,
+  "innerHeight": 480
+ },
+ "after": {
+  "show": {
+   "top": 412,
+   "bottom": 464
+  },
+  "inView": true,
+  "hit": true,
+  "scrollTop": 107,
+  "scrollable": 108,
+  "innerHeight": 480
+ },
+ "tappedOpensCard": true
+}

@@ -1,0 +1,4 @@
+caps now: REVEAL_MAX 120, REVEAL_PAIR_MAX 21, REVEAL_PAIRS 4
+g3 tables-match-a         drafts 3000, over the caps 0, longest 37 (line 13), pairs {"3":3000}  «4 × 10 → 40 ⏎ 10 × 3 → 30 ⏎ 10 × 10 → 100»
+g3 tables-match-b         drafts 3000, over the caps 0, longest 33 (line 11), pairs {"3":3000}  «9 × 4 → 36 ⏎ 9 × 9 → 81 ⏎ 9 × 10 → 90»
+longest revealed answer of any maths family: 45 (e5 order)

@@ -1,0 +1,26 @@
+$ git log --oneline -1
+673cb52 docs: the «Δείξε μου» caps are measured on the held card, number words stay multiple choice (#72)
+$ node tools/problem-gen/gen.ts && node tools/problem-gen/maths/gen-maths.ts && node tools/problem-gen/language/gen-language.ts && node tools/problem-gen/world/gen-world.ts
+  wrote backend/exercise-pools/e-dimotikou-generated.json
+    bad-remainder              5 (share 5)
+    division-check             3 (share 3)
+  wrote backend/exercise-pools/e-dimotikou-maths.json
+   orismoi                  5  define
+  wrote backend/exercise-pools/e-dimotikou-language.json
+200 problems → backend/exercise-pools/g-dimotikou-world.json
+$ git diff --exit-code --stat -- backend/exercise-pools
+exit 0
+$ sha256sum backend/exercise-pools/*.json (same as master)
+same  backend/exercise-pools/b-dimotikou.json
+same  backend/exercise-pools/d-dimotikou.json
+same  backend/exercise-pools/e-dimotikou-generated.json
+same  backend/exercise-pools/e-dimotikou-language.json
+same  backend/exercise-pools/e-dimotikou-maths.json
+same  backend/exercise-pools/e-dimotikou-problems.json
+same  backend/exercise-pools/g-dimotikou-generated.json
+same  backend/exercise-pools/g-dimotikou-language.json
+same  backend/exercise-pools/g-dimotikou-maths.json
+same  backend/exercise-pools/g-dimotikou-problems.json
+same  backend/exercise-pools/g-dimotikou-world.json
+$ node tools/problem-gen/audit.ts
+exit 0, 201 lines, identical to master's output: yes

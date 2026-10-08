@@ -1,0 +1,3 @@
+caps now: REVEAL_MAX 60, REVEAL_MATCH_MAX 40
+g3 tables-match-a         drafts 3000, over the cap 0 (0.0 %), longest 37 (line 13), pairs {"3":3000}  «4 × 10 → 40 ⏎ 10 × 3 → 30 ⏎ 10 × 10 → 100»
+g3 tables-match-b         drafts 3000, over the cap 0 (0.0 %), longest 33 (line 11), pairs {"3":3000}  «9 × 4 → 36 ⏎ 9 × 9 → 81 ⏎ 9 × 10 → 90»
