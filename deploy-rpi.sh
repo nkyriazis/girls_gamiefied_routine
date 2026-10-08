@@ -9,6 +9,7 @@
 #   1. git fetch, then refuse if the incoming commits touch backend/data.json or exercises.json
 #      (git would overwrite or delete the live file, ignored or not)
 #   2. git merge --ff-only: refused on local edits to tracked files or local commits
+#   2b. copy secrets.env.age into .env if it is new or changed (asks its passphrase; tools/secrets/vault.sh)
 #   3. pull the images while the site runs; the image the running container uses is kept as :previous
 #   4. only then stop the backend, back up the data to backups/<date>/, and start everything
 #      (this deploy's own backup, beside the backend's daily ones in BACKUP_DIR, ./backups/daily by
@@ -88,6 +89,10 @@ main() {
             exit 1
         fi
     fi
+
+    # 2b. The secrets (secrets.env.age, tools/secrets/vault.sh): copied into .env when the vault is
+    # new or changed, asking its passphrase then; before the pull, since they choose what runs (https)
+    if [ -x tools/secrets/vault.sh ]; then tools/secrets/vault.sh provision; fi
 
     # 3. The images, while the site runs
     echo "🐳 Pulling Docker images (the site keeps running)..."
