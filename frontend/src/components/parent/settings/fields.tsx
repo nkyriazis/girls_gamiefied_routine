@@ -29,14 +29,24 @@ export function NumberField({ label, value, onChange, min = 1, step = 1 }: {
     );
 }
 
+// Options with a `group` go under it (an <optgroup>), in the order given
 export function SelectField({ label, value, options, onChange }: {
-    label: string; value: string; options: { value: string; label: string }[]; onChange: (v: string) => void;
+    label: string; value: string; options: { value: string; label: string; group?: string }[]; onChange: (v: string) => void;
 }) {
+    const option = (o: { value: string; label: string }) => <option key={o.value} value={o.value}>{o.label}</option>;
+    const runs: { group?: string; options: typeof options }[] = [];
+    for (const o of options) {
+        const last = runs[runs.length - 1];
+        if (last && last.group === o.group) last.options.push(o);
+        else runs.push({ group: o.group, options: [o] });
+    }
     return (
         <Field label={label}>
             {id => (
                 <select id={id} className="p-input" value={value} onChange={e => onChange(e.target.value)}>
-                    {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    {runs.map((run, i) => run.group
+                        ? <optgroup key={`${i}-${run.group}`} label={run.group}>{run.options.map(option)}</optgroup>
+                        : run.options.map(option))}
                 </select>
             )}
         </Field>

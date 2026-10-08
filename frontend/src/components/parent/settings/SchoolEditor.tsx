@@ -4,7 +4,7 @@ import { Section } from '../ui';
 import { SelectField } from './fields';
 
 // How many school exercises a day, and how many extra problems the kids may ask for on top.
-// Each kid's class, problems and mistakes are in her sheet under Παιδιά (KidsEditor).
+// Each kid's class, place in the books, difficulty, problems and mistakes are in her sheet under Παιδιά (KidsEditor).
 export function SchoolEditor() {
     const { config } = useGame();
     const save = useConfigSave();
@@ -13,7 +13,7 @@ export function SchoolEditor() {
     return (
         <Section title="Σχολείο">
             <div className="p-form">
-                <p className="p-hint">Η τάξη, τα προβλήματα και τα λάθη κάθε παιδιού είναι στα Παιδιά, πάνω.</p>
+                <p className="p-hint">Η τάξη, ως πού έχει φτάσει στα βιβλία, η δυσκολία, τα προβλήματα και τα λάθη κάθε παιδιού είναι στα Παιδιά, πάνω.</p>
                 <SelectField label="Ασκήσεις την ημέρα" value={String(perDay)}
                     options={Array.from({ length: 11 }, (_, n) => ({ value: String(n), label: String(n) }))}
                     onChange={n => save('settings', { ...config.settings, exercisesPerDay: Number(n) })} />
