@@ -68,7 +68,8 @@
           "stepIndex": { "type": "integer", "minimum": 0 },
           "mistakes": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
           "extra": { "type": "boolean" },
-          "shown": { "type": "array", "items": { "type": "integer", "minimum": 0 } }
+          "shown": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+          "retryOf": { "type": "string", "pattern": "^[a-f0-9-]{36}$" }
         }
       }
     },

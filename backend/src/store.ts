@@ -104,6 +104,11 @@ const MIGRATIONS: string[] = [
   // NULL, as in every row from before, reads as none.
   `
   ALTER TABLE exercise_assignments ADD COLUMN shown TEXT;
+  `,
+  // A retry of an item shown worked (#136): the assignment it retries. NULL, as in every row from before,
+  // reads as not a retry.
+  `
+  ALTER TABLE exercise_assignments ADD COLUMN retryOf TEXT;
   `
 ];
 
@@ -241,7 +246,8 @@ export class Store {
     });
     this.exerciseAssignments = new Table<ExerciseAssignment>(db, 'exercise_assignments', onChange, {
       id: 'text', userId: 'text', exerciseId: 'text', date: 'text', status: 'text', attempts: 'int',
-      assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json', extra: 'bool', shown: 'json'
+      assignedAt: 'text', completedAt: 'text', starsAwarded: 'int', stepIndex: 'int', mistakes: 'json', extra: 'bool', shown: 'json',
+      retryOf: 'text'
     });
     this.flowRuns = new Table<Omit<FlowRun, 'userIds'>>(db, 'flow_runs', onChange, {
       id: 'text', flowId: 'text', steps: 'json', stepIndex: 'int', parentRunId: 'text', startedAt: 'text', stepStartedAt: 'text'
