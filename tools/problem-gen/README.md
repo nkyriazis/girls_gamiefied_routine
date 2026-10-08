@@ -174,7 +174,8 @@ The audit can't read Greek; you must. The traps the generator has already hit:
     απαντήσουμε;» becomes «Τι λείπει για να λυθεί;» → «Πόσες καρέκλες έχει κάθε σειρά» ✔ / «Πόσες σειρές
     είναι» / «Τίποτα: είναι 4 καρέκλες»; «Έχει δίκιο;» becomes «Τι έκανε λάθος;». Each wrong option keeps
     its typical mistake as a false statement about her answer or the story, never one that is also true
-    (the change is never «πάνω από» what she had). The right statement opens as some wrong one does
+    (the change is never «πάνω από» what she had, and no «αν …» that holds as said: «Είναι 992 €, αν όλοι
+    πλήρωναν τιμή ενήλικα» is true, «Είναι 992 €: όλοι πληρώνουν όσο ένας ενήλικας» false). The right statement opens as some wrong one does
     («Είναι…» in all three, a reason beside its reverse, «Πόσες…» twice beside «Τίποτα…»): stripping
     «Ναι/Όχι» off alone isn't a fix, since the right one would then stand alone as «Είναι…» beside two
     «Πρέπει…». (Counted over any first word, not only verdicts,
