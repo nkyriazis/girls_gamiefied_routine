@@ -2,11 +2,15 @@ import type { ConfigUser, Forgiveness, ProblemReading, SchoolGrade } from '@shar
 import { useGame } from '../../../context/GameContext';
 import { useConfigSave } from '../useConfigSave';
 import { CollectionEditor, type FormProps } from './CollectionEditor';
-import { FORGIVENESS, GRADES, gradeLabel, kidIsValid, newKid, READING, tidyUser } from './model';
+import { SUBJECTS } from '@shared/curriculum';
+import { BOOK_FIELD, DIFFICULTY, FORGIVENESS, GRADES, gradeLabel, kidIsValid, newKid, placeOptions, READING, tidyUser, todayIn, withGrade } from './model';
 import { ColorField, IconField, SelectField, TextField } from './fields';
 
 function KidForm({ value, onChange }: FormProps<ConfigUser>) {
+    const { config } = useGame();
     const rung = FORGIVENESS.find(f => f.value === (value.forgiveness ?? 'forgiving'))!;
+    const today = todayIn(config.settings.timezone || 'Europe/Athens');
+    const books = SUBJECTS.map(subject => ({ subject, options: placeOptions(value.grade, subject, today) })).filter(b => b.options.length);
     return (
         <>
             <TextField label="Όνομα" value={value.name} onChange={name => onChange({ ...value, name })} />
@@ -14,7 +18,19 @@ function KidForm({ value, onChange }: FormProps<ConfigUser>) {
             <ColorField label="Χρώμα" value={value.color} onChange={color => onChange({ ...value, color })} />
             <SelectField label="Τάξη" value={value.grade ? String(value.grade) : ''}
                 options={[{ value: '', label: gradeLabel() }, ...GRADES.map((_, i) => ({ value: String(i + 1), label: gradeLabel(i + 1) }))]}
-                onChange={grade => onChange({ ...value, grade: grade ? Number(grade) as SchoolGrade : undefined })} />
+                onChange={grade => onChange(withGrade(value, grade ? Number(grade) as SchoolGrade : undefined))} />
+            {books.length > 0 && (
+                <>
+                    {books.map(({ subject, options }) => (
+                        <SelectField key={subject} label={BOOK_FIELD[subject]} value={value.progress?.[subject] ?? ''} options={options}
+                            onChange={id => onChange({ ...value, progress: { ...value.progress, [subject]: id || undefined } })} />
+                    ))}
+                    <p className="p-hint">Οι ασκήσεις της ημέρας έρχονται μόνο από όσα έχει φτάσει η τάξη. «Όπως το βιβλίο» προχωρά μόνο του, με έναν ρυθμό που υπολογίσαμε από το βιβλίο· ένα κεφάλαιο που διαλέγεις μένει ίδιο ώσπου να το αλλάξεις.</p>
+                    <SelectField label="Δυσκολία" value={value.difficulty && value.difficulty < 3 ? String(value.difficulty) : ''} options={DIFFICULTY}
+                        onChange={d => onChange({ ...value, difficulty: d ? Number(d) as 1 | 2 : undefined })} />
+                    <p className="p-hint">Πιο δύσκολες έρχονται μόνο όταν τελειώσουν οι πιο εύκολες, για να μην ξαναδεί άσκηση που έλυσε τον τελευταίο μήνα.</p>
+                </>
+            )}
             {value.grade && (
                 <>
                     <SelectField label="Προβλήματα" value={value.problemReading ?? 'marked'} options={READING}

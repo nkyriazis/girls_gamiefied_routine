@@ -21,6 +21,8 @@ import { optionProblems, type Draft, type LanguageFamily } from './lib.ts';
 import { FILL_LINE_MAX } from './check.ts';
 import { G3_LANGUAGE } from './g3.ts';
 import { E5_LANGUAGE } from './e5.ts';
+import { languageLevel } from '../difficulty.ts';
+import { TOPICS } from '../../../shared/curriculum.ts';
 
 interface LanguageGradeSpec {
   grade: LanguageGrade;
@@ -65,6 +67,7 @@ function build(g: LanguageGradeSpec): PlainExercise[] {
     if (f.grade !== g.grade) throw new Error(`${f.id}: grade ${f.grade} in the ${g.prefix} list`);
     if (ids.has(f.id)) throw new Error(`duplicate family id ${f.id}`);
     ids.add(f.id);
+    if (!TOPICS.language.includes(f.topic)) problems.push(`${f.id}: topic «${f.topic}» is not one of shared/curriculum.ts TOPICS.language`);
     f.items.forEach((item, i) => {
       const id = `${g.prefix}-lang-${f.id}-${String(i + 1).padStart(3, '0')}`;
       const place = parsePlace(item.at);
@@ -79,6 +82,9 @@ function build(g: LanguageGradeSpec): PlainExercise[] {
       out.push({
         id, type, category: 'Γλώσσα', title, ...rest, stars: 1,
         source: sourceOf(g.grade, item.at),
+        chapter: `${place.unit}.${place.n}`,
+        topic: f.topic,
+        difficulty: languageLevel(f.skill),
         generatorParams: { family: f.id, unit: place.unit, skill: f.skill },
       } as PlainExercise);
     });

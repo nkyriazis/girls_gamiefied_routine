@@ -64,7 +64,8 @@ const SETTINGS: Setting[] = [
 export const roundEstimate: Family = {
   id: 'round-estimate',
   grade: 5,
-  unit: 1,
+  chapter: '1.7',
+  topic: 'Αριθμοί',
   source: 'Μαθηματικά Ε΄, κεφ. 1.7 «Στρογγυλοποίηση στους φυσικούς αριθμούς»',
   make(r, b) {
     const s = r.pick(SETTINGS);

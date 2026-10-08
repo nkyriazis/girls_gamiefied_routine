@@ -122,7 +122,8 @@ const SETTINGS: Setting[] = [
 export const tableReading: Family = {
   id: 'table-reading',
   grade: 3,
-  unit: 2,
+  chapter: '12',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Γ΄, κεφ. 12 «Προβλήματα», 1 «Δημοτικές εκλογές»',
   make(r, b) {
     const s = r.pick(SETTINGS);

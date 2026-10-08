@@ -86,7 +86,8 @@ function slip(a: number, b: number, op: '+' | '−'): number {
 export const estimateFirst: Family = {
   id: 'estimate-first',
   grade: 3,
-  unit: 3,
+  chapter: '15',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Γ΄, κεφ. 20 «Επαναληπτικό μάθημα» (Πόσο είναι περίπου το αποτέλεσμα;) και κεφ. 15 «Προσθέσεις και αφαιρέσεις τριψήφιων αριθμών»',
   make(r, b) {
     const s = r.pick(SETTINGS);

@@ -59,7 +59,8 @@ const SETTINGS: Setting[] = [
 export const roundTable: Family = {
   id: 'round-table',
   grade: 5,
-  unit: 1,
+  chapter: '1.7',
+  topic: 'Αριθμοί',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 1, 5ο πρόβλημα (το στρογγυλό τραπέζι)',
   make(r, b) {
     const s = r.pick(SETTINGS);

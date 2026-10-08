@@ -58,7 +58,8 @@ const SETTINGS: Setting[] = [
 export const equalGroups: Family = {
   id: 'equal-groups',
   grade: 3,
-  unit: 1,
+  chapter: '5',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Γ΄, κεφ. 4 και 5 «Πολλαπλασιασμός, προπαίδεια (Ι) και (ΙΙ)»',
   make(r, b) {
     const p = r.pick(PEOPLE);

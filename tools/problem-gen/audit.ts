@@ -85,6 +85,11 @@ import {
 import { auditMaths, mathsSample } from './maths/check.ts';
 import { auditLanguage, languageSample } from './language/check.ts';
 import { checkStory } from './story-check.ts';
+import { LANGUAGE_LEVEL, OPERATIONS, POINTS, SIZE, STEPS } from './difficulty.ts';
+import { CURRICULUM as BOOKS, TOPICS } from '../../shared/curriculum.ts';
+import { pathToAnswer } from '../../shared/problems.ts';
+import { chapterOf } from './maths/curriculum.ts';
+import { placeOf } from './language/curriculum.ts';
 
 // --dir DIR audits another folder (e.g. gen.ts --out DIR while trying out families)
 const dirAt = process.argv.indexOf('--dir');
@@ -446,6 +451,54 @@ for (const a of [maths, language]) {
   warnings.push(...a.warnings);
   for (const line of a.report) console.log(line);
 }
+// #71: every item of a Γ΄ or Ε΄ pool names a chapter of its book (shared/curriculum.ts), a topic of
+// TOPICS and a difficulty, which this derives again from the item as written, with its own code and
+// difficulty.ts's numbers (never the generators' functions). A plain item's chapter is the one its
+// source names; a problem's generatorParams.unit is its chapter's.
+const shownNumbers = (texts: unknown[]): number[] => texts.flatMap(t => typeof t === 'number' ? [t]
+  : typeof t === 'string' ? (t.replace(/\{\d+\}/g, '').match(/\d{1,3}(?:\.\d{3})+|\d+/g) ?? []).map(x => Number(x.replace(/\./g, ''))) : []);
+const sizePoints = (grade: 3 | 5, n: number) => (n <= SIZE[grade][0] ? 0 : n <= SIZE[grade][1] ? 1 : 2);
+function levelOf(grade: 3 | 5, ex: Exercise): number | undefined {
+  if (ex.type === 'problem') {
+    const calc = ex.steps.find(s => s.kind === 'calc');
+    const nums = [...shownNumbers([plain(ex.story)]), ...ex.steps.flatMap(s => s.kind === 'numbers' ? s.rows.map(r => r.answer) : s.kind === 'calc' ? s.quantities.map(q => q.value) : [])];
+    const work = calc ? pathToAnswer(calc).size : ex.steps.length;
+    const [lo, hi] = calc ? OPERATIONS : STEPS;
+    const total = sizePoints(grade, Math.max(...nums)) + (work <= lo ? 0 : work <= hi ? 1 : 2);
+    return total <= POINTS[0] ? 1 : total <= POINTS[1] ? 2 : 3;
+  }
+  if (ex.category === 'Γλώσσα') return LANGUAGE_LEVEL[ex.generatorParams?.skill];
+  const read = [ex.body, 'question' in ex ? ex.question : undefined, 'textWithGaps' in ex ? ex.textWithGaps : undefined,
+    ...('options' in ex ? ex.options : []), ...('correctAnswers' in ex ? ex.correctAnswers : []), 'correctValue' in ex ? ex.correctValue : undefined,
+    ...('pairs' in ex ? ex.pairs.flatMap(p => [p.left, p.right]) : []), ...('items' in ex ? ex.items.map(i => i.content) : [])];
+  return sizePoints(grade, Math.max(0, ...shownNumbers(read))) + 1;
+}
+const spread = new Map<string, number[]>();
+for (const pool of pools) {
+  const grade = pool.grades.find(g => g === 3 || g === 5) as 3 | 5 | undefined;
+  if (!grade) continue;
+  for (const ex of pool.exercises) {
+    const subject = ex.category === 'Γλώσσα' ? 'language' : 'maths';
+    const chapter = BOOKS[grade][subject].chapters.find(c => c.id === ex.chapter);
+    if (!chapter) errors.push(`${ex.id}: chapter «${ex.chapter}» is not in ${BOOKS[grade][subject].label} (shared/curriculum.ts)`);
+    if (!ex.topic || !TOPICS[subject].includes(ex.topic)) errors.push(`${ex.id}: topic «${ex.topic}» is not one of TOPICS.${subject}`);
+    const level = levelOf(grade, ex);
+    if (ex.difficulty !== level) errors.push(`${ex.id}: difficulty ${ex.difficulty}, by the rule (difficulty.ts) ${level}`);
+    if (ex.category === 'Μαθηματικά' && ex.source && chapterOf(grade, ex.source)?.ch !== ex.chapter) errors.push(`${ex.id}: chapter «${ex.chapter}», but its source names ${chapterOf(grade, ex.source)?.ch ?? 'none'}`);
+    if (ex.category === 'Γλώσσα' && ex.source) {
+      const at = placeOf(grade, ex.source);
+      if (`${at?.unit}.${at?.n}` !== ex.chapter) errors.push(`${ex.id}: lesson «${ex.chapter}», but its source names ${at ? `${at.unit}.${at.n}` : 'none'}`);
+    }
+    if (ex.type === 'problem' && chapter && ex.generatorParams?.unit !== undefined && ex.generatorParams.unit !== chapter.unit) errors.push(`${ex.id}: generatorParams.unit ${ex.generatorParams.unit}, its chapter ${chapter.id} is in unit ${chapter.unit}`);
+    const key = `${grade} ${ex.category}`;
+    const row = spread.get(key) ?? [0, 0, 0];
+    if (ex.difficulty) row[ex.difficulty - 1]++;
+    spread.set(key, row);
+  }
+}
+console.log('\nDifficulty (difficulty.ts), per grade and category: easy, middling, hard');
+for (const [k, [a, b, c]] of [...spread].sort(([x], [y]) => x.localeCompare(y))) console.log(`  ${k.padEnd(16)} ${String(a).padStart(4)} ${String(b).padStart(4)} ${String(c).padStart(4)}`);
+
 // A generated plain item belongs to one of the two audits
 for (const pool of pools) {
   for (const ex of pool.exercises) {

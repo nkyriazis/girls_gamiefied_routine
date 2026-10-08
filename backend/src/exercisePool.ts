@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'fs';
 import path from 'path';
-import { Exercise, SchoolGrade } from '../../shared/types';
+import { ConfigUser, Exercise, SchoolGrade } from '../../shared/types';
+import { chaptersAhead, hasCurriculum, positionOf, Subject, subjectOf, SUBJECTS } from '../../shared/curriculum';
 import { pathToAnswer, storyWords } from '../../shared/problems';
 import { config } from './config';
 import { EXERCISE_POOLS_DIR } from './paths';
@@ -104,28 +105,114 @@ export function freshLast(list: Exercise[], seen: Map<string, string>): Exercise
   return [...unseen, ...old].reverse();
 }
 
+// ----------------------------------------------------------------------------
+// What her class has reached, at her difficulty (#71). An item names its chapter or
+// lesson (Exercise.chapter) and a difficulty, 1 to 3; the kid's gate says how many
+// chapters past her class each one is (0: reached; from ConfigUser.progress, or the
+// book's pace for today, shared/curriculum.ts) and the hardest she gets. Within a
+// category the draw takes, best first:
+//   1. reached, at her difficulty or easier, not had in the last NO_REPEAT_DAYS;
+//   2. reached, one level harder, not had in that time;
+//   3. reached, at most one level harder, the one she had longest ago (a repeat
+//      beats a chapter her class hasn't reached);
+//   4. reached, harder still, longest ago;
+//   5. only when nothing of the category is reached: the nearest chapters past her place.
+// Items with no chapter or difficulty (the revision pools) are reached and easy. The
+// revision pools come in, as before, only for a category her grade has nothing in.
+// ----------------------------------------------------------------------------
+
+/** How long an item stays «had» for the draw's first two tiers. */
+export const NO_REPEAT_DAYS = 30;
+
+export interface DrawGate {
+  /** How many chapters past her class an item is: 0 when reached. */
+  ahead(e: Exercise): number;
+  /** The hardest she gets while there is enough; 3 is all. */
+  difficulty: 1 | 2 | 3;
+}
+
+/** No gate: everything reached, every difficulty (a grade with no books in shared/curriculum.ts). */
+export const OPEN: DrawGate = { ahead: () => 0, difficulty: 3 };
+
+/** Why an item was drawn past the first tier, for the log: «harder», «repeat», «ahead». */
+export type Fallback = 'harder' | 'repeat' | 'ahead';
+
+/** The tier an item falls in (0 best), given whether anything of its category is reached at all. */
+function tier(e: Exercise, gate: DrawGate, seen: Map<string, string>, since: string, anyReached: boolean): number | undefined {
+  const ahead = gate.ahead(e);
+  if (ahead > 0) return anyReached ? undefined : 10 + ahead;
+  const fresh = (seen.get(e.id) ?? '') < since;
+  const level = e.difficulty ?? 1;
+  if (level <= gate.difficulty) return fresh ? 0 : 2;
+  if (level === gate.difficulty + 1) return fresh ? 1 : 2;
+  return 3;
+}
+
+export const fallbackOf = (t: number): Fallback | undefined => (t === 0 ? undefined : t === 2 ? 'repeat' : t < 10 ? 'harder' : 'ahead');
+
+/**
+ * A kid's gate on `date` (YYYY-MM-DD, in settings.timezone): per book, her place (her progress if it is one
+ * of the book's, else the pace's, then listed in `pace`), and her difficulty. A grade with no books in
+ * shared/curriculum.ts has everything reached.
+ */
+export function drawGate(user: ConfigUser, date: string): { gate: DrawGate; progress?: Record<Subject, string>; pace?: Subject[] } {
+  const difficulty = user.difficulty ?? 3;
+  if (!hasCurriculum(user.grade)) return { gate: { ...OPEN, difficulty } };
+  const grade = user.grade;
+  const at = Object.fromEntries(SUBJECTS.map(s => [s, positionOf(grade, s, user.progress?.[s], date)])) as Record<Subject, { id: string; pace: boolean }>;
+  const ahead = Object.fromEntries(SUBJECTS.map(s => [s, chaptersAhead(grade, s, at[s].id, date)])) as Record<Subject, (chapter?: string) => number>;
+  return {
+    gate: { ahead: e => ahead[subjectOf(e.category)](e.chapter), difficulty },
+    progress: Object.fromEntries(SUBJECTS.map(s => [s, at[s].id])) as Record<Subject, string>,
+    pace: SUBJECTS.filter(s => at[s].pace),
+  };
+}
+
+/**
+ * `list` in the order the draw takes it, as pop() would (the best last), each with its tier: by tier, then
+ * freshest first (never seen at random, then seen longest ago). Items past her class are left out while any is reached.
+ */
+export function gateOrder(list: Exercise[], gate: DrawGate, seen: Map<string, string>, now = new Date()): { ex: Exercise; tier: number }[] {
+  const since = new Date(now.getTime() - NO_REPEAT_DAYS * 86400_000).toISOString();
+  const anyReached = list.some(e => gate.ahead(e) === 0);
+  const tiers = new Map<number, Exercise[]>();
+  for (const e of list) {
+    const t = tier(e, gate, seen, since, anyReached);
+    if (t !== undefined) tiers.set(t, [...(tiers.get(t) ?? []), e]);
+  }
+  // the nearest chapters past her place only: «ahead» keeps the smallest distance
+  const ahead = [...tiers.keys()].filter(t => t >= 10).sort((a, b) => a - b).slice(1);
+  for (const t of ahead) tiers.delete(t);
+  return [...tiers.keys()].sort((a, b) => b - a).flatMap(t => freshLast(tiers.get(t)!, seen).map(ex => ({ ex, tier: t })));
+}
+
 /**
  * A day's set of `count`, in mix order; `seen` is when she last had each exercise, `turn` how many daily
- * sets she has had (where the round starts for a kid with no problems). Says which came from revision.
+ * sets she has had (where the round starts for a kid with no problems), `gate` what her class has reached
+ * at her difficulty. Says which came from revision, and which past the first tier and why.
  */
-export function drawDailySet(pools: UserPools, count: number, seen: Map<string, string>, turn = 0): { drawn: Exercise[]; revision: string[] } {
+export function drawDailySet(pools: UserPools, count: number, seen: Map<string, string>, turn = 0, gate: DrawGate = OPEN, now = new Date()):
+  { drawn: Exercise[]; revision: string[]; fallback: Record<string, Fallback> } {
   const order = mixOrder([...pools.own, ...pools.revision]);
   const buckets = order.map(category => {
     const own = pools.own.filter(e => e.category === category);
     const from = own.length ? own : pools.revision.filter(e => e.category === category);
-    return { items: freshLast(from, seen), revision: !own.length };
+    return { items: gateOrder(from, gate, seen, now), revision: !own.length };
   });
   const drawn: Exercise[] = [];
   const revision: string[] = [];
+  const fallback: Record<string, Fallback> = {};
   // k turns through the mix; a slot whose category is empty goes to the next one
   for (let k = mixStart(order, turn); drawn.length < count && buckets.some(b => b.items.length); k++) {
     const bucket = buckets[k % buckets.length];
-    const ex = bucket.items.pop();
-    if (!ex) continue;
-    drawn.push(ex);
-    if (bucket.revision) revision.push(ex.id);
+    const next = bucket.items.pop();
+    if (!next) continue;
+    drawn.push(next.ex);
+    if (bucket.revision) revision.push(next.ex.id);
+    const why = fallbackOf(next.tier);
+    if (why) fallback[next.ex.id] = why;
   }
-  return { drawn, revision };
+  return { drawn, revision, fallback };
 }
 
 /** Read and validate every pool file. Throws on an invalid file or a duplicate id. */

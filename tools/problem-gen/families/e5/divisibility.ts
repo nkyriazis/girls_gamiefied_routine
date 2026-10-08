@@ -98,7 +98,8 @@ const why = (n: number, k: number) => (k === 3 || k === 9 ? bySum(n) : byLast(n)
 export const divisibility: Family = {
   id: 'divisibility',
   grade: 5,
-  unit: 2,
+  chapter: '2.11',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Ε΄, κεφ. 2.11 «Κριτήρια διαιρετότητας»',
   make(r, b) {
     const s = r.pick(SETTINGS);

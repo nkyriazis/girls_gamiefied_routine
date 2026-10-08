@@ -89,7 +89,8 @@ const TOTAL: Record<string, (n: string) => string> = {
 export const parts: Family = {
   id: 'parts-ratio',
   grade: 5,
-  unit: 1,
+  chapter: '1.3',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Ε΄, κεφ. 1.3 «Πώς λύνουμε ένα πρόβλημα»',
   make(r, b) {
     const s = r.pick(SETTINGS);

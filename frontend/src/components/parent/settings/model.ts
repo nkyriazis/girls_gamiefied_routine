@@ -1,5 +1,6 @@
 import type { ConfigUser, DataConfig, Forgiveness, IconValue, ProblemReading, Schedule, User } from '@shared/types';
 import { themeColor } from '../../../../../shared/themeColours.ts'; // relative, so node --test runs it too
+import { CURRICULUM, hasCurriculum, paceAt, placeLabel, type Subject } from '../../../../../shared/curriculum.ts';
 
 // Pure helpers for the config forms.
 
@@ -85,14 +86,52 @@ export const THEME_COLORS: { value: string; label: string }[] = [
     { value: themeColor('warning'), label: 'Πορτοκαλί' },
 ];
 
+// How far her class has got, per book (#71): «Όπως το βιβλίο» (unset) follows the book's pace and says where
+// it is today; a chapter or lesson a parent picks stays until changed. Holiday lessons (pinned) are no place.
+export const BOOK_FIELD: Record<Subject, string> = {
+    maths: 'Μαθηματικά: ως πού έχει φτάσει η τάξη',
+    language: 'Γλώσσα: ως πού έχει φτάσει η τάξη',
+};
+export function placeOptions(grade: number | undefined, subject: Subject, today: string): { value: string; label: string; group?: string }[] {
+    if (!hasCurriculum(grade)) return [];
+    const book = CURRICULUM[grade][subject];
+    return [
+        { value: '', label: `Όπως το βιβλίο (τώρα: ${placeLabel(subject, paceAt(grade, subject, today))})` },
+        ...book.chapters.filter(c => !c.pinned).map(c => ({
+            value: c.id,
+            // The unit is in the label too, not only in its group: a closed select shows the label alone
+            label: subject === 'language' && c.id.endsWith('.0') ? placeLabel(subject, c.id) : `${placeLabel(subject, c.id)}: ${c.title}`,
+            group: `Ενότητα ${c.unit}${book.unitTitles?.[c.unit] ? `: ${book.unitTitles[c.unit]}` : ''}`,
+        })),
+    ];
+}
+
+// Difficulty is «up to»: unset is all; harder ones come in only when the easier run out
+export const DIFFICULTY: { value: '' | '1' | '2'; label: string }[] = [
+    { value: '', label: 'Όλες' },
+    { value: '2', label: 'Κυρίως εύκολες και μέτριες' },
+    { value: '1', label: 'Κυρίως εύκολες' },
+];
+
+// Today in the family's timezone (YYYY-MM-DD), where the pace is read
+export const todayIn = (timezone: string, now = new Date()) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+
+// A new class: a place in the old one's books means nothing in the new ones
+export const withGrade = (user: ConfigUser, grade: ConfigUser['grade']): ConfigUser =>
+    ({ ...user, grade, ...(grade !== user.grade ? { progress: undefined } : {}) });
+
 // A kid as data.json keeps it: the name trimmed, and the fields at their default left out
-// (no class, the marked phrases, forgiving), like the hand-written ones. A rung stays without a class,
-// as Σχολείο kept it: hidden in the form, back when a class is set again.
+// (no class, the marked phrases, forgiving, the book's pace, every difficulty), like the hand-written ones.
+// A rung stays without a class, as Σχολείο kept it: hidden in the form, back when a class is set again.
 export function tidyUser(user: ConfigUser): ConfigUser {
     const next: ConfigUser = { ...user, name: user.name.trim() };
     if (!next.grade) delete next.grade;
     if (!next.problemReading || next.problemReading === 'marked') delete next.problemReading;
     if (!next.forgiveness || next.forgiveness === 'forgiving') delete next.forgiveness;
+    const progress = Object.fromEntries(Object.entries(next.progress ?? {}).filter(([, id]) => id));
+    if (Object.keys(progress).length) next.progress = progress; else delete next.progress;
+    if (!next.difficulty || next.difficulty === 3) delete next.difficulty;
     return next;
 }
 

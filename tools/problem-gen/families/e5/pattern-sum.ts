@@ -137,7 +137,8 @@ const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 export const patternSum: Family = {
   id: 'pattern-sum',
   grade: 5,
-  unit: 1,
+  chapter: '1.7',
+  topic: 'Αριθμοί',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 1, 1ο πρόβλημα (η σκάλα με τα τουβλάκια)',
   make(r, b) {
     const [p] = people(r, 1);

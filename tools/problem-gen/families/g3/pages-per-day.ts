@@ -33,7 +33,8 @@ const GROWNUPS = ['η γιαγιά', 'ο παππούς', 'η μαμά', 'ο μ�
 export const pagesPerDay: Family = {
   id: 'pages-per-day',
   grade: 3,
-  unit: 3,
+  chapter: '18',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 18 «Διαιρέσεις»',
   make(r, b) {
     const p = r.pick(PEOPLE);

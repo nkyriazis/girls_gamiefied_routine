@@ -5,7 +5,8 @@ import { BIG, payWith, TOYS } from '../../prices.ts';
 export const change: Family = {
   id: 'change-left',
   grade: 3,
-  unit: 2,
+  chapter: '10',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const p = r.pick(PEOPLE);

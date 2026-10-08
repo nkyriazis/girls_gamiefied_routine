@@ -14,8 +14,8 @@ export { fmt };
 
 export type PlainExercise = Exclude<Exercise, ProblemExercise>;
 type DistOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
-/** An item as a family makes it; the generator adds id, category, stars, source and generatorParams. */
-export type Draft = DistOmit<PlainExercise, 'id' | 'category' | 'stars' | 'source' | 'generatorParams'>;
+/** An item as a family makes it; the generator adds id, category, stars, source, chapter, topic, difficulty and generatorParams. */
+export type Draft = DistOmit<PlainExercise, 'id' | 'category' | 'stars' | 'source' | 'chapter' | 'topic' | 'difficulty' | 'generatorParams'>;
 
 export interface MathsFamily {
   /** Short, unique within its grade, kebab-case: part of every item id. */
@@ -23,6 +23,8 @@ export interface MathsFamily {
   grade: Grade;
   /** The chapter of the grade's book it comes from (curriculum.ts): its source and unit. */
   chapter: string;
+  /** What it is about: one of shared/curriculum.ts TOPICS.maths. */
+  topic: string;
   /** The wording check.ts reads back (its solvers are keyed by skill). */
   skill: string;
   /** Its share of the grade's items, relative to the others (default 1). */

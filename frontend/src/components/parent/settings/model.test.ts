@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ConfigUser, DataConfig } from '@shared/types';
-import { kidIsValid, missingKidsHint, newKid, targetsOf, THEME_COLORS, tidyUser, toggleKid } from './model.ts';
+import { kidIsValid, missingKidsHint, newKid, placeOptions, targetsOf, THEME_COLORS, tidyUser, todayIn, toggleKid, withGrade } from './model.ts';
 
 const kid = (over: Partial<ConfigUser> = {}): ConfigUser => ({
     id: 'u1', name: 'Ηλέκτρα', avatar: { type: 'emoji', value: '🦊' }, color: 'var(--color-accent)', ...over,
@@ -18,6 +18,37 @@ test('tidyUser keeps a class, a reading rung and a strict forgiveness', () => {
     assert.deepEqual(tidyUser(u), u);
     // without a class the rungs stay (hidden), as Σχολείο kept them
     assert.deepEqual(tidyUser({ ...u, grade: undefined }), kid({ problemReading: 'paint-all', forgiveness: 'unforgiving' }));
+});
+
+test('tidyUser keeps a place and a difficulty, and drops the pace and «Όλες» (#71)', () => {
+    const u = kid({ grade: 3, progress: { maths: '12', language: '2.3' }, difficulty: 1 });
+    assert.deepEqual(tidyUser(u), u);
+    assert.deepEqual(tidyUser(kid({ grade: 3, progress: { maths: '12', language: undefined } })), kid({ grade: 3, progress: { maths: '12' } }));
+    assert.deepEqual(tidyUser(kid({ grade: 3, progress: { maths: '' }, difficulty: undefined })), kid({ grade: 3 }));
+    assert.deepEqual(tidyUser(kid({ grade: 3, difficulty: 3 })), kid({ grade: 3 }));
+});
+
+test('a new class drops the place in the old one\'s books', () => {
+    const u = kid({ grade: 3, progress: { maths: '12' } });
+    assert.equal(withGrade(u, 5).progress, undefined);
+    assert.deepEqual(withGrade(u, 3).progress, { maths: '12' });
+});
+
+test('the places of a book: the pace first, saying where it is today, then every chapter by unit, each naming its unit; no holiday lesson', () => {
+    const maths = placeOptions(3, 'maths', '2026-10-08');
+    assert.deepEqual(maths[0], { value: '', label: 'Όπως το βιβλίο (τώρα: κεφ. 8)' });
+    assert.deepEqual(maths.find(o => o.value === '12'), { value: '12', label: 'κεφ. 12: Προβλήματα', group: 'Ενότητα 2' });
+    const lang = placeOptions(3, 'language', '2026-10-08');
+    assert.equal(lang[0].label, 'Όπως το βιβλίο (τώρα: ενότητα 2, μάθημα 1)');
+    assert.deepEqual(lang.find(o => o.value === '2.0'), { value: '2.0', label: 'ενότητα 2, Λεξιλόγιο', group: 'Ενότητα 2: Στο σπίτι και στη γειτονιά' });
+    assert.equal(lang.find(o => o.value === '3.1')?.label, 'ενότητα 3, μάθημα 1: Σπίτι με κήπον', 'a closed select still says which unit');
+    assert.ok(!lang.some(o => o.value.startsWith('5.')));
+    assert.deepEqual(placeOptions(4, 'maths', '2026-10-08'), [], 'no books for Δ΄ here');
+});
+
+test('today is the family\'s day', () => {
+    assert.equal(todayIn('Europe/Athens', new Date('2026-10-07T22:30:00Z')), '2026-10-08');
+    assert.equal(todayIn('UTC', new Date('2026-10-07T22:30:00Z')), '2026-10-07');
 });
 
 test('tidyUser trims the name', () => {

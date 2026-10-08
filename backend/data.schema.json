@@ -249,6 +249,19 @@
           "forgiveness": {
             "enum": ["forgiving", "unforgiving"],
             "description": "How much mistakes cost (shared/forgiveness.ts): forgiving (default) lets the kid retry at will, a problem losing a star per step gone wrong down to 1; unforgiving gives two tries a step, down to 0"
+          },
+          "progress": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "How far the kid's class has got in each book (shared/curriculum.ts): her daily exercises come only from chapters up to there. Unset (or an id the book doesn't have), the book's pace for today",
+            "properties": {
+              "maths": { "type": "string", "description": "A chapter of the grade's maths book: «12» (Γ΄), «2.12» (Ε΄)" },
+              "language": { "type": "string", "description": "A lesson of the grade's language book: «2.3» (unit 2, lesson 3), «2.0» (unit 2's Λεξιλόγιο)" }
+            }
+          },
+          "difficulty": {
+            "enum": [1, 2, 3],
+            "description": "The hardest the kid's daily exercises are while there are enough (1 easy, 2 middling, 3 hard); harder ones come in only before an item would repeat. Unset, all"
           }
         }
       }

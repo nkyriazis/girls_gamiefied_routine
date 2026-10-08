@@ -54,7 +54,8 @@ const VEHICLES: Vehicle[] = [
 export const busStops: Family = {
   id: 'bus-stops',
   grade: 3,
-  unit: 2,
+  chapter: '10',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 2 «Προσθέσεις διψήφιων και τριψήφιων αριθμών» και κεφ. 10 «Αφαιρέσεις διψήφιων και τριψήφιων αριθμών»',
   make(r, b) {
     const v = r.pick(VEHICLES);

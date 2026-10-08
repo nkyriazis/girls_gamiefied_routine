@@ -73,7 +73,8 @@ const SETTINGS: Setting[] = [
 export const budget: Family = {
   id: 'budget',
   grade: 5,
-  unit: 2,
+  chapter: '2.8',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Ε΄, κεφ. 2.8 «Η πρόσθεση και η αφαίρεση στους φυσικούς αριθμούς»',
   make(r, b) {
     const s = r.pick(SETTINGS);

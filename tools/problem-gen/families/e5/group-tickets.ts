@@ -53,7 +53,8 @@ function family(r: Rng, p: Person): { text: string; go: string; adults: number; 
 export const groupTickets: Family = {
   id: 'group-tickets',
   grade: 5,
-  unit: 2,
+  chapter: '2.9',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 2, 3ο πρόβλημα; κεφ. 2.8 και 2.9 (πράξεις με φυσικούς αριθμούς)',
   make(r, b) {
     const v = r.pick(VENUES);

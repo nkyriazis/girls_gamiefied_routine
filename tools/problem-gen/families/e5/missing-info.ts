@@ -201,7 +201,8 @@ const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 export const missingInfo: Family = {
   id: 'missing-info',
   grade: 5,
-  unit: 2,
+  chapter: '2.12',
+  topic: 'Πρόσθεση',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 2, 3ο πρόβλημα (η οικογένεια με τρία παιδιά) και 1ο πρόβλημα',
   make(r, b) {
     const [p] = people(r, 1);

@@ -102,6 +102,10 @@ const cases: [string, (d: DataConfig) => void, string][] = [
   ['a flow step\'s routine of a missing assignment', d => { actions(d)[1].routineId = 'u2-assign-mornin'; }, 'missing-link /flows/0/steps/1/actions/1/routineId u2-assign-mornin'],
   ['a flow step\'s flow that is missing', d => { actions(d)[2].flowId = 'f9'; }, 'missing-link /flows/0/steps/1/actions/2/flowId f9'],
   ['a chore for a missing kid', d => { d.chores![0].eligibleUsers = ['u1', 'u3']; }, 'missing-link /chores/0/eligibleUsers/1 u3'],
+  // a kid's progress (#71) that is no place in her grade's book: the draw follows the pace
+  ['a maths chapter the book has not', d => { d.users[0].grade = 3; d.users[0].progress = { maths: '21', language: '2.3' }; }, 'missing-link /users/0/progress/maths 21'],
+  ['a holiday lesson, which is no place', d => { d.users[0].grade = 3; d.users[0].progress = { language: '5.1' }; }, 'missing-link /users/0/progress/language 5.1'],
+  ['progress for a grade with no books here', d => { d.users[0].grade = 4; d.users[0].progress = { maths: '12' }; }, 'missing-link /users/0/progress/maths 12'],
   // blank
   ['a kid named with spaces', d => { d.users[1].name = '  '; }, 'blank /users/1/name   '],
   ['a task with a blank title', d => { d.tasks[0].title = ' '; }, 'blank /tasks/0/title  '],

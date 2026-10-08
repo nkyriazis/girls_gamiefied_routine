@@ -179,6 +179,11 @@ export interface BaseExercise {
   template?: boolean;
   generatorParams?: any;
   source?: string; // where in the textbooks it comes from: «Μαθηματικά Γ΄, κεφ. 4: Πολλαπλασιασμός, προπαίδεια (Ι)»
+  // #71, the pools' own items (tools/problem-gen writes them): the chapter or lesson of shared/curriculum.ts
+  // it needs («12», «2.3»), what it is about (shared/curriculum.ts TOPICS) and how hard, 1 to 3
+  chapter?: string;
+  topic?: string;
+  difficulty?: 1 | 2 | 3;
 }
 
 export interface MultipleChoiceExercise extends BaseExercise {
@@ -428,6 +433,11 @@ export interface ConfigUser {
   grade?: SchoolGrade;
   problemReading?: ProblemReading; // default "marked"
   forgiveness?: Forgiveness; // default "forgiving"
+  // #71: how far her class has got, per book (a chapter or lesson id of shared/curriculum.ts), set by a
+  // parent; unset, the pace of the book for today. Her daily set comes only from what that reaches.
+  progress?: { maths?: string; language?: string };
+  // The hardest her exercises are while there are enough (1 easy … 3 hard); unset, all
+  difficulty?: 1 | 2 | 3;
 }
 
 export interface ConfigTask {

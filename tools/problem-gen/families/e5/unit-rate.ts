@@ -67,7 +67,8 @@ const SETTINGS: Setting[] = [
 export const unitRate: Family = {
   id: 'unit-rate',
   grade: 5,
-  unit: 2,
+  chapter: '2.12',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Ε΄, Επαναληπτικό 1, 2ο πρόβλημα (αναγωγή στη μονάδα)',
   make(r, b) {
     const s = r.pick(SETTINGS);

@@ -47,7 +47,8 @@ const SETTINGS: Setting[] = [
 export const compareOffers: Family = {
   id: 'compare-offers',
   grade: 5,
-  unit: 2,
+  chapter: '2.12',
+  topic: 'Πολλαπλασιασμός',
   source: 'Μαθηματικά Ε΄, κεφ. 2.10 «Πολλαπλάσια και διαιρέτες» (κοινά πολλαπλάσια) και 2.9 «Ο πολλαπλασιασμός»',
   make(r, b) {
     const s = r.pick(SETTINGS);

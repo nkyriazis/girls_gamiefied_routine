@@ -61,7 +61,8 @@ const SETTINGS: Setting[] = [
 export const arrangeRows: Family = {
   id: 'arrange-rows',
   grade: 5,
-  unit: 2,
+  chapter: '2.10',
+  topic: 'Διαίρεση',
   source: 'Μαθηματικά Ε΄, κεφ. 2.10 «Πολλαπλάσια και διαιρέτες»',
   make(r, b) {
     const s = r.pick(SETTINGS);

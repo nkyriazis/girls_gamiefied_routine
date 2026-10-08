@@ -119,6 +119,9 @@
               "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
               "template": { "type": "boolean" },
               "source": { "type": "string", "description": "Where in the textbooks it comes from" },
+              "chapter": { "type": "string", "description": "The chapter (maths, problems) or lesson (language) of shared/curriculum.ts it needs: «12», «2.3»" },
+              "topic": { "type": "string", "description": "What it is about: one of shared/curriculum.ts TOPICS" },
+              "difficulty": { "enum": [1, 2, 3], "description": "How hard, 1 (easy) to 3 (hard): tools/problem-gen/difficulty.ts" },
               "generatorParams": { "type": "object" }
             }
           },
@@ -150,6 +153,9 @@
               "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
               "template": { "type": "boolean" },
               "source": { "type": "string", "description": "Where in the textbooks it comes from" },
+              "chapter": { "type": "string", "description": "The chapter (maths, problems) or lesson (language) of shared/curriculum.ts it needs: «12», «2.3»" },
+              "topic": { "type": "string", "description": "What it is about: one of shared/curriculum.ts TOPICS" },
+              "difficulty": { "enum": [1, 2, 3], "description": "How hard, 1 (easy) to 3 (hard): tools/problem-gen/difficulty.ts" },
               "generatorParams": { "type": "object" }
             }
           },
@@ -181,6 +187,9 @@
               "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
               "template": { "type": "boolean" },
               "source": { "type": "string", "description": "Where in the textbooks it comes from" },
+              "chapter": { "type": "string", "description": "The chapter (maths, problems) or lesson (language) of shared/curriculum.ts it needs: «12», «2.3»" },
+              "topic": { "type": "string", "description": "What it is about: one of shared/curriculum.ts TOPICS" },
+              "difficulty": { "enum": [1, 2, 3], "description": "How hard, 1 (easy) to 3 (hard): tools/problem-gen/difficulty.ts" },
               "generatorParams": { "type": "object" }
             }
           },
@@ -202,6 +211,9 @@
               "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
               "template": { "type": "boolean" },
               "source": { "type": "string", "description": "Where in the textbooks it comes from" },
+              "chapter": { "type": "string", "description": "The chapter (maths, problems) or lesson (language) of shared/curriculum.ts it needs: «12», «2.3»" },
+              "topic": { "type": "string", "description": "What it is about: one of shared/curriculum.ts TOPICS" },
+              "difficulty": { "enum": [1, 2, 3], "description": "How hard, 1 (easy) to 3 (hard): tools/problem-gen/difficulty.ts" },
               "generatorParams": { "type": "object" }
             }
           },
@@ -230,6 +242,9 @@
               "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
               "template": { "type": "boolean" },
               "source": { "type": "string", "description": "Where in the textbooks it comes from" },
+              "chapter": { "type": "string", "description": "The chapter (maths, problems) or lesson (language) of shared/curriculum.ts it needs: «12», «2.3»" },
+              "topic": { "type": "string", "description": "What it is about: one of shared/curriculum.ts TOPICS" },
+              "difficulty": { "enum": [1, 2, 3], "description": "How hard, 1 (easy) to 3 (hard): tools/problem-gen/difficulty.ts" },
               "generatorParams": { "type": "object" }
             }
           },
@@ -251,6 +266,9 @@
               "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
               "template": { "type": "boolean" },
               "source": { "type": "string", "description": "Where in the textbooks it comes from" },
+              "chapter": { "type": "string", "description": "The chapter (maths, problems) or lesson (language) of shared/curriculum.ts it needs: «12», «2.3»" },
+              "topic": { "type": "string", "description": "What it is about: one of shared/curriculum.ts TOPICS" },
+              "difficulty": { "enum": [1, 2, 3], "description": "How hard, 1 (easy) to 3 (hard): tools/problem-gen/difficulty.ts" },
               "generatorParams": { "type": "object" }
             }
           },
@@ -270,6 +288,9 @@
               "story": { "type": "string", "minLength": 1, "description": "The problem text. Phrases the tag step asks about are marked [phrase|known], [phrase|sought] or [phrase|extra]" },
               "steps": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/problemStep" } },
               "source": { "type": "string", "description": "Where in the textbooks it comes from" },
+              "chapter": { "type": "string", "description": "The chapter (maths, problems) or lesson (language) of shared/curriculum.ts it needs: «12», «2.3»" },
+              "topic": { "type": "string", "description": "What it is about: one of shared/curriculum.ts TOPICS" },
+              "difficulty": { "enum": [1, 2, 3], "description": "How hard, 1 (easy) to 3 (hard): tools/problem-gen/difficulty.ts" },
               "stars": { "type": "integer", "minimum": 1 },
               "userIds": { "type": "array", "items": { "type": "string" }, "description": "If set, only these user IDs can play this exercise. If omitted, all users can play." },
               "template": { "type": "boolean" },

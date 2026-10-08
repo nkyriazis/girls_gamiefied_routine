@@ -160,7 +160,8 @@ function compare(r: Rng): Parts {
 export const missingInfo: Family = {
   id: 'missing-info',
   grade: 3,
-  unit: 3,
+  chapter: '19',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Γ΄, κεφ. 19 «Προβλήματα» 4 (Διατύπωσε μια ερώτηση για αυτό το πρόβλημα)',
   make(r, b): Draft | null {
     const p = r.pick(PEOPLE);

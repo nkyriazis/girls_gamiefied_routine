@@ -27,6 +27,8 @@ import path from 'node:path';
 import type { ProblemExercise } from '../../shared/types.ts';
 import { builder, hash, hintShows, READ_PROMPT_E5, READ_PROMPT_G3, placeSeed, rng, shownText, type Family } from './lib.ts';
 import { G3_FAMILIES } from './families/g3/index.ts';
+import { CURRICULUM, TOPICS } from '../../shared/curriculum.ts';
+import { problemLevel } from './difficulty.ts';
 import { E5_FAMILIES } from './families/e5/index.ts';
 
 const arg = (name: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
@@ -53,7 +55,14 @@ const knownNumbers = (story: string) => [...story.matchAll(/\[([^\]|]+)\|known\]
 
 type Drops = { repeated: number; sameNumbers: number; tells: number; hints: number };
 
-function generate(families: Family[], prefix: string, stars: number, readPrompt: string, target: number) {
+/** A chapter of the grade's maths book (shared/curriculum.ts): the unit it is in. */
+function unitOf(grade: 3 | 5, chapter: string, who: string): number {
+  const c = CURRICULUM[grade].maths.chapters.find(x => x.id === chapter);
+  if (!c) throw new Error(`${who}: no chapter ${chapter} in ${CURRICULUM[grade].maths.label}`);
+  return c.unit;
+}
+
+function generate(grade: 3 | 5, families: Family[], prefix: string, stars: number, readPrompt: string, target: number) {
   const out: ProblemExercise[] = [];
   const stories = new Set<string>();
   const report: { id: string; made: number; wanted: number; drops: Drops; tells: string[]; uneven: Map<string, number[]> }[] = [];
@@ -78,6 +87,7 @@ function generate(families: Family[], prefix: string, stars: number, readPrompt:
       stories.add(draft.story);
       for (const u of b.uneven) m.uneven.set(u.key, [...(m.uneven.get(u.key) ?? []), u.busiest]);
       if (numbers) m.numbers.add(numbers);
+      const chapter = draft.chapter ?? m.f.chapter;
       m.n++;
       m.retry = 0;
       made++;
@@ -87,10 +97,13 @@ function generate(families: Family[], prefix: string, stars: number, readPrompt:
         category: 'Προβλήματα',
         title: draft.title,
         source: m.f.source,
+        chapter,
+        topic: m.f.topic,
+        difficulty: problemLevel(grade, draft),
         story: draft.story,
         steps: draft.steps,
         stars,
-        generatorParams: { family: m.f.id, unit: m.f.unit },
+        generatorParams: { family: m.f.id, unit: unitOf(grade, chapter, id) },
       });
     }
     return made;
@@ -124,8 +137,10 @@ for (const g of GRADES) {
     if (f.grade !== g.grade) throw new Error(`${f.id}: grade ${f.grade} in the ${g.prefix} list`);
     if (ids.has(f.id)) throw new Error(`duplicate family id ${f.id}`);
     ids.add(f.id);
+    unitOf(g.grade, f.chapter, f.id);
+    if (!TOPICS.maths.includes(f.topic)) throw new Error(`${f.id}: topic «${f.topic}» is not one of shared/curriculum.ts TOPICS.maths`);
   }
-  const { problems, report } = generate(g.families, g.prefix, g.stars, g.readPrompt, TARGET);
+  const { problems, report } = generate(g.grade, g.families, g.prefix, g.stars, g.readPrompt, TARGET);
   console.log(`\n${g.prefix}: ${problems.length}/${TARGET} problems from ${g.families.length} families`);
   for (const x of report) {
     const d = x.drops;

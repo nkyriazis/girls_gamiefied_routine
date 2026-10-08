@@ -98,7 +98,8 @@ const CHAINS: Kind[][] = [['minus', 'half'], ['half', 'minus'], ['minus', 'half'
 export const backwardsMoney: Family = {
   id: 'backwards-money',
   grade: 5,
-  unit: 1,
+  chapter: '1.3',
+  topic: 'Αφαίρεση',
   source: 'Μαθηματικά Ε΄, κεφ. 1.3 «Πώς λύνουμε ένα πρόβλημα» (στρατηγική «Εργάζομαι αντίστροφα»)',
   make(r, b) {
     const s = r.pick(SETTINGS);
