@@ -64,6 +64,7 @@ at a USB disk or a NAS they stay on the SD card. [BACKUP.md](BACKUP.md) says how
 | --- | --- |
 | [CLAUDE.md](CLAUDE.md) | Architecture, commands, decisions, the Pi; the guide for coding agents too |
 | [BACKUP.md](BACKUP.md) | Daily backups, where they go, restoring one |
+| [HTTPS.md](HTTPS.md) | Optional https on the home network (DuckDNS name, real certificate, no device setup) |
 | [VALIDATION.md](VALIDATION.md) | How the config and state are checked against their schemas, with examples |
 | [CUSTOM_SOUNDS.md](CUSTOM_SOUNDS.md) | An uploaded sound for a morning alarm |
 | [GITHUB_TOKEN.md](GITHUB_TOKEN.md) | The token `build.sh` needs |
