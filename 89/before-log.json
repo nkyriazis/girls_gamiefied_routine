@@ -1,0 +1,115 @@
+{
+ "startedAt": "2026-10-08T01:17:38.783Z",
+ "diskEdit": {
+  "validation-status": {
+   "config": null,
+   "state": null
+  }
+ },
+ "form": {
+  "saveDisabled": false,
+  "liveCronAfter": "5-1 * * * *"
+ },
+ "api": {
+  "validate": {
+   "status": 200,
+   "body": {
+    "valid": true
+   }
+  },
+  "save": {
+   "status": 200,
+   "body": {
+    "success": true,
+    "version": "9d1b17c07be3"
+   }
+  }
+ },
+ "afterApi": {
+  "validation-status": {
+   "config": null,
+   "state": null
+  }
+ },
+ "log": {
+  "SCHEDULE_ERROR": [
+   {
+    "id": "49021662-c346-41a5-9148-cd5a5e58f9a1",
+    "timestamp": "2026-10-08T01:20:00.012Z",
+    "type": "SCHEDULE_ERROR",
+    "details": {
+     "scheduleId": "sch-evening",
+     "error": "Invalid range: 5-1, min(5) > max(1)"
+    }
+   },
+   {
+    "id": "29f6d08b-bdf2-42e4-b841-ed91c653e07f",
+    "timestamp": "2026-10-08T01:19:00.011Z",
+    "type": "SCHEDULE_ERROR",
+    "details": {
+     "scheduleId": "sch-evening",
+     "error": "Invalid range: 5-1, min(5) > max(1)"
+    }
+   },
+   {
+    "id": "4ea53c36-fdab-46eb-a897-f558567188a4",
+    "timestamp": "2026-10-08T01:18:00.025Z",
+    "type": "SCHEDULE_ERROR",
+    "details": {
+     "scheduleId": "sch-evening",
+     "error": "Constraint error, got value 99 expected range 0-59"
+    }
+   }
+  ],
+  "CHORE_CRON_ERROR": [
+   {
+    "id": "ed2f56f2-09bc-49a9-8665-df9dbfe99db8",
+    "timestamp": "2026-10-08T01:19:00.019Z",
+    "type": "CHORE_CRON_ERROR",
+    "details": {
+     "choreId": "chore-water-plants",
+     "cron": "61 18 * * *",
+     "error": "Constraint error, got value 61 expected range 0-59"
+    }
+   },
+   {
+    "id": "7c7a4e2a-528e-47f0-b45a-eeba38b27a05",
+    "timestamp": "2026-10-08T01:18:00.029Z",
+    "type": "CHORE_CRON_ERROR",
+    "details": {
+     "choreId": "chore-dishes",
+     "cron": "0 25 * * *",
+     "error": "Constraint error, got value 25 expected range 0-23"
+    }
+   }
+  ],
+  "CONFIG": [
+   {
+    "id": "31891b5a-f2fc-4a8a-98cb-0b51c051567a",
+    "timestamp": "2026-10-08T01:18:05.719Z",
+    "type": "CONFIG_SAVED",
+    "details": {
+     "file": "data.json",
+     "source": "api",
+     "route": "POST /api/admin/data",
+     "changed": [
+      "chores"
+     ]
+    }
+   },
+   {
+    "id": "181fdf2d-4a98-4da2-b5a1-de5df72ca90b",
+    "timestamp": "2026-10-08T01:18:01.043Z",
+    "type": "CONFIG_SAVED",
+    "details": {
+     "file": "data.json",
+     "source": "form",
+     "route": "POST /api/admin/data",
+     "changed": [
+      "schedules"
+     ]
+    }
+   }
+  ]
+ }
+}

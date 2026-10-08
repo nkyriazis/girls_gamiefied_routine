@@ -1,0 +1,123 @@
+{
+ "startedAt": "2026-10-08T01:36:53.827Z",
+ "diskEdit": {
+  "validation-status": {
+   "config": null,
+   "warnings": [
+    {
+     "path": "/schedules/1/cron",
+     "kind": "schedule",
+     "id": "sch-evening",
+     "cron": "99 20 * * *",
+     "error": "Constraint error, got value 99 expected range 0-59"
+    },
+    {
+     "path": "/chores/0/availabilityCron",
+     "kind": "chore",
+     "id": "chore-dishes",
+     "cron": "0 25 * * *",
+     "error": "Constraint error, got value 25 expected range 0-23"
+    }
+   ],
+   "state": null
+  }
+ },
+ "phoneForm": {
+  "saveDisabled": true
+ },
+ "form": {
+  "saveDisabled": true,
+  "liveCronAfter": "99 20 * * *"
+ },
+ "api": {
+  "validate": {
+   "status": 200,
+   "body": {
+    "valid": false,
+    "errors": [
+     {
+      "instancePath": "/chores/4/availabilityCron",
+      "schemaPath": "#/cron",
+      "keyword": "cron",
+      "params": {
+       "cron": "61 18 * * *"
+      },
+      "message": "η ώρα (cron) «61 18 * * *» δεν διαβάζεται: Constraint error, got value 61 expected range 0-59"
+     }
+    ]
+   }
+  },
+  "save": {
+   "status": 400,
+   "body": {
+    "error": "Validation failed: /chores/4/availabilityCron η ώρα (cron) «61 18 * * *» δεν διαβάζεται: Constraint error, got value 61 expected range 0-59"
+   }
+  }
+ },
+ "unrelated": {
+  "formSaveDisabled": false,
+  "starsAfter": 25,
+  "cronAfter": "0 25 * * *",
+  "apiSave": 200
+ },
+ "log": {
+  "SCHEDULE_ERROR": [],
+  "SCHEDULE_CRON_ERROR": [
+   {
+    "id": "57a3869c-9f3c-46cb-8164-37ef139c7a4b",
+    "timestamp": "2026-10-08T01:37:00.011Z",
+    "type": "SCHEDULE_CRON_ERROR",
+    "details": {
+     "scheduleId": "sch-evening",
+     "cron": "99 20 * * *",
+     "error": "Constraint error, got value 99 expected range 0-59"
+    }
+   }
+  ],
+  "CHORE_CRON_ERROR": [
+   {
+    "id": "d6fc65f2-c775-4b7f-a8b0-26094dc055d7",
+    "timestamp": "2026-10-08T01:37:00.018Z",
+    "type": "CHORE_CRON_ERROR",
+    "details": {
+     "choreId": "chore-dishes",
+     "cron": "0 25 * * *",
+     "error": "Constraint error, got value 25 expected range 0-23"
+    }
+   }
+  ],
+  "CONFIG": [
+   {
+    "id": "d6d10812-2945-469e-b912-af154124aa2c",
+    "timestamp": "2026-10-08T01:37:42.730Z",
+    "type": "CONFIG_SAVED",
+    "details": {
+     "file": "data.json",
+     "source": "api",
+     "route": "POST /api/admin/data",
+     "changed": []
+    }
+   },
+   {
+    "id": "bcd90295-b423-42cc-af5b-8a3b78b2f048",
+    "timestamp": "2026-10-08T01:37:41.202Z",
+    "type": "CONFIG_SAVED",
+    "details": {
+     "file": "data.json",
+     "source": "form",
+     "route": "POST /api/admin/data",
+     "changed": [
+      "chores"
+     ]
+    }
+   }
+  ]
+ },
+ "fixed": {
+  "validation-status": {
+   "config": null,
+   "warnings": [],
+   "state": null
+  }
+ }
+}
