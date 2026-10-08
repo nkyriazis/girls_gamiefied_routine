@@ -20,10 +20,19 @@ interface Row {
 
 const TRANSFER_OUTCOME = { approved: 'Εγκρίθηκε', rejected: 'Απορρίφθηκε', cancelled: 'Ακυρώθηκε από το παιδί', pending: '' };
 
-const idOf = (e: HistoryEntry) => (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.instance).id;
+// An entry of a kind this page doesn't know (a newer server than the page) is skipped, never a crash
+const idOf = (e: HistoryEntry): string | undefined => {
+    switch (e.kind) {
+        case 'spending': return e.spending.id;
+        case 'transfer': return e.transfer.id;
+        case 'chore': return e.instance.id;
+        default: return undefined;
+    }
+};
+const known = (page: HistoryPage): HistoryPage => ({ ...page, entries: page.entries.filter(e => idOf(e) !== undefined) });
 const keyOf = (e: HistoryEntry) => `${e.kind}:${idOf(e)}`;
 // The server's order: newest first, ties by id
-const older = (a: HistoryEntry, b: HistoryEntry) => a.at < b.at || (a.at === b.at && idOf(a) < idOf(b));
+const older = (a: HistoryEntry, b: HistoryEntry) => a.at < b.at || (a.at === b.at && idOf(a)! < idOf(b)!);
 
 interface Loaded {
     kid: string | null;
@@ -64,7 +73,7 @@ export function HistoryView() {
         let current = true;
         api.history(null, kid).then(first => {
             if (!current) return;
-            setLoaded(l => withFirst(l?.kid === kid ? l : { kid, entries: [], next: null, olderPages: false }, first));
+            setLoaded(l => withFirst(l?.kid === kid ? l : { kid, entries: [], next: null, olderPages: false }, known(first)));
         }).catch(() => current && notify('Το ιστορικό δεν διαβάστηκε', 'error'));
         return () => { current = false; };
     }, [kid, spendings, starTransfers, choreInstances, notify]);
@@ -77,7 +86,7 @@ export function HistoryView() {
         setBusy(true);
         try {
             const page = await api.history(next, kid);
-            setLoaded(l => (l && l.kid === kidNow.current && l.next === next ? withOlder(l, page) : l));
+            setLoaded(l => (l && l.kid === kidNow.current && l.next === next ? withOlder(l, known(page)) : l));
         } catch {
             notify('Το ιστορικό δεν διαβάστηκε', 'error');
         } finally {
@@ -87,29 +96,30 @@ export function HistoryView() {
 
     const name = (id?: string) => users.find(u => u.id === id)?.name ?? id ?? '';
     const reward = (id: string) => rewards.find(r => r.id === id);
-    const rows: Row[] = (shown?.entries ?? []).map(e => {
+    const rows: Row[] = (shown?.entries ?? []).flatMap((e): Row[] => {
         switch (e.kind) {
             case 'spending': {
                 const s = e.spending;
-                return {
+                return [{
                     key: keyOf(e), at: e.at, icon: reward(s.rewardId)?.icon ?? '🎀', title: `${name(s.userId)}: ${reward(s.rewardId)?.title ?? s.rewardId}`,
                     outcome: s.status === 'done' ? 'Δόθηκε' : 'Ακυρώθηκε', stars: -s.cost, undone: s.status === 'revoked',
-                };
+                }];
             }
             case 'transfer': {
                 const t = e.transfer;
-                return {
+                return [{
                     key: keyOf(e), at: e.at, icon: '🎁', title: `${name(t.fromUserId)} → ${name(t.toUserId)}`,
                     outcome: TRANSFER_OUTCOME[t.status], stars: t.amount, undone: t.status !== 'approved',
-                };
+                }];
             }
             case 'chore': {
                 const i = e.instance, chore = chores.find(c => c.id === i.choreId);
-                return {
+                return [{
                     key: keyOf(e), at: e.at, icon: chore?.icon ?? '🧹', title: `${name(i.claimedBy)}: ${chore?.title ?? i.choreId}`,
                     outcome: i.status === 'confirmed' ? 'Επιβεβαιώθηκε' : 'Απορρίφθηκε', stars: i.starsAwarded ?? 0, undone: i.status === 'rejected',
-                };
+                }];
             }
+            default: return [];
         }
     });
 
