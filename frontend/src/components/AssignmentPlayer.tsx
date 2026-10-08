@@ -450,7 +450,9 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         }
 
         /* The answer card fits the stage on a phone and a small kiosk too: it scales with the screen,
-           and a long answer scrolls inside it while «Εντάξει» stays in sight */
+           and a long answer scrolls inside it while «Εντάξει» stays in sight. tools/problem-gen's
+           REVEAL_* caps (maths/check.ts) are measured on this card: after a change to its font, padding
+           or width, rerun tools/evidence/scenarios/reveal-fit.mjs and move them (#72) */
         .feedback-overlay.answer {
           position: relative;
           inset: auto;
