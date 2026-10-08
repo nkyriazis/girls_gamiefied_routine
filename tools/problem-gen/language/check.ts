@@ -20,7 +20,8 @@
 //     ευ/εφ, a double letter, the capital) from the right one;
 //   - a fill-blank without exactly one gap, or a gap inside a word (a punctuation mark goes right after one),
 //     or a sentence over FILL_LINE_MAX besides its gap (it would break at the gap);
-//   - a «Δείξε μου» over 60 characters (a match over 40);
+//   - a «Δείξε μου» that doesn't fit the held card (maths/check.ts revealTooLong: over 120 characters, a match
+//     over 4 pairs or a pair line over 21);
 //   - check-gender's words anywhere the child reads (title, body, question, options, items), template
 //     leftovers, stray spaces, a space before punctuation, a Latin letter, a word of two or more
 //     syllables without its accent (μια, για, πιο, δυο… are one syllable);

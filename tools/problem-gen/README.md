@@ -288,7 +288,7 @@ big as the divisor. Ids are `g3-math-<family>-NNN` / `e5-math-<family>-NNN` (nev
 |---|---|
 | `calc` | «Πόσο κάνει 348 + 275;» (any of + − × : and parentheses); match pairs «7 × 5» – «35» |
 | `equation` | fill-blank «6 × {0} = 42», «2.279 = 25 × {0} + 4»; body «Συμπλήρωσε τον αριθμό που λείπει.» |
-| `words` | «Πώς γράφεται με ψηφία ο αριθμός «δύο χιλιάδες σαράντα»;» (multiple choice, not a match: see «Δείξε μου») |
+| `words` | «Πώς γράφεται με ψηφία ο αριθμός «δύο χιλιάδες σαράντα»;» (multiple choice: the books have her write it, see «Δείξε μου») |
 | `neighbour` | «Γράψε/Κύκλωσε τον αμέσως επόμενο/προηγούμενο αριθμό του 1.299.» |
 | `group-count` | «Πόσες δεκάδες/εκατοντάδες έχει συνολικά το 368;» |
 | `digit-value` | «Ποια είναι η αξία του ψηφίου 3 στον αριθμό 2.375;» (the digit once in the number) |
@@ -324,16 +324,22 @@ the generator drops such items). Numeric wrong options are whole and at most 100
 `answerText` (`revealed()` in maths/check.ts writes the same) at up to 2.5rem. Since #72 it has no
 reading timer: «Εντάξει» or ✕ closes it (a 120 s safety close is for a kiosk left alone, and it stops
 while a routine covers the screen). «a → b → …» in one run for an ordering, and a match one pair per line,
-«a → b», with a no-break space before every «→», so no line starts with one. A line holds about 40
-characters at 1280×800 (35 in words). Keep it at most 60 characters, two lines; an ordering's items
-have no spaces, so it breaks only between them. A match keeps to 40 characters, measured as the
-screen showed it before #72, in one run («a – b, c – d»), which broke at any space, inside a pair
-too: `match()` keeps 3 or 4 pairs, as many as fit, and the audit fails a longer one. A times table
-of four pairs (47) left «4 × 3 –» on one line and «12» on the next. Three pairs of numbers in words
-came to 75–99 characters, too much for a Γ΄ child in the 4.5 s the screen gave then; so the `words`
-families are multiple choice, the same digits in other places as the options. These caps stay until
-#72's follow-up relaxes them (one pair per line, no reading timer) and brings the number-words match back;
-that regenerates the pools, so it is its own PR.
+«a → b», with a no-break space before every «→», so no line starts with one. The caps are measured on
+that held card (`tools/evidence/scenarios/reveal-fit.mjs`, #72): at 1280×800 a line holds about 31
+characters of words and the card 6 lines before it scrolls, at 800×480 about 52 and 4 lines, at 390×844
+about 22 and 13. So a run (anything but a match) keeps to 120 characters (`REVEAL_MAX`: 5, 3 and 8 lines
+even in long words), and a match to 4 pairs (`REVEAL_PAIRS`, the card's 4 lines at 800×480) of at most
+21 characters a line (`REVEAL_PAIR_MAX`, one line at 390×844). `revealTooLong()` says why an answer
+doesn't fit, for both generators and both audits; `match()` refuses a longer line (the family draws
+again) and throws on more than 4 pairs. The match screen fits fewer rows than the card: at 800×480 three
+rows already put «Έλεγχος Ζευγαριών» half off the screen, so the times tables ask for 3 pairs. The caps
+depend on the card's CSS (`.feedback-overlay.answer` in AssignmentPlayer.tsx): after a change to its font,
+padding or width, rerun reveal-fit.mjs and move them.
+
+The `words` families stay multiple choice, the same digits in other places as the options. The books have
+her write the number, with no match (Γ΄ Τετράδιο Εργασιών Α΄ p. 10, «Γράφω τους παρακάτω αριθμούς με
+ψηφία»; Ε΄ Τετράδιο Εργασιών Α΄ p. 13, 3η Άσκηση, a table), and a pair in words would wrap on a phone:
+«εξακόσια σαράντα εννιά → 649» (28) takes two lines at 390×844.
 
 **Greek and realism.** Speak to the child in the imperative or second person («Υπολόγισε»,
 «Κύκλωσε», «Βάλε», «Έχεις»), the same to every child: the audit fails check-gender's words (the
@@ -436,7 +442,7 @@ by letter would find it, so the audit fails a right option that is the one close
 A fill-blank has one gap, a whole word (a punctuation mark right after one), never inside a word, so no
 last gap is left over by elimination; and its sentence fits one line with the gap (43 characters
 besides it at 1280×800: `FillBlankRenderer` lays the pieces between gaps out as blocks, so a long piece
-jumps whole to the next line). «Δείξε μου» at most 60 characters (a match 40), as for the maths.
+jumps whole to the next line). «Δείξε μου» at most 120 characters (a match 4 pairs of up to 21), as for the maths.
 
 **Types.** True-false at most 10 % and «Σωστό» 40–60 % of the pool's true-false items; fill-blank at
 most 40 % (a gap in a sentence is the book's own «Συμπλήρωσε»); no number-input.
