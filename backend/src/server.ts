@@ -31,7 +31,7 @@ import { check, dataSchema, exercisesSchema, stateSchema } from './schemas';
 import { cronError, nextCronRun } from './cron';
 import {
   answerBody, AnswerBody, claimBody, ClaimBody, closeBody, CloseBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
-  helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, spendingBody, SpendingBody, spendingStatusBody,
+  helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, revealBody, RevealBody, spendingBody, SpendingBody, spendingStatusBody,
   SpendingStatusBody, starsBody, StarsBody, timeBody, TimeBody, transferActionBody, TransferActionBody, transferBody, TransferBody,
   userBody, UserBody, validateCronBody, ValidateCronBody
 } from './bodies';
@@ -704,11 +704,12 @@ server.post<{ Params: Id; Body: AnswerBody }>('/api/exercise-assignments/:id/ans
   }
 });
 
-// «Δείξε μου» on a plain exercise after a wrong try: closes it, paying nothing (see revealExerciseAssignment)
-server.post('/api/exercise-assignments/:id/reveal', async (request, reply) => {
+// «Δείξε μου»: a plain exercise after a wrong try closes, paying nothing; a problem's step on screen
+// is recorded as shown (see revealExerciseAssignment)
+server.post<{ Params: Id; Body: RevealBody }>('/api/exercise-assignments/:id/reveal', { schema: { body: revealBody } }, async (request, reply) => {
   try {
-    const { id } = request.params as { id: string };
-    return await revealExerciseAssignment(id);
+    const { id } = request.params;
+    return await revealExerciseAssignment(id, request.body.step);
   } catch (error) {
     return reply.code(400).send({ error: (error as Error).message });
   }

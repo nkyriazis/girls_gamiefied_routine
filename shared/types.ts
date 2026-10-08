@@ -329,6 +329,11 @@ export interface ExerciseAssignment {
   stepIndex?: number; // problems: the step on screen (the ones before it are solved)
   mistakes?: number[]; // problems: wrong tries per step
   extra?: boolean; // a problem the kid asked for, on top of the daily set
+  // The steps shown worked, in the order shown (#68): a problem's «💡 Δείξε μου» (at the tap) and the
+  // step Αυστηρό shows worked after its tries; a plain exercise's answer is step 0 («Δείξε μου», or
+  // Αυστηρό closing it after its tries). Absent means none (rows from before #68 read so too).
+  // Ιστορικό shows it; paying never reads it.
+  shown?: number[];
 }
 
 // Enriched assignment with the exercise definition for frontend display

@@ -4,11 +4,11 @@ import { randomUUID } from 'crypto';
 import {
   AppState, Chore, ChoreInstance, ConfigSaveSource, ConfigTask, ConfigUser, DataConfig, FlowRun, FlowStep, RoutineExecution, RoutineRun, Exercise, ExerciseAnswer, ExerciseAssignment,
   ExerciseAssignmentWithExercise, ExerciseCategoryDef, ExerciseSession, HISTORY_DAYS, HistoryEntry, HistoryPage, LAST_REWARDS_GIVEN,
-  ProblemExercise, ProblemReading, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
+  Forgiveness, ProblemExercise, ProblemReading, ProblemStep, ProblemStepAnswer, Spending, StarTransfer, StateSnapshot, ActionLog, TriggerResult, User
 } from '../../shared/types';
 import { drawDailySet, exercisePoolProvider, exercisesPerDay, freshLast, storyMarks } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
-import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
+import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, stepHelp, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { MAX_SET_ASIDE, extraRefusals } from '../../shared/extraProblems';
 import { cronMatchesAt } from './cron';
@@ -1462,9 +1462,14 @@ export function fitProgress<A extends ExerciseAssignment>(a: A, exercise: Exerci
   if (exercise?.type !== 'problem' || a.status === 'completed') return a;
   const step = a.stepIndex ?? 0;
   if (step < exercise.steps.length && (!a.mistakes || a.mistakes.length === exercise.steps.length)) return a;
-  const { stepIndex: _step, mistakes: _mistakes, ...rest } = a;
+  const { stepIndex: _step, mistakes: _mistakes, shown: _shown, ...rest } = a;
   return { ...rest, stepIndex: 0 } as A;
 }
+
+// A step shown worked, added once (#68): «Δείξε μου», or Αυστηρό after its tries. Ιστορικό reads it;
+// paying never does.
+const withShown = (a: ExerciseAssignment, step: number): ExerciseAssignment =>
+  a.shown?.includes(step) ? a : { ...a, shown: [...(a.shown ?? []), step] };
 
 // The kid's rung on the forgiveness ladder (shared/forgiveness.ts)
 const forgivenessOf = (userId: string) => config().users.find(u => u.id === userId)?.forgiveness ?? DEFAULT_FORGIVENESS;
@@ -1493,13 +1498,15 @@ export async function answerExerciseAssignment(
   const { assignment, starsAwarded } = store.transaction(() => {
     const current = store.exerciseAssignments.get(assignmentId);
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
-    const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1 };
+    let updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1 };
     let stars = 0;
     if (isCorrect || updated.attempts >= plainTries(forgivenessOf(current.userId), exercise.type)) {
       stars = isCorrect ? plainStars(exercise.stars, current.attempts) : 0;
       updated.status = 'completed';
       updated.completedAt = new Date().toISOString();
       updated.starsAwarded = stars;
+      // Closed after its tries (Αυστηρό): the screen shows «Η σωστή απάντηση»
+      if (!isCorrect) updated = withShown(updated, 0);
     }
     store.exerciseAssignments.put(updated);
     if (stars > 0) awardStars(updated.userId, stars);
@@ -1514,24 +1521,55 @@ export async function answerExerciseAssignment(
   return { correct: isCorrect, starsAwarded, assignment };
 }
 
-// «Δείξε μου» on a plain exercise, on the forgiving rung: after a wrong try (so it pays
-// nothing already), she may see the right answer. That closes it, paying nothing.
-export async function revealExerciseAssignment(assignmentId: string): Promise<ExerciseAssignment> {
+// «Δείξε μου» on the forgiving rung. A plain exercise: after a wrong try (so it pays nothing
+// already), she may see the right answer; that closes it, paying nothing, with its answer shown
+// (step 0). A problem's step (`step`, the one on screen): recorded as shown at the tap (#68), and
+// nothing else changes; she still sends the worked answer with «Συνέχεια →», and it pays what its
+// mistakes pay. A tap for another step (solved, a second device) or again changes nothing.
+export async function revealExerciseAssignment(assignmentId: string, step?: number): Promise<ExerciseAssignment> {
   const found = store.exerciseAssignments.get(assignmentId);
   if (!found) throw new Error('Assignment not found');
   const exercise = await exercisePoolProvider.getExerciseById(found.exerciseId);
   if (!exercise) throw new Error('Exercise not found in pool');
-  if (exercise.type === 'problem') throw new Error('A problem is shown step by step');
+  if (exercise.type === 'problem') {
+    if (step === undefined) throw new Error('A problem is shown step by step: name the step');
+    return showProblemStep(assignmentId, exercise, step);
+  }
   const assignment = store.transaction(() => {
     const current = store.exerciseAssignments.get(assignmentId);
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
     if (current.attempts < 1) throw new Error('The answer is shown after a wrong try first');
-    const updated: ExerciseAssignment = { ...current, status: 'completed', completedAt: new Date().toISOString(), starsAwarded: 0 };
+    const updated = withShown({ ...current, status: 'completed', completedAt: new Date().toISOString(), starsAwarded: 0 }, 0);
     store.exerciseAssignments.put(updated);
     return updated;
   });
   logAction('EXERCISE_ASSIGNMENT_REVEAL', { assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId, attempts: assignment.attempts });
   return assignment;
+}
+
+function showProblemStep(assignmentId: string, exercise: ProblemExercise, step: number): ExerciseAssignment {
+  const { assignment, recorded } = store.transaction(() => {
+    const stored = store.exerciseAssignments.get(assignmentId);
+    if (!stored || stored.status === 'completed') throw new Error('Assignment already completed');
+    const current = fitProgress(stored, exercise);
+    if (step !== (current.stepIndex ?? 0) || current.shown?.includes(step)) return { assignment: current, recorded: false };
+    const updated = withShown(current, step);
+    store.exerciseAssignments.put(updated);
+    return { assignment: updated, recorded: true };
+  });
+  if (recorded) {
+    logAction('EXERCISE_PROBLEM_SHOWN', {
+      assignmentId, userId: assignment.userId, exerciseId: exercise.id, step, by: 'tap', mistakes: assignment.mistakes?.[step] ?? 0
+    });
+  }
+  return assignment;
+}
+
+// Αυστηρό shows a step worked once its tries are used (stepHelp, the screen's rule too): from that
+// wrong try on, the step counts as shown (#68)
+function shownAfterTries(a: ExerciseAssignment, step: ProblemStep, stepIndex: number, rung: Forgiveness): ExerciseAssignment {
+  const counted = a.mistakes?.[stepIndex] ?? 0;
+  return stepHelp(rung, step.kind, counted, counted).worked ? withShown(a, stepIndex) : a;
 }
 
 function answerProblemStep(
@@ -1550,7 +1588,7 @@ function answerProblemStep(
     if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true, rung };
 
     const mistakes = exercise.steps.map((_, i) => current.mistakes?.[i] ?? 0);
-    const updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
+    let updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1, mistakes };
     // Working it out, the screen reads each calculation back as she goes and sends the one she
     // got wrong as it happens: a mistake of the step if it is one that counts (a wrong result,
     // the smaller number first), read back here. It is not an answer: the step stays hers.
@@ -1561,8 +1599,9 @@ function answerProblemStep(
       const slip = line && ['+', '−', '×', ':'].includes(line.op) && [line.x, line.y, line.result].every(Number.isFinite)
         ? calcSlip(step, value.lines, line) : null;
       if (slip && wrongTryCounts(step, slip)) mistakes[stepIndex]++;
-      store.exerciseAssignments.put(updated);
-      return { correct: false, starsAwarded: 0, assignment: updated, stale: false, rung, slip: slip ?? 'none' };
+      const done = shownAfterTries(updated, step, stepIndex, rung);
+      store.exerciseAssignments.put(done);
+      return { correct: false, starsAwarded: 0, assignment: done, stale: false, rung, slip: slip ?? 'none' };
     }
     const reading = config().users.find(u => u.id === current.userId)?.problemReading;
     const { correct, wrong } = checkProblemStep(exercise, stepIndex, answer.value, reading);
@@ -1570,6 +1609,7 @@ function answerProblemStep(
     if (!correct) {
       // The same rule as the slips above decides whether this wrong try costs (shared/forgiveness.ts)
       if (wrongTryCounts(step)) mistakes[stepIndex]++;
+      updated = shownAfterTries(updated, step, stepIndex, rung);
     } else if (stepIndex + 1 < exercise.steps.length) {
       updated.stepIndex = stepIndex + 1;
     } else {
@@ -1590,6 +1630,8 @@ function answerProblemStep(
     logAction('EXERCISE_PROBLEM_STEP', {
       assignmentId, userId: reply.assignment.userId, exerciseId: exercise.id, step: answer.step, forgiveness: rung,
       kind: exercise.steps[answer.step]?.kind, correct: reply.correct, wrong: reply.wrong, ...(slip ? { slip, mistakes: reply.assignment.mistakes } : {}),
+      // A step shown worked (#68): its answer is the screen's, not hers
+      ...(reply.assignment.shown?.includes(answer.step) ? { shown: true } : {}),
       completed: reply.assignment.status === 'completed', starsAwarded: reply.starsAwarded
     });
   }
