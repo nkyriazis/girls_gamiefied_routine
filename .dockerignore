@@ -13,6 +13,7 @@ backend/routine.db*
 backend/state.json
 backend/logs.jsonl
 backups
+https-data
 materials
 
 # The build context is the repo root (compose and CI build with `context: .`), so this is the only

@@ -108,7 +108,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [backend, frontend]
+        service: [backend, frontend, https]
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4

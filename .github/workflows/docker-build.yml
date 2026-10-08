@@ -27,7 +27,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        service: [backend, frontend]
+        service: [backend, frontend, https]
         platform: [linux/amd64, linux/arm64]
     
     steps:
@@ -68,7 +68,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        service: [backend, frontend]
+        service: [backend, frontend, https]
     
     steps:
       - name: Log in to GitHub Container Registry
