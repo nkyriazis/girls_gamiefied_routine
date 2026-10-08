@@ -367,27 +367,26 @@ test('a problem is answered step by step: wrong tries count, the last step pays 
   await assert.rejects(answer(3, ['πρώτο', 'δεύτερο', 'τρίτο']), /already completed/);
 });
 
-test('extra problems: fresh ones first, one open at a time, up to the day\'s limit', async () => {
-  const daily = store.exerciseAssignments.all('userId = ?', 'u2').map(a => a.exerciseId);
+test('extra problems: fresh ones first, a new one over one left pending, up to the day\'s limit', async () => {
+  const daily = store.exerciseAssignments.all('userId = ?', 'u2');
   const first = await db.startExtraProblem('u2');
   assert.equal(first.extra, true);
   assert.equal(first.exercise?.type, 'problem');
-  assert.ok(!daily.includes(first.exerciseId), 'the one problem not drawn today');
+  assert.ok(!daily.some(a => a.exerciseId === first.exerciseId), 'the one problem not drawn today');
 
-  // Asking again while it is open returns the same one
-  assert.equal((await db.startExtraProblem('u2')).id, first.id);
+  // Asking again while it is pending (left with ✕, #67) draws another. All three were had today,
+  // so it is the daily one she finished, never one still pending
+  const second = await db.startExtraProblem('u2');
+  assert.notEqual(second.exerciseId, first.exerciseId);
+  assert.deepEqual(daily.filter(a => a.exerciseId === second.exerciseId).map(a => store.exerciseAssignments.get(a.id)!.status), ['completed']);
+  assert.deepEqual(db.extraProblemsToday('u2'), { used: 2, limit: 2 });
+  // Both count toward the limit, finished or not
+  await assert.rejects(db.startExtraProblem('u2'), /No more extra problems today/);
 
+  // The first, finished later, pays as usual
   const starsBefore = db.usersWithStars().find(u => u.id === 'u2')!.stars;
   for (const [i, step] of balloons.steps.entries()) await db.answerExerciseAssignment(first.id, { step: i, value: solution(balloons, step) });
   assert.equal(db.usersWithStars().find(u => u.id === 'u2')!.stars, starsBefore + 3);
-
-  // All three were had today: the next is one of the daily ones, seen before the extra
-  // (both were drawn at the same moment, so either)
-  const second = await db.startExtraProblem('u2');
-  assert.notEqual(second.id, first.id);
-  assert.ok(daily.includes(second.exerciseId));
-  assert.deepEqual(db.extraProblemsToday('u2'), { used: 2, limit: 2, open: store.exerciseAssignments.get(second.id) });
-  for (const [i, step] of balloons.steps.entries()) await db.answerExerciseAssignment(second.id, { step: i, value: solution(balloons, step) });
   await assert.rejects(db.startExtraProblem('u2'), /No more extra problems today/);
 
   // Extras don't count as the daily set: nothing is drawn again
