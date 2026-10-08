@@ -70,6 +70,9 @@ const edit = (change: (d: DataConfig) => void): DataConfig => {
   change(d);
   return d;
 };
+// A flow of one parallel step that starts these flows
+const flowOf = (id: string, starts: string[], before: DataConfig['flows'][number]['steps'] = []): DataConfig['flows'][number] =>
+  ({ id, steps: [...before, { type: 'parallel', actions: starts.map(flowId => ({ type: 'flow' as const, flowId })) }] });
 const actions = (d: DataConfig) => (d.flows[0].steps[1] as { actions: { routineId?: string; flowId?: string }[] }).actions;
 const brief = (w: ConfigWarning) => `${w.kind} ${w.path} ${'value' in w ? w.value : w.cron}`;
 
@@ -108,6 +111,14 @@ const cases: [string, (d: DataConfig) => void, string][] = [
   // colours
   ['a kid\'s colour typo', d => { d.users[1].color = 'var(--color-secondry)'; }, 'colour /users/1/color var(--color-secondry)'],
   ['a routine\'s colour typo', d => { d.routines[0].themeColor = 'bleu'; }, 'colour /routines/0/themeColor bleu'],
+  // flow cycles (#121): one warning per cycle, at the action that closes it
+  ['a flow that starts itself (loop → loop)', d => { d.flows.push(flowOf('loop', ['loop'])); }, 'flow-cycle /flows/2/steps/0/actions/0/flowId loop'],
+  ['two flows that start each other (ping → pong → ping)', d => { d.flows.push(flowOf('ping', ['pong']), flowOf('pong', ['ping'])); },
+    'flow-cycle /flows/3/steps/0/actions/0/flowId ping'],
+  // the reserved id «alarm» (#121): a schedule or push with it always rings the plain alarm
+  ['an assignment with the id «alarm»', d => { d.routineAssignments.push({ id: 'alarm', userId: 'u1', routineId: 'r1' }); },
+    'reserved-id /routineAssignments/2/id alarm'],
+  ['a flow with the id «alarm»', d => { d.flows.push({ id: 'alarm', steps: [{ type: 'alarm', props: {} }] }); }, 'reserved-id /flows/2/id alarm'],
 ];
 
 for (const [name, change, expected] of cases) {
@@ -128,6 +139,44 @@ test('a duplicate kid names both kids and what they share', () => {
 test('a chore whose every kid is missing can be done by nobody, and says so', () => {
   const [w] = configProblems(edit(d => { d.chores![0].eligibleUsers = ['u3']; }));
   assert.match(w.message, /κανένα παιδί/);
+});
+
+test('a flow cycle names its path and says only that the action closing it starts nothing', () => {
+  const [self] = configProblems(edit(d => { d.flows.push(flowOf('loop', ['loop'])); }));
+  assert.match(self.message, /«loop», βήμα 1, ξεκινά τον εαυτό της \(loop → loop\)/);
+  assert.match(self.message, /αυτή η ενέργεια δεν ξεκινά τίποτα/);
+  const [pair] = configProblems(edit(d => { d.flows.push(flowOf('ping', ['pong']), flowOf('pong', ['ping'])); }));
+  assert.match(pair.message, /\(ping → pong → ping\)/);
+  assert.match(pair.message, /η ενέργεια που κλείνει τον κύκλο δεν ξεκινά τίποτα/);
+  assert.doesNotMatch(pair.message, /βήμα δεν ξεκινά/); // the step's other actions run
+});
+
+test('three flows in a ring are one warning; a second back edge is a second', () => {
+  const ring = configProblems(edit(d => { d.flows.push(flowOf('a', ['b']), flowOf('b', ['c']), flowOf('c', ['a'])); }));
+  assert.deepEqual(ring.map(brief), ['flow-cycle /flows/4/steps/0/actions/0/flowId a']);
+  assert.match(ring[0].message, /\(a → b → c → a\)/);
+  const two = configProblems(edit(d => { d.flows.push(flowOf('a', ['b']), flowOf('b', ['a', 'b'])); }));
+  assert.deepEqual(two.map(brief), ['flow-cycle /flows/3/steps/0/actions/0/flowId a', 'flow-cycle /flows/3/steps/0/actions/1/flowId b']);
+});
+
+test('no flow cycle: a diamond, or a flow that starts itself again after an alarm', () => {
+  // two paths to one flow
+  assert.deepEqual(configProblems(edit(d => { d.flows.push(flowOf('top', ['l', 'r']), flowOf('l', ['end']), flowOf('r', ['end']), flowOf('end', [])); })), []);
+  // A: alarm, then A rings again after each dismissal (the runtime restarts it, #121)
+  assert.deepEqual(configProblems(edit(d => { d.flows.push(flowOf('again', ['again'], [{ type: 'alarm', props: {} }])); })), []);
+  // A starts B, which waits at an alarm, and only then starts A: a restart, not a cycle
+  assert.deepEqual(configProblems(edit(d => {
+    d.flows.push(flowOf('a', ['b']), flowOf('b', ['a'], [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'f2' }] }]));
+  })), []);
+});
+
+test('an assignment and a flow both «alarm»: two reserved ids, no duplicate', () => {
+  const found = configProblems(edit(d => {
+    d.routineAssignments.push({ id: 'alarm', userId: 'u1', routineId: 'r1' });
+    d.flows.push({ id: 'alarm', steps: [{ type: 'alarm', props: {} }] });
+  }));
+  assert.deepEqual(found.map(brief), ['reserved-id /routineAssignments/2/id alarm', 'reserved-id /flows/2/id alarm']);
+  assert.match(found[0].message, /απλή ειδοποίηση/);
 });
 
 test('colours: theme tokens, hex, CSS functions and named colours pass; typos do not', () => {
