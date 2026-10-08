@@ -1414,7 +1414,7 @@ function owedRetries(userId: string, today: string, now = new Date()): ExerciseA
 // no slot of its category (1 or 2 a day) it waits, still owed; with nothing of its kind (retryFor) a
 // problem is passed over. Says where it went, for the stored row and the log.
 async function placeRetry(userId: string, today: string, drawn: Exercise[], pools: UserPools, gate: DrawGate, seen: Map<string, string>):
-  Promise<{ slot: number; of: string; ofExercise: string; match: RetryMatch } | undefined> {
+  Promise<{ slot: number; of: string; ofExercise: string; match: RetryMatch; revision: boolean } | undefined> {
   for (const owed of owedRetries(userId, today)) {
     const shown = await exercisePoolProvider.getExerciseById(owed.exerciseId);
     if (!shown) continue;
@@ -1424,7 +1424,9 @@ async function placeRetry(userId: string, today: string, drawn: Exercise[], pool
     const pick = retryFor(shown, pools, gate, seen, new Set(drawn.filter((_, i) => i !== slot).map(e => e.id)));
     if (!pick) continue;
     drawn[slot] = pick.ex;
-    return { slot, of: owed.id, ofExercise: owed.exerciseId, match: pick.match };
+    // From revision when her grade has nothing in the category, as the draw's own items
+    const revision = !pools.own.some(e => e.category === shown.category);
+    return { slot, of: owed.id, ofExercise: owed.exerciseId, match: pick.match, revision };
   }
   return undefined;
 }
@@ -1468,7 +1470,7 @@ export async function ensureDailyAssignments(): Promise<boolean> {
       created = true;
       // What the draw said of the item the retry replaced goes with it
       const ids = new Set(drawn.map(e => e.id));
-      const drawnRevision = revision.filter(id => ids.has(id));
+      const drawnRevision = [...new Set([...revision.filter(id => ids.has(id)), ...(retry?.revision ? [drawn[retry.slot].id] : [])])];
       const drawnFallback = Object.fromEntries(Object.entries(fallback).filter(([id]) => ids.has(id)));
       logAction('EXERCISE_ASSIGNMENTS_CREATED', {
         userId: user.id, date: today, exerciseIds: drawn.map(e => e.id), ...(drawnRevision.length ? { revision: drawnRevision } : {}),
