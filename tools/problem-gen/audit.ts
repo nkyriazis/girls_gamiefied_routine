@@ -39,6 +39,11 @@
 //     curated pools keep the rules per choice and per prompt they had before it: the right one is
 //     never the only longest, nor the only shortest in more than half a prompt's choices from 3 on
 //     (onlyShortest);
+//   - the lead rule (#83): in a choice where an option leads with a verdict word («Ναι», «Σωστό», «Όχι»,
+//     «Λάθος», also «Ναι,» and «Όχι:»; lib.ts, leadWays), tapping by that word alone (the lone one, a yes,
+//     a no) wins no more of a prompt's choices than a fair die would (placeLimit, per family, prompt and
+//     number of options, as the place rule): an error from 6 choices, a warning from 3. In the curated
+//     pools, per choice, the right option is never the only one with its lead;
 //   - no wrong option shows an answer still to come: a number from 10 up that a later numbers row
 //     asks for, that the story doesn't give and the right option doesn't show («30 − 21» above
 //     «9 + 3 + 9 = 21»; smaller numbers meet by chance, «4 παιδικά» beside a price of 4 €);
@@ -58,7 +63,7 @@
 //   - check-gender's words in a hint or an option where the pools had none (gender-baseline.json:
 //     family, place and word as they were before #50 part 5a; the ones already there are listed as
 //     a warning).
-// Warnings: the place rule's prompts with 3–5 choices and those its wordings can't spread evenly, a family with little variety (few distinct story skeletons), a story without
+// Warnings: the place rule's and the lead rule's prompts with 3–5 choices and those its wordings can't spread evenly, a family with little variety (few distinct story skeletons), a story without
 // a question, very long stories, check-gender's words already in the pools (one line per
 // family and place).
 //
@@ -74,8 +79,8 @@ import path from 'node:path';
 import type { Exercise, ProblemExercise } from '../../shared/types.ts';
 import { genderedWords } from '../../frontend/scripts/gendered.mjs';
 import {
-  hintShows, lengthTell, NAMES, onlyShortest, PLACE_MIN_CHOICES, PLACE_WARN_CHOICES, placeLimit, places, promptKey, rng,
-  SHORTEST_MIN_CHOICES, SHORTEST_SHARE, shownText
+  hintShows, LEAD_NAMES, LEAD_WAYS, leadWays, type LeadWay, lengthTell, NAMES, onlyShortest, PLACE_MIN_CHOICES, PLACE_WARN_CHOICES,
+  placeLimit, places, promptKey, rng, SHORTEST_MIN_CHOICES, SHORTEST_SHARE, shownText
 } from './lib.ts';
 import { auditMaths, mathsSample } from './maths/check.ts';
 import { auditLanguage, languageSample } from './language/check.ts';
@@ -151,6 +156,12 @@ const shortest = new Map<string, { n: number; only: number; example: string }>()
 const placeTally = new Map<string, { N: number; P: number[]; example: string }>();
 // Per pool and number of options, the same
 const poolPlaces = new Map<string, { N: number; P: number[] }>();
+// The lead rule (#83): per family, prompt key and number of options, for each way of tapping by the verdict
+// word alone, the choices it applies to (N) and what it wins (W); per pool and number of options, the same
+type LeadTally = { N: Record<LeadWay, number>; W: Record<LeadWay, number>; example: string };
+const zero = () => ({ lone: 0, yes: 0, no: 0 });
+const leadTally = new Map<string, LeadTally>();
+const poolLeads = new Map<string, LeadTally>();
 const kinds = new Map<string, number>();
 
 // A story with numbers and names blanked out: how many really different stories a family has.
@@ -289,6 +300,17 @@ for (const pool of pools) {
             P.forEach((p, j) => (t.P[j] += p));
             (map as Map<string, { N: number; P: number[]; example?: string }>).set(k, t);
           }
+          // The lead rule: what tapping by the verdict word alone wins
+          const ways = leadWays(opts, step.correctIndex);
+          if (ways) {
+            if (curated && ways.lone === 1) err(ex, `${at}: gives its answer away by its first word: the right option «${opts[step.correctIndex]}» is the only one with its lead`);
+            const example = `${ex.id} step ${i}: ${opts.map((o, j) => (j === step.correctIndex ? `✔${o}` : o)).join(' | ')}`;
+            for (const [map, k] of [[leadTally, `${key} n=${opts.length}`], [poolLeads, `${pool.file.replace(/\.json$/, '')} n=${opts.length}`]] as const) {
+              const t = map.get(k) ?? { N: zero(), W: zero(), example };
+              for (const w of LEAD_WAYS) if (ways[w] !== undefined) { t.N[w]++; t.W[w] += ways[w]!; }
+              map.set(k, t);
+            }
+          }
         }
       }
       if (step.kind === 'numbers') {
@@ -371,6 +393,17 @@ for (const [key, t] of placeTally) {
   else if (t.N >= PLACE_MIN_CHOICES && top > even + 1e-9) warnings.push(`${msg}, over its share and one in 8 (${even}): gen.ts --places tells whether its wordings can spread it (e.g. ${t.example})`);
 }
 
+// The lead rule: a prompt where tapping the lone one, a «Ναι» or an «Όχι» without reading wins more than a
+// fair die would (the place rule's limit and thresholds)
+for (const [key, t] of leadTally) {
+  const n = Number(key.split(' n=').at(-1));
+  for (const w of LEAD_WAYS) {
+    const N = t.N[w], won = t.W[w], limit = placeLimit(N, n);
+    if (N < PLACE_WARN_CHOICES || won <= limit + 1e-9) continue;
+    (N >= PLACE_MIN_CHOICES ? errors : warnings).push(`family ${key.slice(2)}: tapping ${LEAD_NAMES[w]} by its first word wins ${+won.toFixed(1)} of ${N} choices (a fair die: at most ${limit}; e.g. ${t.example})`);
+  }
+}
+
 for (const [key, f] of families) {
   const id = key.slice(2);
   if (!id.startsWith('(') && f.skeletons.size < Math.min(Math.max(5, Math.ceil(f.n / 3)), f.n)) warnings.push(`family ${id}: only ${f.skeletons.size} different story shapes in ${f.n} problems`);
@@ -397,6 +430,12 @@ console.log(`\nSteps by kind: ${[...kinds].map(([k, n]) => `${k} ${n}`).join(', 
 console.log('\nThe right option by length (within 2 code points tied), per pool: shortest … longest, and at random');
 for (const [k, t] of [...poolPlaces].filter(([, t]) => t.N >= 10).sort(([a], [b]) => a.localeCompare(b))) {
   console.log(`  ${k.padEnd(28)} ${String(t.N).padStart(4)} choices  ${t.P.map(p => `${(100 * p / t.N).toFixed(1)}%`.padStart(6)).join(' ')}   (${(100 / t.P.length).toFixed(1)}% each)`);
+}
+// What tapping by the verdict word alone wins, per pool (#83): only choices where an option leads with one
+console.log('\nTapping by the first word («Ναι»/«Σωστό», «Όχι»/«Λάθος», or the lone one), per pool: right in, of the choices it applies to');
+for (const [k, t] of [...poolLeads].sort(([a], [b]) => a.localeCompare(b))) {
+  const n = Number(k.split(' n=').at(-1));
+  console.log(`  ${k.padEnd(28)} ${LEAD_WAYS.filter(w => t.N[w]).map(w => `${LEAD_NAMES[w]} ${+t.W[w].toFixed(1)} of ${t.N[w]}`).join(', ')}   (at random ${(100 / n).toFixed(1)}%)`);
 }
 
 // The plain maths items, re-solved from their text; the language items, keys derived again from the lexicon
