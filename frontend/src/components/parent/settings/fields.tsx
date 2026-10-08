@@ -1,9 +1,10 @@
-import { useId, useState, type ReactNode } from 'react';
+import { useContext, useEffect, useId, useState, type ReactNode } from 'react';
 import type { IconValue, User } from '@shared/types';
 import { api } from '../../../api';
 import { SmartIcon } from '../../SmartIcon';
 import { DAY_LABELS, formatWeekly, parseWeekly, WEEK_ORDER } from '../cron';
 import { useFeedback } from '../useFeedback';
+import { FieldProblems } from './fieldProblems';
 import { asFormIcon, THEME_COLORS, type FormIcon } from './model';
 
 // Form fields for the config editors. Each is a label plus one control.
@@ -85,10 +86,51 @@ export function ColorField({ label, value, onChange }: { label: string; value: s
     );
 }
 
-// A time and weekdays; a cron expression the form can't show that way is edited as text.
+// Why the scheduler can't read `cron`, asked of the server (cron.ts is the one reader, #89) a moment after
+// the typing stops; null when it can, while asking, or for no cron (null).
+function useCronError(cron: string | null): string | null {
+    const [answer, setAnswer] = useState<{ cron: string; error: string | null } | null>(null);
+    useEffect(() => {
+        if (cron === null) return;
+        let current = true;
+        const timer = setTimeout(() => {
+            api.validateCron(cron).then(({ error }) => { if (current) setAnswer({ cron, error }); }).catch(() => { /* the save checks it too */ });
+        }, 300);
+        return () => { current = false; clearTimeout(timer); };
+    }, [cron]);
+    return cron !== null && answer?.cron === cron ? answer.error : null;
+}
+
+// A time and weekdays; a cron expression the form can't show that way is edited as text. The weekly controls
+// only write crons the scheduler reads; the text is checked by the server, and one it can't read is said
+// under the field. Changed to one, it can't be saved (the server refuses it too); the cron the sheet opened
+// with, live already, may stay as it is while the rest of the item changes.
 export function WhenField({ label, cron, onChange }: { label: string; cron: string; onChange: (cron: string) => void }) {
+    const [first] = useState(cron);
     const weekly = parseWeekly(cron);
-    if (!weekly) return <TextField label={`${label} (cron)`} value={cron} onChange={onChange} />;
+    const error = useCronError(weekly ? null : cron);
+    const blocks = error !== null && cron !== first;
+    const key = useId();
+    const report = useContext(FieldProblems);
+    useEffect(() => {
+        report(key, blocks ? error : null);
+        return () => report(key, null);
+    }, [report, key, blocks, error]);
+    if (!weekly) {
+        return (
+            <Field label={`${label} (cron)`}>
+                {id => <>
+                    <input id={id} className="p-input" value={cron} aria-invalid={error !== null || undefined}
+                        aria-describedby={error !== null ? `${id}-error` : undefined} onChange={e => onChange(e.target.value)} />
+                    {error !== null && (
+                        <p id={`${id}-error`} className="p-hint p-warning" role="alert">
+                            ⚠ Δεν διαβάζεται: {error}. {blocks ? 'Διόρθωσέ το για να αποθηκευτεί.' : 'Όσο μένει έτσι, δεν ενεργοποιείται ποτέ.'}
+                        </p>
+                    )}
+                </>}
+            </Field>
+        );
+    }
     const toggle = (day: number) => {
         const days = weekly.days.includes(day) ? weekly.days.filter(d => d !== day) : [...weekly.days, day];
         if (days.length) onChange(formatWeekly({ ...weekly, days }));

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { IconValue } from '@shared/types';
 import { useGame } from '../../../context/GameContext';
 import { SmartIcon } from '../../SmartIcon';
 import type { SaveOptions, SaveOutcome } from '../useConfigSave';
 import { ConfirmButton, Empty, Section, Sheet } from '../ui';
+import { FieldProblems } from './fieldProblems';
 
 export interface FormProps<T> { value: T; onChange: (value: T) => void }
 
@@ -45,6 +46,15 @@ export function CollectionEditor<T extends { id: string }>({ title, addLabel, em
     // saved: the sheet stays open after a save (keepOpen) and waits for the config it wrote
     const [editing, setEditing] = useState<{ item: T; isNew: boolean; title: string; version: string; saved?: boolean } | null>(null);
     const close = () => setEditing(null);
+    // What the sheet's fields say can't be saved (FieldProblems), by field
+    const [problems, setProblems] = useState<Record<string, string>>({});
+    const report = useCallback((key: string, problem: string | null) => setProblems(p => {
+        if ((p[key] ?? null) === problem) return p;
+        const next = { ...p };
+        if (problem === null) delete next[key];
+        else next[key] = problem;
+        return next;
+    }), []);
     const open = (item: T, isNew: boolean, title: string) => setEditing({ item, isNew, title, version: configVersion.data });
 
     // The live list and version, for a sheet that reloads after a refused save
@@ -110,11 +120,13 @@ export function CollectionEditor<T extends { id: string }>({ title, addLabel, em
             {editing && (
                 <Sheet title={editing.title} onClose={close}>
                     <form className="p-form" onSubmit={e => { e.preventDefault(); submit(); }}>
-                        <Form value={editing.item} onChange={item => setEditing({ ...editing, item })} />
+                        <FieldProblems.Provider value={report}>
+                            <Form value={editing.item} onChange={item => setEditing({ ...editing, item })} />
+                        </FieldProblems.Provider>
                         {lock && <p className="p-hint">{lock}</p>}
                         <div className="p-actions">
                             {removable && !editing.isNew && !lock && <ConfirmButton onConfirm={() => remove(editing.item)}>Διαγραφή</ConfirmButton>}
-                            <button type="submit" className="p-btn primary" disabled={editing.saved || !isValid(editing.item, editing.isNew)}>Αποθήκευση</button>
+                            <button type="submit" className="p-btn primary" disabled={editing.saved || !isValid(editing.item, editing.isNew) || Object.keys(problems).length > 0}>Αποθήκευση</button>
                         </div>
                     </form>
                 </Sheet>
