@@ -321,16 +321,18 @@ be the only longest one (the options are shuffled on screen, so its length is th
 the generator drops such items). Numeric wrong options are whole and at most 100 times off.
 
 **«Δείξε μου».** On a wrong try (forgiving) and after the last try (unforgiving), the screen shows
-`answerText` in one run, «a – b, c – d, …» for a match and «a → b → …» for an ordering, at 2.5rem
-for 4.5 seconds, then closes by itself. A line holds about 40 characters at 1280×800 (35 in
-words). Keep it at most 60 characters, two lines; an ordering's items have no spaces, so it breaks
-only between them. A match breaks at any space, inside a pair too, so a match keeps to one line,
-40 characters: `match()` keeps 3 or 4 pairs, as many as fit, and the audit fails a longer one. A
-times table of four pairs (47) left «4 × 3 –» on one line and «12» on the next; three are 34–36.
-Three pairs of numbers in words came to 75–99 characters, three lines with pairs split across
-them, too much for a Γ΄ child in 4.5 s; so the `words` families are multiple choice, the same
-digits in other places as the options. The 4.5 s is the screen's limit, not the pool's: holding
-the answer until a tap is a follow-up.
+`answerText` (`revealed()` in maths/check.ts writes the same) at up to 2.5rem, and since #72 it stays
+until she taps «Εντάξει»: «a → b → …» in one run for an ordering, and a match one pair per line,
+«a → b», with a no-break space before every «→», so no line starts with one. A line holds about 40
+characters at 1280×800 (35 in words). Keep it at most 60 characters, two lines; an ordering's items
+have no spaces, so it breaks only between them. A match keeps to 40 characters, measured as the
+screen showed it before #72, in one run («a – b, c – d»), which broke at any space, inside a pair
+too: `match()` keeps 3 or 4 pairs, as many as fit, and the audit fails a longer one. A times table
+of four pairs (47) left «4 × 3 –» on one line and «12» on the next. Three pairs of numbers in words
+came to 75–99 characters, too much for a Γ΄ child in the 4.5 s the screen gave then; so the `words`
+families are multiple choice, the same digits in other places as the options. These caps stay until
+#72's follow-up relaxes them (one pair per line, no timer) and brings the number-words match back;
+that regenerates the pools, so it is its own PR.
 
 **Greek and realism.** Speak to the child in the imperative or second person («Υπολόγισε»,
 «Κύκλωσε», «Βάλε», «Έχεις»), the same to every child: the audit fails check-gender's words (the
