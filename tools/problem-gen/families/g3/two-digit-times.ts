@@ -118,8 +118,9 @@ export const twoDigitTimes: Family = {
       { label: `${n} × ${k} =`, answer: total, unit: s.unit },
     ], `${n} × ${tens} είναι ${n} φορές ${tens === 10 ? '1 δεκάδα' : `${tens / 10} δεκάδες`}. Στο τέλος προσθέτουμε τα δύο γινόμενα.`));
     steps.push(estimate
-      ? b.choice('check', 'Είναι κοντά στην εκτίμηση;', `Ναι, το ${fmt(total)} είναι κοντά στο ${fmt(n * round)}`,
-        [`Όχι, βγαίνει ${fmt(n + k)}, όσο ${n} + ${k}`, `Όχι, βγαίνει ${fmt(n * tens + ones)}, όσο ${n} × ${tens} + ${ones}`],
+      // Statements about the answer, not «Ναι»/«Όχι» (#83): the right one, or what a slip would give
+      ? b.choice('check', 'Γιατί ταιριάζει με την εκτίμηση;', `Είναι ${fmt(total)}, κοντά στο ${fmt(n * round)}`,
+        [`Είναι ${fmt(n + k)}, όσο ${n} + ${k}`, `Είναι ${fmt(n * tens + ones)}, όσο ${n} × ${tens} + ${ones}`],
         'Αν βγήκε πολύ μακριά από την εκτίμηση, κάτι πήγε στραβά.')
       : n <= 4
         ? b.choice('check', 'Πώς ελέγχουμε;', `${Array(n).fill(k).join(' + ')} = ${fmt(total)}`,
@@ -127,10 +128,10 @@ export const twoDigitTimes: Family = {
           [`${Array(n).fill(tens).join(' + ')} + ${ones} = ${fmt(n * tens + ones)}`,
             n > 2 ? `${Array(n - 1).fill(k).join(' + ')} = ${fmt((n - 1) * k)}` : `${n} + ${k} = ${n + k}`],
           `Προσθέτουμε ${n} φορές το ${k}.`)
-        : b.choice('check', 'Είναι λογική η απάντηση;',
-          `Ναι, είναι ανάμεσα στο ${fmt(n * tens)} και στο ${fmt(n * (tens + 10))}`,
-          [[`Όχι, έπρεπε να βγει ${fmt(n * tens + ones)}, όσο ${n} × ${tens} + ${ones}`, `Όχι, έπρεπε να βγει ${fmt(n * tens + ones)}`],
-            [`Όχι, έπρεπε να βγει ${fmt(n + k)}, όσο ${n} + ${k}`, `Όχι, έπρεπε να βγει ${fmt(n + k)}`]],
+        : b.choice('check', 'Γιατί η απάντηση είναι λογική;',
+          `Είναι ανάμεσα στο ${fmt(n * tens)} και στο ${fmt(n * (tens + 10))}`,
+          [[`Είναι ακριβώς ${fmt(n * tens + ones)}, όσο ${n} × ${tens} + ${ones}`, `Είναι ${fmt(n * tens + ones)}, όσο ${n} × ${tens} + ${ones}`],
+            [`Είναι ακριβώς ${fmt(n + k)}, όσο ${n} + ${k}`, `Είναι ${fmt(n + k)}, όσο ${n} + ${k}`]],
           `Το ${k} είναι ανάμεσα στο ${tens} και στο ${tens + 10}. Άρα και η απάντηση είναι ανάμεσα σε ${n} × ${tens} και ${n} × ${tens + 10}.`));
     return { title: r.pick(['Δεκάδες και μονάδες', 'Πολλές φορές το ίδιο', 'Πολλαπλασιάζουμε', 'Κομμάτι κομμάτι']), story, steps };
   },

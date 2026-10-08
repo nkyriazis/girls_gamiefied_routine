@@ -126,9 +126,9 @@ The audit can't read Greek; you must. The traps the generator has already hit:
     `gen.ts --places` lists the prompts whose wordings can't spread the right option evenly, and how far
     they get.
   - **How to write a variant.** A wrong option's variant is the *same typical mistake in other words*,
-    shorter or longer («Προσθέτω τους αριθμούς του προβλήματος» / «Προσθέτω τους αριθμούς»; «Όχι, πρέπει
-    να είναι πάνω από 36 ευρώ» / «Όχι, θα είναι πάνω από 36 ευρώ»). A right option's variant comes **only
-    from the book's own wording** (the strategies by their names in Ε΄ κεφ. 1.3: «Παρουσιάζω το πρόβλημα
+    shorter or longer («Προσθέτω τους αριθμούς του προβλήματος» / «Προσθέτω τους αριθμούς»; «Είναι πάνω
+    από τα 36 ευρώ» / «Είναι πάνω από 36 ευρώ»; «Είναι 41 ευρώ: όλα μαζί» / «Είναι 41 ευρώ»). A right
+    option's variant comes **only from the book's own wording** (the strategies by their names in Ε΄ κεφ. 1.3: «Παρουσιάζω το πρόβλημα
     με σχέδιο» / «Παρουσιάζω το πρόβλημα», `STRATEGY` in lib.ts; «Το Ε.Κ.Π. των 9 και 10» / «Το Ε.Κ.Π.
     τους»), never new content. `b.choice` never takes a variant
     longer than the longest first wording (nothing new wraps), so give the shortest option a longer
@@ -138,8 +138,9 @@ The audit can't read Greek; you must. The traps the generator has already hit:
     sum instead: two groups too few). The «not wrong» options are shared (`NO_MISTAKE`,
     `NOTHING_FORGOTTEN`). Every variant says it the same way to every child: no «όλους/όλες» (check-gender
     in the audit fails a new one in an option). A prompt whose right option sits at the cap with nothing
-    shorter in the book (a yes/no check, an equation as long as its wrong twin) can't be spread without
-    new content: the audit lists it as a warning.
+    shorter in the book (a reason as long as its reverse, «Ανέβηκαν πιο πολλοί…» / «Κατέβηκαν πιο
+    πολλοί…»; an equation as long as its wrong twin) can't be spread without new content: the audit
+    lists it as a warning.
   - Aim for wrong options that are typical mistakes of every length: a «not wrong» option as short as
     the reason beside it, a shorter slip («Τους αγνοούμε» beside «Τους αφαιρούμε»), a check that checks
     nothing with a smaller result («48 − 46 = 2» beside «46 + 48 = 94»). A wrong option never shows a
@@ -153,6 +154,34 @@ The audit can't read Greek; you must. The traps the generator has already hit:
   - The curated pools (`*-problems.json`) have no prompt asked 6 times: they keep 5a's rules per choice
     and per prompt instead (the right one never the only longest; nor the only shortest in more than
     half a prompt's choices, `onlyShortest`).
+- **No option gives the answer away by its first word** (#83). A check written as the verdict that holds
+  and two typical mistakes with the other («Ναι, είναι λιγότερα από τα 335 ευρώ» beside two «Όχι, …»)
+  puts the right one alone by its first word, and where the question settles the verdict it is the same
+  verdict every time: tapping the odd one out without reading won 103 of 111 Γ΄ checks and 45 of 61 Ε΄.
+  - *The rule* (`leadWays` in lib.ts, in the audit): only verdict words lead («Ναι», «Σωστό» one way,
+    «Όχι», «Λάθος» the other, also «Ναι,» and «Όχι:»), not articles or question words. Where an option
+    leads with one, three ways of tapping by that word alone are counted, per family, prompt and number
+    of options, as the place rule counts places: the lone one (the only option whose lead, a verdict or
+    none, no other has, the others sharing theirs), a yes and a no (k options of it win 1/k). One over a
+    fair die (`placeLimit`) fails from 6 choices, warns from 3. In the curated pools, per choice, the
+    right option is never the only one with its lead. The audit prints what each way wins per pool.
+  - *A check whose verdict the question settles* (her answer, already checked in «Λύνουμε»; an age
+    difference; a claim that is always wrong; buses that always suffice) has **no verdict words**: its
+    prompt asks for a statement and the options are statements to choose between. «Είναι λογική η
+    απάντηση;» becomes «Γιατί η απάντηση είναι λογική;» → «Είναι κάτω από τα 335 ευρώ» ✔ / «Είναι πάνω
+    από τα 335 ευρώ» / «Είναι 495 ευρώ: όλα μαζί»; «Θα αλλάξει η διαφορά;» becomes «Τι γίνεται με τη
+    διαφορά των 30 χρόνων όταν μεγαλώσουν;» → «Μένει ίδια» ✔ / «Μεγαλώνει» / «Μικραίνει»; «Μπορούμε να
+    απαντήσουμε;» becomes «Τι λείπει για να λυθεί;» → «Πόσες καρέκλες έχει κάθε σειρά» ✔ / «Πόσες σειρές
+    είναι» / «Τίποτα: είναι 4 καρέκλες»; «Έχει δίκιο;» becomes «Τι έκανε λάθος;». Each wrong option keeps
+    its typical mistake as a false statement about her answer or the story, never one that is also true
+    (the change is never «πάνω από» what she had, and no «αν …» that holds as said: «Είναι 992 €, αν όλοι
+    πλήρωναν τιμή ενήλικα» is true, «Είναι 992 €: όλοι πληρώνουν όσο ένας ενήλικας» false). The right statement opens as some wrong one does
+    («Είναι…» in all three, a reason beside its reverse, «Πόσες…» twice beside «Τίποτα…»): stripping
+    «Ναι/Όχι» off alone isn't a fix, since the right one would then stand alone as «Είναι…» beside two
+    «Πρέπει…». (Counted over any first word, not only verdicts,
+    the pools after #83 have no prompt where one wins more than a fair die; the rule counts verdicts only.)
+  - *A check whose verdict depends on the story* (Ε΄ budget, Γ΄ total-cost «Φτάνουν…;», round-estimate,
+    compare-offers) keeps «Ναι/Όχι»: its verdict varies with the numbers, and the rule keeps it fair.
 - `b.numbers(phase, prompt, rows, hint)`: one row per intermediate quantity, from the
   knowns to the unknown. That chain is the point of the whole exercise.
 - **Every step has a hint of its own** (the audit fails one without). Without `hint`,

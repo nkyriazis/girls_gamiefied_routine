@@ -90,9 +90,16 @@ export const equalGroups: Family = {
     const steps: ProblemStep[] = [];
     const missing = r.chance(0.35);
     if (missing) {
-      steps.push(b.choice('read', 'Μπορούμε να απαντήσουμε;', `Όχι, δεν λέει ${howMany(item)} έχει κάθε ${cont.one}`,
-        [[`Ναι, είναι ${count(n, item)}, όσ${cont.g === 'n' ? 'α' : cont.g === 'f' ? 'ες' : 'οι'} και ${the(cont, false)} ${cont.many}`, `Ναι, είναι ${count(n, item)}`],
-          [`Ναι, αρκεί να μετρήσουμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`, `Ναι, μετράμε ${cont.g === 'n' ? 'τα' : 'τις'} ${cont.many}`]],
+      // What is missing, not «Μπορούμε να απαντήσουμε;» (#83): its verdict is always «Όχι», alone beside two «Ναι».
+      // The number of groups (the story gives it), or nothing, taking the groups for the things. Each in a
+      // wording longer than the right one too, so that the right one isn't the longest every time (#50's place rule)
+      steps.push(b.choice('read', 'Τι λείπει για να λυθεί;', `${HowMany(item)} ${item.manyAcc} έχει κάθε ${cont.one}`,
+        [[`${HowMany(cont, false)} ${cont.many} είναι`, `${HowMany(cont, false)} ${cont.many} είναι συνολικά`,
+          `${HowMany(cont, false)} ${cont.many} με ${item.manyAcc} υπάρχουν`, `${HowMany(cont, false)} ${cont.many} με ${item.manyAcc} είναι συνολικά`],
+          [`Τίποτα: είναι ${count(n, item)}, όσ${cont.g === 'n' ? 'α' : cont.g === 'f' ? 'ες' : 'οι'} και ${the(cont, false)} ${cont.many}`,
+            `Τίποτα: είναι ${count(n, item)}, όσ${cont.g === 'n' ? 'α' : cont.g === 'f' ? 'ες' : 'οι'} ${the(cont, false)} ${cont.many}`,
+            `Τίποτα: είναι ${count(n, item)}, ${item.g === 'n' ? 'ένα' : item.g === 'f' ? 'μία' : 'ένας'} σε κάθε ${cont.one}`,
+            `Τίποτα: είναι ${count(n, item)} συνολικά`, `Τίποτα: είναι ${count(n, item)}`]],
         `Ξέρουμε ${howMany(cont)} ${cont.manyAcc} είναι. Ξέρουμε και τι έχει ${cont.g === 'n' ? 'το καθένα' : 'η καθεμία'};`,
         build(id, id, id, false)));
     }

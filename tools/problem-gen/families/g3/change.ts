@@ -49,9 +49,10 @@ export const change: Family = {
         ? b.choice('check', 'Πώς ελέγχουμε;', `${fmt(cost)} + ${fmt(left)} = ${fmt(have)}`,
           [`${fmt(have)} + ${fmt(left)} = ${fmt(have + left)}`, `${fmt(left)} − ${fmt(cost)} = ${fmt(Math.abs(left - cost))}`],
           'Όσα πλήρωσε μαζί με όσα έμειναν πρέπει να κάνουν όσα είχε.')
-        : b.choice('check', 'Είναι λογική η απάντηση;', `Ναι, είναι λιγότερα από τα ${fmt(have)} ευρώ`,
-          [[`Όχι, πρέπει να είναι πάνω από ${fmt(have)} ευρώ`, `Όχι, θα είναι πάνω από ${fmt(have)} ευρώ`, `Όχι, πάνω από ${fmt(have)} ευρώ`],
-            [`Όχι, πρέπει να είναι ${fmt(have + cost)}: όλα μαζί`, `Όχι, πρέπει να είναι ${fmt(have + cost)} ευρώ`, `Όχι, πρέπει να βγει ${fmt(have + cost)} ευρώ: όλα μαζί`]],
+        // Statements about her answer, not «Ναι»/«Όχι» (#83): the verdict is always «yes» here
+        : b.choice('check', 'Γιατί η απάντηση είναι λογική;', `Είναι κάτω από τα ${fmt(have)} ευρώ`,
+          [[`Είναι πάνω από τα ${fmt(have)} ευρώ`, `Είναι πάνω από ${fmt(have)} ευρώ`],
+            [`Είναι ${fmt(have + cost)} ευρώ: όλα μαζί`, `Είναι ${fmt(have + cost)} ευρώ`]],
           `Αφού ξόδεψε χρήματα, ${p.his} μένουν λιγότερα από όσα είχε.`),
     ];
     return { title: r.pick(['Στο μαγαζί', 'Τα ρέστα', 'Ο κουμπαράς', 'Ψώνια']), story, steps };

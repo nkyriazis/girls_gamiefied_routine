@@ -268,6 +268,53 @@ export function placeLimit(N: number, n: number): number {
 export const PLACE_MIN_CHOICES = 6;
 export const PLACE_WARN_CHOICES = 3;
 
+// ---------------------------------------------------------------------------
+// No option gives the answer away by its first word (#83). A check written as one option with the
+// verdict that holds and two typical mistakes with the other («Ναι, είναι λιγότερα από τα 335 ευρώ»
+// beside two «Όχι, …») puts the right one alone by its first word, and when the question settles the
+// verdict (her answer already checked, an age difference, a claim that is always wrong) it is the
+// same verdict every time: tapping the odd one out without reading won 103 of 111 Γ΄ checks. Only the
+// verdict words count («Ναι», «Σωστό» one way, «Όχι», «Λάθος» the other, also as «Ναι,» and «Όχι:»),
+// not articles or question words. A choice where some option leads with one has three ways of tapping
+// by that lead alone (leadWays): the lone one (the only option whose lead, a verdict or none, no other
+// option has, when the others share theirs), a yes and a no. A way with k options wins 1/k of the
+// choice when the right one is among them. The audit counts them like the place rule: per family,
+// prompt (promptKey) and number of options, a way over placeLimit fails from PLACE_MIN_CHOICES choices
+// on and is a warning from PLACE_WARN_CHOICES; in the curated pools, per choice, the lone one is never
+// the right one. A check whose verdict the question settles has no verdict words at all: its prompt
+// asks for a statement («Γιατί η απάντηση είναι λογική;» → «Είναι κάτω από τα 335 ευρώ»). Stripping
+// «Ναι/Όχι» off is not enough: the right one would stand alone as «Είναι…» beside two «Πρέπει…».
+
+/** The verdict an option leads with: «Ναι»/«Σωστό» yes, «Όχι»/«Λάθος» no, anything else none. */
+export type Lead = 'yes' | 'no' | '-';
+const VERDICT = /^(ναι|σωστό|όχι|λάθος)(?!\p{L})/iu;
+export function verdictLead(option: string): Lead {
+  const m = option.trim().match(VERDICT);
+  return !m ? '-' : /^(ναι|σωστό)$/iu.test(m[1]) ? 'yes' : 'no';
+}
+
+/** Tapping by the first word alone: the lone one, a yes («Ναι», «Σωστό»), a no («Όχι», «Λάθος»). */
+export const LEAD_WAYS = ['lone', 'yes', 'no'] as const;
+export type LeadWay = (typeof LEAD_WAYS)[number];
+export const LEAD_NAMES: Record<LeadWay, string> = { lone: 'the lone one', yes: 'a «Ναι»', no: 'an «Όχι»' };
+
+/**
+ * What each way of tapping by the verdict word alone wins in this choice (a way with k options: 1/k when
+ * the right one is among them, else 0), only the ways it has: the lone one when some options are alone
+ * by their lead and the others share one, a yes or a no when an option leads with it. Null when no option
+ * leads with a verdict word.
+ */
+export function leadWays(options: string[], correctIndex: number): Partial<Record<LeadWay, number>> | null {
+  const L = options.map(verdictLead);
+  if (L.every(l => l === '-')) return null;
+  const count = (l: Lead) => L.filter(x => x === l).length;
+  const out: Partial<Record<LeadWay, number>> = {};
+  const lone = L.map((l, j) => (count(l) === 1 ? j : -1)).filter(j => j >= 0);
+  if (lone.length && lone.length < L.length) out.lone = lone.includes(correctIndex) ? 1 / lone.length : 0;
+  for (const way of ['yes', 'no'] as const) if (count(way)) out[way] = L[correctIndex] === way ? 1 / count(way) : 0;
+  return out;
+}
+
 // A prompt asked of many stories, with its names and numbers blanked out
 /** Every form of every name (Νίκος, Νίκου, Νίκο), longest first. */
 export const NAMES = new RegExp(`(${[...new Set(PEOPLE.flatMap(p => [p.bare, p.gen.split(' ')[1], p.acc.split(' ')[1]]))]

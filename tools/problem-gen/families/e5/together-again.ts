@@ -254,8 +254,9 @@ export const togetherAgain: Family = {
     }
 
     if (claim) {
-      steps.push(b.choice('check', `Έχει δίκιο ${c.nom};`, `Όχι: συμπίπτουν νωρίτερα, στο ${fmt(L)}`,
-        ['Ναι: τους πολλαπλασιάζουμε', `Όχι: έπρεπε να προσθέσει ${nums.join(' + ')} = ${fmt(sum)}`],
+      // What is wrong in the claim, not «Έχει δίκιο;» (#83): it is always wrong, so «Όχι» was always right
+      steps.push(b.choice('check', `Τι έκανε λάθος ${c.nom};`, `Συμπίπτουν νωρίτερα, στο ${fmt(L)}`,
+        ['Κανένα λάθος: τους πολλαπλασιάζουμε', `Έπρεπε να προσθέσει ${nums.join(' + ')} = ${fmt(sum)}`],
         `Συμπίπτουν και στο ${fmt(prod)}, αλλά μήπως συμπίπτουν νωρίτερα;`));
     } else if (r.chance(0.5)) {
       steps.push(b.choice('check', 'Αναστοχαζόμαστε: τι δείχνει ότι η απάντηση είναι σωστή;',

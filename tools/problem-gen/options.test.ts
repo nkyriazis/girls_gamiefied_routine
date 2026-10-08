@@ -3,7 +3,7 @@
 // The audit checks the same over every pool (the place rule); these are the pieces on their own.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { builder, hash, lengthTell, placeLimit, places, placeSeed, promptKey, rng } from './lib.ts';
+import { builder, hash, leadWays, lengthTell, placeLimit, places, placeSeed, promptKey, rng, verdictLead } from './lib.ts';
 
 test('places: options within 2 code points of the right one tie with it, ties split', () => {
   // 13, 14, 16: all within 2 of the right one (14), so every place is a third
@@ -93,4 +93,37 @@ test('builder.choice: no wording that fits is a tell (gen.ts drops the draft)', 
   const b = builder(rng(1), '', () => 0.9);
   b.choice('plan', 'Ποια στρατηγική;', 'Ναι', ['Όχι', 'Ναι, γιατί έτσι λέει η ιστορία από την αρχή']);
   assert.equal(b.tells.length, 1);
+});
+
+// No option gives the answer away by its first word (#83): what tapping by the verdict word alone wins
+test('leadWays: the lone one, a «Ναι» and an «Όχι», each winning 1/k of its k options', () => {
+  // One «Ναι» among two «Όχι», right: the lone one and the «Ναι» win it, an «Όχι» doesn't
+  assert.deepEqual(leadWays(['Όχι, πρέπει να είναι 495 ευρώ', 'Ναι, είναι λιγότερα από τα 335 ευρώ', 'Όχι, θα είναι πάνω από 335 ευρώ'], 1),
+    { lone: 1, yes: 1, no: 0 });
+  // ages: the lone «Όχι» is right; a «Ναι» has two options and wins nothing
+  assert.deepEqual(leadWays(['Ναι, θα μεγαλώνει κι αυτή', 'Όχι, μεγαλώνουν και οι δύο', 'Ναι, θα γίνεται μικρότερη'], 1),
+    { lone: 1, yes: 0, no: 1 });
+  // Two «Ναι», one right: a «Ναι» wins half; the lone «Όχι» nothing
+  assert.deepEqual(leadWays(['Ναι, γιατί 384 < 650', 'Ναι, γιατί 549 < 650', 'Όχι, γιατί 549 > 650'], 1), { lone: 0, yes: 0.5, no: 0 });
+});
+
+test('leadWays: only verdict words lead, with their «,» and «:» forms; «Σωστό» is a yes, «Λάθος» a no', () => {
+  assert.equal(verdictLead('Ναι: 4 × 55 = 220 θέσεις'), 'yes');
+  assert.equal(verdictLead('  Όχι, θα λείπουν'), 'no');
+  assert.equal(verdictLead('Σωστό'), 'yes');
+  assert.equal(verdictLead('Λάθος: ξέχασε το κρατούμενο'), 'no');
+  // Not a verdict: other first words, articles, a word that only starts like one
+  for (const o of ['Είναι κάτω από τα 335 ευρώ', 'Οι 122 χωράνε σε 3 λεωφορεία', 'Πόσες καρέκλες έχει κάθε σειρά', 'Ναίσκος']) assert.equal(verdictLead(o), '-');
+  // No option leads with a verdict: nothing to count
+  assert.equal(leadWays(['Μένει ίδια', 'Μεγαλώνει', 'Μικραίνει'], 0), null);
+  assert.equal(leadWays(['Είναι κάτω από τα 335 ευρώ', 'Είναι πάνω από τα 335 ευρώ', 'Είναι 495 ευρώ: όλα μαζί'], 0), null);
+});
+
+test('leadWays: every option sharing its lead leaves no lone one; a lone option without a verdict counts', () => {
+  // Every option a «Ναι»: no lone one, a «Ναι» is a third
+  assert.deepEqual(leadWays(['Ναι, και θα περισσέψουν', 'Ναι, ακριβώς τόσα', 'Ναι, θα περισσέψουν'], 0), { yes: 1 / 3 });
+  // Two «Ναι» and the right one with no verdict: it is the lone one
+  assert.deepEqual(leadWays(['Ναι: 4 + 55 = 59 θέσεις', 'Ναι: τους πολλαπλασιάζουμε', 'Συμπίπτουν νωρίτερα, στο 120'], 2), { lone: 1, yes: 0 });
+  // «Ναι», «Όχι» and none: each alone, so no lone one (tapping one of three is the die)
+  assert.deepEqual(leadWays(['Ναι: 6 κάνουν 9 €', 'Όχι: συμφέρει πάντα η μεγαλύτερη', 'Δεν μπορούμε να το ξέρουμε'], 0), { yes: 1, no: 0 });
 });
