@@ -50,8 +50,9 @@ export function mc(r: Rng, title: string, question: string, right: string, wrong
 }
 
 /**
- * Match pairs, as many of `pairs` (at least 3) as «Δείξε μου» can reveal on one line
- * (check.ts REVEAL_MATCH_MAX): it shows them in one run, «a – b, c – d, …».
+ * Match pairs, as many of `pairs` (at least 3) as fit check.ts REVEAL_MATCH_MAX, measured as «Δείξε μου»
+ * showed them until #72, in one run, «a – b, c – d, …». The screen now shows one pair per line
+ * («a → b»); this measure stays until #72's follow-up relaxes the cap, so the pools don't change yet.
  */
 export function match(title: string, body: string, pairs: [string, string][]): Draft | null {
   if (new Set(pairs.map(p => p[0])).size !== pairs.length || new Set(pairs.map(p => p[1])).size !== pairs.length) return null;

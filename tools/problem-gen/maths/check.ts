@@ -308,27 +308,33 @@ function texts(ex: Plain): [string, string][] {
   return out;
 }
 
+// What «Η σωστή απάντηση: …» shows, as frontend/src/components/exercises/answerText.ts writes it (#72): a
+// no-break space before every «→», a match one pair per line.
 export function revealed(ex: Plain): string {
   switch (ex.type) {
     case 'multiple-choice': return ex.options[ex.correctIndex];
     case 'true-false': return ex.correctValue ? 'Σωστό' : 'Λάθος';
     case 'number-input': return ex.correctValue.toLocaleString('el-GR');
     case 'fill-blank': return ex.textWithGaps.replace(/\{(\d+)\}/g, (_, i) => ex.correctAnswers[Number(i)] ?? '…');
-    case 'ordering': return ex.items.map(i => i.content).join(' → ');
-    case 'match-pairs': return ex.pairs.map(p => `${p.left} – ${p.right}`).join(', ');
+    case 'ordering': return ex.items.map(i => i.content).join('\u00a0→ ');
+    case 'match-pairs': return ex.pairs.map(p => `${p.left}\u00a0→ ${p.right}`).join('\n');
   }
 }
 /**
- * Characters the revealed answer may have: «Η σωστή απάντηση: …» shows it at 2.5rem in a box up to 900 px
- * wide, for 4.5 seconds, on «Δείξε μου» (forgiving) and after the last try (unforgiving). A line holds about
- * 40 characters at 1280×800 (35 in words), so 60 is two lines. An ordering's items have no spaces, so its
- * line breaks only between them.
+ * Characters the revealed answer may have: «Η σωστή απάντηση: …» shows it at up to 2.5rem in a box up to 900 px
+ * wide, on «Δείξε μου» (forgiving) and after the last try (unforgiving). A line holds about 40 characters at
+ * 1280×800 (35 in words), so 60 is two lines. An ordering's items have no spaces, so its line breaks only
+ * between them. Since #72 the screen holds the answer until «Εντάξει» (it closed by itself after 4.5 s
+ * before), and a match is one pair per line; these caps stay as they were until the follow-up of #72
+ * relaxes them, so the pools don't change yet.
  */
 export const REVEAL_MAX = 60;
 /**
- * A match's pairs («9 × 4 – 36, …») break at any space, so a match stays on one line: a times table of
- * four pairs (47 characters) left «4 × 3 –» on one line and «12» on the next; three pairs are 34–36.
- * Three pairs of numbers in words came to 75–99 characters, so those families are multiple choice.
+ * Until #72 a match showed in one run («9 × 4 – 36, …») that broke at any space, so a match kept to one line:
+ * a times table of four pairs (47 characters) left «4 × 3 –» on one line and «12» on the next; three pairs
+ * are 34–36. Three pairs of numbers in words came to 75–99 characters, so those families are multiple
+ * choice. The screen now shows one pair per line; the cap stays until #72's follow-up brings the
+ * number-words match back.
  */
 export const REVEAL_MATCH_MAX = 40;
 export const revealMax = (ex: { type: string }) => (ex.type === 'match-pairs' ? REVEAL_MATCH_MAX : REVEAL_MAX);
@@ -494,7 +500,7 @@ export function mathsSample(pools: Pool[], r: Rng, n: number): string {
       if ('question' in ex) md += `  - ${ex.question}\n`;
       if (ex.type === 'multiple-choice') md += `  - ${ex.options.map((o, i) => (i === ex.correctIndex ? `**${o}**` : o)).join(' · ')}\n`;
       if (ex.type === 'fill-blank') md += `  - ${ex.textWithGaps} · ${ex.options.join(' · ')}\n`;
-      md += `  - ✔ ${revealed(ex)}\n`;
+      md += `  - ✔ ${revealed(ex).replace(/\n/g, '\n    ')}\n`;
     }
   }
   return md;
