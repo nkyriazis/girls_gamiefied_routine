@@ -1,0 +1,30 @@
+#71 part 1, Before, counted as After is (tally-before.ts): draws-u2.txt, 90 items in 30 sets drawn on 2026-10-08 before the fix.
+  missing from this branch's pools: 0; content changed from master's pool (chapter, topic, difficulty, generatorParams aside): 0
+  past the pace's place (maths ch. 8 / language 2.1): 57 of 90, in 29 of 30 sets; difficulty 1/2/3: 47 / 24 / 19
+    ch. 10: g3-math-subtract-002, g3-world-117, g3-world-026, g3-world-163, g3-world-004, g3-world-169, g3-world-031, g3-gen-total-cost-019, g3-world-150, g3-world-007, g3-gen-length-cm-018, g3-world-199, g3-gen-ages-009, g3-world-192, g3-world-103
+    ch. 11: g3-gen-double-half-016, g3-gen-cheaper-option-010, g3-gen-cheaper-option-008, g3-gen-buy-and-change-020, g3-gen-buy-and-change-007, g3-gen-buy-and-change-018, g3-gen-buy-and-change-018, g3-math-table-11-005, g3-gen-cheaper-option-011, g3-math-times-2x1-002, g3-world-111, g3-gen-double-half-005, g3-math-times-2x1-004
+    ch. 14: g3-math-neighbours-005, g3-math-compare-002, g3-math-hundreds-in-001, g3-math-digits-extreme-001, g3-math-words-digits-004, g3-math-digits-extreme-001
+    ch. 15: g3-math-add-sub-choice-004
+    ch. 17: g3-math-times-choice-003, g3-math-times-choice-001, g3-math-times-choice-001
+    ch. 18: g3-gen-pages-per-day-013, g3-gen-pages-per-day-002
+    ch. 19: g3-gen-order-the-plan-017
+    lesson 2.2: g3-lang-rimata-o-mai-003
+    lesson 2.3: g3-lang-epitheta-002, g3-lang-oikogeneies-003, g3-lang-epitheta-001, g3-lang-geniki-002
+    lesson 2.4: g3-lang-geitonia-002, g3-lang-geitonia-002
+    lesson 2.0: g3-lang-orthografia-005
+    lesson 3.2: g3-lang-aitiatiki-002, g3-lang-aoristo-arthro-002, g3-lang-aoristo-arthro-001, g3-lang-aoristo-arthro-001
+    lesson 3.3: g3-lang-tis-tis-004
+    lesson 3.4: g3-lang-stixi-004
+    lesson 3.5: g3-lang-synonyma-001
+    lesson 3.0: g3-lang-paromoiosis-004
+  starting in November or later in shared/curriculum.ts: 21 of 90
+    ch. 14: g3-math-neighbours-005, g3-math-compare-002, g3-math-hundreds-in-001, g3-math-digits-extreme-001, g3-math-words-digits-004, g3-math-digits-extreme-001
+    ch. 15: g3-math-add-sub-choice-004
+    ch. 17: g3-math-times-choice-003, g3-math-times-choice-001, g3-math-times-choice-001
+    ch. 18: g3-gen-pages-per-day-013, g3-gen-pages-per-day-002
+    ch. 19: g3-gen-order-the-plan-017
+    lesson 3.2: g3-lang-aitiatiki-002, g3-lang-aoristo-arthro-002, g3-lang-aoristo-arthro-001, g3-lang-aoristo-arthro-001
+    lesson 3.3: g3-lang-tis-tis-004
+    lesson 3.4: g3-lang-stixi-004
+    lesson 3.5: g3-lang-synonyma-001
+    lesson 3.0: g3-lang-paromoiosis-004

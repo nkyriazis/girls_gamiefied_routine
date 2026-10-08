@@ -1,0 +1,5 @@
+#71 part 1, After: 30 real draws of Ιφιγένεια's (u2, Γ΄) daily set each by the dev server on 2026-10-08 (draws-after.sh; the sets in after-draws-u2-*.txt), counted by tally-after.ts against her place:
+  nothing set (the pace: ch. 8, lesson 2.1): after-draws-u2-pace.txt: 90 items in 30 sets; 0 past maths ch. 8 / language 2.1; difficulty 1/2/3: 52 / 34 / 4
+  set to ch. 12 and lesson 3.1: after-draws-u2-set.txt: 90 items in 30 sets; 0 past maths ch. 12 / language 3.1; difficulty 1/2/3: 56 / 25 / 9
+  the same, «Κυρίως εύκολες»: after-draws-u2-easy.txt: 90 items in 30 sets; 0 past maths ch. 12 / language 3.1; difficulty 1/2/3: 90 / 0 / 0
+Before (before-draws-tally.txt, the same count on draws-u2.txt): 57 of 90 items, in 29 of 30 sets, past maths ch. 8 / language 2.1 (21 of them from November on); difficulty 1/2/3: 47 / 24 / 19.
