@@ -1,0 +1,5 @@
+https: DuckDNS refused the update (KO): check DUCKDNS_TOKEN and the name in HTTPS_DOMAIN
+{"level":"info","ts":1791448888.2318897,"msg":"serving initial configuration"}
+{"level":"info","ts":1791448888.2375257,"logger":"http","msg":"creating new account because no account for configured email is known to us","email":"","ca":"https://acme-v02.api.letsencrypt.org/directory","error":"open /data/caddy/acme/acme-v02.api.letsencrypt.org-directory/users/default/default.json: no such file or directory"}
+{"level":"info","ts":1791448888.2393737,"logger":"http","msg":"creating new account because no account for configured email is known to us","email":"","ca":"https://acme-v02.api.letsencrypt.org/directory","error":"open /data/caddy/acme/acme-v02.api.letsencrypt.org-directory/users/default/default.json: no such file or directory"}
+{"level":"error","ts":1791448891.1489236,"logger":"http.acme_client","msg":"cleaning up solver","identifier":"ggr-test-113.duckdns.org","challenge_type":"dns-01","error":"no memory of presenting a DNS record for \"_acme-challenge.ggr-test-113.duckdns.org\" (usually OK if presenting also failed)"}

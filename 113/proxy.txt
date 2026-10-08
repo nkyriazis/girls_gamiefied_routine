@@ -1,0 +1,4 @@
+page: 200 text/html
+api:  200
+wss:  101
+tls:  * subject:  * issuer: CN=Caddy Local Authority - ECC Intermediate

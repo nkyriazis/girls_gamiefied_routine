@@ -1,0 +1,1 @@
+{"protocol":"https:","sockets":["wss://localhost:8443/?token=z5_X_fBo3te4","wss://localhost:8443/ws"],"dockAvatars":2}
