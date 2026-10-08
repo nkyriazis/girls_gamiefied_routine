@@ -76,9 +76,9 @@ const flowOf = (id: string, starts: string[], before: DataConfig['flows'][number
 const actions = (d: DataConfig) => (d.flows[0].steps[1] as { actions: { routineId?: string; flowId?: string }[] }).actions;
 const brief = (w: ConfigWarning) => `${w.kind} ${w.path} ${'value' in w ? w.value : w.cron}`;
 
-test('the clean config, and the dev data.json, have none', () => {
+test('the clean config, and the example data.json, have none', () => {
   assert.deepEqual(configProblems(cfg), []);
-  const dev = JSON.parse(readFileSync(path.join(__dirname, '..', 'data.json'), 'utf-8')) as DataConfig;
+  const dev = JSON.parse(readFileSync(path.join(__dirname, '..', 'data.example.json'), 'utf-8')) as DataConfig;
   assert.deepEqual(configProblems(dev).map(brief), []);
 });
 

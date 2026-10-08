@@ -8,7 +8,10 @@ dist
 dev-dist
 .env
 
-# Runtime data
+# Runtime data. The config is the family's too: each install has its own, created on
+# first start from backend/*.example.json (see CLAUDE.md, "Deployment target").
+backend/data.json
+backend/exercises.json
 backend/routine.db*
 backend/state.json
 backend/logs.jsonl

@@ -3,9 +3,13 @@
 #
 #   ./restore-backup.sh /mnt/usb/routine-backups/2026-10-05_031700
 #
+# It takes deploy-rpi.sh's backups/<stamp>/ too (made with the backend stopped, no uploads/: the
+# live uploads/ stay). data.json and exercises.json are git-ignored, so git never sees a restore.
+#
 # 1. verifies the backup against its SHA256SUMS (stops on any mismatch, before touching anything)
 # 2. stops the backend
-# 3. moves the current data.json, exercises.json, routine.db (+ -wal, -shm) and uploads/ aside, into
+# 3. moves the current data.json, exercises.json, routine.db (+ -wal, -shm) and uploads/ aside
+#    (exercises.json and uploads/ only when the backup has them), into
 #    backups/pre-restore-<stamp>/: nothing is deleted, and no stale -wal can be replayed onto the
 #    restored database (with its own SHA256SUMS, so `./restore-backup.sh backups/pre-restore-<stamp>` undoes it)
 # 4. copies the backup in, checks the copies against SHA256SUMS, gives each file the owner of the file it
@@ -61,6 +65,10 @@ docker run --rm -e ASIDE="$aside" -v "$PWD:/repo" -v "$src:/restore:ro" --entryp
   chown "$(stat -c %u:%g backups)" "$ASIDE"
   for f in data.json exercises.json routine.db routine.db-wal routine.db-shm uploads; do
     owner=$(stat -c %u:%g backend)
+    case "$f" in
+      # A backup without one (a deploy backup has no uploads/): the live one stays, rather than none
+      exercises.json|uploads) if [ ! -e "/restore/$f" ] && [ -e "backend/$f" ]; then echo "  kept       backend/$f (not in this backup)"; continue; fi ;;
+    esac
     if [ -e "backend/$f" ]; then
       owner=$(stat -c %u:%g "backend/$f")
       mv "backend/$f" "$ASIDE/$f"

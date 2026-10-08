@@ -1,11 +1,11 @@
 import { createHash } from 'crypto';
-import { copyFileSync, existsSync, readFileSync, renameSync, unwatchFile, watchFile, writeFileSync } from 'fs';
+import { chownSync, constants, copyFileSync, existsSync, readFileSync, renameSync, statSync, unwatchFile, watchFile, writeFileSync } from 'fs';
 import path from 'path';
 import { isDeepStrictEqual } from 'util';
 import type { ErrorObject } from 'ajv';
 import { ConfigWarning, CronWarning, DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
 import { configProblems, refuses } from './configChecks';
-import { DATA_FILE, EXERCISES_FILE } from './paths';
+import { DATA_EXAMPLE_FILE, DATA_FILE, EXERCISES_EXAMPLE_FILE, EXERCISES_FILE } from './paths';
 import { check, dataSchema, exercisesSchema, summarize, ValidationError } from './schemas';
 
 // ============================================================================
@@ -23,6 +23,10 @@ import { check, dataSchema, exercisesSchema, summarize, ValidationError } from '
 // invalid file deliberately, keeping it beside as <file>.invalid-<stamp>. Even
 // then the empty fallback (live when the file was unreadable at startup) is
 // never written: there the editor shows the file's own text to fix instead.
+// A missing file counts as unreadable: on a live install (a database with
+// history) a lost data.json or exercises.json is not created from the example
+// (seedConfig below), so it is never loaded and saving is refused the same
+// way. A file seeded from its example on a new install is loaded like any other.
 //
 // Nor does a save go over a version its writer never saw (issue #33). The
 // version is a short hash of the live file's text: it moves on every save and
@@ -115,7 +119,6 @@ export class ConfigFile<T> {
     readonly file: string,
     private readonly schema: typeof dataSchema,
     private readonly fallback: T,
-    private readonly optional: boolean,
     private readonly rules: (value: T) => ConfigWarning[] = () => []
   ) {
     this.value = deepFreeze(structuredClone(fallback));
@@ -182,13 +185,9 @@ export class ConfigFile<T> {
     try {
       text = readFileSync(this.file, 'utf-8');
     } catch (err) {
-      if (this.optional && (err as NodeJS.ErrnoException).code === 'ENOENT') {
-        text = JSON.stringify(this.fallback);
-      } else {
-        this.error = { message: `Cannot read ${path.basename(this.file)}: ${(err as Error).message}`, errors: [] };
-        this.errorOf = this.error.message;
-        return 'invalid';
-      }
+      this.error = { message: `Cannot read ${path.basename(this.file)}: ${(err as Error).message}`, errors: [] };
+      this.errorOf = this.error.message;
+      return 'invalid';
     }
     if (text === this.liveText) {
       // Back to the live version after a broken edit: the error is resolved.
@@ -235,7 +234,7 @@ export class ConfigFile<T> {
       return { ...refusal(`Το ${name} άλλαξε στο μεταξύ (από άλλη οθόνη ή στον δίσκο). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.`), conflict: true };
     }
     if (!this.loaded && (!replace || isDeepStrictEqual(value, this.fallback))) {
-      return refusal(`${name} was never loaded (it could not be read at startup), so saving would replace it ` +
+      return refusal(`${name} was never loaded (it was missing or could not be read at startup), so saving would replace it ` +
         `with ${replace ? 'the empty config' : 'what is live, the empty config'}. Fix the file itself ` +
         `(Γονείς → Προχωρημένα shows its text) or restore it from a backup.`);
     }
@@ -271,8 +270,46 @@ export function changedKeys(before: object, after: object): string[] {
   return keys.filter(k => !isDeepStrictEqual((before as Record<string, unknown>)[k], (after as Record<string, unknown>)[k]));
 }
 
-export const dataConfig = new ConfigFile<DataConfig>(DATA_FILE, dataSchema, EMPTY_DATA, false, configProblems);
-export const exercisesConfig = new ConfigFile<ExercisesConfig>(EXERCISES_FILE, exercisesSchema, EMPTY_EXERCISES, true);
+// Both files are required: a missing one is an error the parents see, never a silent empty config.
+export const dataConfig = new ConfigFile<DataConfig>(DATA_FILE, dataSchema, EMPTY_DATA, configProblems);
+export const exercisesConfig = new ConfigFile<ExercisesConfig>(EXERCISES_FILE, exercisesSchema, EMPTY_EXERCISES);
+
+const EXAMPLES = [
+  { file: DATA_FILE, example: DATA_EXAMPLE_FILE },
+  { file: EXERCISES_FILE, example: EXERCISES_EXAMPLE_FILE }
+];
+
+/**
+ * First start: create each missing config file from its example, but only on a database with
+ * no history. A live install that lost its file (history, no data.json) gets nothing: running
+ * the family on the example would hide it, so the file stays missing and the parents see the
+ * error until it is restored. Never overwrites a file. The new file belongs to its directory's
+ * owner (the backend runs as root in the image; the host's files stay the host user's).
+ */
+export function seedConfig(hasHistory: boolean, files = EXAMPLES): { seeded: string[]; missing: string[] } {
+  const seeded: string[] = [], missing: string[] = [];
+  for (const { file, example } of files) {
+    if (existsSync(file)) continue;
+    if (hasHistory) {
+      missing.push(file);
+      continue;
+    }
+    try {
+      copyFileSync(example, file, constants.COPYFILE_EXCL);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'EEXIST') continue;
+      throw err;
+    }
+    try {
+      const dir = statSync(path.dirname(file));
+      chownSync(file, dir.uid, dir.gid);
+    } catch {
+      // not root: the file is already ours
+    }
+    seeded.push(file);
+  }
+  return { seeded, missing };
+}
 
 /** The live data.json config. */
 export function config(): DataConfig {

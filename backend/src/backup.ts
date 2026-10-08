@@ -123,6 +123,14 @@ export function takeBackup(options: BackupOptions): BackupResult {
   const started = Date.now();
   const { dbFile, dataFile, exercisesFile, uploadsDir, dir, keep } = options;
   if (!existsSync(dbFile)) throw new Error(`No database at ${dbFile}`);
+  // Both config files are required (a missing one is an error, see seedConfig in config.ts). A backup
+  // without one couldn't be restored, and rotating would delete the older backups that still have it.
+  for (const file of [dataFile, exercisesFile]) {
+    if (!existsSync(file)) {
+      throw new Error(`${path.basename(file)} is missing: no backup taken, so the older backups (which have it) ` +
+        `are kept. Restore it from one of them (restore-backup.sh).`);
+    }
+  }
   mkdirSync(dir, { recursive: true });
 
   // A backup that died half-way (power cut, full disk) is cleared first
@@ -157,9 +165,7 @@ export function takeBackup(options: BackupOptions): BackupResult {
     if (integrity !== 'ok') throw new Error(`The database copy failed its integrity check: ${integrity}`);
 
     // The config files as they are on disk (even an invalid one: it is what there is)
-    for (const file of [dataFile, exercisesFile]) {
-      if (existsSync(file)) copyFileSync(file, path.join(partial, path.basename(file)));
-    }
+    for (const file of [dataFile, exercisesFile]) copyFileSync(file, path.join(partial, path.basename(file)));
     if (existsSync(uploadsDir)) cpSync(uploadsDir, path.join(partial, 'uploads'), { recursive: true });
 
     const files = filesUnder(partial);

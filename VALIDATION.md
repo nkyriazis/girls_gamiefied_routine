@@ -79,9 +79,10 @@ Every other route's request body has its own schema (`backend/src/bodies.ts`, #3
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend npm run test-schemas
 ```
 
-`backend/test-schemas.js` checks `data.json` against its schema, then tries `state.json` (legacy, imported once; on
-a checkout without one it prints an `ENOENT` error line). It prints the result and exits 0 either way, so CI only reports
-it (CLAUDE.md, «CI»). `exercises.json` isn't in it; `npm test` validates the shipped exercise pools.
+`backend/test-schemas.js` checks the shipped examples (`data.example.json`, `exercises.example.json`, what a new
+install starts from), then this install's own `data.json`, `exercises.json` and legacy `state.json` when they are there
+(git-ignored, so a fresh clone and CI skip them). It exits 1 when any file it checks is invalid, so CI gates on it
+(CLAUDE.md, «CI»). `npm test` validates the shipped exercise pools.
 
 ## Worked examples
 

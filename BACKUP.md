@@ -95,8 +95,16 @@ only die when the disk answers or the Pi restarts, and while it hangs inside the
 `routine.db-wal`, which grows on the card. So a `timed out` in Καταγραφή means: check the disk or share, and if it
 is stuck, restart the Pi.
 
-The first time with the default folder, create it as yourself before deploying (`mkdir -p backups/daily` in the
-checkout); otherwise Docker creates it as root and the backups in it are root's.
+The default folder must be made as yourself before the backend starts, or Docker creates it as root and the
+backups in it are root's. `deploy-rpi.sh` does that (`mkdir -p backups/daily`, when `.env` sets no `BACKUP_DIR`);
+starting the stack by hand the first time, run it yourself.
+
+Each deploy also takes its own backup, separate from these: `deploy-rpi.sh` stops the backend and copies
+`routine.db`, `data.json`, `exercises.json` (and any legacy `state.json`/`logs.jsonl`) to `backups/<YYYYMMDD-HHMMSS>/`
+with a `SHA256SUMS`, without `uploads/`. Deploy backups are never rotated; delete old ones by hand.
+
+While `data.json` or `exercises.json` is missing, the daily backup fails (`BACKUP_FAILED`: "... is missing") and
+deletes nothing, so the backups that still have the file are kept. Restore the file from one of them.
 
 ## Restoring
 
@@ -107,7 +115,9 @@ checkout); otherwise Docker creates it as root and the backups in it are root's.
 It verifies the backup against `SHA256SUMS` before touching anything, asks, stops the backend, moves the live
 `data.json`, `exercises.json`, `routine.db`, `routine.db-wal`, `routine.db-shm` and `uploads/` into
 `backups/pre-restore-<stamp>/` (nothing is deleted), copies the backup in and checks it again, starts the backend
-and prints the balances. The folder set aside gets its own `SHA256SUMS`, so
+and prints the balances. It takes a deploy's backup (`./restore-backup.sh backups/<YYYYMMDD-HHMMSS>`) too; an
+`exercises.json` or `uploads/` that the backup lacks (a deploy backup has no `uploads/`) is left live, not set aside.
+`data.json` and `exercises.json` are git-ignored, so a restore never shows up in `git status` or blocks a deploy. The folder set aside gets its own `SHA256SUMS`, so
 `./restore-backup.sh backups/pre-restore-<stamp>` undoes the restore.
 
 By hand, the same steps; the one that matters is to move `routine.db-wal` and `routine.db-shm` away too, or SQLite
@@ -129,3 +139,9 @@ If `data.json` gets a typo (a missing comma) and the backend restarts, it runs o
 parents' screen says so. Saving is off until the file is fixed, so nothing can write the empty config over it.
 Γονείς → Προχωρημένα → Ρυθμίσεις (JSON) then shows the file's own text: fix it there and save. The broken file is
 kept beside as `data.json.invalid-<stamp>`. Or restore `data.json` from a backup.
+
+A missing `data.json` or `exercises.json` is the same error. A new install (a database with no history) gets both
+from the examples on its first start, but a live install that lost one does not: the backend logs it, the parents'
+screen shows "Cannot read data.json", and saving is off. There is no text to fix then (Προχωρημένα says the file
+isn't found): restore it with `./restore-backup.sh`, or copy `data.json` alone from a backup folder into `backend/`;
+the backend picks it up within seconds.

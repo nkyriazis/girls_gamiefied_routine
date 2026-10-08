@@ -285,6 +285,19 @@ export class Store {
 
   // --- Star balances ---
 
+  /**
+   * Whether this database has been used: any star balance, run, chore, exercise, log entry or
+   * seen tour (the meta bookkeeping doesn't count). A config may be created from the examples
+   * only on a database with no history (see seedConfig in config.ts).
+   */
+  hasHistory(): boolean {
+    const tables = ['user_stars', 'routine_executions', 'task_executions', 'spendings', 'star_transfers',
+      'chore_instances', 'exercise_sessions', 'exercise_assignments', 'action_logs', 'flow_runs',
+      'routine_runs', 'help_seen'];
+    const sql = `SELECT ${tables.map(t => `EXISTS (SELECT 1 FROM ${t})`).join(' OR ')} AS used`;
+    return (this.db.prepare(sql).get() as { used: number }).used === 1;
+  }
+
   getStars(userId: string): number {
     const row = this.db.prepare('SELECT stars FROM user_stars WHERE userId = ?').get(userId) as { stars: number } | undefined;
     return row?.stars ?? 0;

@@ -27,10 +27,10 @@ const db = require('../src/db') as typeof import('../src/db');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pool = require('../src/exercisePool') as typeof import('../src/exercisePool');
 
-// Every match-pairs that ships: the pools, and the group game's exercises.json
+// Every match-pairs that ships: the pools, and the group game's exercises (exercises.example.json, which a new install starts from)
 const shipped = (): MatchPairsExercise[] => {
   const pools = pool.loadPools(path.join(__dirname, '..', 'exercise-pools')).flatMap(p => p.exercises as Exercise[]);
-  const game = (JSON.parse(readFileSync(path.join(__dirname, '..', 'exercises.json'), 'utf-8')) as { exercises: Exercise[] }).exercises;
+  const game = (JSON.parse(readFileSync(path.join(__dirname, '..', 'exercises.example.json'), 'utf-8')) as { exercises: Exercise[] }).exercises;
   return [...pools, ...game].filter((e): e is MatchPairsExercise => e.type === 'match-pairs');
 };
 

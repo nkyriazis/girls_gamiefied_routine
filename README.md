@@ -26,7 +26,8 @@ builds). The dev file swaps those for `node:24-alpine` containers that mount `ba
 Don't run dev mode on the Pi: the polling watchers use too much CPU.
 
 The config lives in `backend/data.json` and `backend/exercises.json`, the stars and history in the SQLite database
-`backend/routine.db`. `.env.example` lists the settings `.env` can override.
+`backend/routine.db`. The two config files are git-ignored (each install has its own): a new install, with an empty
+database, gets them from `backend/data.example.json` and `backend/exercises.example.json` on its first start. `.env.example` lists the settings `.env` can override.
 
 ## Test, lint, build
 
@@ -36,7 +37,7 @@ In the running dev containers (the dependencies live there, not on the host):
 dc="docker compose -f docker-compose.yml -f docker-compose.dev.yml exec"
 $dc backend npm test              # backend tests (node:test)
 $dc backend npm run build         # tsc
-$dc backend npm run test-schemas  # data.json against its schema
+$dc backend npm run test-schemas  # the example configs, and the local ones when present, against their schemas
 $dc frontend npm test             # frontend tests
 $dc frontend npm run lint         # the help, voice, sound and gender checks, then eslint (0 problems)
 $dc frontend npm run build        # tsc, vite build, the bundle check

@@ -43,6 +43,7 @@ writeFileSync(path.join(pools, 'd.json'), JSON.stringify({
   grades: [4], exercises: [...many('dM', 4, id => plain(id, 'Μαθηματικά')), ...many('dL', 4, id => plain(id, 'Γλώσσα'))]
 }));
 writeFileSync(path.join(dir, 'data.json'), JSON.stringify(cfg));
+writeFileSync(path.join(dir, 'exercises.json'), JSON.stringify({ exercises: [] }));
 process.env.DATA_FILE = path.join(dir, 'data.json');
 process.env.EXERCISES_FILE = path.join(dir, 'exercises.json');
 process.env.DB_FILE = path.join(dir, 'routine.db');

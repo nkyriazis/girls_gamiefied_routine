@@ -37,6 +37,7 @@ const g3 = ['g1', 'g2', 'g3', 'g4', 'g5'];
 writeFileSync(path.join(pools, 'g.json'), JSON.stringify({ grades: [3], exercises: g3.map(id => ({ ...balloons, id })) }));
 writeFileSync(path.join(pools, 'd.json'), JSON.stringify({ grades: [4], exercises: ['d1', 'd2'].map(id => ({ ...balloons, id })) }));
 writeFileSync(path.join(dir, 'data.json'), JSON.stringify(cfg));
+writeFileSync(path.join(dir, 'exercises.json'), JSON.stringify({ exercises: [] }));
 process.env.DATA_FILE = path.join(dir, 'data.json');
 process.env.EXERCISES_FILE = path.join(dir, 'exercises.json');
 process.env.DB_FILE = path.join(dir, 'routine.db');

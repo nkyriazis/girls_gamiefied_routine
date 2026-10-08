@@ -7,6 +7,8 @@ backend/dist
 frontend/dist
 frontend/dev-dist
 *.log
+backend/data.json
+backend/exercises.json
 backend/routine.db*
 backend/state.json
 backend/logs.jsonl
@@ -15,7 +17,7 @@ materials
 
 # The build context is the repo root (compose and CI build with `context: .`), so this is the only
 # .dockerignore Docker reads: one in frontend/ or backend/ would do nothing. Below, everything local or
-# generated, wherever it sits, so the context stays small and never carries the database, the legacy state, uploads or .env files (data.json and exercises.json are still in it until #53).
+# generated, wherever it sits, so the context stays small and never carries the family's config (data.json, exercises.json), the database, the legacy state, uploads or .env files.
 **/node_modules
 **/dist
 **/dev-dist

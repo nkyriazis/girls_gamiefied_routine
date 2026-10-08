@@ -34,7 +34,7 @@ test('an exercise that is not an object is still refused', () => {
   assert.equal(lines(exercisesSchema, { exercises: [null] }).length, 1);
 });
 
-const flows = (steps: unknown[]) => ({ ...read('data.json'), flows: [{ id: 'f', steps }] });
+const flows = (steps: unknown[]) => ({ ...read('data.example.json'), flows: [{ id: 'f', steps }] });
 
 test('a wrong field in a flow step is one error, in its own branch', () => {
   assert.deepEqual(lines(dataSchema, flows([{ type: 'alarm', props: { title: 5 } }])),
@@ -51,10 +51,9 @@ test("an alarm's sound (a name or an upload) validates as before", () => {
   assert.ok(lines(dataSchema, flows([{ type: 'alarm', props: { sound: 'siren' } }])).length > 0);
 });
 
-test('the shipped files and every pool still validate', () => {
-  assert.deepEqual(lines(dataSchema, read('data.json')), []);
-  assert.deepEqual(lines(exercisesSchema, read('exercises.json')), []);
-  assert.deepEqual(lines(dataSchema, read('data2.json')), []);
+test('the shipped examples and every pool still validate', () => {
+  assert.deepEqual(lines(dataSchema, read('data.example.json')), []);
+  assert.deepEqual(lines(exercisesSchema, read('exercises.example.json')), []);
   const pools = readdirSync(path.join(backend, 'exercise-pools')).filter(f => f.endsWith('.json'));
   assert.ok(pools.length > 0);
   for (const file of pools) assert.deepEqual(lines(exercisePoolSchema, read(`exercise-pools/${file}`)), [], file);

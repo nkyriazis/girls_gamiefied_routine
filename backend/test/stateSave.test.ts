@@ -19,6 +19,7 @@ const cfg: DataConfig = {
   chores: [], settings: { timezone: 'Europe/Athens' }
 };
 writeFileSync(path.join(dir, 'data.json'), JSON.stringify(cfg));
+writeFileSync(path.join(dir, 'exercises.json'), JSON.stringify({ exercises: [] }));
 process.env.DATA_FILE = path.join(dir, 'data.json');
 process.env.EXERCISES_FILE = path.join(dir, 'exercises.json');
 process.env.DB_FILE = path.join(dir, 'routine.db');

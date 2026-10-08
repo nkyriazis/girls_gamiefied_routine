@@ -22,7 +22,7 @@ import {
   logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
   stateText, replaceState, StateConflict, logConfigReload, ensureDailyAssignments, markHelpSeen, resetHelp, cronDue
 } from './db';
-import { config, configError, configWarnings, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
+import { config, configError, configWarnings, dataConfig, exercisesConfig, reloadConfig, seedConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
 import { HEARTBEAT_MS } from './sync';
 import { BACKUP_CRON, BACKUP_DIR, BACKUP_TIMEOUT_MS, DB_FILE, LOGS_FILE, STATE_FILE } from './paths';
@@ -782,6 +782,13 @@ const start = async () => {
     console.log(legacy.imported
       ? `Imported legacy ${STATE_FILE} and ${LOGS_FILE} into the database`
       : `Legacy files already imported at ${legacy.importedAt}`);
+
+    // A new install starts from the example config; a live one that lost its file doesn't
+    const seed = seedConfig(store.hasHistory());
+    seed.seeded.forEach(file => console.log(`Created ${file} from its example (a new install)`));
+    seed.missing.forEach(file => console.error(
+      `!!! ${file} is MISSING, and this database has history: not creating it from the example. ` +
+      `Restore it (e.g. from backups/); until then the parents' page shows the error.`));
 
     const change = reloadConfig();
     // An alarm left ringing while the server was down doesn't come back late

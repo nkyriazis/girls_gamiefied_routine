@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, utimesSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'fs';
 import path from 'path';
 import { DatabaseSync } from 'node:sqlite';
 import { newestBackup, sameFilesystem, takeBackup } from '../src/backup';
@@ -72,6 +72,14 @@ test('rotation keeps the newest N complete backups and leaves anything else alon
   const left = readdirSync(dir).sort();
   assert.deepEqual(left, ['2026-10-03_031700', '2026-10-04_031700', 'notes.txt', 'pre-restore-20261001-120000']);
   assert.deepEqual(days[3].removed, ['2026-10-02_031700']);
+});
+
+test('a missing config file fails the backup and keeps the older backups it would rotate out', () => {
+  const { live, dir, options } = setup();
+  takeBackup(options(new Date(2026, 9, 1, 3, 17, 0), 1));
+  rmSync(path.join(live, 'exercises.json'));
+  assert.throws(() => takeBackup(options(new Date(2026, 9, 2, 3, 17, 0), 1)), /exercises\.json is missing/);
+  assert.deepEqual(readdirSync(dir), ['2026-10-01_031700']);
 });
 
 test('a backup that never completed is not counted as the newest', () => {
