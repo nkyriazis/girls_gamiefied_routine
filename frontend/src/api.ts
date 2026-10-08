@@ -119,8 +119,12 @@ export const api = {
   validateConfig: (data: unknown) => post<ValidationResult>('/admin/validate', data, 'Failed to validate config'),
   // The forms' raw cron field: why the scheduler can't read it, or null (#89; backend/src/cron.ts reads it)
   validateCron: (cron: string) => post<{ error: string | null }>('/admin/validate-cron', { cron }, 'Failed to check the cron'),
-  getRawState: () => get<StateSnapshot>('/admin/state', 'Failed to fetch state'),
-  saveRawState: (data: unknown) => post('/admin/state', data, 'Failed to save state'),
+  // The whole runtime state and its version (X-State-Version, #98). A save names the version it was opened
+  // with: if the state changed since (a chore confirmed, a task done), the server refuses it with a 409.
+  getRawState: () => send<StateSnapshot>('GET', '/admin/state', undefined, 'Failed to fetch state')
+    .then(({ json, response }): Versioned<StateSnapshot> => ({ data: json, version: response.headers.get('X-State-Version') ?? undefined })),
+  saveRawState: (data: unknown, version?: string) =>
+    post<Saved>(`/admin/state?${new URLSearchParams({ ...(version ? { version } : {}), source: 'advanced' })}`, data, 'Failed to save state'),
   validateState: (data: unknown) => post<ValidationResult>('/admin/validate-state', data, 'Failed to validate state'),
   getRawExercises: () => send<unknown>('GET', '/admin/exercises', undefined, 'Failed to fetch exercises')
     .then(({ json, response }): Versioned<unknown> => ({ data: json, version: response.headers.get('X-Config-Version') ?? undefined })),

@@ -11,10 +11,10 @@ interface Props {
     initial?: Versioned<unknown>; // the document (and its version), when it is already at hand...
     load?: () => Promise<Versioned<unknown>>; // ...or how to fetch it
     loadText?: () => Promise<string>; // ...or the file's own text, when it doesn't parse
-    // Saves the document as edited from `version`; a config file answers its new version
+    // Saves the document as edited from `version`; a config file (and the state) answers its new version
     save: (data: unknown, version?: string) => Promise<unknown>;
     live?: string; // the file's live version (AppState.configVersion): moved past the editor's, it is stale
-    stale?: string; // what the banner says then
+    stale?: string; // what the banner says then (or after a 409, with no `live`: the state, #98)
     onReload?: () => void; // the banner's Φόρτωσε ξανά: open the editor afresh
     schemas?: () => Promise<SchemaFile[]>; // the document's schema first, then the ones it $refs
     validate?: (data: unknown) => Promise<ValidationResult>;
@@ -27,6 +27,7 @@ interface Props {
 // version moves past it (another screen saved, or the file changed on disk) a
 // banner offers to reload, and the server refuses (409) a save that would put
 // the old text over the newer one. After its own save it holds the new version.
+// The state editor has no `live` (#98): only the server's 409 shows its banner.
 //
 // The editor's version can be ahead of `live`: a save's 200 (or the exercises'
 // GET) answers before the STATE that carries the same version, which the server

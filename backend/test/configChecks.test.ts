@@ -265,7 +265,7 @@ test('fixing them saves and clears them', async () => {
 
 test('a data.json on disk with them loads (no error) and lists every one', async () => {
   writeFileSync(DATA, JSON.stringify(bad, null, 2));
-  assert.deepEqual(reloadConfig(), { type: 'updated' });
+  assert.equal(reloadConfig()?.type, 'updated');
   assert.equal(configError(), null);
   assert.equal(config().users.length, 4);
   assert.deepEqual(await warnings(), BAD);

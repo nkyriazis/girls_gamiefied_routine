@@ -11,7 +11,7 @@ import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type Cal
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { cronMatchesAt } from './cron';
-import { changedKeys, config, ConfigFile, configError, configWarnings, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { changedKeys, config, ConfigChange, ConfigFile, versionOf, configError, configWarnings, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { summarize } from './schemas';
 import { Store, Table } from './store';
@@ -203,6 +203,19 @@ export function readRawExercises(): ExercisesConfig {
 /** Validate and save exercises.json (see saveConfigFile); returns its new version. */
 export function writeRawExercises(data: unknown, options: ConfigSave = {}): string {
   return saveConfigFile(exercisesConfig, data, options, 'Exercises validation failed');
+}
+
+/**
+ * Log what the watcher's reload found new on disk (#98): CONFIG_RELOADED { file, changed } for each file
+ * that changed (a hand edit; `restored: true` when a broken edit went back to the live text), CONFIG_INVALID
+ * { file, message } once per bad text. The server's own saves never reach it (the reload after one finds
+ * the text it wrote), and the reload at startup isn't logged.
+ */
+export function logConfigReload(change: ConfigChange | null): void {
+  for (const report of change?.files ?? []) {
+    const { type, ...details } = report;
+    logAction(type === 'updated' ? 'CONFIG_RELOADED' : 'CONFIG_INVALID', details);
+  }
 }
 
 // ============================================
@@ -718,14 +731,63 @@ export function resolveGift(id: string, action: 'approve' | 'reject' | 'cancel')
 // ADMIN STATE EDITOR
 // ============================================
 
+// The Κατάσταση (JSON) editor replaces the whole runtime state, so a save from an editor opened before
+// something else changed it (a chore confirmed on a phone, a task done) would undo that. Like a config
+// save (#33), it names the version it edited (#98): the hash of the snapshot's JSON, exactly as
+// GET /api/admin/state returned it (X-State-Version). The snapshot reads every table in insertion order
+// (ORDER BY rowid; an update keeps a record's rowid), so an untouched state always hashes the same, and
+// the hash is taken only when the editor opens or saves, never per STATE. Strict on purpose: while the
+// kids are busy a save is often refused, and the editor is a last resort.
+
 export function stateSnapshot(): StateSnapshot {
   return store.snapshot();
 }
 
-// Replace the whole runtime state (validated by the caller).
-export function replaceState(state: StateSnapshot): void {
-  store.replaceState(state);
-  logAction('STATE_REPLACED', { source: 'admin' });
+/** The snapshot as GET /api/admin/state sends it, and its version (the hash of exactly that text). */
+export function stateText(): { text: string; version: string } {
+  const text = JSON.stringify(store.snapshot());
+  return { text, version: versionOf(text) };
+}
+
+const stateVersion = (snapshot: StateSnapshot) => versionOf(JSON.stringify(snapshot));
+
+/** A state save that names a version other than the live one: something changed the state since the editor opened. */
+export class StateConflict extends Error {}
+
+export const STATE_STALE = 'Η κατάσταση άλλαξε στο μεταξύ (από άλλη οθόνη ή από τα παιδιά). Φόρτωσε ξανά και κάνε την αλλαγή σου πάλι.';
+
+export type StateSaveSource = 'advanced' | 'api';
+
+/**
+ * Replace the whole runtime state (validated by the caller); returns its new version. With `version`, the
+ * live state must still be that one, checked in the same transaction as the replace: otherwise nothing is
+ * written, STATE_REPLACE_STALE is logged and StateConflict thrown. Without one it is not checked (scripts,
+ * curl). Every save is logged as STATE_REPLACED: each balance it moved as [before, after] (a kid missing on
+ * one side counts 0), the snapshot's collections that differ, and the flows and routines on screen it ended.
+ */
+export function replaceState(state: StateSnapshot, { version, source = 'api' }: { version?: string; source?: StateSaveSource } = {}): string {
+  const saved = store.transaction(() => {
+    const before = store.snapshot();
+    const current = stateVersion(before);
+    if (version !== undefined && version !== current) {
+      // Nothing written; logged after the transaction (a throw in it would roll the entry back too)
+      return { stale: current };
+    }
+    const cleared = { flowRuns: store.flowRuns.count(), routineRuns: store.routineRuns.count() };
+    store.replaceState(state);
+    const after = store.snapshot();
+    const kids = [...new Set([...Object.keys(before.userStars), ...Object.keys(after.userStars)])];
+    const stars = Object.fromEntries(kids
+      .map(kid => [kid, [before.userStars[kid] ?? 0, after.userStars[kid] ?? 0]])
+      .filter(([, [was, now]]) => was !== now));
+    logAction('STATE_REPLACED', { source, stars, changed: changedKeys(before, after), cleared });
+    return { version: stateVersion(after) };
+  });
+  if ('stale' in saved) {
+    logAction('STATE_REPLACE_STALE', { source, version, current: saved.stale });
+    throw new StateConflict(STATE_STALE);
+  }
+  return saved.version;
 }
 
 // ============================================
