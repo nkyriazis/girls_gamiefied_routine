@@ -329,6 +329,11 @@ export interface ExerciseAssignment {
   stepIndex?: number; // problems: the step on screen (the ones before it are solved)
   mistakes?: number[]; // problems: wrong tries per step
   extra?: boolean; // a problem the kid asked for, on top of the daily set
+  // The steps shown worked, in the order shown (#68): a problem's «💡 Δείξε μου» (at the tap) and the
+  // step Αυστηρό shows worked after its tries; a plain exercise's answer is step 0 («Δείξε μου», or
+  // Αυστηρό closing it after its tries). Absent means none (rows from before #68 read so too).
+  // Ιστορικό shows it; paying never reads it.
+  shown?: number[];
 }
 
 // Enriched assignment with the exercise definition for frontend display
@@ -570,12 +575,23 @@ export const LAST_REWARDS_GIVEN = 10;
 
 // What was decided (Ιστορικό), from GET /api/history?before=<next>&limit=<n>&userId=<kid>: purchases given
 // or revoked, gifts approved, rejected or cancelled, chores confirmed or rejected (the database keeps those
-// for 7 days), newest first by `at`, the time it was decided. `next` is the cursor of the following page,
-// null on the last one.
+// for 7 days), exercises finished (#68: daily and extra, not the group game), newest first by `at`, the
+// time it was decided. `next` is the cursor of the following page, null on the last one.
 export type HistoryEntry = { at: string } & (
   | { kind: 'spending'; spending: Spending }
   | { kind: 'transfer'; transfer: StarTransfer }
-  | { kind: 'chore'; instance: ChoreInstance });
+  | { kind: 'chore'; instance: ChoreInstance }
+  // `exercise` is null when its id is no longer in the pools
+  | { kind: 'exercise'; assignment: ExerciseAssignment; exercise: ExerciseSummary | null });
+
+// What Ιστορικό shows of an exercise, rather than the whole of it: `steps` for a problem
+export interface ExerciseSummary {
+  title: string;
+  category: string;
+  type: Exercise['type'];
+  stars: number;
+  steps?: number;
+}
 
 export interface HistoryPage {
   entries: HistoryEntry[];

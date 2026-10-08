@@ -47,6 +47,10 @@ export type GameAnswerBody = { userId: string; exerciseId: string; answer: unkno
 export const answerBody = object({ answer: {} }, ['answer']);
 export type AnswerBody = { answer: unknown };
 
+/** «Δείξε μου»: a plain exercise sends {}, a problem the step on screen (#68). */
+export const revealBody = object({ step: { type: 'integer', minimum: 0 } }, []);
+export type RevealBody = { step?: number };
+
 export const userBody = object({ userId: id }, ['userId']);
 export type UserBody = { userId: string };
 

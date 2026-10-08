@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'path';
 import { Store } from '../src/store';
-import { ChoreInstance, ExerciseSession, StateSnapshot } from '../../shared/types';
+import { ChoreInstance, ExerciseAssignment, ExerciseSession, StateSnapshot } from '../../shared/types';
 import { tempDir, uuid } from './helpers';
 
 function openStore() {
@@ -23,10 +23,20 @@ test('records round-trip exactly, including optional, boolean and JSON fields', 
   store.choreInstances.put(chore);
   store.exerciseSessions.put(session);
   store.taskExecutions.put({ id: uuid(3), executionId: uuid(4), taskId: 't', duration: 0, isOnTime: false, completedAt: 'z' });
+  // A problem with a step shown worked (#68), and a row with none: no `shown` at all, as rows from before
+  const shown: ExerciseAssignment = {
+    id: uuid(5), userId: 'u1', exerciseId: 'p', date: '2026-10-08', status: 'completed', attempts: 9, assignedAt: 'a',
+    completedAt: 'b', starsAwarded: 1, stepIndex: 5, mistakes: [1, 0, 0, 3, 0], extra: true, shown: [3]
+  };
+  const { shown: _none, ...plain } = { ...shown, id: uuid(6) };
+  store.exerciseAssignments.put(shown);
+  store.exerciseAssignments.put(plain);
 
   assert.deepEqual(store.choreInstances.get(uuid(1)), chore);
   assert.deepEqual(store.exerciseSessions.get(uuid(2)), session);
   assert.equal(store.taskExecutions.get(uuid(3))?.isOnTime, false);
+  assert.deepEqual(store.exerciseAssignments.get(uuid(5)), shown);
+  assert.deepEqual(store.exerciseAssignments.get(uuid(6)), plain);
   assert.equal(store.choreInstances.get('missing'), undefined);
 });
 

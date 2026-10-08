@@ -7,6 +7,7 @@ import { useGame } from '../../../context/GameContext';
 import { SmartIcon } from '../../SmartIcon';
 import { useFeedback } from '../useFeedback';
 import { Empty, Stars } from '../ui';
+import { exerciseOutcome, type ExerciseChip } from './exercises';
 
 interface Row {
     key: string;
@@ -16,14 +17,25 @@ interface Row {
     outcome: string;
     stars: number;
     undone: boolean; // rejected, revoked or cancelled: no stars moved
+    exercise?: { amount: string; chips: ExerciseChip[] }; // a finished exercise (#68), in place of stars
 }
 
 const TRANSFER_OUTCOME = { approved: 'Εγκρίθηκε', rejected: 'Απορρίφθηκε', cancelled: 'Ακυρώθηκε από το παιδί', pending: '' };
 
-const idOf = (e: HistoryEntry) => (e.kind === 'spending' ? e.spending : e.kind === 'transfer' ? e.transfer : e.instance).id;
+// An entry of a kind this page doesn't know (a newer server than the page) is skipped, never a crash
+const idOf = (e: HistoryEntry): string | undefined => {
+    switch (e.kind) {
+        case 'spending': return e.spending.id;
+        case 'transfer': return e.transfer.id;
+        case 'chore': return e.instance.id;
+        case 'exercise': return e.assignment.id;
+        default: return undefined;
+    }
+};
+const known = (page: HistoryPage): HistoryPage => ({ ...page, entries: page.entries.filter(e => idOf(e) !== undefined) });
 const keyOf = (e: HistoryEntry) => `${e.kind}:${idOf(e)}`;
 // The server's order: newest first, ties by id
-const older = (a: HistoryEntry, b: HistoryEntry) => a.at < b.at || (a.at === b.at && idOf(a) < idOf(b));
+const older = (a: HistoryEntry, b: HistoryEntry) => a.at < b.at || (a.at === b.at && idOf(a)! < idOf(b)!);
 
 interface Loaded {
     kid: string | null;
@@ -45,11 +57,11 @@ function withOlder(loaded: Loaded, page: HistoryPage): Loaded {
     return { ...loaded, entries: [...loaded.entries, ...page.entries.filter(e => !keys.has(keyOf(e)))], next: page.next, olderPages: true };
 }
 
-// What parents and kids decided: rewards given, star gifts, chores. It is read from the server a page at a
+// What parents and kids decided: rewards given, star gifts, chores, and how the exercises went (#68). It is read from the server a page at a
 // time (GET /api/history), since STATE carries only the last 30 days; the first page is read again whenever
 // a STATE arrives, so a decision shows up here as it is made. The pages stay in this view (not GameContext).
 export function HistoryView() {
-    const { spendings, starTransfers, choreInstances, chores, rewards, users } = useGame();
+    const { spendings, starTransfers, choreInstances, exerciseAssignments, chores, rewards, users } = useGame();
     const { notify } = useFeedback();
     const [kid, setKid] = useState<string | null>(null);
     // Null until a first page arrives. It belongs to one kid; while another kid's first page is on its way,
@@ -64,10 +76,10 @@ export function HistoryView() {
         let current = true;
         api.history(null, kid).then(first => {
             if (!current) return;
-            setLoaded(l => withFirst(l?.kid === kid ? l : { kid, entries: [], next: null, olderPages: false }, first));
+            setLoaded(l => withFirst(l?.kid === kid ? l : { kid, entries: [], next: null, olderPages: false }, known(first)));
         }).catch(() => current && notify('Το ιστορικό δεν διαβάστηκε', 'error'));
         return () => { current = false; };
-    }, [kid, spendings, starTransfers, choreInstances, notify]);
+    }, [kid, spendings, starTransfers, choreInstances, exerciseAssignments, notify]);
 
     const shown = loaded?.kid === kid ? loaded : null;
 
@@ -77,7 +89,7 @@ export function HistoryView() {
         setBusy(true);
         try {
             const page = await api.history(next, kid);
-            setLoaded(l => (l && l.kid === kidNow.current && l.next === next ? withOlder(l, page) : l));
+            setLoaded(l => (l && l.kid === kidNow.current && l.next === next ? withOlder(l, known(page)) : l));
         } catch {
             notify('Το ιστορικό δεν διαβάστηκε', 'error');
         } finally {
@@ -87,29 +99,37 @@ export function HistoryView() {
 
     const name = (id?: string) => users.find(u => u.id === id)?.name ?? id ?? '';
     const reward = (id: string) => rewards.find(r => r.id === id);
-    const rows: Row[] = (shown?.entries ?? []).map(e => {
+    const rows: Row[] = (shown?.entries ?? []).flatMap((e): Row[] => {
         switch (e.kind) {
             case 'spending': {
                 const s = e.spending;
-                return {
+                return [{
                     key: keyOf(e), at: e.at, icon: reward(s.rewardId)?.icon ?? '🎀', title: `${name(s.userId)}: ${reward(s.rewardId)?.title ?? s.rewardId}`,
                     outcome: s.status === 'done' ? 'Δόθηκε' : 'Ακυρώθηκε', stars: -s.cost, undone: s.status === 'revoked',
-                };
+                }];
             }
             case 'transfer': {
                 const t = e.transfer;
-                return {
+                return [{
                     key: keyOf(e), at: e.at, icon: '🎁', title: `${name(t.fromUserId)} → ${name(t.toUserId)}`,
                     outcome: TRANSFER_OUTCOME[t.status], stars: t.amount, undone: t.status !== 'approved',
-                };
+                }];
             }
             case 'chore': {
                 const i = e.instance, chore = chores.find(c => c.id === i.choreId);
-                return {
+                return [{
                     key: keyOf(e), at: e.at, icon: chore?.icon ?? '🧹', title: `${name(i.claimedBy)}: ${chore?.title ?? i.choreId}`,
                     outcome: i.status === 'confirmed' ? 'Επιβεβαιώθηκε' : 'Απορρίφθηκε', stars: i.starsAwarded ?? 0, undone: i.status === 'rejected',
-                };
+                }];
             }
+            case 'exercise': {
+                const a = e.assignment, { icon, amount, chips, label } = exerciseOutcome(a, e.exercise);
+                return [{
+                    key: keyOf(e), at: e.at, icon, title: `${name(a.userId)} · ${e.exercise?.title ?? a.exerciseId}`, outcome: label ?? '',
+                    stars: 0, undone: false, exercise: { amount, chips },
+                }];
+            }
+            default: return [];
         }
     });
 
@@ -128,9 +148,16 @@ export function HistoryView() {
                         <SmartIcon value={e.icon} size={32} />
                         <div className="p-row-main">
                             <div className="p-row-title">{e.title}</div>
-                            <div className="p-row-sub">{e.outcome} · {format(new Date(e.at), 'd MMM yyyy, HH:mm', { locale: el })}</div>
+                            {e.exercise && (
+                                <div className="p-row-chips">
+                                    {e.exercise.chips.map(c => (
+                                        <span key={c.text} className={c.shown ? 'p-tally shown' : 'p-tally'}>{c.text}</span>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="p-row-sub">{e.outcome && `${e.outcome} · `}{format(new Date(e.at), 'd MMM yyyy, HH:mm', { locale: el })}</div>
                         </div>
-                        {e.stars !== 0 && <Stars value={e.stars} sign />}
+                        {e.exercise ? <span className="p-stars">{e.exercise.amount}</span> : e.stars !== 0 && <Stars value={e.stars} sign />}
                     </li>
                 ))}
             </ul>

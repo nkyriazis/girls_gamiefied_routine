@@ -101,6 +101,7 @@ test('a missing body is a 400, never a TypeError or a 500', async () => {
     ['POST', '/api/users/u1/stars'], ['POST', '/api/exercise-assignments/extra'], ['POST', `/api/exercise-assignments/${ASSIGNMENT}/answer`],
     ['POST', `/api/exercises/sessions/${GAME}/answer`], ['POST', '/api/exercises/sessions'], ['POST', '/api/help/seen'],
     ['POST', '/api/hooks/push'], ['POST', '/api/debug/time'], ['POST', '/api/admin/validate-cron'],
+    ['POST', `/api/exercise-assignments/${ASSIGNMENT}/reveal`],
   ] as const) await refused(method, url, undefined, 400, /^body must be object$/);
 });
 
@@ -169,6 +170,9 @@ test('an answer must be there (any JSON value), and the other bodies name what t
   await refused('POST', '/api/hooks/push', '{"id":""}');
   await refused('POST', '/api/executions/x/close', '{"by":"teacher"}');
   await refused('POST', '/api/admin/validate-cron', '{"cron":5}', 400, /^body\/cron must be string$/);
+  // «Δείξε μου» on a problem names the step on screen (#68)
+  await refused('POST', `/api/exercise-assignments/${ASSIGNMENT}/reveal`, '{"step":"1"}', 400, /^body\/step must be integer$/);
+  await refused('POST', `/api/exercise-assignments/${ASSIGNMENT}/reveal`, '{"step":-1}');
 });
 
 test('every body the screens send still passes (api.ts), and unknown fields are ignored', async () => {

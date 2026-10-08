@@ -172,6 +172,15 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
   // its reply (before its STATE arrives)
   const [slipReply, setSlipReply] = useState<{ step: number; mistakes: number } | null>(null);
   const slipSent = useRef<Promise<unknown>>(Promise.resolve());
+  // «💡 Δείξε μου» is recorded on the server at the tap (#68: Ιστορικό shows the step was shown);
+  // «Συνέχεια →» waits for it, so the step is still the one on screen when it arrives
+  const shownSent = useRef<Promise<unknown>>(Promise.resolve());
+  const showWorked = () => {
+    setShowStep(stepIndex);
+    setNote(null);
+    shownSent.current = api.revealExerciseAssignment(assignment.id, stepIndex)
+      .catch(err => console.error('Shown step not recorded:', err));
+  };
   // Wrong tries on this step that cost a star: the server's (its reply first, the STATE after
   // it). With them, the help: on a calc step every calculation taken back brings it, a right
   // one that means nothing too. They decide what the step shows, on her rung: the hint, the
@@ -232,7 +241,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
     }
     setBusy(true);
     try {
-      await slipSent.current;
+      await Promise.all([slipSent.current, shownSent.current]);
       const result = await api.answerExerciseAssignment(assignment.id, { step: stepIndex, value: answer });
       if (result.correct) {
         const completed = result.assignment.status === 'completed';
@@ -360,7 +369,7 @@ export const ProblemPlayer: React.FC<Props> = ({ assignment, exercise, onSolved,
       <div className="problem-actions">
         {ladder.canShow && !shown && (
           <button type="button" className="problem-show" {...help('problem.show')} {...sound('open')} disabled={busy}
-            onClick={() => { setShowStep(stepIndex); setNote(null); }}>💡 Δείξε μου</button>
+            onClick={showWorked}>💡 Δείξε μου</button>
         )}
         <button type="button" className="problem-check" {...help('problem.check')} disabled={busy || (!shown && !isReady(kind, step, value))} onClick={submit}>
           {shown ? 'Συνέχεια →' : 'Έλεγχος ✓'}
