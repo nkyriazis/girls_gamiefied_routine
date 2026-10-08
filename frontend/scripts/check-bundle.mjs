@@ -7,6 +7,8 @@
 //    linked nor preloaded by index.html, nor imported by the kids' entry (directly or through a chunk it
 //    imports), nor precached by the service worker. build.rollupOptions.output.manualChunks did exactly
 //    that once: it put react in the Monaco chunk, so the kids' entry imported all of Monaco.
+//  - no Google Fonts URL in dist (fonts.googleapis.com, fonts.gstatic.com): the screens' font, Outfit, ships
+//    with the app (#102); from Google it was the fallback font whenever the internet was down
 //  - the DOMPurify that runs in Monaco is the installed dompurify package (the override in package.json),
 //    not the copy monaco vendors (vite.config.ts redirects it).
 import fs from 'fs';
@@ -30,6 +32,8 @@ const texts = files.filter(f => /\.(js|mjs|css|html|webmanifest)$/.test(f));
 for (const f of texts) {
     const urls = read(f).match(/https?:\/\/cdn\.jsdelivr\.net[^'"`\s)]*/g) ?? [];
     if (urls.length) fail(`${f} loads from cdn.jsdelivr.net: ${[...new Set(urls)].join(', ')}`);
+    const fonts = read(f).match(/https?:\/\/fonts\.(googleapis|gstatic)\.com[^'"`\s)]*/g) ?? [];
+    if (fonts.length) fail(`${f} loads a font from Google: ${[...new Set(fonts)].join(', ')} (bundle it, #102)`);
 }
 
 // 2. Monaco's files, by name
