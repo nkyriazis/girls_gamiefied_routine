@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../api';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
@@ -35,6 +35,15 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [attemptKey, setAttemptKey] = useState(0); // remounts the renderer for a clean retry
 
+  // The timers this screen starts (a celebration's close, «Δοκίμασε ξανά»'s reset) go with it: ✕ during
+  // «+⭐1» left one behind that closed the next exercise opened within 1.8 s
+  const timers = useRef<number[]>([]);
+  useEffect(() => {
+    const pending = timers.current;
+    return () => pending.forEach(t => window.clearTimeout(t));
+  }, []);
+  const later = (fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)); };
+
   // The header's ⭐ is what the exercise pays now (shared/forgiveness.ts): after a mistake it
   // drops with a small pulse, silently (no «−1», no red, no sound)
   const pays = assignment.exercise ? paysNow(assignment, assignment.exercise, user) : 0;
@@ -59,17 +68,17 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
         playSuccess();
         if (result.starsAwarded > 0) sfx('stars', { delay: 350 });
         // Celebrate briefly, then return to the list
-        setTimeout(() => onClose(), 1800);
+        later(onClose, 1800);
       } else if (result.assignment.status === 'completed') {
         // Unforgiving, and her tries are used: the right answer, then back to the list
         playError();
         setFeedback({ kind: 'answer', text: answerText(exercise) });
-        setTimeout(() => onClose(), 4500);
+        later(onClose, 4500);
       } else {
         setFeedback({ kind: 'incorrect' });
         playError();
         // Wrong — reset for another try
-        setTimeout(() => {
+        later(() => {
           setFeedback(null);
           setSubmitting(false);
           setAttemptKey(k => k + 1);
@@ -88,7 +97,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
     try {
       await api.revealExerciseAssignment(assignment.id);
       setFeedback({ kind: 'answer', text: answerText(exercise) });
-      setTimeout(() => onClose(), 4500);
+      later(onClose, 4500);
     } catch (err) {
       console.error('Could not show the answer:', err);
       setSubmitting(false);
@@ -99,7 +108,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
   // (or, when the screen worked it, only says what it paid).
   const handleSolved = (stars: number, shown: boolean) => {
     setFeedback(shown ? { kind: 'paid', stars } : { kind: 'correct', stars });
-    setTimeout(() => onClose(), 1800);
+    later(onClose, 1800);
   };
 
   const renderExercise = () => {
