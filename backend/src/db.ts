@@ -8,7 +8,7 @@ import {
 } from '../../shared/types';
 import { DrawGate, drawDailySet, drawGate, exercisePoolProvider, exercisesPerDay, fallbackOf, gateOrder, RetryMatch, retryFor, storyMarks, UserPools } from './exercisePool';
 import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type CalcLine } from '../../shared/problems';
-import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, stepHelp, wrongTryCounts } from '../../shared/forgiveness';
+import { plainStars, plainTries, problemStars, rungOf, stepHelp, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { MAX_SET_ASIDE, extraRefusals } from '../../shared/extraProblems';
 import { cronMatchesAt } from './cron';
@@ -1532,8 +1532,8 @@ export function fitProgress<A extends ExerciseAssignment>(a: A, exercise: Exerci
 const withShown = (a: ExerciseAssignment, step: number): ExerciseAssignment =>
   a.shown?.includes(step) ? a : { ...a, shown: [...(a.shown ?? []), step] };
 
-// The kid's rung on the forgiveness ladder (shared/forgiveness.ts)
-const forgivenessOf = (userId: string) => config().users.find(u => u.id === userId)?.forgiveness ?? DEFAULT_FORGIVENESS;
+// The rung an assignment plays on (shared/forgiveness.ts): the kid's, unforgiving on a retry (#136)
+const forgivenessOf = (a: ExerciseAssignment) => rungOf(config().users.find(u => u.id === a.userId), a);
 
 // Answer a daily assignment. Correct -> completed, paying its stars less one per wrong
 // try before it (shared/forgiveness.ts). Wrong -> another try, unless the kid is on the
@@ -1561,7 +1561,7 @@ export async function answerExerciseAssignment(
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
     let updated: ExerciseAssignment = { ...current, attempts: current.attempts + 1 };
     let stars = 0;
-    if (isCorrect || updated.attempts >= plainTries(forgivenessOf(current.userId), exercise.type)) {
+    if (isCorrect || updated.attempts >= plainTries(forgivenessOf(current), exercise.type)) {
       stars = isCorrect ? plainStars(exercise.stars, current.attempts) : 0;
       updated.status = 'completed';
       updated.completedAt = new Date().toISOString();
@@ -1575,7 +1575,7 @@ export async function answerExerciseAssignment(
   });
 
   logAction('EXERCISE_ASSIGNMENT_ANSWER', {
-    assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId, forgiveness: forgivenessOf(assignment.userId),
+    assignmentId, userId: assignment.userId, exerciseId: assignment.exerciseId, forgiveness: forgivenessOf(assignment),
     correct: isCorrect, attempts: assignment.attempts, starsAwarded, completed: assignment.status === 'completed'
   });
 
@@ -1587,6 +1587,9 @@ export async function answerExerciseAssignment(
 // (step 0). A problem's step (`step`, the one on screen): recorded as shown at the tap (#68), and
 // nothing else changes; she still sends the worked answer with «Συνέχεια →», and it pays what its
 // mistakes pay. A tap for another step (solved, a second device) or again changes nothing.
+// A retry is hers to do: «Δείξε μου» is never offered on one (a stale screen's tap is refused)
+const RETRY_SHOWS_NOTHING = 'A retry is not shown: it is worked after its tries';
+
 export async function revealExerciseAssignment(assignmentId: string, step?: number): Promise<ExerciseAssignment> {
   const found = store.exerciseAssignments.get(assignmentId);
   if (!found) throw new Error('Assignment not found');
@@ -1600,6 +1603,7 @@ export async function revealExerciseAssignment(assignmentId: string, step?: numb
     const current = store.exerciseAssignments.get(assignmentId);
     if (!current || current.status === 'completed') throw new Error('Assignment already completed');
     if (current.attempts < 1) throw new Error('The answer is shown after a wrong try first');
+    if (current.retryOf) throw new Error(RETRY_SHOWS_NOTHING);
     const updated = withShown({ ...current, status: 'completed', completedAt: new Date().toISOString(), starsAwarded: 0 }, 0);
     store.exerciseAssignments.put(updated);
     return updated;
@@ -1612,6 +1616,7 @@ function showProblemStep(assignmentId: string, exercise: ProblemExercise, step: 
   const { assignment, recorded } = store.transaction(() => {
     const stored = store.exerciseAssignments.get(assignmentId);
     if (!stored || stored.status === 'completed') throw new Error('Assignment already completed');
+    if (stored.retryOf) throw new Error(RETRY_SHOWS_NOTHING);
     const current = fitProgress(stored, exercise);
     if (step !== (current.stepIndex ?? 0) || current.shown?.includes(step)) return { assignment: current, recorded: false };
     const updated = withShown(current, step);
@@ -1644,7 +1649,7 @@ function answerProblemStep(
     const current = fitProgress(stored, exercise);
     if (current !== stored) logAction('EXERCISE_PROBLEM_RESTARTED', { assignmentId, exerciseId: exercise.id, stepIndex: stored.stepIndex, mistakes: stored.mistakes, steps: exercise.steps.length });
     const stepIndex = current.stepIndex ?? 0;
-    const rung = forgivenessOf(current.userId);
+    const rung = forgivenessOf(current);
     // An answer to a step already solved (a second device, a double tap) changes nothing.
     if (answer?.step !== stepIndex) return { correct: answer?.step < stepIndex, starsAwarded: 0, assignment: current, stale: true, rung };
 

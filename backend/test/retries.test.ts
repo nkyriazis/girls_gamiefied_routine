@@ -177,3 +177,32 @@ test('no slot of its category in the day\'s set: the retry waits, still owed', a
     setConfig(cfg);
   }
 });
+
+test('a retry plays by Αυστηρό\'s rules on a forgiving kid: no «Δείξε μου», closed or worked after its tries', async () => {
+  const original = had('add-1', 1, { shown: [0] });
+  const pending = { status: 'pending' as const, attempts: 0, completedAt: undefined, starsAwarded: undefined };
+  // Not a retry: forgiving, so wrong tries go on, and «Δείξε μου» after one
+  const plainOne = had('add-2', 0, { ...pending });
+  await db.answerExerciseAssignment(plainOne.id, 3);
+  await db.answerExerciseAssignment(plainOne.id, 3);
+  assert.equal(store.exerciseAssignments.get(plainOne.id)?.status, 'pending');
+  assert.equal((await db.revealExerciseAssignment(plainOne.id)).shown?.[0], 0);
+
+  // A plain retry: closed after Αυστηρό's two tries, its answer shown, paying nothing; «Δείξε μου» refused
+  const plainRetry = had('add-2', 0, { ...pending, retryOf: original.id });
+  await db.answerExerciseAssignment(plainRetry.id, 3);
+  await assert.rejects(db.revealExerciseAssignment(plainRetry.id), /retry/);
+  const closed = await db.answerExerciseAssignment(plainRetry.id, 3);
+  assert.deepEqual([closed.assignment.status, closed.assignment.shown, closed.starsAwarded], ['completed', [0], 0]);
+
+  // A problem retry: its step shown worked after two counted wrong tries; «Δείξε μου» refused
+  const problemRetry = had('fa-2', 0, { ...pending, retryOf: original.id });
+  await assert.rejects(db.revealExerciseAssignment(problemRetry.id, 0), /retry/);
+  await db.answerExerciseAssignment(problemRetry.id, { step: 0, value: 0 });
+  assert.equal(store.exerciseAssignments.get(problemRetry.id)?.shown, undefined);
+  await db.answerExerciseAssignment(problemRetry.id, { step: 0, value: 0 });
+  assert.deepEqual(store.exerciseAssignments.get(problemRetry.id)?.shown, [0]);
+  // The worked answer finishes it, paying Αυστηρό's: 3 stars less one, no floor of 1
+  const done = await db.answerExerciseAssignment(problemRetry.id, { step: 0, value: 1 });
+  assert.deepEqual([done.assignment.status, done.starsAwarded], ['completed', 2]);
+});

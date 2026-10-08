@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ProblemExercise } from '../../shared/types';
-import { paysNow, plainStars, plainTries, problemStars, stepHelp, wrongTryCounts } from '../../shared/forgiveness';
+import { paysNow, plainStars, plainTries, problemStars, rungOf, stepHelp, wrongTryCounts } from '../../shared/forgiveness';
 
 // The forgiveness ladder (#48): what an exercise pays after mistakes, and how many tries a step gets.
 
@@ -85,4 +85,16 @@ test('what an exercise pays now: what it paid once done, else what it pays if th
   assert.equal(paysNow({ status: 'pending', attempts: 2, mistakes: [1, 1, 0, 0, 0] }, problem), 2);
   assert.equal(paysNow({ status: 'pending', attempts: 4, mistakes: [1, 0, 0, 3, 0] }, problem), 2, 'the reading step and the calc step, like any step');
   assert.equal(paysNow({ status: 'pending', attempts: 9, mistakes: [1, 1, 1, 0, 1] }, problem, { forgiveness: 'unforgiving' }), 0);
+});
+
+test('a retry (#136) plays by Αυστηρό\'s rules whatever her rung', () => {
+  assert.equal(rungOf({ forgiveness: 'forgiving' }, {}), 'forgiving');
+  assert.equal(rungOf({}, {}), 'forgiving');
+  assert.equal(rungOf({ forgiveness: 'unforgiving' }, {}), 'unforgiving');
+  assert.equal(rungOf({ forgiveness: 'forgiving' }, { retryOf: 'a' }), 'unforgiving');
+  assert.equal(rungOf(undefined, { retryOf: 'a' }), 'unforgiving');
+  // What it pays now follows the retry's rung: down to 0 on a problem
+  const retry = { status: 'pending' as const, attempts: 9, mistakes: [1, 1, 1, 0, 1], retryOf: 'a' };
+  assert.equal(paysNow(retry, problem, { forgiveness: 'forgiving' }), 0);
+  assert.equal(paysNow({ ...retry, retryOf: undefined }, problem, { forgiveness: 'forgiving' }), 1);
 });

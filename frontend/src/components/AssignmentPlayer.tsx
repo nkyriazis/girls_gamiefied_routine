@@ -17,7 +17,7 @@ import { HelpButton, HelpScreen } from '../help/HelpProvider';
 import { HelpCovered } from '../help/context';
 import { answerTour, exerciseTour } from './AssignmentPlayer.help';
 import { sfx, sound } from '../sound/sfx';
-import { paysNow } from '@shared/forgiveness';
+import { paysNow, rungOf } from '@shared/forgiveness';
 import { answerText } from './exercises/answerText';
 
 interface AssignmentPlayerProps {
@@ -69,8 +69,10 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
 
   const exercise = assignment.exercise;
   if (!exercise) return null;
+  // Her rung, or unforgiving on a retry (#136): it decides the help and the tries
+  const rung = rungOf(user, assignment);
   // On the forgiving rung, after a wrong try, she may see the right answer (it pays nothing now anyway)
-  const canShow = exercise.type !== 'problem' && (user.forgiveness ?? 'forgiving') === 'forgiving'
+  const canShow = exercise.type !== 'problem' && rung === 'forgiving'
     && assignment.status === 'pending' && assignment.attempts > 0;
   // A problem gets the whole stage as a fixed frame (title in the header), so nothing moves between its steps
   const isProblem = exercise.type === 'problem';
@@ -129,7 +131,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
   const renderExercise = () => {
     switch (exercise.type) {
       case 'problem':
-        return <ProblemPlayer assignment={assignment} exercise={exercise} onSolved={handleSolved} reading={user.problemReading} forgiveness={user.forgiveness} />;
+        return <ProblemPlayer assignment={assignment} exercise={exercise} onSolved={handleSolved} reading={user.problemReading} forgiveness={rung} />;
       case 'multiple-choice':
         return <MultipleChoiceRenderer exercise={exercise} onAnswer={handleAnswer} disabled={submitting} seed={assignment.id} />;
       case 'true-false':
@@ -151,7 +153,7 @@ export const AssignmentPlayer: React.FC<AssignmentPlayerProps> = ({ assignment, 
   // answer is up, the owl explains only its card (the exercise below is over).
   const tour = isProblem ? null
     : feedback?.kind === 'answer' ? answerTour(user.id)
-    : exerciseTour(user.id, exercise.type, user.forgiveness, canShow);
+    : exerciseTour(user.id, exercise.type, rung, canShow);
   return (
     <HelpScreen tour={tour} inline>
     <motion.div
