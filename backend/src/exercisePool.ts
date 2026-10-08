@@ -246,7 +246,9 @@ export function retryFor(shown: Exercise, pools: UserPools, gate: DrawGate, seen
     const [best] = gateOrder(list, gate, seen, now).slice(-1);
     if (best) return { ex: best.ex, match };
   }
-  return shown.type !== 'problem' && !exclude.has(shown.id) ? { ex: shown, match: 'same' } : undefined;
+  // The same plain item again, only while it is still one of hers (a grade changed since leaves it to lapse)
+  const stillHers = bucket.some(e => e.id === shown.id);
+  return shown.type !== 'problem' && stillHers && !exclude.has(shown.id) ? { ex: shown, match: 'same' } : undefined;
 }
 
 /** Read and validate every pool file. Throws on an invalid file or a duplicate id. */

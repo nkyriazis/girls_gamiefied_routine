@@ -103,6 +103,8 @@ test('the pick: another item of the same family, else the same topic, never the 
   assert.equal(retryFor(byId.get('fc-1')!, poolsOf, OPEN, new Map(), new Set()), undefined);
   // A plain exercise alone of its kind comes back itself
   assert.deepEqual(retryFor(byId.get('lone-1')!, poolsOf, OPEN, new Map(), new Set()), { ex: byId.get('lone-1'), match: 'same' });
+  // Not hers any more (her grade changed): it lapses instead of coming back from the old grade's pool
+  assert.equal(retryFor({ ...byId.get('lone-1')!, id: 'gone-1', topic: 'gone', generatorParams: { family: 'gone' } } as Exercise, poolsOf, OPEN, new Map(), new Set()), undefined);
 });
 
 test('a shown problem comes back the next morning as another of its family, in the problem\'s slot', async () => {
