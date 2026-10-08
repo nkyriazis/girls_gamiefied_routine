@@ -39,3 +39,15 @@ test('an exercise gone from the pools: the stars paid alone, a problem told by i
     assert.deepEqual(exerciseOutcome({ attempts: 1, starsAwarded: 1 }, null).chips, [{ text: 'σωστό με την 1η' }]);
     assert.deepEqual(exerciseOutcome({ attempts: 1, starsAwarded: 0 }, null).chips, [{ text: '1 προσπάθεια' }]);
 });
+
+test('a retry (#136): «🔁 ξανά», and «χωρίς βοήθεια» when nothing was shown on it, else its 💡 as usual', () => {
+    assert.deepEqual(exerciseOutcome({ attempts: 1, starsAwarded: 1, retryOf: 'a' }, choice),
+        { icon: '📖', amount: '+⭐1 από 1', chips: [{ text: '🔁 ξανά', retry: true }, { text: 'χωρίς βοήθεια' }, { text: 'σωστό με την 1η' }] });
+    assert.deepEqual(exerciseOutcome({ attempts: 2, starsAwarded: 0, shown: [0], retryOf: 'a' }, choice).chips,
+        [{ text: '🔁 ξανά', retry: true }, { text: '💡 δείχτηκε η απάντηση', shown: true }]);
+    assert.deepEqual(exerciseOutcome({ attempts: 5, starsAwarded: 2, mistakes: [0, 1, 0, 0, 0], retryOf: 'a' }, problem).chips,
+        [{ text: '🔁 ξανά', retry: true }, { text: 'χωρίς βοήθεια' }, { text: 'βήμα 2: 1' }]);
+    assert.deepEqual(exerciseOutcome({ attempts: 9, starsAwarded: 1, mistakes: [0, 2, 0, 0, 0], shown: [1], retryOf: 'a' }, problem), {
+        icon: '🧩', amount: '+⭐1 από 3', chips: [{ text: '🔁 ξανά', retry: true }, { text: 'βήμα 2: 2 💡', shown: true }], label: '💡 δείχτηκε λυμένο',
+    });
+});

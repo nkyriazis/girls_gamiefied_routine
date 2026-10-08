@@ -7,10 +7,13 @@ import type { ExerciseAssignment, ExerciseSummary } from '@shared/types';
 // «N προσπάθειες», or «💡 δείχτηκε η απάντηση». A row finished before `shown` was stored has none, so a
 // «Δείξε μου» after one wrong try reads «1 προσπάθεια» with ⭐0, never «σωστό». A 💡 on a step is said
 // once, in the row's line: «💡 δείχτηκε λυμένο» (the same for «Δείξε μου» and Αυστηρό).
+// A retry of an item shown worked (#136) starts with «🔁 ξανά», then «χωρίς βοήθεια» when nothing was
+// shown on it, else its 💡 chips as any row.
 
 export interface ExerciseChip {
     text: string;
     shown?: boolean; // a step or answer shown worked
+    retry?: boolean; // the row is a retry (#136)
 }
 
 export interface ExerciseOutcome {
@@ -22,9 +25,16 @@ export interface ExerciseOutcome {
 
 const CATEGORY_ICONS: Record<string, string> = { 'Μαθηματικά': '🔢', 'Γλώσσα': '📖', 'Προβλήματα': '🧩' };
 
-type Done = Pick<ExerciseAssignment, 'attempts' | 'starsAwarded' | 'mistakes' | 'shown'>;
+type Done = Pick<ExerciseAssignment, 'attempts' | 'starsAwarded' | 'mistakes' | 'shown' | 'retryOf'>;
 
 export function exerciseOutcome(a: Done, exercise: ExerciseSummary | null): ExerciseOutcome {
+    const outcome = howItWent(a, exercise);
+    if (!a.retryOf) return outcome;
+    const helped = !!a.shown?.length;
+    return { ...outcome, chips: [{ text: '🔁 ξανά', retry: true }, ...(helped ? [] : [{ text: 'χωρίς βοήθεια' }]), ...outcome.chips] };
+}
+
+function howItWent(a: Done, exercise: ExerciseSummary | null): ExerciseOutcome {
     const paid = a.starsAwarded ?? 0;
     const amount = `${paid > 0 ? '+' : ''}⭐${paid}${exercise ? ` από ${exercise.stars}` : ''}`;
     const icon = (exercise && CATEGORY_ICONS[exercise.category]) ?? '✏️';
