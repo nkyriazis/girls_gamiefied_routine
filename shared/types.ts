@@ -90,7 +90,10 @@ export interface RoutineRun {
 // A kid already in a routine keeps it: skipped, with the run on screen (runningId, a RoutineRun id).
 export type TriggerResult =
   | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
-  | { success: true; type: 'assignment' | 'flow'; id: string };
+  | { success: true; type: 'assignment' | 'flow'; id: string }
+  // A flow that ended at once, with nothing of it on screen: its routines busy or done today, or (`cycle`)
+  // a flow it starts was its own start, refused (#121)
+  | { success: true; type: 'flow'; id: string; nothingStarted: true; cycle: boolean };
 
 export interface Reward {
   id: string;

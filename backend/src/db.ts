@@ -218,12 +218,15 @@ const ALARM_ONLY: FlowStep[] = [{ type: 'alarm', props: { sound: 'melody' } }];
 
 /**
  * Start a routine assignment or a flow (schedule, push hook); 'alarm' shows
- * a plain alarm. A user already in a routine keeps it; a running flow restarts.
+ * a plain alarm, always, even with an assignment or a flow of that id (#121;
+ * the config checks warn about one). A user already in a routine keeps it; a
+ * running flow restarts. A flow that ended at once started nothing on screen
+ * (its routines busy or done today, or a cycle refused: `cycle`).
  */
 export function triggerAction(id: string, source: string = 'unknown'): TriggerResult | null {
   const { routineAssignments, flows } = config();
   return store.transaction(() => {
-    if (routineAssignments.some(a => a.id === id)) {
+    if (id !== 'alarm' && routineAssignments.some(a => a.id === id)) {
       const run = startRoutine(id);
       logAction(run.started ? 'TRIGGER_ROUTINE' : 'TRIGGER_ROUTINE_SKIPPED', { id, source, runId: run.id });
       return run.started
@@ -232,8 +235,12 @@ export function triggerAction(id: string, source: string = 'unknown'): TriggerRe
     }
     const steps = id === 'alarm' ? ALARM_ONLY : flows.find(f => f.id === id)?.steps;
     if (steps) {
-      logAction('TRIGGER_FLOW', { id, source, runId: startFlow(id, steps) });
-      return { success: true, type: 'flow', id };
+      const refused = cyclesRefused;
+      const runId = startFlow(id, steps);
+      logAction('TRIGGER_FLOW', { id, source, runId });
+      return store.flowRuns.get(runId)
+        ? { success: true, type: 'flow', id }
+        : { success: true, type: 'flow', id, nothingStarted: true, cycle: cyclesRefused > refused };
     }
     logAction('TRIGGER_FAILED', { id, source, reason: 'Not found' });
     return null;
@@ -283,9 +290,22 @@ function startFlow(flowId: string, steps: readonly FlowStep[], parentRunId?: str
     if (old.parentRunId) childClosed(old.parentRunId);
   }
   const run: FlowRun = { id: randomUUID(), flowId, steps: structuredClone(steps) as FlowStep[], stepIndex: 0, parentRunId, startedAt: new Date().toISOString() };
-  enterStep(run, 0);
+  startingFlows.push(flowId);
+  try {
+    enterStep(run, 0);
+  } finally {
+    startingFlows.pop();
+  }
   return run.id;
 }
+
+// The flows whose start is under way, outermost first: everything a flow starts before it first waits
+// (an alarm, a routine, a sub-flow that waits) happens inside its startFlow. A flow action naming one of
+// them would start it again from inside itself, for ever (A → A, A → B → A: the stack overflowed, #121),
+// so it starts nothing and the step goes on with its other actions. A flow started again later, after an
+// alarm or a routine (A: alarm, then A), isn't among them: it restarts, as from a schedule.
+const startingFlows: string[] = [];
+let cyclesRefused = 0; // how many actions were refused so, for triggerAction's answer
 
 // Runs whose step is still starting its routines and sub-flows: a sub-flow that
 // ends at once must not move the parent on before its siblings have started.
@@ -302,7 +322,11 @@ function enterStep(run: FlowRun, stepIndex: number): void {
   try {
     for (const action of actions) {
       if (action.type === 'routine') startRoutine(action.routineId, run.id);
-      else {
+      else if (startingFlows.includes(action.flowId)) {
+        cyclesRefused++;
+        const chain = [...startingFlows.slice(startingFlows.indexOf(action.flowId)), action.flowId];
+        logAction('FLOW_CYCLE', { flowId: action.flowId, runId: run.id, stepIndex, chain });
+      } else {
         const flow = config().flows.find(f => f.id === action.flowId);
         if (flow) startFlow(flow.id, flow.steps, run.id);
       }

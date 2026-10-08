@@ -18,7 +18,11 @@ const cfg: DataConfig = {
     { id: 'rt1', routineId: 'r', taskId: 't1', order: 1, durationSeconds: 60 },
     { id: 'rt2', routineId: 'r', taskId: 't2', order: 2, durationSeconds: 60 }
   ],
-  routineAssignments: [{ id: 'a1', userId: 'u1', routineId: 'r' }, { id: 'a2', userId: 'u2', routineId: 'r' }],
+  routineAssignments: [
+    { id: 'a1', userId: 'u1', routineId: 'r' }, { id: 'a2', userId: 'u2', routineId: 'r' },
+    // The reserved id (a config mistake, #121): 'alarm' still means the plain alarm
+    { id: 'alarm', userId: 'u1', routineId: 'r' }
+  ],
   flows: [
     { id: 'f1', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'routine', userId: 'u1', routineId: 'a1' }] }] },
     { id: 'f2', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'routine', userId: 'u2', routineId: 'a2' }] }] },
@@ -37,7 +41,12 @@ const cfg: DataConfig = {
       { type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'routine', userId: 'u2', routineId: 'a2' }] }] },
     // A sub-flow that starts itself (a config mistake) mustn't hang the server
     { id: 'cycle', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'flow', flowId: 'cycle-b' }] }] },
-    { id: 'cycle-b', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'cycle-b' }, { type: 'routine', userId: 'u2', routineId: 'a2' }] }] }
+    { id: 'cycle-b', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'cycle-b' }, { type: 'routine', userId: 'u2', routineId: 'a2' }] }] },
+    // #121: flows that start each other at once, and one that starts itself again after its alarm
+    { id: 'loop', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'loop' }] }] },
+    { id: 'ping', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'pong' }] }] },
+    { id: 'pong', steps: [{ type: 'parallel', actions: [{ type: 'flow', flowId: 'ping' }] }] },
+    { id: 'again', steps: [{ type: 'alarm', props: {} }, { type: 'parallel', actions: [{ type: 'flow', flowId: 'again' }] }] }
   ],
   schedules: [], rewards: [], settings: { timezone: 'Europe/Athens' }
 };
@@ -130,6 +139,69 @@ test('push "alarm" shows a plain alarm until dismissed', () => {
   assert.equal(run.steps[0].type, 'alarm');
   db.dismissAlarm(run.id, 0);
   assert.equal(store.flowRuns.count(), 0);
+});
+
+// The FLOW_CYCLE entries logged since `since` (an ISO time), oldest first
+const cycles = (since: string) => db.readLastLogs(100).filter(l => l.type === 'FLOW_CYCLE' && l.timestamp >= since).reverse()
+  .map(l => l.details as { flowId: string; chain: string[] });
+
+test('#121: push «alarm» with an assignment «alarm» rings the plain alarm, not her routine', () => {
+  reset();
+  assert.deepEqual(db.triggerAction('alarm'), { success: true, type: 'flow', id: 'alarm' });
+  assert.equal(routineRun('u1'), undefined);
+  assert.equal(flowRun('alarm').steps[0].type, 'alarm');
+});
+
+test('#121: a flow that starts itself (loop → loop) starts nothing, ends, and logs FLOW_CYCLE', () => {
+  reset();
+  const since = new Date().toISOString();
+  assert.deepEqual(db.triggerAction('loop'), { success: true, type: 'flow', id: 'loop', nothingStarted: true, cycle: true });
+  assert.equal(store.flowRuns.count(), 0);
+  assert.deepEqual(cycles(since).map(c => [c.flowId, c.chain]), [['loop', ['loop', 'loop']]]);
+});
+
+test('#121: ping → pong → ping: pong does not start ping again, both end, from either end', () => {
+  reset();
+  const since = new Date().toISOString();
+  assert.deepEqual(db.triggerAction('ping'), { success: true, type: 'flow', id: 'ping', nothingStarted: true, cycle: true });
+  assert.deepEqual(db.triggerAction('pong'), { success: true, type: 'flow', id: 'pong', nothingStarted: true, cycle: true });
+  assert.equal(store.flowRuns.count(), 0);
+  assert.deepEqual(cycles(since).map(c => c.chain), [['ping', 'pong', 'ping'], ['pong', 'ping', 'pong']]);
+});
+
+test('#121: a flow whose routines are all busy ended at once too, with no cycle', () => {
+  reset();
+  db.triggerAction('a1'); // u1 busy
+  db.triggerAction('a2'); // u2 busy
+  assert.deepEqual(db.triggerAction('routines'), { success: true, type: 'flow', id: 'routines', nothingStarted: true, cycle: false });
+});
+
+test('#121: a step whose sub-flow starts itself still starts its other actions', () => {
+  reset();
+  const since = new Date().toISOString();
+  db.triggerAction('cycle');
+  db.dismissAlarm(flowRun('cycle').id, 0);
+  // cycle-b: its own start is refused, its routine starts, and it waits for that routine
+  assert.equal(routineRun('u2').routineId, 'a2');
+  assert.equal(flowRun('cycle-b').parentRunId, flowRun('cycle').id);
+  assert.deepEqual(cycles(since).map(c => c.flowId), ['cycle-b']);
+  db.closeRoutine(routineRun('u2').id);
+  assert.equal(store.flowRuns.count(), 0);
+});
+
+test('#121: a flow that starts itself after its alarm (again: alarm, then again) rings again after each dismissal', () => {
+  reset();
+  const since = new Date().toISOString();
+  db.triggerAction('again');
+  for (let i = 0; i < 3; i++) {
+    const run = flowRun('again');
+    assert.equal(db.dismissAlarm(run.id, 0), true);
+    const next = flowRun('again');
+    assert.notEqual(next.id, run.id);
+    assert.equal(next.stepIndex, 0); // its alarm, waiting
+    assert.equal(store.flowRuns.count(), 1);
+  }
+  assert.deepEqual(cycles(since), []);
 });
 
 test('runs are in the client state and in the database (a restart resumes them)', async () => {
