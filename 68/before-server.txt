@@ -1,0 +1,20 @@
+GET /api/history, first page: 30 entries by kind {"chore":3,"transfer":15,"spending":12}: no exercise
+
+Today's finished exercises as stored (exercise_assignments):
+  Τα κουτιά με τα μολύβια (⭐4): {"id":"4b1e0864-c644-4eb8-bec0-7ac025218782","userId":"u1","exerciseId":"e5-gen-unit-rate-001","date":"2026-10-08","status":"completed","attempts":4,"assignedAt":"2026-10-07T21:00:00.008Z","completedAt":"2026-10-08T01:07:19.474Z","starsAwarded":4,"stepIndex":4,"mistakes":[0,0,0,0]}
+  Παροιμίες για τους μύλους (⭐1): {"id":"8427a785-f0b9-443c-b1ca-20c7bfe7dae7","userId":"u1","exerciseId":"e5-lang-paroimies-003","date":"2026-10-08","status":"completed","attempts":1,"assignedAt":"2026-10-07T21:00:00.008Z","completedAt":"2026-10-08T05:03:09.302Z","starsAwarded":0}
+  Το μυστήριο της αρχής (⭐3): {"id":"7c8681d4-953b-4ade-b664-e2bcdea541ef","userId":"u2","exerciseId":"g3-gen-start-unknown-001","date":"2026-10-08","status":"completed","attempts":9,"assignedAt":"2026-10-08T05:02:58.681Z","completedAt":"2026-10-08T05:03:31.949Z","starsAwarded":1,"stepIndex":5,"mistakes":[1,0,0,3,0],"extra":true}
+
+The last action log lines of the two (what «Δείξε μου» left behind):
+  05:03:31 EXERCISE_PROBLEM_STEP {"assignmentId":"7c8681d4-953b-4ade-b664-e2bcdea541ef","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":4,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":true,"starsAwarded":1}
+  05:03:29 EXERCISE_PROBLEM_STEP {"assignmentId":"7c8681d4-953b-4ade-b664-e2bcdea541ef","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"forgiveness":"forgiving","kind":"numbers","correct":true,"completed":false,"starsAwarded":0}
+  05:03:25 EXERCISE_PROBLEM_STEP {"assignmentId":"7c8681d4-953b-4ade-b664-e2bcdea541ef","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"forgiveness":"forgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+  05:03:22 EXERCISE_PROBLEM_STEP {"assignmentId":"7c8681d4-953b-4ade-b664-e2bcdea541ef","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"forgiveness":"forgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+  05:03:18 EXERCISE_PROBLEM_STEP {"assignmentId":"7c8681d4-953b-4ade-b664-e2bcdea541ef","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"forgiveness":"forgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+  05:03:09 EXERCISE_ASSIGNMENT_REVEAL {"assignmentId":"8427a785-f0b9-443c-b1ca-20c7bfe7dae7","userId":"u1","exerciseId":"e5-lang-paroimies-003","attempts":1}
+  05:03:06 EXERCISE_ASSIGNMENT_ANSWER {"assignmentId":"8427a785-f0b9-443c-b1ca-20c7bfe7dae7","userId":"u1","exerciseId":"e5-lang-paroimies-003","forgiveness":"forgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+
+Steps are counted from 0 in the data: step 3 is «Βήμα 4 από 5» on her screen.
+The problem's step 3 was shown worked, yet its stored record and its EXERCISE_PROBLEM_STEP line (step: 3,
+correct: true) read like a step she solved herself: nothing says it was shown. Only a plain exercise's
+«Δείξε μου» is in the log (EXERCISE_ASSIGNMENT_REVEAL), not on the assignment.

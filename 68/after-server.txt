@@ -1,0 +1,27 @@
+GET /api/history, first page: 30 entries by kind {"exercise":4,"chore":3,"transfer":11,"spending":12}
+  exercise 05:23:43 Το μυστήριο της αρχής ⭐1 of 3: mistakes [1,0,0,3,0] attempts 9 shown [3]
+  exercise 05:23:20 Παροιμίες για τους μύλους ⭐0 of 1: mistakes null attempts 1 shown [0]
+  chore
+  exercise 01:07:19 Τα κουτιά με τα μολύβια ⭐4 of 4: mistakes [0,0,0,0] attempts 4 shown []
+  transfer
+  spending
+
+Today's finished exercises as stored (exercise_assignments):
+  Τα κουτιά με τα μολύβια (⭐4): {"id":"4b1e0864-c644-4eb8-bec0-7ac025218782","userId":"u1","exerciseId":"e5-gen-unit-rate-001","date":"2026-10-08","status":"completed","attempts":4,"assignedAt":"2026-10-07T21:00:00.008Z","completedAt":"2026-10-08T01:07:19.474Z","starsAwarded":4,"stepIndex":4,"mistakes":[0,0,0,0]}
+  Παροιμίες για τους μύλους (⭐1): {"id":"8427a785-f0b9-443c-b1ca-20c7bfe7dae7","userId":"u1","exerciseId":"e5-lang-paroimies-003","date":"2026-10-08","status":"completed","attempts":1,"assignedAt":"2026-10-07T21:00:00.008Z","completedAt":"2026-10-08T05:23:20.388Z","starsAwarded":0,"shown":[0]}
+  Το μυστήριο της αρχής (⭐3): {"id":"f4b6f4aa-d624-4930-9dff-bb010a593f97","userId":"u2","exerciseId":"g3-gen-start-unknown-001","date":"2026-10-08","status":"completed","attempts":9,"assignedAt":"2026-10-08T05:23:10.282Z","completedAt":"2026-10-08T05:23:43.073Z","starsAwarded":1,"stepIndex":5,"mistakes":[1,0,0,3,0],"extra":true,"shown":[3]}
+
+The last action log lines of the two (what «Δείξε μου» left behind):
+  05:23:43 EXERCISE_PROBLEM_STEP {"assignmentId":"f4b6f4aa-d624-4930-9dff-bb010a593f97","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":4,"forgiveness":"forgiving","kind":"choice","correct":true,"completed":true,"starsAwarded":1}
+  05:23:40 EXERCISE_PROBLEM_STEP {"assignmentId":"f4b6f4aa-d624-4930-9dff-bb010a593f97","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"forgiveness":"forgiving","kind":"numbers","correct":true,"shown":true,"completed":false,"starsAwarded":0}
+  05:23:38 EXERCISE_PROBLEM_SHOWN {"assignmentId":"f4b6f4aa-d624-4930-9dff-bb010a593f97","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"by":"tap","mistakes":3}
+  05:23:36 EXERCISE_PROBLEM_STEP {"assignmentId":"f4b6f4aa-d624-4930-9dff-bb010a593f97","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"forgiveness":"forgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+  05:23:33 EXERCISE_PROBLEM_STEP {"assignmentId":"f4b6f4aa-d624-4930-9dff-bb010a593f97","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"forgiveness":"forgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+  05:23:29 EXERCISE_PROBLEM_STEP {"assignmentId":"f4b6f4aa-d624-4930-9dff-bb010a593f97","userId":"u2","exerciseId":"g3-gen-start-unknown-001","step":3,"forgiveness":"forgiving","kind":"numbers","correct":false,"wrong":[0],"completed":false,"starsAwarded":0}
+  05:23:20 EXERCISE_ASSIGNMENT_REVEAL {"assignmentId":"8427a785-f0b9-443c-b1ca-20c7bfe7dae7","userId":"u1","exerciseId":"e5-lang-paroimies-003","attempts":1}
+  05:23:17 EXERCISE_ASSIGNMENT_ANSWER {"assignmentId":"8427a785-f0b9-443c-b1ca-20c7bfe7dae7","userId":"u1","exerciseId":"e5-lang-paroimies-003","forgiveness":"forgiving","correct":false,"attempts":1,"starsAwarded":0,"completed":false}
+
+Steps are counted from 0 in the data: step 3 is «Βήμα 4 από 5» on her screen.
+The problem's step 3 was shown worked: stored as shown [3], logged at the tap (EXERCISE_PROBLEM_SHOWN)
+and on its answer (EXERCISE_PROBLEM_STEP shown: true). The plain «Δείξε μου» is stored as shown [0].
+Ιστορικό lists both, one row each.
