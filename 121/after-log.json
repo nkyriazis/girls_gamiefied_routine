@@ -1,0 +1,230 @@
+{
+ "validate": {
+  "valid": true,
+  "warnings": [
+   {
+    "path": "/chores/3/eligibleUsers/0",
+    "kind": "missing-link",
+    "list": "chores",
+    "id": "chore-vacuum",
+    "field": "eligibleUsers",
+    "value": "u3",
+    "message": "Η δουλειά «Σκούπισμα» είναι μόνο για το παιδί «u3», που δεν υπάρχει: δεν μπορεί να την κάνει κανένα παιδί."
+   },
+   {
+    "path": "/flows/3/steps/0/actions/0/flowId",
+    "kind": "flow-cycle",
+    "list": "flows",
+    "id": "loop",
+    "field": "steps",
+    "value": "loop",
+    "message": "Η ροή «loop», βήμα 1, ξεκινά τον εαυτό της (loop → loop): αυτή η ενέργεια δεν ξεκινά τίποτα."
+   },
+   {
+    "path": "/flows/5/steps/0/actions/0/flowId",
+    "kind": "flow-cycle",
+    "list": "flows",
+    "id": "pong",
+    "field": "steps",
+    "value": "ping",
+    "message": "Οι ροές «ping» και «pong» ξεκινούν η μία την άλλη (ping → pong → ping): η ενέργεια που κλείνει τον κύκλο δεν ξεκινά τίποτα."
+   },
+   {
+    "path": "/routineAssignments/3/id",
+    "kind": "reserved-id",
+    "list": "routineAssignments",
+    "id": "alarm",
+    "field": "id",
+    "value": "alarm",
+    "message": "Η ανάθεση ρουτίνας «alarm» έχει το id της απλής ειδοποίησης: ένα πρόγραμμα ή ένα push με «alarm» χτυπά την απλή ειδοποίηση, δεν ξεκινά αυτή τη ρουτίνα. Χρειάζεται άλλο id."
+   }
+  ]
+ },
+ "status1": {
+  "config": null,
+  "warnings": [
+   {
+    "path": "/chores/3/eligibleUsers/0",
+    "kind": "missing-link",
+    "list": "chores",
+    "id": "chore-vacuum",
+    "field": "eligibleUsers",
+    "value": "u3",
+    "message": "Η δουλειά «Σκούπισμα» είναι μόνο για το παιδί «u3», που δεν υπάρχει: δεν μπορεί να την κάνει κανένα παιδί."
+   },
+   {
+    "path": "/flows/3/steps/0/actions/0/flowId",
+    "kind": "flow-cycle",
+    "list": "flows",
+    "id": "loop",
+    "field": "steps",
+    "value": "loop",
+    "message": "Η ροή «loop», βήμα 1, ξεκινά τον εαυτό της (loop → loop): αυτή η ενέργεια δεν ξεκινά τίποτα."
+   },
+   {
+    "path": "/flows/5/steps/0/actions/0/flowId",
+    "kind": "flow-cycle",
+    "list": "flows",
+    "id": "pong",
+    "field": "steps",
+    "value": "ping",
+    "message": "Οι ροές «ping» και «pong» ξεκινούν η μία την άλλη (ping → pong → ping): η ενέργεια που κλείνει τον κύκλο δεν ξεκινά τίποτα."
+   },
+   {
+    "path": "/routineAssignments/3/id",
+    "kind": "reserved-id",
+    "list": "routineAssignments",
+    "id": "alarm",
+    "field": "id",
+    "value": "alarm",
+    "message": "Η ανάθεση ρουτίνας «alarm» έχει το id της απλής ειδοποίησης: ένα πρόγραμμα ή ένα push με «alarm» χτυπά την απλή ειδοποίηση, δεν ξεκινά αυτή τη ρουτίνα. Χρειάζεται άλλο id."
+   }
+  ],
+  "state": null
+ },
+ "pushLoopToast": "Η ροή «loop» δεν ξεκίνησε τίποτα (κύκλος)",
+ "pushPingToast": "Η ροή «ping» δεν ξεκίνησε τίποτα (κύκλος)",
+ "pushLoop": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "loop",
+   "nothingStarted": true,
+   "cycle": true
+  }
+ },
+ "pushPing": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "ping",
+   "nothingStarted": true,
+   "cycle": true
+  }
+ },
+ "flowRunsAfterCycles": [],
+ "debugTime": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "simulatedTime": "2026-10-08T16:07:00.000Z"
+  }
+ },
+ "scheduleLog": [
+  {
+   "type": "TRIGGER_FLOW",
+   "details": {
+    "id": "ping",
+    "source": "schedule:sch-ping",
+    "runId": "4906a245-8bef-4e6b-a89e-ae3a537c6dad"
+   }
+  },
+  {
+   "type": "FLOW_CYCLE",
+   "details": {
+    "flowId": "ping",
+    "runId": "9cb5ae95-64b3-4bee-99e3-9d2e9cd1b33c",
+    "stepIndex": 0,
+    "chain": [
+     "ping",
+     "pong",
+     "ping"
+    ]
+   }
+  },
+  {
+   "type": "SCHEDULE_MATCH",
+   "details": {
+    "scheduleId": "sch-ping",
+    "targetId": "ping",
+    "cron": "7 19 * * *",
+    "time": "2026-10-08 19:07:00"
+   }
+  },
+  {
+   "type": "TRIGGER_FLOW",
+   "details": {
+    "id": "ping",
+    "source": "push_hook",
+    "runId": "553e59ee-e839-4900-b6c9-b43c4fe42f40"
+   }
+  },
+  {
+   "type": "FLOW_CYCLE",
+   "details": {
+    "flowId": "ping",
+    "runId": "6414e06a-1660-4bc0-ad8f-6bc5fd5c6b6d",
+    "stepIndex": 0,
+    "chain": [
+     "ping",
+     "pong",
+     "ping"
+    ]
+   }
+  },
+  {
+   "type": "TRIGGER_FLOW",
+   "details": {
+    "id": "loop",
+    "source": "push_hook",
+    "runId": "abc3a43f-9f3a-452e-92a0-c0dcca163d9b"
+   }
+  },
+  {
+   "type": "FLOW_CYCLE",
+   "details": {
+    "flowId": "loop",
+    "runId": "abc3a43f-9f3a-452e-92a0-c0dcca163d9b",
+    "stepIndex": 0,
+    "chain": [
+     "loop",
+     "loop"
+    ]
+   }
+  }
+ ],
+ "pushAlarmAssignment": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "alarm"
+  }
+ },
+ "choreAfterTap1": [
+  "u1"
+ ],
+ "status2": {
+  "config": null,
+  "warnings": [
+   {
+    "path": "/flows/3/id",
+    "kind": "reserved-id",
+    "list": "flows",
+    "id": "alarm",
+    "field": "id",
+    "value": "alarm",
+    "message": "Η ροή «alarm» έχει το id της απλής ειδοποίησης: ένα πρόγραμμα ή ένα push με «alarm» χτυπά την απλή ειδοποίηση, δεν ξεκινά αυτή τη ροή. Χρειάζεται άλλο id."
+   }
+  ],
+  "state": null
+ },
+ "pushAlarmFlow": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "alarm"
+  }
+ },
+ "alarmFlowRun": [
+  {
+   "flowId": "alarm",
+   "steps": 1,
+   "title": null
+  }
+ ],
+ "routinesAfterDismiss": 0
+}

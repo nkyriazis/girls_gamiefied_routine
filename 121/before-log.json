@@ -1,0 +1,111 @@
+{
+ "validate": {
+  "valid": true,
+  "warnings": [
+   {
+    "path": "/chores/3/eligibleUsers/0",
+    "kind": "missing-link",
+    "list": "chores",
+    "id": "chore-vacuum",
+    "field": "eligibleUsers",
+    "value": "u3",
+    "message": "Η δουλειά «Σκούπισμα» είναι μόνο για το παιδί «u3», που δεν υπάρχει: δεν μπορεί να την κάνει κανένα παιδί."
+   }
+  ]
+ },
+ "status1": {
+  "config": null,
+  "warnings": [
+   {
+    "path": "/chores/3/eligibleUsers/0",
+    "kind": "missing-link",
+    "list": "chores",
+    "id": "chore-vacuum",
+    "field": "eligibleUsers",
+    "value": "u3",
+    "message": "Η δουλειά «Σκούπισμα» είναι μόνο για το παιδί «u3», που δεν υπάρχει: δεν μπορεί να την κάνει κανένα παιδί."
+   }
+  ],
+  "state": null
+ },
+ "pushLoopToast": "Internal Server Error",
+ "pushPingToast": "Internal Server Error",
+ "pushLoop": {
+  "status": 500,
+  "body": {
+   "statusCode": 500,
+   "error": "Internal Server Error",
+   "message": "Maximum call stack size exceeded"
+  }
+ },
+ "pushPing": {
+  "status": 500,
+  "body": {
+   "statusCode": 500,
+   "error": "Internal Server Error",
+   "message": "Maximum call stack size exceeded"
+  }
+ },
+ "flowRunsAfterCycles": [],
+ "debugTime": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "simulatedTime": "2026-10-08T16:07:00.000Z"
+  }
+ },
+ "scheduleLog": [
+  {
+   "type": "SCHEDULE_ERROR",
+   "details": {
+    "scheduleId": "sch-ping",
+    "error": "Maximum call stack size exceeded"
+   }
+  },
+  {
+   "type": "SCHEDULE_MATCH",
+   "details": {
+    "scheduleId": "sch-ping",
+    "targetId": "ping",
+    "cron": "7 19 * * *",
+    "time": "2026-10-08 19:07:00"
+   }
+  }
+ ],
+ "pushAlarmAssignment": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "assignment",
+   "id": "alarm"
+  }
+ },
+ "choreAfterTap1": [
+  "u3",
+  "u1"
+ ],
+ "choreAfterTap2": [
+  "u3"
+ ],
+ "status2": {
+  "config": null,
+  "warnings": [],
+  "state": null
+ },
+ "pushAlarmFlow": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "alarm"
+  }
+ },
+ "alarmFlowRun": [
+  {
+   "flowId": "alarm",
+   "steps": 1,
+   "title": null
+  }
+ ],
+ "routinesAfterDismiss": 0
+}

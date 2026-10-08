@@ -1,0 +1,36 @@
+{
+ "warnings": [
+  {
+   "path": "/flows/3/steps/1/actions/0/flowId",
+   "message": "Η ροή «rr», βήμα 2, ξεκινά τον εαυτό της (rr → rr), μετά από ρουτίνα. Αν δεν ξεκινήσει καμία ρουτίνα (το παιδί είναι ήδη σε ρουτίνα ή την έχει τελειώσει σήμερα), αυτή η ενέργεια δεν ξεκινά τίποτα. Αν ξεκινήσει, η ροή ξεκινά από την αρχή μόλις κλείσει η ρουτίνα: μια ρουτίνα που έκλεισε με ✕ ή «Τέλος» ξαναβγαίνει, κάθε φορά."
+  }
+ ],
+ "push": {
+  "status": 200,
+  "body": {
+   "success": true,
+   "type": "flow",
+   "id": "rr"
+  }
+ },
+ "afterPush": {
+  "flows": [
+   "rr@0 6d9eb94e"
+  ],
+  "routines": [
+   "u1:u1-assign-evening 6aabfd92"
+  ]
+ },
+ "afterExit": {
+  "flows": [
+   "rr@0 f063cb4c"
+  ],
+  "routines": [
+   "u1:u1-assign-evening 1a072ffd"
+  ]
+ },
+ "atEnd": {
+  "flows": [],
+  "routines": []
+ }
+}
