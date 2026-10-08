@@ -5,7 +5,7 @@ import { SmartIcon } from '../../SmartIcon';
 import { DAY_LABELS, formatWeekly, parseWeekly, WEEK_ORDER } from '../cron';
 import { useFeedback } from '../useFeedback';
 import { FieldProblems } from './fieldProblems';
-import { asFormIcon, THEME_COLORS, type FormIcon } from './model';
+import { asFormIcon, missingKidsHint, THEME_COLORS, toggleKid, type FormIcon } from './model';
 
 // Form fields for the config editors. Each is a label plus one control.
 
@@ -153,24 +153,27 @@ export function WhenField({ label, cron, onChange }: { label: string; cron: stri
     );
 }
 
-// Which kids: none selected means everyone.
+// Which kids (a chore's: the line speaks of «η δουλειά»): none selected means everyone («Για όλα»). Only kids
+// show and toggle: an id that is no kid goes on any tap, and a line says so while one is there (#121).
 export function KidsField({ label, users, value, onChange }: {
     label: string; users: User[]; value?: string[]; onChange: (ids: string[] | undefined) => void;
 }) {
     const selected = value ?? [];
-    const toggle = (id: string) => {
-        const next = selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id];
-        onChange(next.length ? next : undefined);
-    };
+    const hint = missingKidsHint(value, users);
     return (
         <Field label={label}>
             {() => (
-                <div className="p-chips" role="group" aria-label={label}>
-                    {users.map(u => (
-                        <button key={u.id} type="button" aria-pressed={selected.includes(u.id)}
-                            className={selected.includes(u.id) ? 'p-chip on' : 'p-chip'} onClick={() => toggle(u.id)}>{u.name}</button>
-                    ))}
-                </div>
+                <>
+                    <div className="p-chips" role="group" aria-label={label}>
+                        <button type="button" aria-pressed={!selected.length} className={selected.length ? 'p-chip' : 'p-chip on'}
+                            onClick={() => onChange(undefined)}>Για όλα</button>
+                        {users.map(u => (
+                            <button key={u.id} type="button" aria-pressed={selected.includes(u.id)}
+                                className={selected.includes(u.id) ? 'p-chip on' : 'p-chip'} onClick={() => onChange(toggleKid(value, u.id, users))}>{u.name}</button>
+                        ))}
+                    </div>
+                    {hint && <p className="p-hint p-warning">⚠ {hint}</p>}
+                </>
             )}
         </Field>
     );

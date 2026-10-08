@@ -5,12 +5,14 @@ import { useConfigSave } from '../useConfigSave';
 import { CollectionEditor, type FormProps } from './CollectionEditor';
 import { newId, targetsOf } from './model';
 import { SelectField, WhenField } from './fields';
+import { ReservedIds } from './StartNow';
 
 function ScheduleForm({ value, onChange }: FormProps<Schedule>) {
-    const { config, users } = useGame();
+    const { config, users, configWarnings } = useGame();
     const targets = targetsOf(config, users);
     return (
         <>
+            <ReservedIds warnings={configWarnings} />
             <SelectField label="Τι ξεκινά" value={value.targetId}
                 options={targets.map(t => ({ value: t.id, label: t.label }))}
                 onChange={id => onChange({ ...value, targetId: id, type: targets.find(t => t.id === id)?.type ?? value.type })} />

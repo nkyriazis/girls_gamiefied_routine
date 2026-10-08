@@ -26,15 +26,35 @@ export const asFormIcon = (icon: IconValue): FormIcon =>
 
 export interface Target { id: string; type: Schedule['type']; label: string }
 
-// What a schedule (or "start now") can start: flows, and a kid's routine.
+// What a schedule (or "start now") can start: flows, and a kid's routine. Not an item whose id is «alarm»:
+// a schedule or push with «alarm» rings the plain alarm (triggerAction, #121), so it would never start it;
+// the forms show the server's reserved-id warning instead.
 export function targetsOf(config: DataConfig, users: User[]): Target[] {
+    const startable = <T extends { id: string }>(items: T[]) => items.filter(x => x.id !== 'alarm');
     return [
-        ...config.flows.map(f => ({ id: f.id, type: 'flow' as const, label: f.id })),
-        ...config.routineAssignments.map(a => ({
+        ...startable(config.flows).map(f => ({ id: f.id, type: 'flow' as const, label: f.id })),
+        ...startable(config.routineAssignments).map(a => ({
             id: a.id, type: 'routine' as const,
             label: `${users.find(u => u.id === a.userId)?.name ?? a.userId}: ${config.routines.find(r => r.id === a.routineId)?.title ?? a.routineId}`,
         })),
     ];
+}
+
+// Ποια παιδιά (a chore's eligibleUsers): none means every kid. A tap on a kid keeps only kids, so an id
+// that is no kid (hand-written, or a kid since removed) goes on any tap (#121); untouched, the value stays.
+export function toggleKid(value: string[] | undefined, id: string, users: { id: string }[]): string[] | undefined {
+    const kids = (value ?? []).filter(x => users.some(u => u.id === x));
+    const next = kids.includes(id) ? kids.filter(x => x !== id) : [...kids, id];
+    return next.length ? next : undefined;
+}
+
+// While the value names ids that are no kid, the line that says so, for one or several (#121).
+export function missingKidsHint(value: string[] | undefined, users: { id: string }[]): string | null {
+    const missing = (value ?? []).filter(x => !users.some(u => u.id === x));
+    if (!missing.length) return null;
+    const also = missing.length < (value ?? []).length ? 'και ' : '';
+    const names = missing.map(x => `«${x}»`).join(', ');
+    return `Η δουλειά είναι ${also}για ${names}, που δεν ${missing.length === 1 ? 'υπάρχει' : 'υπάρχουν'}. Πάτα ένα παιδί, ή «Για όλα».`;
 }
 
 // The kids (#36). A class picks the daily exercises; Δημοτικό, Α΄ = 1 … ΣΤ΄ = 6.

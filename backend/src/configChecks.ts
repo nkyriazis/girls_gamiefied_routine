@@ -1,4 +1,4 @@
-import type { CheckWarning, ConfigList, ConfigWarning, CronWarning, DataConfig } from '../../shared/types';
+import type { CheckWarning, ConfigList, ConfigWarning, CronWarning, DataConfig, FlowAction, FlowStep } from '../../shared/types';
 import { THEME_COLOR_TOKENS } from '../../shared/themeColours';
 import { unreadableCrons } from './cron';
 
@@ -8,7 +8,7 @@ import { unreadableCrons } from './cron';
 //   second is never found, and stars, history and runs are keyed by the id: a second kid «u1» shows and
 //   spends the first one's stars. Assignments and flows share one namespace (a schedule, a push and
 //   «Ξεκίνα τώρα» name either; triggerAction tries assignments first), so a flow with an assignment's id
-//   is one too;
+//   is one too (unless both are «alarm»: reserved-id says it);
 // - missing-link: an id that names nothing. The backend skips it without a word (usersView,
 //   assignmentTasks, triggerAction's TRIGGER_FAILED, enterStep), so a routine loses a task, a schedule or
 //   a flow step starts nothing, a chore limited to missing kids can be done by nobody;
@@ -16,6 +16,12 @@ import { unreadableCrons } from './cron';
 //   schema's minLength lets «  » through);
 // - colour: a kid's or a routine's colour that is none (isColour), which the kids' screen
 //   then draws without one;
+// - flow-cycle: flows that start each other (A → A, A → B → A) before any wait. The engine refuses to start a
+//   flow while its own start is still under way (db.ts, FLOW_CYCLE), so the action that closes the cycle
+//   starts nothing. A flow that starts itself again after an alarm (A: alarm, then A) is no cycle: the
+//   alarm waits, and then A restarts, as from a schedule;
+// - reserved-id: an assignment or a flow whose id is «alarm». A schedule, a push and «Ξεκίνα τώρα» with
+//   «alarm» always ring the plain alarm (triggerAction looks at it first), so they never start that item;
 // - and #89's crons the scheduler can't read (cron.ts).
 // Only the crons refuse a save that brings one in (refuses()); every other kind is a warning: the save goes
 // through and the parents' page lists it until it is fixed (#104 left refusing out of scope). A file on disk
@@ -26,7 +32,8 @@ export const refuses = (w: ConfigWarning): w is CronWarning => w.kind === 'sched
 
 /** Every problem the rules find in `data`, the most harmful kinds first. */
 export function configProblems(data: DataConfig): ConfigWarning[] {
-  return [...duplicateIds(data), ...missingLinks(data), ...blanks(data), ...unreadableCrons(data), ...colours(data)];
+  return [...duplicateIds(data), ...missingLinks(data), ...flowCycles(data), ...reservedIds(data), ...blanks(data),
+    ...unreadableCrons(data), ...colours(data)];
 }
 
 // How a list's item is named in a message: its noun (with its article) and the plural for the list
@@ -72,7 +79,7 @@ function duplicateIds(d: DataConfig): CheckWarning[] {
   }
   const assignments = new Set(d.routineAssignments.map(a => a.id));
   d.flows.forEach((f, i) => {
-    if (assignments.has(f.id)) {
+    if (assignments.has(f.id) && f.id !== 'alarm') {
       found.push(problem('duplicate-id', 'flows', i, f.id, 'id', f.id,
         `Η ροή «${f.id}» έχει το id μιας ανάθεσης ρουτίνας: ένα πρόγραμμα ή το «Ξεκίνα τώρα» ξεκινά πάντα την ανάθεση, η ροή δεν ξεκινά ποτέ.`));
     }
@@ -141,6 +148,102 @@ function missingLinks(d: DataConfig): CheckWarning[] {
   });
   // The same chore's every kid missing: one problem per kid would say «nobody» twice; keep the first
   return found.filter((w, i) => !(w.list === 'chores' && found.findIndex(x => x.list === 'chores' && x.id === w.id && x.message === w.message) !== i));
+}
+
+// The flows a flow starts while its own start is still under way, with where (db.ts, startFlow, which
+// refuses those: a flow already starting above starts nothing). Every action of a step starts in turn;
+// the steps after an alarm, or after a step that starts a flow which waits at an alarm, come only once it
+// is dismissed, so the walk stops there. A routine is no such sure wait: one that starts holds the next
+// step until it closes, one that is skipped (the kid in another routine, or done with it today) doesn't.
+// So the walk goes on past it, and marks what comes after `afterRoutine`: at once only if every routine
+// before it was skipped; otherwise later, and then the flow named starts over (startFlow restarts it).
+type Start = { flowId: string; step: number; action: number; afterRoutine: boolean };
+function startsAtOnce(d: DataConfig): Map<string, Start[]> {
+  const byId = new Map(d.flows.map(f => [f.id, f]));
+  const assignments = new Set(d.routineAssignments.map(a => a.id));
+  // What a step starts, as enterStep reads it (the schema has no routine step, the type does)
+  const starts = (s: FlowStep): FlowAction[] => s.type === 'parallel' ? s.actions : s.type === 'routine' ? [{ type: 'routine', userId: '', routineId: s.routineId }] : [];
+  const routineIn = (s: FlowStep) => starts(s).some(a => a.type === 'routine' && assignments.has(a.routineId));
+  // Whether a flow, or a flow it starts, has a step that `own` holds; a flow inside its own walk is refused, so it adds nothing
+  const reach = (own: (s: FlowStep) => boolean) => {
+    const memo = new Map<string, boolean>();
+    const deeper = (id: string): boolean => {
+      if (memo.has(id)) return memo.get(id)!;
+      memo.set(id, false);
+      const found = !!byId.get(id)?.steps.some(s => own(s) || starts(s).some(a => a.type === 'flow' && deeper(a.flowId)));
+      memo.set(id, found);
+      return found;
+    };
+    return deeper;
+  };
+  const hasAlarm = reach(s => s.type === 'alarm');
+  const mayWait = reach(routineIn);
+  const edges = new Map<string, Start[]>();
+  for (const f of d.flows) {
+    const out: Start[] = [];
+    let afterRoutine = false;
+    for (const [n, step] of f.steps.entries()) {
+      if (step.type === 'alarm') break;
+      const actions = starts(step);
+      actions.forEach((a, k) => { if (a.type === 'flow' && byId.has(a.flowId)) out.push({ flowId: a.flowId, step: n, action: k, afterRoutine }); });
+      if (actions.some(a => a.type === 'flow' && hasAlarm(a.flowId))) break;
+      if (routineIn(step) || actions.some(a => a.type === 'flow' && mayWait(a.flowId))) afterRoutine = true;
+    }
+    if (!edges.has(f.id)) edges.set(f.id, out);
+  }
+  return edges;
+}
+
+// One warning per cycle, at the action that closes it. With no routine on the way the engine refuses that
+// action every time, and the message says only that. With one («rr»: her routine, then «rr» again),
+// it says both outcomes: every routine skipped, the action starts nothing; one started, the cycle starts
+// over when it closes, so a routine she leaves with ✕ (or a parent ends) comes back, every time.
+function flowCycles(d: DataConfig): CheckWarning[] {
+  const edges = startsAtOnce(d);
+  const index = new Map<string, number>();
+  d.flows.forEach((f, i) => { if (!index.has(f.id)) index.set(f.id, i); });
+  const found: CheckWarning[] = [];
+  const done = new Set<string>();
+  const path: Start[] = []; // the starts being walked (grey), in order; the first is the walk's root
+  const walk = (id: string, via: Start): void => {
+    path.push(via);
+    for (const e of edges.get(id) ?? []) {
+      const at = path.findIndex(p => p.flowId === e.flowId);
+      if (at >= 0) {
+        const ring = [...path.slice(at).map(p => p.flowId), e.flowId];
+        const names = ring.slice(0, -1).map(x => `«${x}»`);
+        const self = ring.length === 2;
+        const routine = e.afterRoutine || path.slice(at + 1).some(p => p.afterRoutine);
+        const head = self
+          ? `Η ροή «${id}», βήμα ${e.step + 1}, ξεκινά τον εαυτό της (${ring.join(' → ')})`
+          : `Οι ροές ${names.slice(0, -1).join(', ')} και ${names[names.length - 1]} ξεκινούν η μία την άλλη (${ring.join(' → ')})`;
+        const nothing = self ? 'αυτή η ενέργεια δεν ξεκινά τίποτα' : 'η ενέργεια που κλείνει τον κύκλο δεν ξεκινά τίποτα';
+        const message = routine
+          ? `${head}, μετά από ρουτίνα. Αν δεν ξεκινήσει καμία ρουτίνα (το παιδί είναι ήδη σε ρουτίνα ή την έχει τελειώσει σήμερα), ${nothing}. `
+            + `Αν ξεκινήσει, ${self ? 'η ροή' : 'ο κύκλος'} ξεκινά από την αρχή μόλις κλείσει η ρουτίνα: μια ρουτίνα που έκλεισε με ✕ ή «Τέλος» ξαναβγαίνει, κάθε φορά.`
+          : `${head}: ${nothing}.`;
+        found.push(problem('flow-cycle', 'flows', index.get(id)!, id, 'steps', e.flowId, message, `/${e.step}/actions/${e.action}/flowId`));
+      } else if (!done.has(e.flowId)) {
+        walk(e.flowId, e);
+      }
+    }
+    path.pop();
+    done.add(id);
+  };
+  for (const f of d.flows) if (!done.has(f.id)) walk(f.id, { flowId: f.id, step: -1, action: -1, afterRoutine: false });
+  return found;
+}
+
+function reservedIds(d: DataConfig): CheckWarning[] {
+  const found: CheckWarning[] = [];
+  const reserved = (list: 'routineAssignments' | 'flows', items: { id: string }[], what: string) => items.forEach((item, i) => {
+    if (item.id !== 'alarm') return;
+    found.push(problem('reserved-id', list, i, item.id, 'id', item.id,
+      `${capital(NOUN[list][0])} «alarm» έχει το id της απλής ειδοποίησης: ένα πρόγραμμα ή ένα push με «alarm» χτυπά την απλή ειδοποίηση, δεν ξεκινά ${what}. Χρειάζεται άλλο id.`));
+  });
+  reserved('routineAssignments', d.routineAssignments, 'αυτή τη ρουτίνα');
+  reserved('flows', d.flows, 'αυτή τη ροή');
+  return found;
 }
 
 function blanks(d: DataConfig): CheckWarning[] {

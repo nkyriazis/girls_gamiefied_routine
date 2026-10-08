@@ -90,7 +90,10 @@ export interface RoutineRun {
 // A kid already in a routine keeps it: skipped, with the run on screen (runningId, a RoutineRun id).
 export type TriggerResult =
   | { success: true; skipped: true; type: 'assignment'; id: string; runningId: string }
-  | { success: true; type: 'assignment' | 'flow'; id: string };
+  | { success: true; type: 'assignment' | 'flow'; id: string }
+  // A flow that ended at once, with nothing of it on screen: its routines busy or done today, or (`cycle`)
+  // a flow it starts was its own start, refused (#121)
+  | { success: true; type: 'flow'; id: string; nothingStarted: true; cycle: boolean };
 
 export interface Reward {
   id: string;
@@ -513,10 +516,13 @@ export interface CronWarning {
 //   share one namespace: schedules, pushes and «Ξεκίνα τώρα» name either);
 // - missing-link: an id that names nothing (a kid, routine, task, assignment or flow);
 // - blank: a kid's name or a title that is only spaces;
-// - colour: neither a theme token (shared/themeColours.ts), a hex, a CSS colour function nor a named colour.
+// - colour: neither a theme token (shared/themeColours.ts), a hex, a CSS colour function nor a named colour;
+// - flow-cycle (#121): flows that start each other before any wait; at the action that closes the cycle
+//   (`value`, the flow it starts), which the engine refuses (FLOW_CYCLE);
+// - reserved-id (#121): an assignment or a flow whose id is «alarm», which schedules and pushes never start.
 export interface CheckWarning {
   path: string;
-  kind: 'duplicate-id' | 'missing-link' | 'blank' | 'colour';
+  kind: 'duplicate-id' | 'missing-link' | 'blank' | 'colour' | 'flow-cycle' | 'reserved-id';
   list: ConfigList;
   id: string;
   field: string;

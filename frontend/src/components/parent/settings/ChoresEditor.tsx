@@ -19,7 +19,7 @@ function ChoreForm({ value, onChange }: FormProps<Chore>) {
             <WhenField label="Διαθέσιμη από" cron={value.availabilityCron} onChange={availabilityCron => onChange({ ...value, availabilityCron })} />
             <NumberField label="Λήγει μετά από (ώρες)" value={value.expirationHours} min={0.5} step={0.5}
                 onChange={expirationHours => onChange({ ...value, expirationHours })} />
-            <KidsField label="Ποια παιδιά (κανένα επιλεγμένο: όλα)" users={users} value={value.eligibleUsers}
+            <KidsField label="Ποια παιδιά" users={users} value={value.eligibleUsers}
                 onChange={eligibleUsers => onChange({ ...value, eligibleUsers })} />
         </>
     );
