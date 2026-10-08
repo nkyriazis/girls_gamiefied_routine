@@ -5,6 +5,7 @@ import { anchorSelector } from './anchors';
 import { seenId, type HelpStep, type Tour } from './tour';
 import { hasVoice, hush, isMuted, preload, setMuted, speak } from './voice';
 import { sfx } from '../sound/sfx';
+import { revealInLists } from './reveal';
 
 // Plays a tour with driver.js: the screen dims around one widget at a time, the owl
 // explains it in a bubble next to it, and a finger shows how to use it. The look is
@@ -123,6 +124,8 @@ export function playTour(tour: Tour, { seen, onEnd }: { seen: (id: string) => bo
       pop.footer.prepend(dots);
       if (at === 0) pop.previousButton.style.display = 'none';
     },
+    // Before driver.js measures: a widget clipped by a list that scrolls comes into the list's view
+    onHighlightStarted: el => { if (el) revealInLists(el); },
     onHighlighted: (el, step, { driver: dr }) => {
       if ((dr.getActiveIndex() ?? 0) > 0) sfx('page');
       showFinger(el, step.data?.demo);
