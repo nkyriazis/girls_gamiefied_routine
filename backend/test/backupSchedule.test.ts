@@ -39,10 +39,14 @@ test('a backup that runs past its deadline is killed, logged as failed, and the 
 test('a backup that ends in time is logged from its output, and its deadline is cleared', async () => {
   const { entries, log } = recorder();
   const result = { folder: '/backups/x', files: 3, bytes: 10, integrity: 'ok', stars: {}, removed: [], ms: 5, sameFilesystem: false };
-  const runner = backupRunner({ dir: '/backups', log, timeoutMs: 300, command: ['-e', `console.log(${JSON.stringify(JSON.stringify(result))})`] });
+  // A deadline with headroom: a loaded machine can take well over 300 ms just to start node (#125).
+  // Then wait past it, so a deadline left running would have fired.
+  const timeoutMs = 3000;
+  const started = Date.now();
+  const runner = backupRunner({ dir: '/backups', log, timeoutMs, command: ['-e', `console.log(${JSON.stringify(JSON.stringify(result))})`] });
   assert.equal(runner.run('daily'), true);
-  await until(() => entries.length > 0);
-  await new Promise(r => setTimeout(r, 400));
+  await until(() => entries.length > 0, timeoutMs);
+  await new Promise(r => setTimeout(r, Math.max(0, started + timeoutMs + 200 - Date.now())));
   assert.deepEqual(entries.map(e => e.type), ['BACKUP']);
   assert.equal(entries[0].details.folder, '/backups/x');
 });
