@@ -816,7 +816,7 @@ export function languageSample(pools: Pool[], r: Rng, n: number): string {
       if (ex.type === 'multiple-choice') md += `  - ${ex.options.map((o, i) => (i === ex.correctIndex ? `**${o}**` : o)).join(' · ')}\n`;
       if (ex.type === 'fill-blank') md += `  - ${ex.textWithGaps} · ${ex.options.map(o => (ex.correctAnswers.includes(o) ? `**${o}**` : o)).join(' · ')}\n`;
       if (ex.type === 'ordering') md += `  - (shuffled on screen) ${ex.items.map(i => i.content).join(' · ')}\n`;
-      md += `  - ✔ ${revealed(ex)}\n`;
+      md += `  - ✔ ${revealed(ex).replace(/\n/g, '\n    ')}\n`;
     }
   }
   return md;

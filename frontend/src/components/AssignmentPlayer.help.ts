@@ -36,3 +36,14 @@ export const exerciseTour = (userId: string, type: Exercise['type'], rung: Forgi
     ],
   },
 });
+
+// «Η σωστή απάντηση: …» on screen, until she closes it (#72; after «Δείξε μου», or after the last try on
+// the unforgiving rung): the card is all there is to explain, so the tour is its own edition,
+// `exercise-answer`, the same for every type and rung. The owl offers it the first time an answer stays up.
+export const answerTour = (userId: string): Tour => ({
+  id: 'exercise-answer',
+  user: userId,
+  steps: [
+    { el: 'exercise.revealed', title: 'Η σωστή απάντηση', text: 'Διάβασέ τη όσο θες. Όταν τελειώσεις, πάτα «Εντάξει».', side: 'right' },
+  ],
+});

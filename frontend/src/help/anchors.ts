@@ -18,7 +18,7 @@ export const ANCHORS = [
   // Chores and bonus activities
   'chores.card', 'chores.claim', 'chores.done', 'chores.waiting', 'chores.empty',
   // One exercise, and the ways to answer one
-  'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit', 'exercise.show',
+  'exercise.ask', 'exercise.answer', 'exercise.stars', 'exercise.exit', 'exercise.show', 'exercise.revealed',
   'answer.options', 'answer.truefalse', 'answer.match-left', 'answer.match-right', 'answer.match-check', 'answer.order', 'answer.order-submit',
   'answer.blank', 'answer.words', 'answer.blank-check', 'answer.number', 'answer.numpad',
   // The group game
