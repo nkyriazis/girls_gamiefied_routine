@@ -13,7 +13,8 @@ export const answerSteps = (type: Exercise['type'] | undefined): HelpStep[] => {
     ];
     case 'match-pairs': return [
       { el: 'answer.match-left', title: 'Πρώτα από εδώ', text: 'Πάτα ένα από τα αριστερά…', side: 'right', demo: 'tap', say: 'Πρώτα, πάτα ένα από τα αριστερά…' },
-      { el: 'answer.match-right', title: '…και μετά το ταίρι του', text: '…και μετά αυτό που του ταιριάζει δεξιά. Όταν ταιριάξουν όλα, τελειώνεις.', side: 'left', demo: 'tap', say: 'Και μετά, αυτό που του ταιριάζει δεξιά. Όταν ταιριάξουν όλα, τελειώνεις!' },
+      { el: 'answer.match-right', title: '…και μετά το ταίρι του', text: '…και μετά αυτό που του ταιριάζει δεξιά. Για να αλλάξεις ένα ζευγάρι, πάτα το.', side: 'left', demo: 'tap', say: 'Και μετά, αυτό που του ταιριάζει δεξιά. Για να αλλάξεις ένα ζευγάρι, πάτα το.' },
+      { el: 'answer.match-check', title: 'Τελείωσες;', text: 'Κοίτα τα ζευγάρια. Αν είναι σωστά, πάτα εδώ.', side: 'top' },
     ];
     case 'ordering': return [
       { el: 'answer.order', title: 'Βάλε σειρά', text: 'Σύρε κάθε κουτί με το δάχτυλο στη θέση του, από πάνω προς τα κάτω.', side: 'left', demo: 'swipe' },

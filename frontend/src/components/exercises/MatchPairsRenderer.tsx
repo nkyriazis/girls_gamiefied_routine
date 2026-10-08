@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { MatchPairsExercise } from '@shared/types';
+import { answerPairs, emptyMatching, isComplete, pairOf, rightOrder, tapLeft, tapRight } from '@shared/matchPairs';
 import { help } from '../../help/anchors';
 import { sound } from '../../sound/sfx';
-import { useShuffled } from './shuffle';
 
 interface Props {
   exercise: MatchPairsExercise;
@@ -11,94 +11,97 @@ interface Props {
   disabled?: boolean;
 }
 
-interface IndexedItem {
-  idx: number;   // unique index within its column
-  text: string;  // display text
-}
+// A pair's marker, by its left item's row: the same colour while she moves pairs around. No red or green,
+// which would read as wrong or right before the check.
+const PAIR_COLOURS = ['#4dabf7', '#ff922b', '#e599f7', '#f8f9fa', '#22b8cf', '#c0895e'];
+const pairColour = (left: number) => PAIR_COLOURS[left % PAIR_COLOURS.length];
 
+// The pairs are checked only on «Έλεγχος Ζευγαριών», once every item is matched (#86): she looks at the
+// finished columns first, and a tap on a matched item takes its pair back (shared/matchPairs.ts).
 export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabled }) => {
-  const [selectedLeftIdx, setSelectedLeftIdx] = useState<number | null>(null);
-  // Track matched pairs by their indices: { leftIdx, rightIdx }
-  const [matchedPairs, setMatchedPairs] = useState<{ leftIdx: number; rightIdx: number }[]>([]);
+  const [matching, setMatching] = useState(emptyMatching);
+  const complete = isComplete(matching, exercise.pairs.length);
+  const { selected } = matching;
 
-  // Build indexed items; the right column shuffled once per exercise
-  const leftItems: IndexedItem[] = useMemo(() =>
-    exercise.pairs.map((p, i) => ({ idx: i, text: p.left })),
-  [exercise.pairs]);
+  // The right column in an order fixed by the exercise: after a wrong try (a remount) it stays as she read it
+  const order = useMemo(() => rightOrder(exercise), [exercise]);
 
-  const rightItems: IndexedItem[] = useShuffled(
-    exercise.pairs.map((p, i) => ({ idx: i, text: p.right })),
-    exercise.id,
-  );
-
-  const handleLeftClick = (leftIdx: number) => {
-    if (disabled || matchedPairs.some(m => m.leftIdx === leftIdx)) return;
-    setSelectedLeftIdx(selectedLeftIdx === leftIdx ? null : leftIdx);
-  };
-
-  const handleRightClick = (rightIdx: number) => {
-    if (disabled || selectedLeftIdx === null || matchedPairs.some(m => m.rightIdx === rightIdx)) return;
-
-    const newPairs = [...matchedPairs, { leftIdx: selectedLeftIdx, rightIdx }];
-    setMatchedPairs(newPairs);
-    setSelectedLeftIdx(null);
-
-    // If all matched, submit the actual text pairs for backend validation
-    if (newPairs.length === exercise.pairs.length) {
-      const answerPairs = newPairs.map(p => ({
-        left: exercise.pairs[p.leftIdx].left,
-        right: exercise.pairs[p.rightIdx].right,
-      }));
-      onAnswer(answerPairs);
-    }
+  const check = () => {
+    if (!disabled && complete) onAnswer(answerPairs(matching, exercise));
   };
 
   return (
     <div className="match-container">
-      <div className="match-column" {...help('answer.match-left')}>
-        {leftItems.map(item => {
-          const isMatched = matchedPairs.some(m => m.leftIdx === item.idx);
-          const isSelected = selectedLeftIdx === item.idx;
-          return (
-            <motion.button
-              key={`left-${item.idx}`}
-              className={`match-item left ${isMatched ? 'matched' : ''} ${isSelected ? 'selected' : ''}`}
-              {...sound(isSelected ? 'unselect' : 'select')}
-              onClick={() => handleLeftClick(item.idx)}
-              disabled={disabled || isMatched}
-              whileTap={!disabled && !isMatched ? { scale: 0.95 } : {}}
-            >
-              {item.text}
-              {isMatched && <span className="matched-indicator">✓</span>}
-            </motion.button>
-          );
-        })}
+      <div className="match-columns">
+        <div className="match-column" {...help('answer.match-left')}>
+          {exercise.pairs.map((p, i) => {
+            const pair = pairOf(matching, 'left', i);
+            const isSelected = selected === i;
+            return (
+              <motion.button
+                key={`left-${i}`}
+                className={`match-item left ${pair ? 'matched' : ''} ${isSelected ? 'selected' : ''}`}
+                style={pair ? ({ '--pair': pairColour(i) } as React.CSSProperties) : undefined}
+                // Selecting it, letting it go, or taking its pair back
+                {...sound(pair || isSelected ? 'unselect' : 'select')}
+                onClick={() => !disabled && setMatching(m => tapLeft(m, i))}
+                disabled={disabled}
+                whileTap={!disabled ? { scale: 0.95 } : {}}
+              >
+                {p.left}
+                {pair && <span className="pair-dot" aria-hidden="true" />}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <div className="match-column" {...help('answer.match-right')}>
+          {order.map(j => {
+            const pair = pairOf(matching, 'right', j);
+            const canMatch = selected !== null;
+            return (
+              <motion.button
+                key={`right-${j}`}
+                className={`match-item right ${pair ? 'matched' : ''} ${canMatch ? 'can-match' : ''}`}
+                style={pair ? ({ '--pair': pairColour(pair.left) } as React.CSSProperties) : undefined}
+                // Onto the selected left (even from another pair), or its pair taken back
+                {...sound(canMatch ? 'place' : 'unselect')}
+                onClick={() => !disabled && setMatching(m => tapRight(m, j))}
+                disabled={disabled || (!canMatch && !pair)}
+                whileTap={!disabled && (canMatch || pair) ? { scale: 0.95 } : {}}
+                animate={canMatch && !pair ? { scale: [1, 1.02, 1] } : {}}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                {pair && <span className="pair-dot" aria-hidden="true" />}
+                {exercise.pairs[j].right}
+              </motion.button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="match-column" {...help('answer.match-right')}>
-        {rightItems.map(item => {
-          const isMatched = matchedPairs.some(m => m.rightIdx === item.idx);
-          const canMatch = selectedLeftIdx !== null;
-          return (
-            <motion.button
-              key={`right-${item.idx}`}
-              className={`match-item right ${isMatched ? 'matched' : ''} ${canMatch && !isMatched ? 'can-match' : ''}`}
-              {...sound('place')}
-              onClick={() => handleRightClick(item.idx)}
-              disabled={disabled || isMatched || selectedLeftIdx === null}
-              whileTap={!disabled && !isMatched && selectedLeftIdx !== null ? { scale: 0.95 } : {}}
-              animate={canMatch && !isMatched ? { scale: [1, 1.02, 1] } : {}}
-              transition={{ repeat: Infinity, duration: 2 }}
-            >
-              {item.text}
-              {isMatched && <span className="matched-indicator">✓</span>}
-            </motion.button>
-          );
-        })}
-      </div>
+      {/* Always there, so nothing moves when the last pair is matched */}
+      <motion.button
+        className="match-check"
+        {...help('answer.match-check')}
+        onClick={check}
+        disabled={disabled || !complete}
+        whileHover={!disabled && complete ? { scale: 1.05 } : {}}
+        whileTap={!disabled && complete ? { scale: 0.95 } : {}}
+      >
+        Έλεγχος Ζευγαριών
+      </motion.button>
 
       <style>{`
         .match-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2rem;
+          width: 100%;
+        }
+
+        .match-columns {
           display: flex;
           gap: 4rem;
           justify-content: center;
@@ -126,6 +129,15 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
           font-family: inherit;
         }
 
+        .match-item:disabled {
+          cursor: default;
+        }
+
+        /* A tapped item stays enabled now: the focus ring (index.css) would hide its pair's colour */
+        .match-item:focus:not(:focus-visible) {
+          outline: none;
+        }
+
         .match-item.selected {
           border-color: gold;
           background: rgba(255, 215, 0, 0.2);
@@ -138,23 +150,42 @@ export const MatchPairsRenderer: React.FC<Props> = ({ exercise, onAnswer, disabl
         }
 
         .match-item.matched {
-          opacity: 0.5;
-          background: rgba(46, 213, 115, 0.1);
-          border-color: rgba(46, 213, 115, 0.3);
-          cursor: default;
+          border-color: var(--pair);
+          background: rgba(255, 255, 255, 0.12);
         }
 
-        .matched-indicator {
+        .pair-dot {
           position: absolute;
-          right: 10px;
           top: 50%;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: var(--pair);
           transform: translateY(-50%);
-          color: #2ed573;
+        }
+
+        .match-item.left .pair-dot { right: 10px; }
+        .match-item.right .pair-dot { left: 10px; }
+
+        .match-check {
+          background: #a0a0ff;
+          color: #1a1a3a;
+          border: none;
+          padding: 1rem 2.5rem;
+          border-radius: 2rem;
+          font-size: 1.2rem;
           font-weight: bold;
+          font-family: inherit;
+          cursor: pointer;
+        }
+
+        .match-check:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         @media (max-width: 600px) {
-          .match-container {
+          .match-columns {
             gap: 1.5rem;
           }
         }
