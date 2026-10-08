@@ -1,0 +1,12 @@
+{
+ "url": "http://localhost:4173/",
+ "fonts": {
+  "outfit400": true,
+  "loaded": [
+   "Outfit 300",
+   "Outfit 400",
+   "Outfit 800"
+  ]
+ },
+ "requestsLeavingTheMachine": []
+}
