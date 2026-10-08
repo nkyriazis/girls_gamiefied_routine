@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ConfigUser, DataConfig } from '@shared/types';
-import { kidIsValid, newKid, targetsOf, THEME_COLORS, tidyUser } from './model.ts';
+import { kidIsValid, missingKidsHint, newKid, targetsOf, THEME_COLORS, tidyUser, toggleKid } from './model.ts';
 
 const kid = (over: Partial<ConfigUser> = {}): ConfigUser => ({
     id: 'u1', name: 'Ηλέκτρα', avatar: { type: 'emoji', value: '🦊' }, color: 'var(--color-accent)', ...over,
@@ -51,6 +51,24 @@ test('a new kid\'s id must be unused; an edited kid keeps hers', () => {
     assert.equal(kidIsValid(kid({ id: 'u2' }), users, false), true);
     assert.equal(kidIsValid(kid({ id: 'u2' }), users, true), false);
     assert.equal(kidIsValid(kid({ id: 'kid-new' }), users, true), true);
+});
+
+// #121: Ποια παιδιά with an id that is no kid (u3)
+const kids = [{ id: 'u1' }, { id: 'u2' }];
+
+test('toggleKid drops ids that are no kid on any tap', () => {
+    assert.deepEqual(toggleKid(['u3'], 'u1', kids), ['u1']);
+    assert.equal(toggleKid(['u3', 'u1'], 'u1', kids), undefined); // none left: every kid
+    assert.deepEqual(toggleKid(['u3', 'u1'], 'u2', kids), ['u1', 'u2']);
+    assert.deepEqual(toggleKid(undefined, 'u2', kids), ['u2']);
+});
+
+test('missingKidsHint says which ids are no kid, for one or several, and nothing when all are kids', () => {
+    assert.equal(missingKidsHint(['u3'], kids), 'Η δουλειά είναι για «u3», που δεν υπάρχει. Πάτα ένα παιδί, ή «Για όλα».');
+    assert.equal(missingKidsHint(['u3', 'u4'], kids), 'Η δουλειά είναι για «u3», «u4», που δεν υπάρχουν. Πάτα ένα παιδί, ή «Για όλα».');
+    assert.equal(missingKidsHint(['u1', 'u3'], kids), 'Η δουλειά είναι και για «u3», που δεν υπάρχει. Πάτα ένα παιδί, ή «Για όλα».');
+    assert.equal(missingKidsHint(['u1'], kids), null);
+    assert.equal(missingKidsHint(undefined, kids), null);
 });
 
 test('targetsOf never offers an assignment or a flow whose id is «alarm» (#121)', () => {
