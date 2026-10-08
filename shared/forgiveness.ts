@@ -13,6 +13,10 @@
 // the first wrong try on both rungs; unforgiving closes it after one try for true/false and
 // two for the rest.
 //
+// A retry (#136, ExerciseAssignment.retryOf), an item of the kind she was shown worked, plays by
+// unforgiving's rules whatever her rung (rungOf): no «Δείξε μου», two counted tries a step, then it
+// is shown worked; a plain one closes after its tries. So she can't tap through it, and never sticks.
+//
 // Type imports only, so the backend (CommonJS) and the frontend (Vite) can both load it.
 
 import type { Exercise, ExerciseAssignment, Forgiveness, ProblemExercise, ProblemStep, User } from './types';
@@ -33,6 +37,11 @@ export function wrongTryCounts(step: ProblemStep, slip?: CalcSlip): boolean {
   return true;
 }
 
+/** The rung an assignment plays on: hers, but unforgiving on a retry (#136). */
+export function rungOf(user: Pick<User, 'forgiveness'> | undefined, a: Pick<ExerciseAssignment, 'retryOf'>): Forgiveness {
+  return a.retryOf ? 'unforgiving' : user?.forgiveness ?? DEFAULT_FORGIVENESS;
+}
+
 /** What a problem pays with these counted wrong tries per step (so far, or in the end). */
 export function problemStars(exercise: ProblemExercise, mistakes: number[] | undefined, rung: Forgiveness | undefined): number {
   const lost = exercise.steps.filter((_, i) => (mistakes?.[i] ?? 0) > 0).length;
@@ -51,15 +60,15 @@ export function plainTries(rung: Forgiveness | undefined, type: Exercise['type']
 
 /**
  * What an assignment pays now, for the header and the cards: what it paid once done, else
- * what it pays if the rest goes right.
+ * what it pays if the rest goes right, on the rung it plays on (rungOf).
  */
 export function paysNow(
-  a: Pick<ExerciseAssignment, 'status' | 'attempts' | 'starsAwarded' | 'mistakes'>, exercise: Exercise,
+  a: Pick<ExerciseAssignment, 'status' | 'attempts' | 'starsAwarded' | 'mistakes' | 'retryOf'>, exercise: Exercise,
   user?: Pick<User, 'forgiveness'>
 ): number {
   if (a.status === 'completed') return a.starsAwarded ?? exercise.stars;
   return exercise.type === 'problem'
-    ? problemStars(exercise, a.mistakes, user?.forgiveness)
+    ? problemStars(exercise, a.mistakes, rungOf(user, a))
     : plainStars(exercise.stars, a.attempts);
 }
 

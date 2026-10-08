@@ -24,9 +24,11 @@ export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClos
     const revision = exerciseAssignments.some(a => a.revision && !a.extra && shown.some(u => u.id === a.userId));
     // An extra problem left with ✕ on screen: the edition that explains its card (#67)
     const extra = exerciseAssignments.some(a => a.extra && a.status === 'pending' && shown.some(u => u.id === a.userId));
+    // A retry of an item shown worked on screen: the edition that explains its pill (#136)
+    const retry = exerciseAssignments.some(a => a.retryOf && !a.extra && shown.some(u => u.id === a.userId));
 
     return (
-        <HelpScreen tour={isOpen ? exercisesTour(revision, extra) : null}>
+        <HelpScreen tour={isOpen ? exercisesTour(revision, extra, retry) : null}>
         <AnimatePresence>
             {isOpen && (
                 <>

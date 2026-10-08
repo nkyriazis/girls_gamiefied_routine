@@ -69,10 +69,14 @@ export const READING: { value: ProblemReading; label: string }[] = [
     { value: 'paint-all', label: 'Βάφει μόνη της και τα περιττά' },
 ];
 
-// How much mistakes cost (shared/forgiveness.ts): short labels that fit a phone, and a line under the select
+// How much mistakes cost (shared/forgiveness.ts): short labels that fit a phone, and a line under the select.
+// Both rungs end with what comes of a step shown to her (#136), as the draw does it: one owed item a day, oldest
+// first, when her set has a slot of its category, as one of its kind. Only Συγχωρετικό has «Δείξε μου», so only its
+// line says the retry drops it and plays by Αυστηρό's rules.
+const RETRY_SAYS = 'Ό,τι της δείχτηκε ξανάρχεται τις επόμενες μέρες (μία την ημέρα) σε μια όμοια';
 export const FORGIVENESS: { value: Forgiveness; label: string; says: string }[] = [
-    { value: 'forgiving', label: 'Συγχωρετικό', says: 'Ξαναδοκιμάζει όσο θέλει, −1 ⭐ ανά βήμα με λάθος (μένει τουλάχιστον 1). Μετά από 3 λάθη, «Δείξε μου».' },
-    { value: 'unforgiving', label: 'Αυστηρό', says: 'Δύο προσπάθειες ανά βήμα, μετά βλέπει τη λύση. −1 ⭐ ανά βήμα με λάθος (ως 0).' },
+    { value: 'forgiving', label: 'Συγχωρετικό', says: `Ξαναδοκιμάζει όσο θέλει, −1 ⭐ ανά βήμα με λάθος (μένει τουλάχιστον 1). Μετά από 3 λάθη, «Δείξε μου». ${RETRY_SAYS}, χωρίς «Δείξε μου», με τους κανόνες του Αυστηρού.` },
+    { value: 'unforgiving', label: 'Αυστηρό', says: `Δύο προσπάθειες ανά βήμα, μετά βλέπει τη λύση. −1 ⭐ ανά βήμα με λάθος (ως 0). ${RETRY_SAYS}.` },
 ];
 
 // A kid's colour: one of the theme's (styles/variables.css), which read well on the dark kids' screen.

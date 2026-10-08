@@ -151,7 +151,7 @@ export function HistoryView() {
                             {e.exercise && (
                                 <div className="p-row-chips">
                                     {e.exercise.chips.map(c => (
-                                        <span key={c.text} className={c.shown ? 'p-tally shown' : 'p-tally'}>{c.text}</span>
+                                        <span key={c.text} className={['p-tally', c.shown && 'shown', c.retry && 'retry'].filter(Boolean).join(' ')}>{c.text}</span>
                                     ))}
                                 </div>
                             )}

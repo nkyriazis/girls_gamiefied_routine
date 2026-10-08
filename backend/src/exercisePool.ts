@@ -215,6 +215,42 @@ export function drawDailySet(pools: UserPools, count: number, seen: Map<string, 
   return { drawn, revision, fallback };
 }
 
+// ----------------------------------------------------------------------------
+// Shown, then do (#136). An item solved for her («Δείξε μου», or Αυστηρό's worked step) comes back
+// as another item of the same kind, which she does herself. The kind: the same family (the generated
+// problems', the plain maths' and language's generatorParams.family; the world problems share one world
+// and the hand-written ones have none, so for them the topic decides), else the same topic, within her
+// category's bucket (her own grade's, else revision, as the draw) and by the gate's order (every tier
+// counts). Never the bare category: with nothing of its kind left, a plain exercise comes back itself,
+// a problem not at all. Which owed item comes back, and where, is ensureDailyAssignments' (db.ts).
+// ----------------------------------------------------------------------------
+
+/** How a retry was found: another of the family, another of the topic, or the same plain exercise. */
+export type RetryMatch = 'family' | 'topic' | 'same';
+
+/**
+ * Another item of `shown`'s kind for her to do herself, freshest first within the gate's order, never one
+ * in `exclude` (the rest of the day's set) nor `shown` itself unless nothing else is left and it is plain.
+ */
+export function retryFor(shown: Exercise, pools: UserPools, gate: DrawGate, seen: Map<string, string>, exclude: Set<string>, now = new Date()):
+  { ex: Exercise; match: RetryMatch } | undefined {
+  const own = pools.own.filter(e => e.category === shown.category);
+  const bucket = own.length ? own : pools.revision.filter(e => e.category === shown.category);
+  const others = bucket.filter(e => e.id !== shown.id && !exclude.has(e.id));
+  const family: unknown = shown.generatorParams?.family;
+  const kinds: [RetryMatch, Exercise[]][] = [
+    ['family', family ? others.filter(e => e.generatorParams?.family === family) : []],
+    ['topic', shown.topic ? others.filter(e => e.topic === shown.topic) : []],
+  ];
+  for (const [match, list] of kinds) {
+    const [best] = gateOrder(list, gate, seen, now).slice(-1);
+    if (best) return { ex: best.ex, match };
+  }
+  // The same plain item again, only while it is still one of hers (a grade changed since leaves it to lapse)
+  const stillHers = bucket.some(e => e.id === shown.id);
+  return shown.type !== 'problem' && stillHers && !exclude.has(shown.id) ? { ex: shown, match: 'same' } : undefined;
+}
+
 /** Read and validate every pool file. Throws on an invalid file or a duplicate id. */
 export function loadPools(dir = EXERCISE_POOLS_DIR): ExercisePool[] {
   const files = readdirSync(dir).filter(f => f.endsWith('.json')).sort();

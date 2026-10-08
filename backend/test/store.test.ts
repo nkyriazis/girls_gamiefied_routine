@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'path';
+import { DatabaseSync } from 'node:sqlite';
 import { Store } from '../src/store';
 import { ChoreInstance, ExerciseAssignment, ExerciseSession, StateSnapshot } from '../../shared/types';
 import { tempDir, uuid } from './helpers';
@@ -29,15 +30,37 @@ test('records round-trip exactly, including optional, boolean and JSON fields', 
     completedAt: 'b', starsAwarded: 1, stepIndex: 5, mistakes: [1, 0, 0, 3, 0], extra: true, shown: [3]
   };
   const { shown: _none, ...plain } = { ...shown, id: uuid(6) };
+  // A retry of a step shown worked (#136): it names the assignment it retries
+  const retry: ExerciseAssignment = { ...plain, id: uuid(7), extra: false, retryOf: uuid(5) };
   store.exerciseAssignments.put(shown);
   store.exerciseAssignments.put(plain);
+  store.exerciseAssignments.put(retry);
 
   assert.deepEqual(store.choreInstances.get(uuid(1)), chore);
   assert.deepEqual(store.exerciseSessions.get(uuid(2)), session);
   assert.equal(store.taskExecutions.get(uuid(3))?.isOnTime, false);
   assert.deepEqual(store.exerciseAssignments.get(uuid(5)), shown);
   assert.deepEqual(store.exerciseAssignments.get(uuid(6)), plain);
+  assert.deepEqual(store.exerciseAssignments.get(uuid(7)), retry);
   assert.equal(store.choreInstances.get('missing'), undefined);
+});
+
+test('a database from before #136 gains retryOf: its rows read as no retry', () => {
+  const { file, store } = openStore();
+  const row: ExerciseAssignment = { id: uuid(1), userId: 'u1', exerciseId: 'p', date: '2026-10-07', status: 'completed', attempts: 1, assignedAt: 'a', shown: [0] };
+  store.exerciseAssignments.put(row);
+  store.close();
+  // Back to the version before the column, as piserve's database is
+  const raw = new DatabaseSync(file);
+  const { user_version: version } = raw.prepare('PRAGMA user_version').get() as { user_version: number };
+  raw.exec(`ALTER TABLE exercise_assignments DROP COLUMN retryOf; PRAGMA user_version = ${version - 1}`);
+  raw.close();
+
+  const reopened = new Store(file);
+  assert.deepEqual(reopened.exerciseAssignments.get(uuid(1)), row);
+  reopened.exerciseAssignments.put({ ...row, id: uuid(2), retryOf: uuid(1) });
+  assert.equal(reopened.exerciseAssignments.get(uuid(2))?.retryOf, uuid(1));
+  reopened.close();
 });
 
 test('hasHistory: a new database has none; any star, run, log or seen tour is history', () => {

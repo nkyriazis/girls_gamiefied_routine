@@ -165,6 +165,8 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
         .assignment-meta { font-size: 0.8rem; opacity: 0.6; }
         .revision-pill { display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.55rem; border-radius: 999px; vertical-align: 0.1em;
           font-size: 0.72rem; font-weight: 600; color: #d9c2ff; background: rgba(155, 93, 229, 0.22); border: 1px solid rgba(155, 93, 229, 0.5); }
+        .retry-pill { display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.55rem; border-radius: 999px; vertical-align: 0.1em; white-space: nowrap;
+          font-size: 0.72rem; font-weight: 600; color: #a6f0ff; background: rgba(0, 180, 216, 0.2); border: 1px solid rgba(0, 180, 216, 0.55); }
         .assignment-status { flex-shrink: 0; font-weight: bold; }
         .star-badge { color: #ffd60a; font-size: 1rem; }
         .done-badge { color: #06d6a0; font-size: 0.95rem; }
@@ -206,6 +208,8 @@ const AssignmentCard: React.FC<{
           {ex.title}
           {/* From a lower grade's pool, when hers has nothing in this category (#49) */}
           {assignment.revision && <span className="revision-pill" {...help('exercises.revision')}>Επανάληψη</span>}
+          {/* An item of the kind she was shown worked, hers to do now (#136) */}
+          {assignment.retryOf && <span className="retry-pill" {...help('exercises.retry')}>🔁 Ξανά</span>}
         </h4>
         <span className="assignment-meta">
           {extra

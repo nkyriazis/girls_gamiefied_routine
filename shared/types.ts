@@ -339,6 +339,10 @@ export interface ExerciseAssignment {
   // Αυστηρό closing it after its tries). Absent means none (rows from before #68 read so too).
   // Ιστορικό shows it; paying never reads it.
   shown?: number[];
+  // A retry (#136): the id of the assignment with a step shown worked that this one makes her do herself,
+  // with an item of the same kind. It plays by Αυστηρό's rules whatever her rung (shared/forgiveness.ts,
+  // rungOf). Absent means not a retry (every row from before #136).
+  retryOf?: string;
 }
 
 // Enriched assignment with the exercise definition for frontend display
