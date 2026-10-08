@@ -85,6 +85,11 @@ button.p-row:active { background: var(--p-raised); }
 .p-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .p-row-title { font-weight: 600; overflow-wrap: anywhere; }
 .p-row-sub { font-size: 0.85rem; color: var(--color-text-muted); }
+/* How an exercise went (Ιστορικό, #68): counts as small chips */
+.p-row-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 2px; }
+.p-tally { padding: 1px 8px; border-radius: 999px; font-size: 0.8rem; white-space: nowrap; font-variant-numeric: tabular-nums;
+  background: var(--p-raised); border: 1px solid var(--p-line); }
+.p-tally.shown { border-color: var(--color-warning); }
 .p-chevron { font-size: 1.5rem; color: var(--color-text-muted); }
 
 .p-stars { color: var(--color-accent); font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
