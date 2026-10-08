@@ -1,7 +1,7 @@
 import type { ExerciseAssignment, User } from '@shared/types';
 
 // What the ✏️ badge and the exercises drawer count (#47): a kid's daily set. The problems she
-// asks for on top of it («Κι άλλο πρόβλημα») are apart: an open one has its own «▶ Συνέχισε».
+// asks for on top of it («Κι άλλο πρόβλημα») are apart: one left pending is a card of its own (#67).
 
 type Assignment = Pick<ExerciseAssignment, 'userId' | 'status' | 'extra'>;
 export interface DailyCount { total: number; done: number; waiting: number }
@@ -16,9 +16,12 @@ export function dailyCount(assignments: Assignment[], userId: string): DailyCoun
 export const waitingCount = (assignments: Assignment[]) =>
   assignments.filter(a => !a.extra && a.status === 'pending').length;
 
-/** The kids the drawer draws: those with a set today, and those with a grade while extras are allowed. */
+/** The kids the drawer draws: those with a set today, those with an extra problem left pending (her
+ *  cards stay, whatever a parent changed since), and those with a grade while extras are allowed. */
 export const kidsShown = <U extends Pick<User, 'id' | 'grade'>>(users: U[], assignments: Assignment[], extraLimit: number) =>
-  users.filter(u => dailyCount(assignments, u.id).total > 0 || (!!u.grade && extraLimit > 0));
+  users.filter(u => dailyCount(assignments, u.id).total > 0
+    || assignments.some(a => a.userId === u.id && a.extra && a.status === 'pending')
+    || (!!u.grade && extraLimit > 0));
 
 /** The pill next to a kid's name. */
 export const pillText = ({ total, done }: DailyCount) =>
