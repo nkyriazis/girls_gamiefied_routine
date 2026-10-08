@@ -82,17 +82,6 @@ export default defineConfig({
         globIgnores: ['**/assets/JsonEditor-*', '**/assets/jsonMode-*', '**/assets/*.worker-*'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              }
-            }
-          },
-          {
             urlPattern: /\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {

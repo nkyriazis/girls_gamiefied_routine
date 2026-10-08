@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+/* Outfit ships with the app (@fontsource/outfit, SIL OFL), so the screens look the same with no internet (#102).
+   It has Latin glyphs only: the Greek text has always come from the fallback sans-serif, Outfit draws
+   the digits and Latin letters. Its woff2 files are precached like the rest of the app. */
+@import '@fontsource/outfit/300.css';
+@import '@fontsource/outfit/400.css';
+@import '@fontsource/outfit/600.css';
+@import '@fontsource/outfit/800.css';
 @import './variables.css';
 @import './layers.css';
 
