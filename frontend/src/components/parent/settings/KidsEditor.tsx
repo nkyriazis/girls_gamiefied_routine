@@ -25,7 +25,7 @@ function KidForm({ value, onChange }: FormProps<ConfigUser>) {
                         <SelectField key={subject} label={BOOK_FIELD[subject]} value={value.progress?.[subject] ?? ''} options={options}
                             onChange={id => onChange({ ...value, progress: { ...value.progress, [subject]: id || undefined } })} />
                     ))}
-                    <p className="p-hint">Οι ασκήσεις της ημέρας έρχονται μόνο από όσα έχει φτάσει η τάξη. «Όπως το βιβλίο» προχωρά μόνο του, με έναν ρυθμό που υπολογίσαμε από το βιβλίο· ένα κεφάλαιο που διαλέγεις μένει ίδιο ως που να το αλλάξεις.</p>
+                    <p className="p-hint">Οι ασκήσεις της ημέρας έρχονται μόνο από όσα έχει φτάσει η τάξη. «Όπως το βιβλίο» προχωρά μόνο του, με έναν ρυθμό που υπολογίσαμε από το βιβλίο· ένα κεφάλαιο που διαλέγεις μένει ίδιο ώσπου να το αλλάξεις.</p>
                     <SelectField label="Δυσκολία" value={value.difficulty && value.difficulty < 3 ? String(value.difficulty) : ''} options={DIFFICULTY}
                         onChange={d => onChange({ ...value, difficulty: d ? Number(d) as 1 | 2 : undefined })} />
                     <p className="p-hint">Πιο δύσκολες έρχονται μόνο όταν τελειώσουν οι πιο εύκολες, για να μην ξαναδεί άσκηση που έλυσε τον τελευταίο μήνα.</p>
