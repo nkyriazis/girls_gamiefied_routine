@@ -20,7 +20,7 @@ import {
   writeRawExercises, writeRawConfig, ConfigConflict, type ConfigSave, startExerciseSession, submitExerciseAnswer,
   closeExerciseSession, gameResultsLeaving, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
   logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
-  stateText, replaceState, StateConflict, ensureDailyAssignments, markHelpSeen, resetHelp, cronDue
+  stateText, replaceState, StateConflict, logConfigReload, ensureDailyAssignments, markHelpSeen, resetHelp, cronDue
 } from './db';
 import { config, configError, configWarnings, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
@@ -790,6 +790,7 @@ const start = async () => {
     }
     await ensureDailyAssignments();
     watchConfig(change => {
+      logConfigReload(change); // a hand edit on disk is in the action log (#98); the startup reload above isn't
       if (change.type === 'updated') {
         console.log('Config changed on disk; reloaded');
       } else {

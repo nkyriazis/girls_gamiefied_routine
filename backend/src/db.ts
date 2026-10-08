@@ -11,7 +11,7 @@ import { calcSlip, checkCalc, checkPaint, storyWords, targetsFromMarks, type Cal
 import { DEFAULT_FORGIVENESS, plainStars, plainTries, problemStars, wrongTryCounts } from '../../shared/forgiveness';
 import { currentQuestion, playerOnTurn } from '../../shared/groupGame';
 import { cronMatchesAt } from './cron';
-import { changedKeys, config, ConfigFile, versionOf, configError, configWarnings, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
+import { changedKeys, config, ConfigChange, ConfigFile, versionOf, configError, configWarnings, dataConfig, exercisesConfig, exercisesFile, ExercisesConfig } from './config';
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { summarize } from './schemas';
 import { Store, Table } from './store';
@@ -203,6 +203,19 @@ export function readRawExercises(): ExercisesConfig {
 /** Validate and save exercises.json (see saveConfigFile); returns its new version. */
 export function writeRawExercises(data: unknown, options: ConfigSave = {}): string {
   return saveConfigFile(exercisesConfig, data, options, 'Exercises validation failed');
+}
+
+/**
+ * Log what the watcher's reload found new on disk (#98): CONFIG_RELOADED { file, changed } for each file
+ * that changed (a hand edit; `restored: true` when a broken edit went back to the live text), CONFIG_INVALID
+ * { file, message } once per bad text. The server's own saves never reach it (the reload after one finds
+ * the text it wrote), and the reload at startup isn't logged.
+ */
+export function logConfigReload(change: ConfigChange | null): void {
+  for (const report of change?.files ?? []) {
+    const { type, ...details } = report;
+    logAction(type === 'updated' ? 'CONFIG_RELOADED' : 'CONFIG_INVALID', details);
+  }
 }
 
 // ============================================

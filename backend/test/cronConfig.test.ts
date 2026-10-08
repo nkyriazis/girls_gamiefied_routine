@@ -73,7 +73,7 @@ test("the Advanced editor's pre-check lists it like a schema error", async () =>
 
 test('a data.json on disk with unreadable crons still loads, and says which ones', async () => {
   writeFileSync(DATA, JSON.stringify(withCron(withCron(cfg, 'sch-evening', '99 20 * * *'), 'dishes', '0 25 * * *'), null, 2));
-  assert.deepEqual(reloadConfig(), { type: 'updated' });
+  assert.equal(reloadConfig()?.type, 'updated');
   assert.equal(configError(), null);
   assert.equal(config().schedules[1].cron, '99 20 * * *'); // live, as it is
   const state = await db.appState();

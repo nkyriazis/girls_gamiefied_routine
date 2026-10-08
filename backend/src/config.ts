@@ -6,7 +6,7 @@ import type { ErrorObject } from 'ajv';
 import { ConfigWarning, CronWarning, DataConfig, Exercise, ExerciseCategoryDef } from '../../shared/types';
 import { configProblems, refuses } from './configChecks';
 import { DATA_FILE, EXERCISES_FILE } from './paths';
-import { check, dataSchema, exercisesSchema, ValidationError } from './schemas';
+import { check, dataSchema, exercisesSchema, summarize, ValidationError } from './schemas';
 
 // ============================================================================
 // Config (data.json + exercises.json), cached in memory.
@@ -106,6 +106,8 @@ export class ConfigFile<T> {
   /** A valid version was read (or saved) since the start: `value` is the file's, not the fallback. */
   private loaded = false;
   error: ValidationError | null = null;
+  /** Which text `error` is about: its version, or the read error when the file couldn't be read (#98). */
+  errorOf: string | null = null;
   /** What the rules find in the live value: it loaded anyway (see the header). */
   warnings: ConfigWarning[] = [];
 
@@ -184,13 +186,14 @@ export class ConfigFile<T> {
         text = JSON.stringify(this.fallback);
       } else {
         this.error = { message: `Cannot read ${path.basename(this.file)}: ${(err as Error).message}`, errors: [] };
+        this.errorOf = this.error.message;
         return 'invalid';
       }
     }
     if (text === this.liveText) {
       // Back to the live version after a broken edit: the error is resolved.
       if (!this.error) return 'unchanged';
-      this.error = null;
+      this.error = this.errorOf = null;
       return 'updated';
     }
 
@@ -199,18 +202,20 @@ export class ConfigFile<T> {
       parsed = JSON.parse(text);
     } catch (err) {
       this.error = { message: `${path.basename(this.file)} is not valid JSON: ${(err as Error).message}`, errors: [] };
+      this.errorOf = versionOf(text);
       return 'invalid';
     }
     const error = check(this.schema, parsed, `${path.basename(this.file)} failed schema validation`);
     if (error) {
       this.error = error;
+      this.errorOf = versionOf(text);
       return 'invalid';
     }
     this.liveText = text;
     this.value = deepFreeze(parsed as T);
     this.warnings = this.rules(this.value);
     this.loaded = true;
-    this.error = null;
+    this.error = this.errorOf = null;
     return 'updated';
   }
 
@@ -255,7 +260,7 @@ export class ConfigFile<T> {
     this.value = deepFreeze(structuredClone(value as T));
     this.warnings = this.rules(this.value);
     this.loaded = true;
-    this.error = null;
+    this.error = this.errorOf = null;
     return null;
   }
 }
@@ -289,14 +294,47 @@ export function configWarnings(): ConfigWarning[] {
   return dataConfig.warnings;
 }
 
-export type ConfigChange = { type: 'updated' } | { type: 'invalid'; error: ValidationError };
+/**
+ * What a reload found new in one file, for the action log (#98). `updated`: the live config changed, with
+ * the top-level keys that differ; `restored`: the file went back to the live text after a broken edit, so
+ * nothing live changed. `invalid`: a bad text not reported before (the poll sees it every time something
+ * changes, so each bad text is reported once).
+ */
+export type FileReload =
+  | { file: string; type: 'updated'; changed: string[]; restored?: true }
+  | { file: string; type: 'invalid'; message: string };
 
-/** Reload both files; reports whether anything changed or failed. */
+export type ConfigChange = ({ type: 'updated' } | { type: 'invalid'; error: ValidationError }) & { files: FileReload[] };
+
+// The bad text each file was last reported for (ConfigFile.errorOf)
+const reportedInvalid = new Map<string, string>();
+
+function reloadFile<T extends object>(config: ConfigFile<T>): { result: ReturnType<ConfigFile<T>['reload']>; report?: FileReload } {
+  const file = path.basename(config.file);
+  const before = config.get();
+  const result = config.reload();
+  if (config.errorOf === null) reportedInvalid.delete(file);
+  if (result === 'updated') {
+    const after = config.get();
+    // The same object: the live text came back after a broken edit, and the live config never changed
+    return { result, report: after === before ? { file, type: 'updated', changed: [], restored: true } : { file, type: 'updated', changed: changedKeys(before, after) } };
+  }
+  if (result === 'invalid' && config.error && config.errorOf !== null && reportedInvalid.get(file) !== config.errorOf) {
+    reportedInvalid.set(file, config.errorOf);
+    const { message, errors } = config.error;
+    return { result, report: { file, type: 'invalid', message: errors.length ? `${message}: ${summarize(errors)}` : message } };
+  }
+  return { result };
+}
+
+/** Reload both files; reports whether anything changed or failed, and per file what is new (`files`). */
 export function reloadConfig(): ConfigChange | null {
-  const results = [dataConfig.reload(), exercisesConfig.reload()];
+  const reloads = [reloadFile(dataConfig), reloadFile(exercisesConfig)];
+  const results = reloads.map(r => r.result);
+  const files = reloads.flatMap(r => (r.report ? [r.report] : []));
   const error = configError();
-  if (results.includes('invalid') && error) return { type: 'invalid', error };
-  if (results.includes('updated')) return { type: 'updated' };
+  if (results.includes('invalid') && error) return { type: 'invalid', error, files };
+  if (results.includes('updated')) return { type: 'updated', files };
   return null;
 }
 
