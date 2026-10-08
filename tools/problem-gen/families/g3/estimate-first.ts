@@ -157,8 +157,9 @@ export const estimateFirst: Family = {
         { label: `${fmt(hi)} − ${fmt(lo)} =`, answer: hi - lo, unit: s.unit },
       ], 'Από τον μεγαλύτερο αριθμό βγάζουμε τον μικρότερο.'));
     } else {
-      steps.push(b.choice('check', 'Είναι λογικό το αποτέλεσμα;', `Ναι, είναι αρκετά κοντά στο ${fmt(est)}`,
-        [[`Όχι, έπρεπε να είναι ${fmt(est)}`, `Όχι, έπρεπε να είναι ακριβώς ${fmt(est)}`], [`Όχι, έπρεπε να βγει περίπου ${fmt(est + 3 * to)}`, `Όχι, περίπου ${fmt(est + 3 * to)}`]],
+      // Statements about the result, not «Ναι»/«Όχι» (#83): the estimate taken as exact, or a wrong estimate
+      steps.push(b.choice('check', 'Γιατί το αποτέλεσμα είναι λογικό;', [`Είναι αρκετά κοντά στο ${fmt(est)}`, `Είναι κοντά στο ${fmt(est)}`],
+        [[`Είναι ακριβώς ${fmt(est)}, όσο η εκτίμηση`, `Είναι ακριβώς ${fmt(est)}`], [`Είναι πιο κοντά στο ${fmt(est + 3 * to)}`, `Είναι περίπου ${fmt(est + 3 * to)}`]],
         'Η εκτίμηση δεν είναι ακριβώς το αποτέλεσμα, αλλά πρέπει να είναι κοντά του.'));
     }
     return { title: r.pick([s.title, 'Πρώτα περίπου', 'Υπολογίζω περίπου']), story, steps };
