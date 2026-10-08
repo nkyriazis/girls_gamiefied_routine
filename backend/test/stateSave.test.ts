@@ -36,14 +36,15 @@ const EMPTY: StateSnapshot = {
   userStars: {}, routineExecutions: [], taskExecutions: [], spendings: [], starTransfers: [],
   choreInstances: [], exerciseSessions: [], exerciseAssignments: []
 };
-/** u1 ⭐ 100, u2 ⭐ 20, two purchases, nothing on screen. */
+/** u1 ⭐ 100, u2 ⭐ 20, two purchases, nothing on screen. The purchases go in against their ids' order
+ * (uuid(2) first), so a snapshot sorted by id, or by anything but insertion, comes out in another order. */
 function scene() {
   store.replaceState({
     ...EMPTY,
     userStars: { u1: 100, u2: 20 },
     spendings: [
-      { id: uuid(1), userId: 'u1', rewardId: 'park', cost: 10, createdAt: '2026-10-01T10:00:00.000Z', status: 'pending' },
       { id: uuid(2), userId: 'u2', rewardId: 'park', cost: 10, createdAt: '2026-10-01T11:00:00.000Z', status: 'pending' },
+      { id: uuid(1), userId: 'u1', rewardId: 'park', cost: 10, createdAt: '2026-10-01T10:00:00.000Z', status: 'pending' },
     ],
   });
 }
@@ -51,7 +52,11 @@ function scene() {
 /** What the editor does when it opens: GET the snapshot and its version. */
 async function open() {
   const res = await server.inject({ method: 'GET', url: '/api/admin/state' });
-  return { text: res.body, state: res.json() as StateSnapshot, version: res.headers['x-state-version'] as string };
+  const version = res.headers['x-state-version'];
+  // Every test compares versions: a missing header would make two undefineds equal and the test pass on nothing.
+  assert.equal(typeof version, 'string');
+  assert.match(version as string, /^[0-9a-f]{12}$/);
+  return { text: res.body, state: res.json() as StateSnapshot, version: version as string };
 }
 async function save(url: string, body: unknown) {
   const res = await server.inject({ method: 'POST', url, payload: JSON.stringify(body), headers: { 'content-type': 'application/json' } });
@@ -73,12 +78,13 @@ test('GET sends the version of exactly what it returns, and an untouched state k
 test('the snapshot is in a fixed order: updating a record does not move it', async () => {
   scene();
   const opened = await open();
-  const first = store.spendings.get(uuid(1))!;
+  // The first one inserted: a write that moved it (delete and insert again) would put it last
+  const first = store.spendings.get(uuid(2))!;
   store.spendings.put({ ...first, status: 'done', resolvedAt: '2026-10-02T10:00:00.000Z' });
   store.spendings.put(first); // back as it was
   store.setStars('u1', 100); // the same balance, written again
   const now = await open();
-  assert.deepEqual(now.state.spendings.map(s => s.id), [uuid(1), uuid(2)]);
+  assert.deepEqual(now.state.spendings.map(s => s.id), [uuid(2), uuid(1)]); // as inserted, not by id
   assert.equal(now.version, opened.version);
 });
 
