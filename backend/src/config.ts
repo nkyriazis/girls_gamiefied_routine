@@ -64,8 +64,8 @@ export interface SaveRefusal extends ValidationError {
   conflict?: boolean;
 }
 
-/** The version of a file's text: the first 12 hex characters of its sha256. */
-const versionOf = (text: string | null): string => createHash('sha256').update(text ?? '').digest('hex').slice(0, 12);
+/** The version of a file's text (or of the state's snapshot, #98): the first 12 hex characters of its sha256. */
+export const versionOf = (text: string | null): string => createHash('sha256').update(text ?? '').digest('hex').slice(0, 12);
 
 /** YYYY-MM-DD_HHMMSS in the process's time zone, like the backups' folders. */
 function localStamp(d: Date): string {

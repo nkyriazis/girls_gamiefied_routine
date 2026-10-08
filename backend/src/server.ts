@@ -20,7 +20,7 @@ import {
   writeRawExercises, writeRawConfig, ConfigConflict, type ConfigSave, startExerciseSession, submitExerciseAnswer,
   closeExerciseSession, gameResultsLeaving, getExerciseSession, generateChoreInstances, expireChores, cleanupOldChoreInstances,
   logAction, getExerciseAssignments, answerExerciseAssignment, revealExerciseAssignment, startExtraProblem, usersView,
-  stateSnapshot, replaceState, ensureDailyAssignments, markHelpSeen, resetHelp, cronDue
+  stateText, replaceState, StateConflict, ensureDailyAssignments, markHelpSeen, resetHelp, cronDue
 } from './db';
 import { config, configError, configWarnings, dataConfig, exercisesConfig, reloadConfig, watchConfig } from './config';
 import { importLegacy } from './migrate';
@@ -732,21 +732,30 @@ server.post<{ Body: HelpResetBody }>('/api/help/reset', {
   return { reset: resetHelp(userId || undefined) };
 });
 
-// Admin: Get the full runtime state (from the database, in state.json shape)
-server.get('/api/admin/state', async () => {
-  return stateSnapshot();
+// Admin: Get the full runtime state (from the database, in state.json shape), with its version in
+// X-State-Version: the hash of exactly this text (#98)
+server.get('/api/admin/state', async (request, reply) => {
+  const { text, version } = stateText();
+  return reply.header('X-State-Version', version).type('application/json; charset=utf-8').send(text);
 });
 
-// Admin: Replace the full runtime state
+// Admin: Replace the full runtime state. `?version=`: the X-State-Version it was edited from; if the state
+// changed since, a 409 that writes nothing (#98). None: not checked. `?source=advanced`: the editor, for the
+// log; else 'api'.
 server.post('/api/admin/state', async (request, reply) => {
   const error = check(stateSchema, request.body, 'State validation failed');
   if (error) {
     return reply.code(400).send({ error: error.message, errors: error.errors });
   }
+  const { version, source } = request.query as { version?: string; source?: string };
   try {
-    replaceState(request.body as StateSnapshot);
-    return { success: true };
+    const saved = replaceState(request.body as StateSnapshot, {
+      version: version || undefined,
+      source: source === 'advanced' ? 'advanced' : 'api',
+    });
+    return { success: true, version: saved };
   } catch (err) {
+    if (err instanceof StateConflict) return reply.code(409).send({ error: err.message, conflict: true });
     request.log.error(err);
     return reply.code(500).send({ error: 'Failed to update state' });
   }
