@@ -1,8 +1,8 @@
 import { spawn } from 'child_process';
 import { mkdirSync } from 'fs';
 import path from 'path';
-import cron from 'node-cron';
 import { BackupResult, newestBackup, SAME_FILESYSTEM_WARNING, sameFilesystem } from './backup';
+import { cronMatchesAt } from './cron';
 
 // Runs the daily backup (backup.ts) in a child process, so a slow or hung
 // USB stick or NAS can't block the server's event loop: the kids' screens
@@ -18,6 +18,8 @@ type Log = (type: string, details: unknown) => void;
 export interface BackupJob {
   /** Start a backup now unless one is running; returns whether it started. */
   run(why: string): boolean;
+  /** Check if a backup is due on the minute tick */
+  tick?(date: Date): void;
 }
 
 /** The child's command: the same entry point as `npm run backup`, from the sources in dev (ts-node) or dist in prod. */
@@ -95,8 +97,8 @@ export function backupRunner({ dir, log, timeoutMs, command = backupCommand() }:
   return { run };
 }
 
-export function scheduleBackups({ cron: expression, dir, dbFile, timeoutMs, log }: {
-  cron: string; dir: string; dbFile: string; timeoutMs: number; log: Log;
+export function scheduleBackups({ cron: expression, dir, dbFile, timeoutMs, log, timezone = process.env.TZ || 'Europe/Athens' }: {
+  cron: string; dir: string; dbFile: string; timeoutMs: number; log: Log; timezone?: string;
 }): BackupJob {
   const { run } = backupRunner({ dir, log, timeoutMs });
 
@@ -109,10 +111,16 @@ export function scheduleBackups({ cron: expression, dir, dbFile, timeoutMs, log 
   } catch (error) {
     log('BACKUP_FAILED', { why: 'startup', dir, error: (error as Error).message });
   }
-  try {
-    cron.schedule(expression, () => { run('daily'); });
-  } catch (error) {
-    log('BACKUP_FAILED', { why: 'schedule', cron: expression, error: (error as Error).message });
-  }
-  return { run };
+
+  const tick = (date: Date) => {
+    try {
+      if (cronMatchesAt(expression, date, timezone)) {
+        run('daily');
+      }
+    } catch (error) {
+      log('BACKUP_FAILED', { why: 'schedule', cron: expression, error: (error as Error).message });
+    }
+  };
+
+  return { run, tick };
 }

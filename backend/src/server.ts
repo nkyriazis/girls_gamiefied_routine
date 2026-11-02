@@ -5,7 +5,6 @@ import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import { promises as fs } from 'fs';
 import path from 'path';
-import cron from 'node-cron';
 import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
@@ -809,18 +808,24 @@ const start = async () => {
     
     setInterval(() => sync.heartbeat(), HEARTBEAT_MS);
 
-    // Start the real scheduler (checks every minute)
+    // The daily backup, in a child process (backupSchedule.ts)
+    backups = scheduleBackups({ cron: BACKUP_CRON, dir: BACKUP_DIR, dbFile: DB_FILE, timeoutMs: BACKUP_TIMEOUT_MS, log: logAction });
+
+    // Start the real scheduler: one tick per wall-clock minute, driven by epoch time only.
+    // Do not use node-cron: its getNextMatch() runs backwards after the October DST
+    // fall-back (node-cron#624) and spins the process until the OOM killer ends it.
     let gamesCheckedAt = new Date();
-    cron.schedule('* * * * *', () => {
-      const now = new Date();
-      checkSchedules(now);
+    const tick = () => {
+      const now = new Date(Math.floor(Date.now() / 60000) * 60000);
+      checkSchedules(now).catch(err => console.error('Scheduler tick failed:', err));
       // A finished game's results leave the screens when their window ends: nothing is written, so say so
       if (gameResultsLeaving(gamesCheckedAt, now).length > 0) sync.changed();
       gamesCheckedAt = now;
-    });
+      backups?.tick?.(now);
+      setTimeout(tick, 60000 - (Date.now() % 60000) + 50);
+    };
+    setTimeout(tick, 60000 - (Date.now() % 60000) + 50);
     console.log('Scheduler started');
-    // The daily backup, in a child process (backupSchedule.ts)
-    backups = scheduleBackups({ cron: BACKUP_CRON, dir: BACKUP_DIR, dbFile: DB_FILE, timeoutMs: BACKUP_TIMEOUT_MS, log: logAction });
 
     await server.listen({ port: 3000, host: '0.0.0.0' });
   } catch (err) {

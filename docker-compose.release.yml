@@ -12,6 +12,9 @@ services:
       # Legacy files, imported into the database once on first start (read-only)
       - STATE_FILE=/data/state.json
       - LOGS_FILE=/data/logs.jsonl
+      - NODE_OPTIONS=--max-old-space-size=384
+    # Normal peak is ~280 MiB; the cap keeps a runaway from taking the Pi down (OOM on 2026-10-25)
+    mem_limit: 512m
     restart: always
 
   frontend:

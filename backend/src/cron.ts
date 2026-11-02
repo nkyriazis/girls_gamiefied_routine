@@ -3,7 +3,8 @@ import type { CronWarning, DataConfig } from '../../shared/types';
 
 // One reading of cron for the whole backend: schedules (routines, flows, alarms) and chores both match
 // with cronMatchesAt, in settings.timezone. This is the only file that parses a cron to decide when
-// something happens (node-cron only ticks every minute and runs BACKUP_CRON). It is also the only
+// something happens (the minute scheduler in server.ts and backups in backupSchedule.ts match against
+// cronMatchesAt; node-cron is retired). It is also the only
 // validator of one (#89): data.schema.json checks a cron's characters only, so «99 20 * * *» passes it;
 // cronError reads it the same way the scheduler will. config.ts refuses a save that brings in a cron it
 // can't read and loads a file that has one with a warning (unreadableCrons); the form's raw cron field
