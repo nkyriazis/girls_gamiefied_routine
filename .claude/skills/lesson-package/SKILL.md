@@ -15,6 +15,29 @@ Every piece's text is **the book's own sentences**; hard words and hard sentence
 The kid it is for has ADHD and is 10. Everything below serves one aim: short reading, answered at once, feedback
 that points back into the text, effort rewarded often, the body allowed to move, no clock, no lives, no penalties.
 
+## Why it works for ADHD
+
+Every rule below answers a difficulty she has with long text. Keep the reason in mind when writing or changing a
+lesson: a rule broken "just this once" (a longer piece, a timer) breaks what the lesson is for. The research behind
+each line: `docs/research/adhd-long-text-study.md`.
+
+| ADHD difficulty | What the lesson does |
+|---|---|
+| Attention fades on long text | pieces of 2–4 sentences, one idea each |
+| Misses the main idea | the ⭐ sentence, and an early «which sentence matters most» question |
+| Working memory | the piece stays beside the question; a wrong try lights the right sentences |
+| Reading itself is effortful | listen mode, 🔊 per line, hard words explained, «Πιο απλά» |
+| Refuses to start | she chooses listen or read; the first step is easy |
+| Restlessness | a move break every 2–3 pieces, and a warm-up first (the adhd path) |
+| Needs a reward often | a star for every piece, not only at the end |
+| Answers on impulse | «think first» on some questions (the adhd path) |
+| Forgets fast | review questions at the end; explaining it to someone |
+| Frustration and anxiety | no clock, no lives, no penalties; after 2 wrong tries the answer is shown and she moves on |
+
+**Never**, on either path (the research rejects each): a timer, a countdown or a timed round; lives, hearts or
+anything she can lose; waiting after a wrong answer; combos or streak multipliers; a long block of text, or several
+pieces at once.
+
 ## Steps
 
 1. **Find the chapter.** `materials/index/TOC.md` lists every book; `python3 -I` over `materials/index/passages.jsonl`
