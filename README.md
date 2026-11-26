@@ -73,6 +73,8 @@ at a USB disk or a NAS they stay on the SD card. [BACKUP.md](BACKUP.md) says how
 | [tools/sfx/README.md](tools/sfx/README.md) | The screens' sound palette |
 | [tools/problem-gen/README.md](tools/problem-gen/README.md) | Generating the word problems |
 | [tools/edu-materials/README.md](tools/edu-materials/README.md) | The textbook mirror the exercises are written from |
+| [tools/lessons/README.md](tools/lessons/README.md) | Preparing a long-text lesson package (skill: `.claude/skills/lesson-package`) |
+| [docs/research/adhd-long-text-study.md](docs/research/adhd-long-text-study.md) | The evidence behind how lessons play |
 | [docs/exercises-journey/](docs/exercises-journey/) | Screenshots of a school-exercise session |
 | `docs/pr-14/`, `docs/pr-15/`, `docs/pr-42/` | Archived evidence of old pull requests; their scripts drive retired endpoints, don't run them |
 | `.cursorrules` | The agent rules for Cursor, a copy of CLAUDE.md's |
