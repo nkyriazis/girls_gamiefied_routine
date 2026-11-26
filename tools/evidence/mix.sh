@@ -16,6 +16,9 @@ while IFS=$'\t' read -r src at dur; do
     IFS=/ read -r _ _ wave freq <<< "$src"
     wav="sin(2*PI*$freq*t)"; [ "$wave" = square ] && wav="sgn(sin(2*PI*$freq*t))"
     args+=(-f lavfi -i "aevalsrc=0.15*$wav*exp(-2.7*t/$dur):s=48000:d=$dur")
+  # A lesson's clips come from the lessons library (backend/lessons/<id>/…), not from frontend/public
+  elif [[ $src == /api/lessons/*/files/* ]]; then
+    rest=${src#/api/lessons/}; args+=(-i "$PUB/../../backend/lessons/${rest%%/files/*}/${rest#*/files/}")
   else args+=(-i "$PUB$src"); fi
   filt+="[$n:a]atrim=0:${dur},adelay=${at}:all=1[a$n];"
 done < <(python3 - "$out" <<'PY'

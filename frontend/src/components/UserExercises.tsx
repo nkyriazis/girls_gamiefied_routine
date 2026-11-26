@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../context/GameContext';
 import { api, ApiError } from '../api';
 import { AssignmentPlayer } from './AssignmentPlayer';
+import { LessonPlayer } from './LessonPlayer';
 import { help } from '../help/anchors';
 import type { ExerciseAssignmentWithExercise, User } from '@shared/types';
 import { MAX_SET_ASIDE, extraRefusals, finishOneFirst } from '@shared/extraProblems';
 import { sfx, sound } from '../sound/sfx';
 import { paysNow } from '@shared/forgiveness';
+import { profileOf } from '@shared/lessons';
 
 // One kid's exercises: today's set and «Κι άλλο πρόβλημα» for more stars. On her own
 // screen (the store, from her avatar) and in the exercises drawer. The player opens
@@ -33,8 +35,12 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> = ({ user, header }) => {
-  const { exerciseAssignments, config } = useGame();
+  const { exerciseAssignments, config, lessons, lessonRuns } = useGame();
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [lessonId, setLessonId] = useState<string | null>(null);
+  // The library's lessons for her class: a parent asks her to open one (nothing pops up by itself)
+  const myLessons = user.grade ? lessons.filter(l => l.grade === user.grade) : [];
+  const runOf = (id: string) => lessonRuns.find(r => r.userId === user.id && r.lessonId === id);
   const [started, setStarted] = useState<ExerciseAssignmentWithExercise | null>(null);
   const [asking, setAsking] = useState(false);
   const [refusal, setRefusal] = useState<string | null>(null);
@@ -133,9 +139,33 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
         </div>
       )}
 
+      {myLessons.length > 0 && (
+        <div className="ue-lessons" {...help('exercises.lessons')}>
+          <div className="ue-lessons-title">📖 Μαθήματα</div>
+          {myLessons.map(l => {
+            const run = runOf(l.id);
+            const stars = run?.paid.length ?? 0;
+            const total = l.stars[profileOf(user)];
+            const status = run?.completedAt ? `✓ ⭐${stars}/${total}` : run && run.stop > 0 ? `συνέχεια · ⭐${stars}/${total}` : `${l.pieces} κομμάτια · ⭐${total}`;
+            return (
+              <motion.button key={l.id} type="button" data-lesson={l.id} className={`assignment-card lesson-card ${run?.completedAt ? 'finished' : ''}`}
+                {...sound('open')} whileTap={{ scale: 0.97 }} onClick={() => setLessonId(l.id)}>
+                <div className="assignment-icon">{l.icon ?? '📖'}</div>
+                <div className="assignment-info">
+                  <h4>{l.title}</h4>
+                  <span className="assignment-meta">{l.subject}{l.chapter ? ` · κεφ. ${l.chapter}` : ''}</span>
+                </div>
+                <div className="assignment-status lesson-status">{status}</div>
+              </motion.button>
+            );
+          })}
+        </div>
+      )}
+
       {createPortal(
         <AnimatePresence>
           {playing && <AssignmentPlayer assignment={playing} user={user} onClose={() => setPlayingId(null)} />}
+          {lessonId && <LessonPlayer key={lessonId} lessonId={lessonId} user={user} run={runOf(lessonId)} onClose={() => setLessonId(null)} />}
         </AnimatePresence>,
         document.body
       )}
@@ -168,6 +198,11 @@ export const UserExercises: React.FC<{ user: User; header?: React.ReactNode }> =
         .retry-pill { display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.55rem; border-radius: 999px; vertical-align: 0.1em; white-space: nowrap;
           font-size: 0.72rem; font-weight: 600; color: #a6f0ff; background: rgba(0, 180, 216, 0.2); border: 1px solid rgba(0, 180, 216, 0.55); }
         .assignment-status { flex-shrink: 0; font-weight: bold; }
+        .ue-lessons { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.4rem; }
+        .ue-lessons-title { font-size: 0.95rem; font-weight: 600; opacity: 0.8; padding-left: 0.25rem; }
+        .lesson-card { border-color: rgba(0, 180, 216, 0.45); background: rgba(0, 180, 216, 0.07); }
+        .lesson-card.finished { border-color: rgba(6, 214, 160, 0.4); }
+        .lesson-status { font-size: 0.9rem; color: #a6f0ff; white-space: nowrap; }
         .star-badge { color: #ffd60a; font-size: 1rem; }
         .done-badge { color: #06d6a0; font-size: 0.95rem; }
         .missed-badge { color: rgba(255, 255, 255, 0.55); font-size: 0.95rem; }

@@ -1,0 +1,819 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "A long-text lesson (shared/lessons.ts, format 2): lesson.json in a package the lesson-package skill makes and the parents' page imports",
+  "type": "object",
+  "required": [
+    "format",
+    "id",
+    "grade",
+    "subject",
+    "title",
+    "source",
+    "pieces",
+    "script"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": 2
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+    },
+    "grade": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1
+    },
+    "icon": {
+      "type": "string",
+      "minLength": 1
+    },
+    "chapter": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "talk": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "pieces": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "sentences"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sentences": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 12,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "image": {
+            "type": "object",
+            "required": [
+              "file"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "file": {
+                "type": "string",
+                "pattern": "^images/[A-Za-z0-9._-]+\\.(png|jpe?g|webp)$"
+              },
+              "caption": {
+                "type": "string"
+              }
+            }
+          },
+          "glossary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "term",
+                "meaning"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "term": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "meaning": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "maxItems": 6
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,20}$"
+          },
+          "key": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "easy": {
+            "type": "object",
+            "propertyNames": {
+              "pattern": "^[0-9]{1,2}$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "audio": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^audio/[a-f0-9]{8,40}\\.mp3$"
+      }
+    },
+    "script": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 80,
+      "items": {
+        "$ref": "#/definitions/step"
+      }
+    },
+    "pages": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": [
+          "file",
+          "page"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "file": {
+            "type": "string",
+            "pattern": "^pages/[A-Za-z0-9._-]+\\.(png|jpe?g|webp)$"
+          },
+          "page": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "discriminator": {
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "multiple-choice"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "#/definitions/evidence"
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "correctIndex": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "type",
+            "question",
+            "options",
+            "correctIndex"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "true-false"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "#/definitions/evidence"
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            },
+            "correctValue": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "question",
+            "correctValue"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "fill-blank"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "#/definitions/evidence"
+            },
+            "textWithGaps": {
+              "type": "string",
+              "minLength": 1
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "correctAnswers": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [
+            "type",
+            "textWithGaps",
+            "options",
+            "correctAnswers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "ordering"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "#/definitions/evidence"
+            },
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 6,
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "content"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "type",
+            "items"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "match-pairs"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "#/definitions/evidence"
+            },
+            "pairs": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 4,
+              "items": {
+                "type": "object",
+                "required": [
+                  "left",
+                  "right"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "left": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "right": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "type",
+            "pairs"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "find-sentence"
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sentences": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "main": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "question",
+            "sentences"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "sort"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "#/definitions/evidence"
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bins": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "required": [
+                  "text",
+                  "bin"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "bin": {
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "type",
+            "question",
+            "bins",
+            "items"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "spot"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "#/definitions/evidence"
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            },
+            "image": {
+              "type": "string",
+              "pattern": "^images/[A-Za-z0-9._-]+\\.(png|jpe?g|webp)$"
+            },
+            "regions": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "required": [
+                  "x",
+                  "y",
+                  "w",
+                  "h"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "w": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 100
+                  },
+                  "h": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 100
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "correct": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "type",
+            "question",
+            "image",
+            "regions",
+            "correct"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "step": {
+      "type": "object",
+      "required": [
+        "do"
+      ],
+      "discriminator": {
+        "propertyName": "do"
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "do": {
+              "const": "intro"
+            },
+            "for": {
+              "type": "string",
+              "enum": [
+                "adhd",
+                "plain"
+              ],
+              "description": "Only on this path (a kid with the ADHD switch on plays adhd, every other kid plain); none: on both"
+            }
+          },
+          "required": [
+            "do"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "do": {
+              "const": "choose"
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "label",
+                  "icon"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "value": {
+                    "enum": [
+                      "listen",
+                      "read"
+                    ]
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "icon": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "for": {
+              "type": "string",
+              "enum": [
+                "adhd",
+                "plain"
+              ],
+              "description": "Only on this path (a kid with the ADHD switch on plays adhd, every other kid plain); none: on both"
+            }
+          },
+          "required": [
+            "do",
+            "question",
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "do": {
+              "const": "move"
+            },
+            "icon": {
+              "type": "string",
+              "minLength": 1
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1
+            },
+            "warmup": {
+              "type": "boolean"
+            },
+            "for": {
+              "type": "string",
+              "enum": [
+                "adhd",
+                "plain"
+              ],
+              "description": "Only on this path (a kid with the ADHD switch on plays adhd, every other kid plain); none: on both"
+            }
+          },
+          "required": [
+            "do",
+            "icon",
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "do": {
+              "const": "read"
+            },
+            "piece": {
+              "type": "string"
+            },
+            "star": {
+              "type": "boolean"
+            },
+            "for": {
+              "type": "string",
+              "enum": [
+                "adhd",
+                "plain"
+              ],
+              "description": "Only on this path (a kid with the ADHD switch on plays adhd, every other kid plain); none: on both"
+            }
+          },
+          "required": [
+            "do",
+            "piece"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "do": {
+              "const": "ask"
+            },
+            "piece": {
+              "type": "string"
+            },
+            "question": {
+              "$ref": "#/definitions/question"
+            },
+            "think": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "adhd",
+                    "plain"
+                  ]
+                }
+              ]
+            },
+            "review": {
+              "type": "boolean"
+            },
+            "star": {
+              "type": "boolean"
+            },
+            "picture": {
+              "type": "string",
+              "pattern": "^images/[A-Za-z0-9._-]+\\.(png|jpe?g|webp)$"
+            },
+            "for": {
+              "type": "string",
+              "enum": [
+                "adhd",
+                "plain"
+              ],
+              "description": "Only on this path (a kid with the ADHD switch on plays adhd, every other kid plain); none: on both"
+            }
+          },
+          "required": [
+            "do",
+            "question"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "do": {
+              "const": "explain"
+            },
+            "piece": {
+              "type": "string"
+            },
+            "prompt": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stems": {
+              "type": "array",
+              "maxItems": 4,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "star": {
+              "type": "boolean"
+            },
+            "for": {
+              "type": "string",
+              "enum": [
+                "adhd",
+                "plain"
+              ],
+              "description": "Only on this path (a kid with the ADHD switch on plays adhd, every other kid plain); none: on both"
+            }
+          },
+          "required": [
+            "do",
+            "prompt"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "do": {
+              "const": "book"
+            },
+            "when": {
+              "enum": [
+                "before",
+                "after"
+              ]
+            },
+            "for": {
+              "type": "string",
+              "enum": [
+                "adhd",
+                "plain"
+              ],
+              "description": "Only on this path (a kid with the ADHD switch on plays adhd, every other kid plain); none: on both"
+            }
+          },
+          "required": [
+            "do",
+            "when"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "do": {
+              "const": "end"
+            },
+            "for": {
+              "type": "string",
+              "enum": [
+                "adhd",
+                "plain"
+              ],
+              "description": "Only on this path (a kid with the ADHD switch on plays adhd, every other kid plain); none: on both"
+            }
+          },
+          "required": [
+            "do"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

@@ -3,6 +3,7 @@ import {
   ActionLog, ChoreInstance, ExerciseAssignment, ExerciseSession, FlowRun, HelpSeen, RoutineExecution, RoutineRun,
   Spending, StarTransfer, StateSnapshot, TaskExecution
 } from '../../shared/types';
+import type { LessonRun } from '../../shared/lessons';
 
 // ============================================================================
 // SQLite persistence for runtime state and history.
@@ -109,6 +110,13 @@ const MIGRATIONS: string[] = [
   // reads as not a retry.
   `
   ALTER TABLE exercise_assignments ADD COLUMN retryOf TEXT;
+  `,
+  // A kid's place in each long-text lesson of the library (shared/lessons.ts): one row per kid and lesson
+  `
+  CREATE TABLE lesson_runs (
+    id TEXT PRIMARY KEY, userId TEXT NOT NULL, lessonId TEXT NOT NULL, stop INTEGER NOT NULL, mistakes TEXT NOT NULL,
+    paid TEXT NOT NULL, choices TEXT, startedAt TEXT NOT NULL, updatedAt TEXT NOT NULL, completedAt TEXT, round INTEGER NOT NULL
+  );
   `
 ];
 
@@ -216,6 +224,7 @@ export class Store {
   readonly flowRuns: Table<Omit<FlowRun, 'userIds'>>;
   readonly routineRuns: Table<Omit<RoutineRun, 'totalStars'>>;
   readonly helpSeen: Table<HelpSeen>;
+  readonly lessonRuns: Table<LessonRun>;
 
   constructor(file: string, private readonly onChange: () => void = () => {}) {
     this.db = new DatabaseSync(file);
@@ -256,6 +265,10 @@ export class Store {
       id: 'text', userId: 'text', routineId: 'text', taskIndex: 'int', taskStartedAt: 'text', finishedAt: 'text', flowRunId: 'text'
     });
     this.helpSeen = new Table<HelpSeen>(db, 'help_seen', onChange, { id: 'text', seenAt: 'text' });
+    this.lessonRuns = new Table<LessonRun>(db, 'lesson_runs', onChange, {
+      id: 'text', userId: 'text', lessonId: 'text', stop: 'int', mistakes: 'json', paid: 'json', choices: 'json',
+      startedAt: 'text', updatedAt: 'text', completedAt: 'text', round: 'int'
+    });
     this.logs = new Table<ActionLog>(db, 'action_logs', () => {}, {
       id: 'text', timestamp: 'text', type: 'text', details: 'json'
     }, 'timestamp, rowid');
@@ -299,7 +312,7 @@ export class Store {
   hasHistory(): boolean {
     const tables = ['user_stars', 'routine_executions', 'task_executions', 'spendings', 'star_transfers',
       'chore_instances', 'exercise_sessions', 'exercise_assignments', 'action_logs', 'flow_runs',
-      'routine_runs', 'help_seen'];
+      'routine_runs', 'help_seen', 'lesson_runs'];
     const sql = `SELECT ${tables.map(t => `EXISTS (SELECT 1 FROM ${t})`).join(' OR ')} AS used`;
     return (this.db.prepare(sql).get() as { used: number }).used === 1;
   }

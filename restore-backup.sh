@@ -63,11 +63,11 @@ docker run --rm -e ASIDE="$aside" -v "$PWD:/repo" -v "$src:/restore:ro" --entryp
   cd /repo
   mkdir -p "$ASIDE"
   chown "$(stat -c %u:%g backups)" "$ASIDE"
-  for f in data.json exercises.json routine.db routine.db-wal routine.db-shm uploads; do
+  for f in data.json exercises.json routine.db routine.db-wal routine.db-shm uploads lessons; do
     owner=$(stat -c %u:%g backend)
     case "$f" in
       # A backup without one (a deploy backup has no uploads/): the live one stays, rather than none
-      exercises.json|uploads) if [ ! -e "/restore/$f" ] && [ -e "backend/$f" ]; then echo "  kept       backend/$f (not in this backup)"; continue; fi ;;
+      exercises.json|uploads|lessons) if [ ! -e "/restore/$f" ] && [ -e "backend/$f" ]; then echo "  kept       backend/$f (not in this backup)"; continue; fi ;;
     esac
     if [ -e "backend/$f" ]; then
       owner=$(stat -c %u:%g "backend/$f")

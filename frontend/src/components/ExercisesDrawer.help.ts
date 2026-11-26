@@ -21,12 +21,18 @@ export const EXTRA: HelpStep = {
   el: 'exercises.extra', title: 'Για μετά', text: 'Ένα έξτρα πρόβλημα που άνοιξες. Πάτα το και συνεχίζεις από εκεί που έμεινες.', side: 'top',
 };
 
-/** The edition's id: the screen's own, then what is on screen that the plain one doesn't explain. */
-export const editionId = (base: string, revision: boolean, extra: boolean, retry = false) =>
-  [base, revision && 'revision', retry && 'retry', extra && 'extra'].filter(Boolean).join('-');
+// The lessons of her class (the library's long-text lessons), under her exercises: on screen only once a parent
+// has imported one for her class, so its own edition too (`…-lessons`, last in the id).
+export const LESSONS: HelpStep = {
+  el: 'exercises.lessons', title: 'Μαθήματα', text: 'Εδώ είναι τα μαθήματα για διάβασμα. Πάτα ένα όταν σου το ζητήσουν.', side: 'top',
+};
 
-export const exercisesTour = (revision = false, extra = false, retry = false): Tour => ({
-  id: editionId('exercises', revision, extra, retry),
+/** The edition's id: the screen's own, then what is on screen that the plain one doesn't explain. */
+export const editionId = (base: string, revision: boolean, extra: boolean, retry = false, lessons = false) =>
+  [base, revision && 'revision', retry && 'retry', extra && 'extra', lessons && 'lessons'].filter(Boolean).join('-');
+
+export const exercisesTour = (revision = false, extra = false, retry = false, lessons = false): Tour => ({
+  id: editionId('exercises', revision, extra, retry, lessons),
   steps: [
     { el: 'exercises.kid', title: 'Οι ασκήσεις σου', text: 'Κάθε παιδί έχει τις δικές του ασκήσεις για σήμερα.', side: 'left' },
     { el: 'exercises.card', title: 'Μια άσκηση', text: 'Πάτα την για να την ξεκινήσεις. Δεξιά βλέπεις πόσα αστέρια δίνει.', side: 'left', demo: 'tap' },
@@ -34,5 +40,6 @@ export const exercisesTour = (revision = false, extra = false, retry = false): T
     ...(retry ? [RETRY] : []),
     ...(extra ? [EXTRA] : []),
     { el: 'exercises.more', title: 'Κι άλλο πρόβλημα', text: 'Τελείωσες; Ζήτα κι άλλο πρόβλημα, για κι άλλα αστέρια.', side: 'left' },
+    ...(lessons ? [LESSONS] : []),
   ],
 });

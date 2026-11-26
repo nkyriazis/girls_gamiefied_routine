@@ -16,19 +16,21 @@ interface ExercisesDrawerProps {
 
 // Every kid's exercises of the day at a glance; each kid also has hers on her own screen.
 export const ExercisesDrawer: React.FC<ExercisesDrawerProps> = ({ isOpen, onClose }) => {
-    const { users, exerciseAssignments, config } = useGame();
+    const { users, exerciseAssignments, config, lessons: library } = useGame();
     const extraLimit = config.settings.extraProblemsPerDay ?? 10;
     // A kid with a set today, or one who may ask for an extra problem; the empty state only when none
-    const shown = kidsShown(users, exerciseAssignments, extraLimit);
+    const shown = kidsShown(users, exerciseAssignments, extraLimit, library);
     // A revision card on screen: the tour's edition that explains its pill
     const revision = exerciseAssignments.some(a => a.revision && !a.extra && shown.some(u => u.id === a.userId));
     // An extra problem left with ✕ on screen: the edition that explains its card (#67)
     const extra = exerciseAssignments.some(a => a.extra && a.status === 'pending' && shown.some(u => u.id === a.userId));
     // A retry of an item shown worked on screen: the edition that explains its pill (#136)
     const retry = exerciseAssignments.some(a => a.retryOf && !a.extra && shown.some(u => u.id === a.userId));
+    // Lessons of a shown kid's class in the library: the edition that explains them
+    const lessons = library.some(l => shown.some(u => u.grade === l.grade));
 
     return (
-        <HelpScreen tour={isOpen ? exercisesTour(revision, extra, retry) : null}>
+        <HelpScreen tour={isOpen ? exercisesTour(revision, extra, retry, lessons) : null}>
         <AnimatePresence>
             {isOpen && (
                 <>

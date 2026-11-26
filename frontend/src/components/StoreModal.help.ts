@@ -1,11 +1,11 @@
 import type { Tour } from '../help/tour';
-import { EXTRA, RETRY, REVISION, editionId } from './ExercisesDrawer.help';
+import { EXTRA, LESSONS, RETRY, REVISION, editionId } from './ExercisesDrawer.help';
 
 // The owl on a kid's own screen (from her avatar), and on its two popups.
 
 // With a revision card, a retry, or an extra problem she left, on screen: its own edition (see REVISION, RETRY, EXTRA)
-export const storeTour = (userId: string, revision = false, extra = false, retry = false): Tour => ({
-  id: editionId('store', revision, extra, retry),
+export const storeTour = (userId: string, revision = false, extra = false, retry = false, lessons = false): Tour => ({
+  id: editionId('store', revision, extra, retry, lessons),
   user: userId,
   steps: [
     { el: 'store.balance', title: 'Τα αστέρια σου', text: 'Τόσα αστέρια έχεις μαζέψει.', side: 'bottom' },
@@ -14,6 +14,7 @@ export const storeTour = (userId: string, revision = false, extra = false, retry
     ...(retry ? [RETRY] : []),
     ...(extra ? [EXTRA] : []),
     { el: 'exercises.more', title: 'Κι άλλο πρόβλημα', text: 'Τελείωσες τις σημερινές; Εδώ ζητάς κι άλλο πρόβλημα, για κι άλλα αστέρια. Αν κλείσεις ένα στη μέση, μένει εδώ για μετά.', side: 'top', demo: 'tap' },
+    ...(lessons ? [LESSONS] : []),
     { el: 'store.rewards', title: 'Ανταμοιβές', text: 'Πάτα μια ανταμοιβή και μετά «Ναι» για να την πάρεις με τα αστέρια σου. Οι γκρίζες θέλουν περισσότερα αστέρια.', side: 'left' },
     { el: 'store.give', title: 'Δώσε αστέρια', text: 'Μπορείς να χαρίσεις αστέρια σε ένα άλλο παιδί. Ένας γονιός το εγκρίνει.', side: 'bottom' },
     { el: 'store.activity', title: 'Δραστηριότητα', text: 'Τι έχεις πάρει και τι περιμένει έγκριση.', side: 'bottom' },

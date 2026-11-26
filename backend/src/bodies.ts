@@ -51,6 +51,10 @@ export type AnswerBody = { answer: unknown };
 export const revealBody = object({ step: { type: 'integer', minimum: 0 } }, []);
 export type RevealBody = { step?: number };
 
+/** A step of a lesson (lessons.ts): the stop it acts on, and the answer when the stop asks something. */
+export const lessonStepBody = object({ userId: id, stop: { type: 'integer', minimum: 0 }, answer: {} }, ['userId', 'stop']);
+export type LessonStepBody = { userId: string; stop: number; answer?: unknown };
+
 export const userBody = object({ userId: id }, ['userId']);
 export type UserBody = { userId: string };
 

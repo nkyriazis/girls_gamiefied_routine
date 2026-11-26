@@ -18,10 +18,12 @@ export const waitingCount = (assignments: Assignment[]) =>
 
 /** The kids the drawer draws: those with a set today, those with an extra problem left pending (her
  *  cards stay, whatever a parent changed since), and those with a grade while extras are allowed. */
-export const kidsShown = <U extends Pick<User, 'id' | 'grade'>>(users: U[], assignments: Assignment[], extraLimit: number) =>
+export const kidsShown = <U extends Pick<User, 'id' | 'grade'>>(users: U[], assignments: Assignment[], extraLimit: number,
+  lessons: { grade: number }[] = []) =>
   users.filter(u => dailyCount(assignments, u.id).total > 0
     || assignments.some(a => a.userId === u.id && a.extra && a.status === 'pending')
-    || (!!u.grade && extraLimit > 0));
+    || (!!u.grade && extraLimit > 0)
+    || (!!u.grade && lessons.some(l => l.grade === u.grade)));
 
 /** The pill next to a kid's name. */
 export const pillText = ({ total, done }: DailyCount) =>

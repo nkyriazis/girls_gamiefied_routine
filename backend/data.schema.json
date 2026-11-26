@@ -246,6 +246,10 @@
             "enum": ["marked", "paint", "paint-all"],
             "description": "How the kid reads word problems: tap pre-marked phrases (default), paint the story freehand (unneeded facts greyed out for her), or paint the unneeded facts too"
           },
+          "adhd": {
+            "type": "boolean",
+            "description": "Her long-text lessons play their ADHD path (shared/lessons.ts: steps masked for: adhd, such as breaks to move and thinking first); unset or false, the plain path"
+          },
           "forgiveness": {
             "enum": ["forgiving", "unforgiving"],
             "description": "How much mistakes cost (shared/forgiveness.ts): forgiving (default) lets the kid retry at will, a problem losing a star per step gone wrong down to 1; unforgiving gives two tries a step, down to 0"

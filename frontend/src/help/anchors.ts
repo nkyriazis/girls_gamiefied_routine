@@ -14,7 +14,10 @@ export const ANCHORS = [
   'store.balance', 'store.earn', 'store.rewards', 'store.give', 'store.activity', 'store.close',
   'activity.list', 'transfer.to', 'transfer.amount', 'transfer.send',
   // Exercises of the day (her screen and the drawer)
-  'exercises.kid', 'exercises.card', 'exercises.revision', 'exercises.retry', 'exercises.extra', 'exercises.more',
+  'exercises.kid', 'exercises.card', 'exercises.revision', 'exercises.retry', 'exercises.extra', 'exercises.more', 'exercises.lessons',
+  // A lesson (the library's long-text lessons)
+  'lesson.progress', 'lesson.text', 'lesson.key', 'lesson.listen', 'lesson.word', 'lesson.easy', 'lesson.book', 'lesson.next', 'lesson.choose', 'lesson.ask', 'lesson.answer',
+  'lesson.think', 'lesson.picture', 'lesson.sort', 'lesson.spot', 'lesson.explain', 'lesson.break', 'lesson.again', 'lesson.exit',
   // Chores and bonus activities
   'chores.card', 'chores.claim', 'chores.done', 'chores.waiting', 'chores.empty',
   // One exercise, and the ways to answer one

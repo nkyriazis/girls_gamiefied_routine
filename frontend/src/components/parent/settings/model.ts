@@ -136,6 +136,7 @@ export function tidyUser(user: ConfigUser): ConfigUser {
     const progress = Object.fromEntries(Object.entries(next.progress ?? {}).filter(([, id]) => id));
     if (Object.keys(progress).length) next.progress = progress; else delete next.progress;
     if (!next.difficulty || next.difficulty === 3) delete next.difficulty;
+    if (!next.adhd) delete next.adhd;
     return next;
 }
 

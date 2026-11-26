@@ -1,3 +1,5 @@
+import type { LessonRun, LessonSummary } from './lessons';
+
 export type IconValue = 
   | string 
   | { type: 'emoji'; value: string }  // Unicode emoji character
@@ -31,6 +33,7 @@ export interface User {
   grade?: SchoolGrade;
   problemReading?: ProblemReading;
   forgiveness?: Forgiveness;
+  adhd?: boolean;
   stars: number;
   available: number; // stars minus those promised in pending outgoing gifts: what she can spend, give or lose now
   routines: Routine[];
@@ -437,6 +440,8 @@ export interface ConfigUser {
   grade?: SchoolGrade;
   problemReading?: ProblemReading; // default "marked"
   forgiveness?: Forgiveness; // default "forgiving"
+  // Her lessons play their ADHD path (shared/lessons.ts LessonProfile: breaks to move, think first…); unset, the plain one
+  adhd?: boolean;
   // #71: how far her class has got, per book (a chapter or lesson id of shared/curriculum.ts), set by a
   // parent; unset, the pace of the book for today. Her daily set comes only from what that reaches.
   progress?: { maths?: string; language?: string };
@@ -579,6 +584,10 @@ export interface AppState {
   flowRuns: FlowRun[];
   routineRuns: RoutineRun[];
   helpSeen: string[]; // help tours already played (see HelpSeen)
+  // The lessons library (shared/lessons.ts): what each lesson is, not its text (GET /api/lessons/:id), and
+  // each kid's place in the ones she opened. Bounded by the library's size, which a parent keeps.
+  lessons: LessonSummary[];
+  lessonRuns: LessonRun[];
 }
 
 // STATE's window for decided purchases and gifts, in days, and how many rewards given per kid it keeps

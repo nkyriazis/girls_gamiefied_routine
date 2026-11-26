@@ -16,7 +16,7 @@ COPY --from=builder /app/backend/dist ./dist
 # The defaults a new install starts from (the backend copies them to /data on first start);
 # the family's own data.json never goes in the image
 COPY backend/data.example.json backend/exercises.example.json ./
-COPY backend/data.schema.json backend/exercises.schema.json backend/state.schema.json backend/exercise-pool.schema.json ./
+COPY backend/data.schema.json backend/exercises.schema.json backend/state.schema.json backend/exercise-pool.schema.json backend/lesson.schema.json ./
 # The daily exercise pools ship with the image (new content arrives with an update)
 COPY backend/exercise-pools ./exercise-pools
 # Config, the database (routine.db) and legacy state files live on the /data volume
