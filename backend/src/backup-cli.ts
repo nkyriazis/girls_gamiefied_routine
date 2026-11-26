@@ -1,5 +1,5 @@
 import { SAME_FILESYSTEM_WARNING, takeBackup } from './backup';
-import { BACKUP_DIR, BACKUP_KEEP, DATA_FILE, DB_FILE, EXERCISES_FILE, UPLOADS_DIR } from './paths';
+import { BACKUP_DIR, BACKUP_KEEP, DATA_FILE, DB_FILE, EXERCISES_FILE, LESSONS_DIR, UPLOADS_DIR } from './paths';
 
 // Take one backup now, into BACKUP_DIR, and rotate (keeps BACKUP_KEEP).
 //   npm run backup                 (prod image: docker compose exec backend npm run backup)
@@ -10,7 +10,7 @@ import { BACKUP_DIR, BACKUP_KEEP, DATA_FILE, DB_FILE, EXERCISES_FILE, UPLOADS_DI
 const json = process.argv.includes('--json');
 try {
   const result = takeBackup({
-    dbFile: DB_FILE, dataFile: DATA_FILE, exercisesFile: EXERCISES_FILE, uploadsDir: UPLOADS_DIR,
+    dbFile: DB_FILE, dataFile: DATA_FILE, exercisesFile: EXERCISES_FILE, uploadsDir: UPLOADS_DIR, lessonsDir: LESSONS_DIR,
     dir: BACKUP_DIR, keep: BACKUP_KEEP
   });
   if (json) {

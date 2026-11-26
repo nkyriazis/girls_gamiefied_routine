@@ -18,6 +18,7 @@ more than a day old, the backend writes a folder `BACKUP_DIR/<YYYY-MM-DD_HHMMSS>
 | `routine.db` | `VACUUM INTO`: one consistent copy while the app keeps running, a single file (no `-wal`), checked with `PRAGMA integrity_check` |
 | `data.json`, `exercises.json` | byte for byte, as they are on disk |
 | `uploads/` | the whole folder |
+| `lessons/` | the lessons library (imported packages), when there is one |
 | `SHA256SUMS` | in `sha256sum` format: `cd <folder> && sha256sum -c SHA256SUMS` verifies it |
 
 It is written as `.partial-<stamp>` and renamed when complete, so a backup cut short never counts. The newest
@@ -113,10 +114,10 @@ deletes nothing, so the backups that still have the file are kept. Restore the f
 ```
 
 It verifies the backup against `SHA256SUMS` before touching anything, asks, stops the backend, moves the live
-`data.json`, `exercises.json`, `routine.db`, `routine.db-wal`, `routine.db-shm` and `uploads/` into
+`data.json`, `exercises.json`, `routine.db`, `routine.db-wal`, `routine.db-shm`, `uploads/` and `lessons/` into
 `backups/pre-restore-<stamp>/` (nothing is deleted), copies the backup in and checks it again, starts the backend
 and prints the balances. It takes a deploy's backup (`./restore-backup.sh backups/<YYYYMMDD-HHMMSS>`) too; an
-`exercises.json` or `uploads/` that the backup lacks (a deploy backup has no `uploads/`) is left live, not set aside.
+`exercises.json`, `uploads/` or `lessons/` that the backup lacks (a deploy backup has no `uploads/`) is left live, not set aside.
 `data.json` and `exercises.json` are git-ignored, so a restore never shows up in `git status` or blocks a deploy. The folder set aside gets its own `SHA256SUMS`, so
 `./restore-backup.sh backups/pre-restore-<stamp>` undoes the restore.
 

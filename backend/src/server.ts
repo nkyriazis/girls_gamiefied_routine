@@ -32,8 +32,9 @@ import {
   answerBody, AnswerBody, claimBody, ClaimBody, closeBody, CloseBody, confirmBody, ConfirmBody, gameAnswerBody, GameAnswerBody, gameBody, GameBody,
   helpResetBody, HelpResetBody, helpSeenBody, HelpSeenBody, pushBody, PushBody, revealBody, RevealBody, spendingBody, SpendingBody, spendingStatusBody,
   SpendingStatusBody, starsBody, StarsBody, timeBody, TimeBody, transferActionBody, TransferActionBody, transferBody, TransferBody,
-  userBody, UserBody, validateCronBody, ValidateCronBody
+  userBody, UserBody, validateCronBody, ValidateCronBody, lessonStepBody, LessonStepBody
 } from './bodies';
+import { LessonError, deleteLesson, getLesson, importLesson, lessonFile, lessonStep, restartLesson } from './lessons';
 
 const pump = util.promisify(pipeline);
 
@@ -357,6 +358,44 @@ server.post('/api/admin/upload', async (request, reply) => {
     return reply.code(500).send({ error: uploadBroke(name) });
   }
 });
+
+// Lessons (lessons.ts). A refusal (LessonError) answers its status and Greek text; the screens show it.
+async function lessonRoute<T>(reply: FastifyReply, operation: () => T) {
+  try {
+    return operation();
+  } catch (err) {
+    if (err instanceof LessonError) return reply.code(err.status).send({ error: err.message });
+    throw err;
+  }
+}
+
+// Admin: import a lesson package (a zip from tools/lessons), in place of any lesson with its id
+server.post('/api/admin/lessons', async (request, reply) => {
+  const data = await request.file();
+  if (!data) return reply.code(400).send({ error: uploadNoFile });
+  const zip = await data.toBuffer().catch(() => null);
+  if (!zip || data.file.truncated) return reply.code(413).send({ error: uploadTooBig(data.filename) });
+  return lessonRoute(reply, () => importLesson(new Uint8Array(zip)));
+});
+
+server.delete<{ Params: Id }>('/api/admin/lessons/:id', async (request, reply) =>
+  lessonRoute(reply, () => { deleteLesson(request.params.id); return { success: true }; }));
+
+// A lesson's text (STATE carries only what the library lists) and its images
+server.get<{ Params: Id }>('/api/lessons/:id', async (request, reply) => lessonRoute(reply, () => getLesson(request.params.id)));
+
+server.get<{ Params: { id: string; '*': string } }>('/api/lessons/:id/files/*', async (request, reply) => {
+  const file = lessonFile(request.params.id, request.params['*']);
+  if (!file) return reply.code(404).send({ error: 'Not found' });
+  return reply.sendFile(path.basename(file), path.dirname(file));
+});
+
+// A kid's step in a lesson: the stop she acts on (a repeat is a no-op), with her answer when it asks one
+server.post<{ Params: Id; Body: LessonStepBody }>('/api/lessons/:id/step', { schema: { body: lessonStepBody } }, async (request, reply) =>
+  lessonRoute(reply, () => lessonStep(request.params.id, request.body.userId, request.body.stop, request.body.answer)));
+
+server.post<{ Params: Id; Body: UserBody }>('/api/lessons/:id/restart', { schema: { body: userBody } }, async (request, reply) =>
+  lessonRoute(reply, () => restartLesson(request.params.id, request.body.userId)));
 
 // Push hook («Ξεκίνα τώρα», /?push=<id>): start exactly this routine assignment, flow or 'alarm', now.
 // It answers triggerAction's result ({ skipped, runningId } when the kid is already in a routine).

@@ -17,6 +17,8 @@ export const LOGS_FILE = process.env.LOGS_FILE || path.join(process.cwd(), 'logs
 // Exercise pools shipped with the app (part of the image, not of the data volume).
 export const EXERCISE_POOLS_DIR = process.env.EXERCISE_POOLS_DIR || path.join(process.cwd(), 'exercise-pools');
 export const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads');
+// The lessons library (shared/lessons.ts): one folder per imported lesson, on the data volume next to data.json.
+export const LESSONS_DIR = process.env.LESSONS_DIR || path.join(path.dirname(DATA_FILE), 'lessons');
 
 // The daily backup (backup.ts). In Docker, BACKUP_DIR is /backups, a bind mount of the host folder
 // named by BACKUP_DIR in .env (default ./backups/daily, on the SD card). The schedule runs in the

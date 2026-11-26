@@ -14,6 +14,7 @@ import { DatabaseSync } from 'node:sqlite';
 //                   checked with PRAGMA integrity_check
 //   data.json, exercises.json   byte for byte, as they are on disk
 //   uploads/        the avatars and pictures
+//   lessons/        the lessons library (imported packages), when there is one
 //   SHA256SUMS      in sha256sum's format: `sha256sum -c SHA256SUMS` verifies it
 // It is written as <dir>/.partial-<stamp> and renamed when complete, so a
 // backup cut short never counts. The newest `keep` are kept; rotation only
@@ -28,6 +29,8 @@ export interface BackupOptions {
   dataFile: string;
   exercisesFile: string;
   uploadsDir: string;
+  /** The lessons library (imported packages); optional, absent when none was ever imported */
+  lessonsDir?: string;
   dir: string; // BACKUP_DIR
   keep: number; // BACKUP_KEEP
   now?: Date;
@@ -121,7 +124,7 @@ function chownLike(dir: string, target: string): void {
 /** Take one backup into `options.dir` and rotate. Throws on failure, leaving no partial folder. */
 export function takeBackup(options: BackupOptions): BackupResult {
   const started = Date.now();
-  const { dbFile, dataFile, exercisesFile, uploadsDir, dir, keep } = options;
+  const { dbFile, dataFile, exercisesFile, uploadsDir, lessonsDir, dir, keep } = options;
   if (!existsSync(dbFile)) throw new Error(`No database at ${dbFile}`);
   // Both config files are required (a missing one is an error, see seedConfig in config.ts). A backup
   // without one couldn't be restored, and rotating would delete the older backups that still have it.
@@ -167,6 +170,7 @@ export function takeBackup(options: BackupOptions): BackupResult {
     // The config files as they are on disk (even an invalid one: it is what there is)
     for (const file of [dataFile, exercisesFile]) copyFileSync(file, path.join(partial, path.basename(file)));
     if (existsSync(uploadsDir)) cpSync(uploadsDir, path.join(partial, 'uploads'), { recursive: true });
+    if (lessonsDir && existsSync(lessonsDir)) cpSync(lessonsDir, path.join(partial, 'lessons'), { recursive: true });
 
     const files = filesUnder(partial);
     let bytes = 0;

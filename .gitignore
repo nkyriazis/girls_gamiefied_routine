@@ -20,6 +20,7 @@ backend/*.invalid-*
 backups/
 https-data/
 backend/uploads/
+backend/lessons/
 backend/test-*.json
 
 # Mirrored school textbooks (tools/edu-materials)
@@ -28,3 +29,6 @@ __pycache__/
 
 # PR evidence, per issue (tools/evidence)
 .evidence/
+
+# Lesson packages being prepared (the book's text and pictures: never in the public repo)
+tools/lessons/work/

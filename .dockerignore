@@ -29,6 +29,7 @@ materials
 .evidence
 .playwright-mcp
 backend/uploads
+backend/lessons
 backend/test-*.json
 backend/*.tmp
 backend/*.invalid-*
@@ -44,3 +45,4 @@ tmp
 .gemini
 tools/help-voice/lines.json
 tools/problem-gen/.sample.md
+tools/lessons/work

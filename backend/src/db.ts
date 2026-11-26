@@ -16,6 +16,7 @@ import { changedKeys, config, ConfigChange, ConfigFile, versionOf, configError, 
 import { DB_FILE, UPLOADS_DIR } from './paths';
 import { summarize } from './schemas';
 import { Store, Table } from './store';
+import { lessonRuns, lessonSummaries } from './lessons';
 import { Sync } from './sync';
 
 // ============================================================================
@@ -64,7 +65,9 @@ export async function appState(): Promise<AppState> {
     exerciseAssignments: await todaysAssignments(),
     flowRuns: flowRunsView(),
     routineRuns: routineRunsView(),
-    helpSeen: store.helpSeen.all().map(h => h.id)
+    helpSeen: store.helpSeen.all().map(h => h.id),
+    lessons: lessonSummaries(),
+    lessonRuns: lessonRuns()
   };
 }
 

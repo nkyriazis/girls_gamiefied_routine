@@ -53,13 +53,32 @@ test('a database from before #136 gains retryOf: its rows read as no retry', () 
   // Back to the version before the column, as piserve's database is
   const raw = new DatabaseSync(file);
   const { user_version: version } = raw.prepare('PRAGMA user_version').get() as { user_version: number };
-  raw.exec(`ALTER TABLE exercise_assignments DROP COLUMN retryOf; PRAGMA user_version = ${version - 1}`);
+  // (two migrations back: #136's column, and the lessons' table after it)
+  raw.exec(`ALTER TABLE exercise_assignments DROP COLUMN retryOf; DROP TABLE lesson_runs; PRAGMA user_version = ${version - 2}`);
   raw.close();
 
   const reopened = new Store(file);
   assert.deepEqual(reopened.exerciseAssignments.get(uuid(1)), row);
   reopened.exerciseAssignments.put({ ...row, id: uuid(2), retryOf: uuid(1) });
   assert.equal(reopened.exerciseAssignments.get(uuid(2))?.retryOf, uuid(1));
+  reopened.close();
+});
+
+test('a database from before the lessons gains lesson_runs, and its rows stay', () => {
+  const { file, store } = openStore();
+  const row: ExerciseAssignment = { id: uuid(1), userId: 'u1', exerciseId: 'p', date: '2026-10-07', status: 'completed', attempts: 1, assignedAt: 'a' };
+  store.exerciseAssignments.put(row);
+  store.close();
+  const raw = new DatabaseSync(file);
+  const { user_version: version } = raw.prepare('PRAGMA user_version').get() as { user_version: number };
+  raw.exec(`DROP TABLE lesson_runs; PRAGMA user_version = ${version - 1}`);
+  raw.close();
+
+  const reopened = new Store(file);
+  assert.deepEqual(reopened.exerciseAssignments.get(uuid(1)), row);
+  const run = { id: 'u1:l', userId: 'u1', lessonId: 'l', stop: 3, mistakes: { 2: 1 }, paid: [0], startedAt: 'a', updatedAt: 'b', round: 1 };
+  reopened.lessonRuns.put(run);
+  assert.deepEqual(reopened.lessonRuns.get('u1:l'), run);
   reopened.close();
 });
 
