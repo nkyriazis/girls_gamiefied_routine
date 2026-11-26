@@ -3,7 +3,7 @@ import type {
   ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot, TriggerResult
 } from '@shared/types';
 import type { Lesson, LessonRun, LessonStepResult, LessonSummary } from '@shared/lessons';
-import { UPLOAD_MAX_BYTES, uploadFailed, uploadTooBig } from '@shared/uploads';
+import { LESSON_MAX_BYTES, UPLOAD_MAX_BYTES, lessonTooBig, uploadFailed, uploadTooBig } from '@shared/uploads';
 
 // REST calls. They report what someone did; the resulting state arrives over
 // the WebSocket (GameProvider), so callers never cache what these return. The
@@ -176,13 +176,13 @@ export const api = {
   restartLesson: (id: string, userId: string) => post<LessonRun>(`/lessons/${id}/restart`, { userId }, 'Failed to restart the lesson'),
   // A package from tools/lessons, in place of any lesson with its id; the server's refusal reads in Greek
   importLesson: async (file: File): Promise<{ lesson: LessonSummary; replaced: boolean }> => {
-    if (file.size > UPLOAD_MAX_BYTES) throw new ApiError(uploadTooBig(file.name), 413);
+    if (file.size > LESSON_MAX_BYTES) throw new ApiError(lessonTooBig(file.name), 413);
     const formData = new FormData();
     formData.append('file', file);
     const response = await fetch(`${API_URL}/admin/lessons`, { method: 'POST', body: formData })
       .catch(() => { throw new ApiError(uploadFailed(file.name, 'no answer'), 0); });
     const json = await response.json().catch(() => undefined);
-    if (!response.ok) throw new ApiError(json?.error || uploadFailed(file.name, { status: response.status }), response.status);
+    if (!response.ok) throw new ApiError(json?.error || uploadFailed(file.name, { status: response.status }, lessonTooBig), response.status);
     return json;
   },
   deleteLesson: (id: string) => request<void>('DELETE', `/admin/lessons/${id}`, undefined, 'Failed to delete the lesson'),
