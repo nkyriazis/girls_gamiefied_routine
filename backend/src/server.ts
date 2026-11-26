@@ -9,7 +9,7 @@ import { pipeline } from 'stream';
 import util from 'util';
 import { createWriteStream } from 'fs';
 import { CONFIG_SAVE_SOURCES, StateSnapshot } from '../../shared/types';
-import { UPLOAD_MAX_BYTES, uploadBroke, uploadNoFile, uploadTooBig } from '../../shared/uploads';
+import { LESSON_MAX_BYTES, UPLOAD_MAX_BYTES, lessonTooBig, uploadBroke, uploadNoFile, uploadTooBig } from '../../shared/uploads';
 
 // Import shared database layer
 import {
@@ -371,10 +371,10 @@ async function lessonRoute<T>(reply: FastifyReply, operation: () => T) {
 
 // Admin: import a lesson package (a zip from tools/lessons), in place of any lesson with its id
 server.post('/api/admin/lessons', async (request, reply) => {
-  const data = await request.file();
+  const data = await request.file({ limits: { fileSize: LESSON_MAX_BYTES } });
   if (!data) return reply.code(400).send({ error: uploadNoFile });
   const zip = await data.toBuffer().catch(() => null);
-  if (!zip || data.file.truncated) return reply.code(413).send({ error: uploadTooBig(data.filename) });
+  if (!zip || data.file.truncated) return reply.code(413).send({ error: lessonTooBig(data.filename) });
   return lessonRoute(reply, () => importLesson(new Uint8Array(zip)));
 });
 

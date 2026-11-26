@@ -6,6 +6,13 @@
 export const UPLOAD_MAX_MB = 10;
 export const UPLOAD_MAX_BYTES = UPLOAD_MAX_MB * 1024 * 1024;
 
+// A lesson package (tools/lessons) has its own, bigger limit: it is a file we make, not one picked on a phone, and a
+// long chapter carries many pages, pictures and voice clips (ours are 3-4 MB). nginx.conf's /api/admin/lessons lets a
+// little more than this through; the backend's lesson route reads up to it. Change the three together.
+export const LESSON_MAX_MB = 50;
+export const LESSON_MAX_BYTES = LESSON_MAX_MB * 1024 * 1024;
+export const lessonTooBig = (name: string) => `${name}: πάνω από ${LESSON_MAX_MB} MB, δεν ανέβηκε.`;
+
 /** The one refusal, wherever it comes from: the page's own check, the backend, or nginx's 413. */
 export const uploadTooBig = (name: string) =>
   `${name}: πάνω από ${UPLOAD_MAX_MB} MB, δεν ανέβηκε. Μίκρυνέ το (για ήχο: λιγότερα δευτερόλεπτα ή 128 kbps) και ξαναδοκίμασε.`;
@@ -24,9 +31,9 @@ export const uploadBroke = (name?: string) =>
  *  words them, from these same functions; any other status (502 when the backend is down behind nginx…)
  *  gets its number; no answer at all (fetch threw: Wi-Fi gone, or the backend down) gets a word about the
  *  connection. The backend's own text is never shown as it came, so an English or HTML answer never shows. */
-export function uploadFailed(name: string, answer: { status: number } | 'no answer'): string {
+export function uploadFailed(name: string, answer: { status: number } | 'no answer', tooBig: (name: string) => string = uploadTooBig): string {
   if (answer === 'no answer') return `${name}: δεν ανέβηκε, δεν ήρθε απάντηση. Έλεγξε τη σύνδεση και ξαναδοκίμασε.`;
-  if (answer.status === 413) return uploadTooBig(name);
+  if (answer.status === 413) return tooBig(name);
   if (answer.status === 500) return uploadBroke(name);
   return `${name}: το ανέβασμα απέτυχε (HTTP ${answer.status}).`;
 }

@@ -83,6 +83,9 @@ test('a package that is not a lesson is refused, and nothing is written', async 
   assert.equal(existsSync(path.join(dir, 'lessons', 'test-e-1')), false);
   const notZip = await server.inject({ method: 'POST', url: '/api/admin/lessons', payload: Buffer.from(`--${BOUNDARY}\r\nContent-Disposition: form-data; name="file"; filename="x.zip"\r\n\r\nhello\r\n--${BOUNDARY}--\r\n`), headers: { 'content-type': `multipart/form-data; boundary=${BOUNDARY}` } });
   assert.equal(notZip.statusCode, 400);
+  // A package has its own limit (LESSON_MAX_BYTES), bigger than other uploads': 11 MB reaches the lesson checks
+  const big = await importZip({ 'lesson.json': json(lesson), 'audio/0123456789abcdef.mp3': new Uint8Array(11 * 1024 * 1024).map((_, i) => (i * 2654435761) >>> 24) });
+  assert.notEqual(big.statusCode, 413, 'an 11 MB package is not refused as too big');
 });
 
 test('a kid plays the script: choice, a wrong try with its evidence, the answer shown after two, a star once', async () => {

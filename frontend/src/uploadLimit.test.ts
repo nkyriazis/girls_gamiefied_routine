@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { UPLOAD_MAX_BYTES, uploadBroke, uploadFailed, uploadTooBig } from '../../shared/uploads.ts';
+import { LESSON_MAX_BYTES, UPLOAD_MAX_BYTES, lessonTooBig, uploadBroke, uploadFailed, uploadTooBig } from '../../shared/uploads.ts';
 
 const conf = readFileSync(new URL('../nginx.conf', import.meta.url), 'utf8').replace(/#.*$/gm, '');
 
@@ -30,8 +30,20 @@ test('nginx lets a file of the limit through, with room for the multipart header
     `client_max_body_size ${size} is not above UPLOAD_MAX_BYTES (${UPLOAD_MAX_BYTES}) plus the headers`);
 });
 
-test('no other request gets the bigger body: client_max_body_size is set only for the upload', () => {
-  assert.equal(conf.match(/client_max_body_size/g)?.length, 1, 'client_max_body_size appears outside the upload location');
+// A lesson package has its own, bigger limit (LESSON_MAX_BYTES), on its own route
+const lessonsBlock = () => /location\s*=\s*\/api\/admin\/lessons\s*\{([^}]*)\}/.exec(conf)?.[1];
+
+test('nginx lets a lesson package of its limit through, on its own route', () => {
+  const block = lessonsBlock();
+  assert.ok(block, 'no `location = /api/admin/lessons { … }` in frontend/nginx.conf: nginx refuses a package over 1m');
+  assert.match(block, /proxy_pass\s+http:\/\/backend:3000;/);
+  const size = /client_max_body_size\s+(\S+);/.exec(block)?.[1];
+  assert.ok(size && bytes(size) >= LESSON_MAX_BYTES + 64 * 1024, `client_max_body_size ${size} is not above LESSON_MAX_BYTES plus the headers`);
+  assert.equal(uploadFailed('l.zip', { status: 413 }, lessonTooBig), lessonTooBig('l.zip'));
+});
+
+test('no other request gets a bigger body: client_max_body_size is set only for the upload and the lessons', () => {
+  assert.equal(conf.match(/client_max_body_size/g)?.length, 2, 'client_max_body_size appears outside the upload and lessons locations');
 });
 
 // What the page says (api.ts uploadFile → uploadFailed), for each way an upload can fail: always Greek, always the file
