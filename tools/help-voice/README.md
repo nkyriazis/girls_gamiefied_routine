@@ -41,7 +41,7 @@ The spoken line needn't be word for word what the bubble shows. A step's `say` r
    every clip is then recorded again.
 3. **The audit.** Every take is listened back (`audit.py`, faster-whisper large-v3) and
    passes only if all of these hold:
-   - Whisper hears what was written: character error rate ≤ 3%, ignoring accents and punctuation.
+   - Whisper hears what was written: character error rate ≤ 3%, ignoring accents, punctuation and word breaks, and reading a number the same as a digit or in words («πέντε» = «5»), since Whisper writes it either way.
    - Whisper is sure the speech is Greek (≥ 0.9). This catches an accent or another language.
    - It's the owl's voice: cosine similarity ≥ 0.8 to `owl.wav`, measured with the resemblyzer speaker embedding.
    - It goes at a pace a kid can follow (9–19 characters a second).
