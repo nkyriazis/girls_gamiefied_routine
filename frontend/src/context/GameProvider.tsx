@@ -29,7 +29,9 @@ const EMPTY_STATE: AppState = {
     exerciseAssignments: [],
     flowRuns: [],
     routineRuns: [],
-    helpSeen: []
+    helpSeen: [],
+    lessons: [],
+    lessonRuns: []
 };
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

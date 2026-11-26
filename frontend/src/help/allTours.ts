@@ -4,6 +4,7 @@ import { choresTour } from '../components/ChoresDrawer.help';
 import { homeTour, routineTour } from '../components/Dashboard.help';
 import { gameResultsTour, gameTour } from '../components/ExerciseGame.help';
 import { exercisesTour } from '../components/ExercisesDrawer.help';
+import { LESSON_HELP_KINDS, lessonTour } from '../components/LessonPlayer.help';
 import { gameSetupTour } from '../components/ExerciseSetup.help';
 import { activityTour, storeTour, transferTour } from '../components/StoreModal.help';
 import { problemTour, type ProblemHelpKind } from '../components/exercises/ProblemPlayer.help';
@@ -23,13 +24,15 @@ const types = Object.keys(EXERCISE_TYPES) as Exclude<Exercise['type'], 'problem'
 const RUNGS: Forgiveness[] = ['forgiving', 'unforgiving'];
 // A revision card on screen or not, a retry (#136) or not, an extra problem left on screen or not: the editions of the store and the drawer
 const BOTH = [false, true];
-const EDITIONS = BOTH.flatMap(revision => BOTH.flatMap(retry => BOTH.map(extra => ({ revision, retry, extra }))));
+// …and lessons of her class in the library or not
+const EDITIONS = BOTH.flatMap(revision => BOTH.flatMap(retry => BOTH.flatMap(extra => BOTH.map(lessons => ({ revision, retry, extra, lessons })))));
 
 export const allTours = (): Tour[] => [
   homeTour(), routineTour(),
-  ...EDITIONS.map(e => storeTour('u', e.revision, e.extra, e.retry)), activityTour('u'), transferTour('u'),
-  choresTour(false), choresTour(true), ...EDITIONS.map(e => exercisesTour(e.revision, e.extra, e.retry)),
+  ...EDITIONS.map(e => storeTour('u', e.revision, e.extra, e.retry, e.lessons)), activityTour('u'), transferTour('u'),
+  choresTour(false), choresTour(true), ...EDITIONS.map(e => exercisesTour(e.revision, e.extra, e.retry, e.lessons)),
   ...types.flatMap(t => RUNGS.map(r => exerciseTour('u', t, r))), ...types.map(t => exerciseTour('u', t, 'forgiving', true)), answerTour('u'),
+  ...LESSON_HELP_KINDS.map(k => lessonTour('u', k)),
   gameSetupTour(), gameTour(undefined), ...types.map(t => gameTour(t)), gameResultsTour(),
   ...(Object.keys(PROBLEM_KINDS) as ProblemHelpKind[]).flatMap(k => RUNGS.flatMap(r => [problemTour('u', k, r), problemTour('u', k, r, true)])),
 ];

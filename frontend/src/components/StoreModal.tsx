@@ -25,7 +25,9 @@ interface StoreModalProps {
 export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings, starTransfers, allUsers, onClose }) => {
   const isTouchDevice = useTouchDevice();
   // Earning stars sits next to spending them: her exercises of the day and «Κι άλλο πρόβλημα»
-  const { exerciseAssignments, config } = useGame();
+  const { exerciseAssignments, config, lessons: library } = useGame();
+  // Lessons of her class in the library: the owl's edition that explains them
+  const lessons = !!user.grade && library.some(l => l.grade === user.grade);
   const canEarn = exerciseAssignments.some(a => a.userId === user.id) || (!!user.grade && (config.settings.extraProblemsPerDay ?? 10) > 0);
   // A revision card among hers: the tour's edition that explains its pill
   const revision = exerciseAssignments.some(a => a.userId === user.id && a.revision && !a.extra);
@@ -132,7 +134,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ user, rewards, spendings
   };
 
   return (
-    <HelpScreen tour={storeTour(user.id, revision, extra, retry)}>
+    <HelpScreen tour={storeTour(user.id, revision, extra, retry, lessons)}>
       <motion.div
         className="store-overlay"
         initial={{ opacity: 0 }}

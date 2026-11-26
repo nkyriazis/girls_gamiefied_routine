@@ -6,6 +6,9 @@ import { SUBJECTS } from '@shared/curriculum';
 import { BOOK_FIELD, DIFFICULTY, FORGIVENESS, GRADES, gradeLabel, kidIsValid, newKid, placeOptions, READING, tidyUser, todayIn, withGrade } from './model';
 import { ColorField, IconField, SelectField, TextField } from './fields';
 
+// How her long-text lessons play: the same package, its ADHD path or its plain one (shared/lessons.ts LessonProfile)
+const LESSON_WAYS = [{ value: '', label: 'Κανονικά' }, { value: 'adhd', label: 'Με βοήθεια για ΔΕΠΥ' }];
+
 function KidForm({ value, onChange }: FormProps<ConfigUser>) {
     const { config } = useGame();
     const rung = FORGIVENESS.find(f => f.value === (value.forgiveness ?? 'forgiving'))!;
@@ -38,6 +41,11 @@ function KidForm({ value, onChange }: FormProps<ConfigUser>) {
                     <SelectField label="Λάθη" value={rung.value} options={FORGIVENESS}
                         onChange={f => onChange({ ...value, forgiveness: f as Forgiveness })} />
                     <p className="p-hint">{rung.says}</p>
+                    <SelectField label="Μαθήματα" value={value.adhd ? 'adhd' : ''} options={LESSON_WAYS}
+                        onChange={w => onChange({ ...value, adhd: w === 'adhd' || undefined })} />
+                    <p className="p-hint">{value.adhd
+                        ? 'Το μάθημα παίζει με διαλείμματα για κίνηση και με «σκέψου πρώτα» πριν από τις απαντήσεις, όπου το έχει ορίσει το πακέτο.'
+                        : 'Το μάθημα παίζει χωρίς τα βήματα που είναι μόνο για ΔΕΠΥ (διαλείμματα για κίνηση, «σκέψου πρώτα»).'}</p>
                 </>
             )}
         </>

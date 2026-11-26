@@ -259,3 +259,12 @@ select.p-input { appearance: auto; }
 .p-toast { padding: 12px 16px; border-radius: 1rem; background: #2a2a4a; border: 1px solid var(--color-success); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); font-weight: 600; pointer-events: auto; cursor: pointer; }
 .p-toast-text { display: block; line-height: 1.5; max-height: 9em; overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; }
 .p-toast.error { border-color: var(--color-danger); }
+
+/* The lessons library (settings/LessonsEditor.tsx) */
+.p-lessons { gap: 0.75rem; }
+.p-lesson { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; border-radius: 0.75rem; background: var(--p-card, rgba(127,127,127,0.08)); }
+.p-lesson-kids { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.95rem; }
+.p-lesson-kid { display: flex; align-items: center; gap: 0.4rem; }
+.p-lesson-talk summary { cursor: pointer; font-weight: 600; }
+.p-lesson-talk ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+.p-lesson-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }

@@ -2,6 +2,7 @@ import type {
   ActionLog, ChoreInstance, ConfigSaveSource, ConfigWarning, DataConfig, Exercise, ExerciseAssignmentWithExercise, ExerciseCategoryDef,
   ExerciseSession, HistoryPage, Spending, StarTransfer, StateSnapshot, TriggerResult
 } from '@shared/types';
+import type { Lesson, LessonRun, LessonStepResult, LessonSummary } from '@shared/lessons';
 import { UPLOAD_MAX_BYTES, uploadFailed, uploadTooBig } from '@shared/uploads';
 
 // REST calls. They report what someone did; the resulting state arrives over
@@ -168,6 +169,23 @@ export const api = {
   // «Δείξε μου»: a plain exercise closes with its answer shown; a problem names the step on screen (#68)
   revealExerciseAssignment: (assignmentId: string, step?: number) =>
     post<ExerciseAssignmentWithExercise>(`/exercise-assignments/${assignmentId}/reveal`, step === undefined ? {} : { step }, 'Failed to show the answer'),
+  // Lessons (shared/lessons.ts): a lesson's text, and her step in it (the stop she acts on; a repeat is a no-op)
+  getLesson: (id: string) => get<Lesson>(`/lessons/${id}`, 'Failed to load the lesson'),
+  lessonStep: (id: string, userId: string, stop: number, answer?: unknown) =>
+    post<LessonStepResult>(`/lessons/${id}/step`, answer === undefined ? { userId, stop } : { userId, stop, answer }, 'Failed to save the step'),
+  restartLesson: (id: string, userId: string) => post<LessonRun>(`/lessons/${id}/restart`, { userId }, 'Failed to restart the lesson'),
+  // A package from tools/lessons, in place of any lesson with its id; the server's refusal reads in Greek
+  importLesson: async (file: File): Promise<{ lesson: LessonSummary; replaced: boolean }> => {
+    if (file.size > UPLOAD_MAX_BYTES) throw new ApiError(uploadTooBig(file.name), 413);
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_URL}/admin/lessons`, { method: 'POST', body: formData })
+      .catch(() => { throw new ApiError(uploadFailed(file.name, 'no answer'), 0); });
+    const json = await response.json().catch(() => undefined);
+    if (!response.ok) throw new ApiError(json?.error || uploadFailed(file.name, { status: response.status }), response.status);
+    return json;
+  },
+  deleteLesson: (id: string) => request<void>('DELETE', `/admin/lessons/${id}`, undefined, 'Failed to delete the lesson'),
   answerExerciseAssignment: (assignmentId: string, answer: unknown) =>
     post<{ correct: boolean, starsAwarded: number, assignment: ExerciseAssignmentWithExercise, wrong?: number[] }>(`/exercise-assignments/${assignmentId}/answer`, { answer }, 'Failed to submit answer'),
 };

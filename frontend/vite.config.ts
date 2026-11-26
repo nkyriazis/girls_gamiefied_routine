@@ -82,7 +82,9 @@ export default defineConfig({
         globIgnores: ['**/assets/JsonEditor-*', '**/assets/jsonMode-*', '**/assets/*.worker-*'],
         runtimeCaching: [
           {
-            urlPattern: /\/api\/.*/i,
+            // Every /api call but a lesson's pictures and clips: a cached answer to a media range request stalls
+            // the owl's reading halfway (Chrome waits for bytes that never come), and they'd fill the 50 entries
+            urlPattern: /\/api\/(?!lessons\/[^/]+\/files\/).*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
