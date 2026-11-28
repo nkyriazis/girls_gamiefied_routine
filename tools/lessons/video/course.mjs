@@ -34,7 +34,7 @@ export async function course(id, mode) {
   const api = (method, path, data) => page.request.fetch(`http://localhost:5173/api${path}`, { method, data });
   await page.goto('http://localhost:5173/parent');
   await api('DELETE', `/admin/lessons/${id}`);
-  const buffer = fs.readFileSync(`/repo/tools/lessons/work/${id}.zip`);
+  const buffer = fs.readFileSync(`/repo/tools/lessons/work/${id}.preview.zip`);  // the preview: before the owner's sign-off too
   const r = await page.request.post('http://localhost:5173/api/admin/lessons', { multipart: { file: { name: `${id}.zip`, mimeType: 'application/zip', buffer } } });
   if (!r.ok()) throw new Error(`import: ${await r.text()}`);
   const kid = (await (await api('GET', '/admin/data')).json()).users.find(u => u.grade === lesson.grade);

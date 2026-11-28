@@ -1,0 +1,76 @@
+{
+  "about": "What the owl says for what the screen shows, in lessons (tools/lessons/speech/README.md). rules: a pattern (Python regex) and what she says instead, applied in order; status pending until the owner hears it and signs it off for this voice (voice: the id it was signed for). cases: words heard otherwise that the owner heard and found right as written.",
+  "rules": [
+    {
+      "id": "abbr-mx",
+      "match": "μ\\.Χ\\.",
+      "say": "μετά Χριστόν",
+      "why": "VoxCPM read «μ.Χ.» as noise",
+      "status": "pending"
+    },
+    {
+      "id": "abbr-px-bc",
+      "match": "π\\.Χ\\.",
+      "say": "προ Χριστού",
+      "why": "an abbreviation",
+      "status": "pending"
+    },
+    {
+      "id": "abbr-ka",
+      "match": "κ\\.ά\\.",
+      "say": "και άλλα",
+      "why": "an abbreviation",
+      "status": "pending"
+    },
+    {
+      "id": "abbr-px",
+      "match": "π\\.χ\\.",
+      "say": "για παράδειγμα",
+      "why": "an abbreviation",
+      "status": "pending"
+    },
+    {
+      "id": "abbr-kef",
+      "match": "κεφ\\.",
+      "say": "κεφάλαιο",
+      "why": "an abbreviation",
+      "status": "pending"
+    },
+    {
+      "id": "diaeresis-stress",
+      "match": "[ΰΐ]",
+      "say": "ή",
+      "why": "a stressed vowel with a diaeresis (Ταΰγετος) comes out garbled; «ή» sounds the same",
+      "status": "pending"
+    },
+    {
+      "id": "unit-metres",
+      "match": "(\\d)\\s*μ\\.(?!Χ)",
+      "say": "\\g<1> μέτρα",
+      "why": "a height in metres: the owl skipped «μ.»",
+      "status": "pending"
+    },
+    {
+      "id": "unit-celsius",
+      "match": "(\\d)\\s*(?:ο|°)C",
+      "say": "\\g<1> βαθμούς Κελσίου",
+      "why": "degrees Celsius: «οC» was read as a letter",
+      "status": "pending"
+    },
+    {
+      "id": "parenthesis-mid",
+      "match": "\\s*\\(([^()]*)\\)\\s*(?![.,;:!?·])",
+      "say": ", \\g<1>, ",
+      "why": "a parenthesis inside a sentence: said between two pauses, without the brackets",
+      "status": "pending"
+    },
+    {
+      "id": "parenthesis",
+      "match": "\\s*\\(([^()]*)\\)(?=\\s*[.,;:!?·])",
+      "say": ", \\g<1>",
+      "why": "a parenthesis at the end of a phrase: said after a pause, without the brackets",
+      "status": "pending"
+    }
+  ],
+  "cases": []
+}

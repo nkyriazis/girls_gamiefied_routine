@@ -18,6 +18,9 @@ import soundfile as sf
 
 from voice import embed, judge, say
 
+sys.path.insert(0, os.path.join(os.getcwd(), '..', 'lessons', 'speech'))
+from listen import judge_words, load_rules, spoken as speak_as  # noqa: E402
+
 pkg, lines_file = sys.argv[1], sys.argv[2]
 VOICE = json.load(open('voice/voice.json'))
 REF, REF_TEXT = 'voice/owl.wav', open('voice/owl.txt').read().strip()
@@ -28,14 +31,12 @@ MAX_TAKES = 5
 LUFS = -16.0
 
 
-# What the owl says for what the screen shows: abbreviations in full (VoxCPM read «μ.Χ.» as noise)
-SPOKEN = [('μ.Χ.', 'μετά Χριστόν'), ('π.Χ.', 'προ Χριστού'), ('κ.ά.', 'και άλλα'), ('π.χ.', 'για παράδειγμα'), ('κεφ.', 'κεφάλαιο')]
+registry = load_rules()
 
 
 def spoken(text):
-    for a, b in SPOKEN:
-        text = text.replace(a, b)
-    return text
+    """What the owl says for what the screen shows: the speech rules (tools/lessons/speech/rules.json)."""
+    return speak_as(text, registry)[0]
 
 
 def passes(r):
@@ -72,6 +73,22 @@ os.makedirs(os.path.join(pkg, 'audio'), exist_ok=True)
 os.makedirs('out/lesson-takes', exist_ok=True)
 ref_embedding = embed(REF)
 audio, report = {}, []
+# Every clip listened to word by word, for the words a person should hear (tools/lessons/speech/README.md)
+speech_path, snips = os.path.join(pkg, '..', 'speech.json'), os.path.join(pkg, '..', 'speech')
+speech = json.load(open(speech_path)) if os.path.exists(speech_path) else {}
+old = speech.get('clips', {}) if speech.get('voice') == voice_id else {}
+clips = {}
+
+
+def words_of(text, rel, cid):
+    # What Whisper heard is kept with the clip, so a change to the rules or the comparison costs no new listen
+    prev = old.get(rel)
+    heard = prev['words'] if prev and prev.get('words') is not None and prev['spoken'] == spoken(text) else None
+    clips[rel] = judge_words(text, os.path.join(pkg, rel), registry, snips, cid, heard)
+    for o in clips[rel]['odd']:
+        print(f'    hear: «{o["said"]}» heard «{o["heard"]}»', flush=True)
+
+
 for n, text in enumerate(lines, 1):
     cid = hashlib.sha1(f'{voice_id}:{spoken(text)}'.encode()).hexdigest()[:12]
     rel = f'audio/{cid}.mp3'
@@ -79,6 +96,7 @@ for n, text in enumerate(lines, 1):
     if os.path.exists(mp3):
         audio[text] = rel
         print(f'[{n}/{len(lines)}] kept {text[:60]}', flush=True)
+        words_of(text, rel, cid)
         continue
     takes = []
     for seed in range(1, MAX_TAKES + 1):
@@ -94,10 +112,14 @@ for n, text in enumerate(lines, 1):
     good = sorted([t for t in takes if t['pass']], key=lambda t: (t['cer'], -t['same_voice']))
     best = good[0] if good else min(takes, key=lambda t: t['cer'])
     encode(best['path'], mp3)
+    for t in takes:  # the takes are WAVs of a few MB each; the mp3 is what is kept
+        os.remove(t['path'])
     audio[text] = rel
+    words_of(text, rel, cid)
     report.append({'say': text, 'clip': rel, 'ok': bool(good), 'cer': best['cer'], 'heard': best['heard'], 'takes': len(takes)})
 
 lesson['audio'] = audio
+json.dump({'voice': voice_id, 'clips': clips}, open(speech_path, 'w'), ensure_ascii=False, indent=1)
 json.dump(lesson, open(lesson_path, 'w'), ensure_ascii=False, indent=2)
 json.dump(report, open(os.path.join(pkg, '..', 'voice-report.json'), 'w'), ensure_ascii=False, indent=1)
 bad = [r for r in report if not r['ok']]

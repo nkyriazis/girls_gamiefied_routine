@@ -1,0 +1,169 @@
+<title>Owl Pronunciation Check</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* A listening sheet: one column of cards, each a sound to judge; the play button is the biggest thing on it. */
+:root {
+  --bg: #f3f6f6; --card: #ffffff; --fg: #17252a; --muted: #5d7074; --line: #d9e2e3;
+  --accent: #0f8b8d; --accent-fg: #ffffff; --mark: #fde9a6; --ok: #1d7a46; --ok-bg: #e3f3e9; --warn: #a3471c; --warn-bg: #fbeae1;
+  --display: "Commissioner", "Noto Sans", system-ui, sans-serif; --body: "Inter", "Noto Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1a1c; --card: #172427; --fg: #e5eeef; --muted: #93a7aa; --line: #2a3a3d;
+  --accent: #3cc1c2; --accent-fg: #0b1a1b; --mark: #5a4a12; --ok: #6fd39a; --ok-bg: #173226; --warn: #f0a37c; --warn-bg: #3a2219; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1a1c; --card: #172427; --fg: #e5eeef; --muted: #93a7aa; --line: #2a3a3d;
+  --accent: #3cc1c2; --accent-fg: #0b1a1b; --mark: #5a4a12; --ok: #6fd39a; --ok-bg: #173226; --warn: #f0a37c; --warn-bg: #3a2219; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+.wrap { max-width: 720px; margin: 0 auto; padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 1.5rem/1.2 var(--display); margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 4px 0 0; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; }
+.bar .count { font-variant-numeric: tabular-nums; margin-right: auto; font-weight: 600; }
+.tab { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 999px; padding: 6px 14px; font: inherit; cursor: pointer; }
+.tab[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.note { padding: 10px 14px; border-radius: 10px; background: var(--warn-bg); color: var(--warn); margin: 0 0 12px; }
+.list { display: grid; gap: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.card.done { opacity: .72; }
+.head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.kind { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.word { font: 700 1.25rem/1.2 var(--display); }
+.rule { font: 700 1.2rem/1.3 var(--display); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.rule code { font: 500 .95rem var(--mono); background: var(--bg); padding: 2px 6px; border-radius: 6px; }
+.why, .freq { color: var(--muted); font-size: .9rem; }
+.ex { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; align-items: center; }
+.play { width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-fg); font-size: 1.2rem; cursor: pointer; grid-row: span 2; }
+.play.on { outline: 3px solid var(--accent); outline-offset: 3px; }
+.ctx { font-size: 1.02rem; overflow-wrap: anywhere; }
+.ctx mark { background: var(--mark); color: var(--fg); padding: 1px 3px; border-radius: 4px; font-weight: 600; }
+.heard { color: var(--muted); font-size: .85rem; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 10px; padding: 10px 14px; font: 600 .95rem var(--body); cursor: pointer; min-height: 44px; }
+.btn.yes { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+.btn.no { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+.respell { display: flex; gap: 8px; flex-wrap: wrap; }
+.respell input { flex: 1 1 180px; min-width: 0; font: 500 1.05rem var(--body); padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+.verdict { font-weight: 600; }
+.verdict.ok { color: var(--ok); } .verdict.say, .verdict.wrong { color: var(--warn); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.empty { text-align: center; color: var(--muted); padding: 40px 0; }
+</style>
+
+<div class="wrap">
+  <h1>Owl pronunciation check</h1>
+  <p class="sub">Play ▶ and judge only the marked words. Answers save as you go.</p>
+  <div class="bar">
+    <span class="count" id="count"></span>
+    <button class="tab" id="t-open" aria-pressed="true">To hear</button>
+    <button class="tab" id="t-done" aria-pressed="false">Answered</button>
+  </div>
+  <p class="note" id="note" hidden></p>
+  <div class="list" id="list"></div>
+</div>
+<audio id="audio" preload="none"></audio>
+
+<script type="application/json" id="data">/*ITEMS*/[]</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const audio = document.getElementById('audio');
+const verdicts = {};
+let db = null, view = 'open', playing = null;
+
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) k === 'class' ? e.className = v : k.startsWith('on') ? e.addEventListener(k.slice(2), v) : e.setAttribute(k, v);
+  for (const k of kids) if (k != null) e.append(k);
+  return e;
+}
+function play(src, btn) {
+  if (playing === btn && !audio.paused) { audio.pause(); return; }
+  document.querySelectorAll('.play.on').forEach(b => b.classList.remove('on'));
+  playing = btn; audio.src = src; btn?.classList.add('on');
+  audio.play().catch(() => {});
+}
+audio.addEventListener('ended', () => document.querySelectorAll('.play.on').forEach(b => b.classList.remove('on')));
+
+async function answer(item, body) {
+  const doc = { item: item.id, kind: item.kind, ...(item.kind === 'rule' ? { rule: item.rule } : { key: item.key }), ...body, at: new Date().toISOString() };
+  verdicts[item.id] = doc; render();
+  if (!db) return;
+  try { await db.collection('verdicts').doc(item.id).set(doc); }
+  catch (e) { showNote('Not saved: ' + (e?.message || 'the store did not answer') + '. Try again in a moment.'); }
+}
+function showNote(t) { const n = document.getElementById('note'); n.textContent = t; n.hidden = !t; }
+
+function example(item, ex) {
+  const p = el('button', { class: 'play', 'aria-label': 'Play' }, '▶');
+  p.addEventListener('click', () => play(ex.snip, p));
+  const [pre, at, post] = ex.context;
+  const line = el('div', { class: 'ctx' }, pre, el('mark', {}, at), post);
+  const heard = el('div', { class: 'heard' }, item.kind === 'rule' ? `«${ex.shown}» → «${ex.said}» · ` : '', `Whisper heard «${ex.heard}»`);
+  return el('div', { class: 'ex' }, p, line, heard);
+}
+
+function card(item) {
+  const v = verdicts[item.id];
+  const c = el('div', { class: 'card' + (v ? ' done' : '') });
+  const title = item.kind === 'rule'
+    ? el('div', { class: 'rule' }, el('code', {}, item.match), '→', `«${item.say}»`)
+    : el('div', { class: 'word' }, item.key);
+  c.append(el('div', { class: 'head' }, el('span', { class: 'kind' }, item.kind === 'rule' ? 'Rule' : 'Word'), title,
+    el('span', { class: 'freq' }, `in ${item.count} line${item.count === 1 ? '' : 's'}`)));
+  if (item.why) c.append(el('div', { class: 'why' }, item.why));
+  for (const ex of item.examples) c.append(example(item, ex));
+
+  if (v) {
+    const text = v.verdict === 'ok' ? '✓ Sounds right' : v.verdict === 'say' ? `✎ Say it as «${v.say}»` : `✗ Sounds wrong${v.note ? ': ' + v.note : ''}`;
+    const change = el('button', { class: 'btn' }, 'Change');
+    change.addEventListener('click', () => { delete verdicts[item.id]; if (db) db.collection('verdicts').doc(item.id).delete().catch(() => {}); render(); });
+    c.append(el('div', { class: 'acts' }, el('span', { class: 'verdict ' + v.verdict }, text), change));
+    return c;
+  }
+  const yes = el('button', { class: 'btn yes' }, '✓ Sounds right');
+  yes.addEventListener('click', () => answer(item, { verdict: 'ok' }));
+  const fix = el('div', { class: 'respell', hidden: '' });
+  const input = el('input', { id: 'in-' + item.id, 'aria-label': item.kind === 'rule' ? 'What is wrong' : 'How the owl should spell it to say it right' });
+  input.value = item.kind === 'case' ? item.key : '';
+  const save = el('button', { class: 'btn no' }, 'Save');
+  save.addEventListener('click', () => {
+    const t = input.value.trim();
+    if (item.kind === 'case') { if (t && t !== item.key) answer(item, { verdict: 'say', say: t }); else input.focus(); }
+    else answer(item, { verdict: 'wrong', note: t });
+  });
+  fix.append(input, save);
+  const no = el('button', { class: 'btn no' }, item.kind === 'rule' ? '✗ Sounds wrong' : '✎ Say it as…');
+  no.addEventListener('click', () => { fix.hidden = false; input.focus(); });
+  c.append(el('div', { class: 'acts' }, yes, no), fix);
+  return c;
+}
+
+function render() {
+  const list = document.getElementById('list');
+  const done = DATA.items.filter(i => verdicts[i.id]).length;
+  document.getElementById('count').textContent = `${done} of ${DATA.items.length} answered`;
+  document.getElementById('t-open').setAttribute('aria-pressed', view === 'open');
+  document.getElementById('t-done').setAttribute('aria-pressed', view === 'done');
+  const shown = DATA.items.filter(i => view === 'open' ? !verdicts[i.id] : verdicts[i.id]);
+  list.replaceChildren(...(shown.length ? shown.map(card)
+    : [el('p', { class: 'empty' }, view === 'open' ? (DATA.items.length ? 'All answered. Tell Claude to apply them.' : 'Nothing to hear: every word is signed off.') : 'Nothing answered yet.')]));
+}
+document.getElementById('t-open').addEventListener('click', () => { view = 'open'; render(); });
+document.getElementById('t-done').addEventListener('click', () => { view = 'done'; render(); });
+render();
+
+(async () => {
+  db = await window.claude?.use?.('db');
+  if (!db) { showNote('Answers can’t be saved in this view: open the page on claude.ai, signed in.'); return; }
+  const slow = setTimeout(() => showNote('Your saved answers haven’t loaded yet.'), 10000);
+  db.collection('verdicts').onSnapshot(snap => {
+    if (!snap.metadata.fromCache) { clearTimeout(slow); showNote(''); }
+    const ids = new Set(DATA.items.map(i => i.id));
+    for (const k of Object.keys(verdicts)) delete verdicts[k];
+    for (const d of snap.docs) if (ids.has(d.id)) verdicts[d.id] = d.data();
+    render();
+  }, e => { clearTimeout(slow); showNote('Saved answers could not be read: ' + (e?.message || e?.code || 'error')); });
+})();
+</script>
