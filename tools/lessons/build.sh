@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build a lesson package from its source, in one go: tools/lessons/work/<id>/lesson.src.json → tools/lessons/work/<id>.zip.
 # Cuts the pictures and the book's pages from the PDF, writes package/lesson.json, checks it as the Pi will, records
-# the owl's voice for every new or changed line (GPU; --no-voice skips it) and zips. Stops at the first problem.
+# the owl's voice for every new or changed line (GPU; --no-voice skips it), refuses words the owner hasn't heard, and zips. Stops at the first problem.
 #   tools/lessons/build.sh istoria-e-14 [--no-voice]
 set -euo pipefail
 cd "$(dirname "$0")/../.."
@@ -36,13 +36,17 @@ docker run --rm -u "$(id -u):$(id -g)" -e XDG_CACHE_HOME=/tmp -v "$PWD":/w -w /w
 done
 
 echo "== 3/4 check: as the Pi will, then what the skill asks (a LOOK is for you to judge; a FAIL stops the build)"
-tools/lessons/pack.sh "$dir/package" "$dir.zip" >/dev/null
+tools/lessons/pack.sh "$dir/package" "$dir/.check.zip" >/dev/null && rm -f "$dir/.check.zip"  # the zip comes last, once the gate passes
 tools/lessons/test/test.sh "$id" | grep -vE '^PASS' || true
 tools/lessons/test/test.sh "$id" >/dev/null || { echo "Fix the FAILs in $dir/lesson.src.json and build again" >&2; exit 1; }
 
 if [ $voice = 1 ]; then
   echo "== 4/4 the owl's voice"
   tools/lessons/voice.sh "$dir/package"
+  # The preview, for the video on the dev stack only (video.sh): made whatever the gate says, never imported to the Pi
+  tools/lessons/pack.sh "$dir/package" "$dir.preview.zip" >/dev/null
+  # Every word the owl says was heard by the owner, once (tools/lessons/speech/README.md)
+  node tools/lessons/speech/gate.mjs "$dir" || exit 1
 else
   echo "== 4/4 the owl's voice: skipped (--no-voice); lines not yet recorded play silent"
 fi

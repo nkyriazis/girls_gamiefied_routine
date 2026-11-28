@@ -7,9 +7,15 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 [ $# -eq 1 ] || { sed -n 2,5p "$0"; exit 2; }
 pkg=$1
+t0=$(date +%s)
 docker build -q -t help-voice tools/help-voice >/dev/null
 docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/w -w /w node:24-alpine node tools/lessons/lines.mjs "$pkg" > "$pkg/../lines.json"
 echo "$(python3 -c "import json,sys; print(len(json.load(open(sys.argv[1]))))" "$pkg/../lines.json") lines to say"
 docker run --rm --gpus all -v help-voice-cache:/root/.cache -v "$PWD:/repo" -w /repo/tools/help-voice help-voice \
-  sh -c "python -u ../lessons/read_aloud.py /repo/$pkg /repo/$pkg/../lines.json; s=\$?; chown -R $(id -u):$(id -g) /repo/$pkg /repo/$pkg/../voice-report.json out 2>/dev/null; exit \$s" \
+  sh -c "python -u ../lessons/read_aloud.py /repo/$pkg /repo/$pkg/../lines.json; s=\$?; chown -R $(id -u):$(id -g) /repo/$pkg /repo/$pkg/../voice-report.json /repo/$pkg/../speech.json /repo/$pkg/../speech out 2>/dev/null; exit \$s" \
   | grep -v ' kept '
+# How long, for the rounds log (tools/lessons/speech/README.md, «Getting faster»)
+tools/lessons/speech/log.sh voice "$(basename "$(dirname "$(realpath "$pkg")")")" $(( $(date +%s) - t0 )) "$(python3 -c '
+import json, sys; s = json.load(open(sys.argv[1])); r = json.load(open(sys.argv[2]))
+print(json.dumps({"clips": len(s["clips"]), "recorded": len(r), "odd": sum(len(c["odd"]) for c in s["clips"].values())}))' \
+  "$pkg/../speech.json" "$pkg/../voice-report.json")"
