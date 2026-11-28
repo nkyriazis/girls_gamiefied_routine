@@ -98,6 +98,11 @@ if (expect.hardWords) {
   check(`the expected hard words explained (${expect.minHardWords} of ${expect.hardWords.length})`, hit.length >= expect.minHardWords,
     `got ${hit.join(', ')}; missing ${expect.hardWords.filter(h => !hit.includes(h)).join(', ')}`);
 }
+// A sentence that points at a picture («στην αριστερή φωτογραφία», «εικόνα 13.2», «ο χάρτης») reads wrong with
+// no picture beside it: a caption made into a piece, or a picture left behind
+const POINTS = /φωτογραφί|εικόν(α|ες|ας)\b|χάρτ(η|ης|ες)\b|πίνακ(α|ας|ες)\b|σκίτσ/i;
+const pointing = lesson.pieces.flatMap(p => p.image ? [] : p.sentences.map((s, k) => ({ p, k, s })).filter(x => POINTS.test(x.s)));
+check('a sentence that points at a picture has the picture on its piece', !pointing.length, pointing.map(x => `${x.p.id}[${x.k}]: ${x.s.slice(0, 60)}`).join(' | '));
 const easy = lesson.pieces.reduce((n, p) => n + Object.keys(p.easy ?? {}).length, 0);
 const longSentences = lesson.pieces.flatMap(p => p.sentences.map((s, k) => ({ p, k, n: s.split(/\s+/).length }))).filter(x => x.n >= 20);
 const unhelped = longSentences.filter(x => !x.p.easy?.[x.k]);

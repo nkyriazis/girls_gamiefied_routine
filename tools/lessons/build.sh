@@ -24,7 +24,16 @@ docker run --rm -u "$(id -u):$(id -g)" -e XDG_CACHE_HOME=/tmp -v "$PWD":/w -w /w
     page) pdftoppm -f "$a" -l "$a" -scale-to-x 1000 -scale-to-y -1 -jpeg -jpegopt quality=78 -singlefile "$pdf" "package/${b%.jpg}" ;;
     crop) pdftoppm -f "$a" -l "$a" -r 150 -x "$b" -y "$c" -W "$d" -H "$e" -jpeg -jpegopt quality=82 -singlefile "$pdf" "package/${f%.jpg}"
           echo "  $f" ;;
+    join) ;;
   esac; done < jobs.txt' sh "$dir"
+# A picture of several boxes: the parts side by side, the same height, a white gap between (ffmpeg)
+{ grep '^join ' "$dir/jobs.txt" || true; } | while read -r _ out parts; do
+  set -- $parts; inputs=; chain=; k=0
+  for p in "$@"; do inputs="$inputs -i package/$p"; chain="$chain[$k]scale=-2:400,pad=iw+24:ih:12:0:white[s$k];"; k=$((k+1)); done
+  docker run --rm -u "$(id -u):$(id -g)" --entrypoint ffmpeg -v "$PWD/$dir":/w -w /w linuxserver/ffmpeg -v error -y $inputs \
+    -filter_complex "$chain$(for i in $(seq 0 $((k-1))); do printf '[s%d]' "$i"; done)hstack=inputs=$k" -q:v 3 "package/$out" </dev/null
+  (cd "$dir/package" && rm -f "$@"); echo "  $out ($k parts)"
+done
 
 echo "== 3/4 check: as the Pi will, then what the skill asks (a LOOK is for you to judge; a FAIL stops the build)"
 tools/lessons/pack.sh "$dir/package" "$dir.zip" >/dev/null
