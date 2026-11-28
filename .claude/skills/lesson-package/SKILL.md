@@ -77,6 +77,8 @@ pieces at once.
   `icon` one emoji, `chapter`, `title` short (the chapter's own, shortened), `source`: book code, chapter, pages.
 - **Pieces**: 2–4 sentences, at most ~70 words. **The book's own sentences**: you may cut a clause that only
   lists names nobody is asked about, or split a long sentence; never add facts. One idea a piece; 5–8 pieces a chapter.
+  A piece ends on a whole thought: never stop on a sentence that announces what comes next in the book («Θερμόμετρα
+  δε χρησιμοποιούμε όμως μόνο…» without the places it then lists); take the next sentence too, or neither.
   - `id` short (`p1`…), `title` 2–5 words saying what the piece is about.
   - `key`: the sentence that says what matters most; it is marked for her while she reads.
   - `glossary`: the words she would **stop at**, at most 4 a piece and about 3 a piece over the lesson: the book's
@@ -99,6 +101,9 @@ pieces at once.
 - **Captions, tables and timelines stay what they are.** A caption goes with its picture (`image.caption`); a table or
   a timeline worth learning is cut as a picture and asked about (see Questions); never turned into a sentence of
   yours for a piece. The build's wording check flags such sentences.
+- **A sentence that points at a picture** («στην αριστερή φωτογραφία», «εικόνα 13.2», «στον χάρτη») needs that picture
+  on its piece (`image`): cut it into `pictures`. Without it she reads about something she can't see; the build fails
+  such a piece.
 - **The chapter's pages** run from its title to the page before the next chapter's title, with the pictures and
   sources on them; `book.from`/`to` cover all of them.
 - **The book's open questions** («Πώς εξηγείτε…», «Τι θα κάνατε…») go in `talk`, for the parent, in the
@@ -124,7 +129,9 @@ pieces at once.
 Questions (`ask.question.type`):
 - `find-sentence` (tap the sentence; `main:true` for «which sentence says what matters most») — main ideas are what
   ADHD readers miss: put one `main:true` early, and one or two plain finds.
-- `multiple-choice` (3 options, one right; the wrong ones from the same text, plausible, not silly), `true-false`,
+- `multiple-choice` (3 options, one right; the wrong ones from the same text, plausible, not silly: each a thing the
+  chapter says or a near miss of the answer, never one nobody would pick, such as «Τις θάλασσες της Ευρώπης» for what
+  mountains shaped, or «Μόνο πεδιάδες» for what lies between steep slopes), `true-false`,
   `fill-blank` (word bank with 1–2 extra words), `ordering` (3–5 events), `match-pairs` (3–4 pairs, short right sides).
 - `sort` (cards into two boxes: then/now, cause/effect, natural/human…): for comparing.
 - `spot` (tap the place on a picture; regions in % of the image): where on a picture something is. Draw the regions
@@ -132,7 +139,7 @@ Questions (`ask.question.type`):
 - **What the book shows besides its text is learning too**: photos, drawings, maps, diagrams, timelines, tables and
   their captions. Any question may ask what only they show (a people's land read off a map's labels, what a photo's
   people are doing, which comes first on a timeline, a row of a table), not just the text. Keep it on the chapter's
-  subject, name in the question what to look at («Κοίτα τον χάρτη…», «Στη φωτογραφία…»), and make sure she sees it
+  subject (a map of the mountains asks about mountains, not about the seas it also names), name in the question what to look at («Κοίτα τον χάρτη…», «Στη φωτογραφία…»), and make sure she sees it
   while answering: cut it into `pictures` and name it in the `ask` step's `"picture": "images/<name>.jpg"`, which shows
   it in place of the piece's text (a `spot` shows its own `image`). Such a question has no `evidence` (no sentence
   holds the answer); a wrong try says «κοίτα ξανά την εικόνα».

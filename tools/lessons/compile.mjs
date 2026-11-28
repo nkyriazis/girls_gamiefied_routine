@@ -2,6 +2,8 @@
 // book for it. The source is lesson.json as the Pi reads it (shared/lessons.ts), plus where its pictures come from:
 //   "book":     { "pdf": "<file under materials/pdf>", "from": <first PDF page>, "to": <last>, "firstPrinted": <number printed on the first> }
 //   "pictures": { "<name>": { "page": <PDF page>, "box": [x, y, w, h] } }   (pixels of page-N.png, 150 dpi)
+//   or "box": [[x, y, w, h], [x, y, w, h]…]: pictures the book shows apart, cut each and set side by side in that
+//   order (the sun and the iceberg a caption calls «αριστερή» and «δεξιά»)
 // A piece or a `spot` question names a picture as images/<name>.jpg. `pages` (the book steps) is written from `book`.
 // Run by build.sh:  node tools/lessons/compile.mjs <work dir>   writes <work dir>/package/lesson.json and prints the jobs.
 import fs from 'node:fs';
@@ -25,10 +27,15 @@ for (let p = book.from; p <= book.to; p++) {
 }
 for (const [name, pic] of Object.entries(pictures)) {
   if (!/^[a-z0-9-]+$/.test(name)) fail(`picture name «${name}»: lowercase latin, digits and -`);
-  const [x, y, w, h] = pic.box ?? [];
-  if (!Number.isInteger(pic.page) || ![x, y, w, h].every(n => Number.isInteger(n) && n >= 0) || !w || !h)
-    fail(`picture «${name}» needs page and box [x, y, w, h] in pixels of page-N.png`);
-  jobs.push(`crop ${pic.page} ${x} ${y} ${w} ${h} images/${name}.jpg`);
+  const boxes = Array.isArray(pic.box?.[0]) ? pic.box : [pic.box ?? []];
+  const fits = b => b.length === 4 && b.every(n => Number.isInteger(n) && n >= 0) && b[2] > 0 && b[3] > 0;
+  if (!Number.isInteger(pic.page) || !boxes.length || !boxes.every(fits))
+    fail(`picture «${name}» needs page and box [x, y, w, h] (or a list of them) in pixels of page-N.png`);
+  if (boxes.length === 1) jobs.push(`crop ${pic.page} ${boxes[0].join(' ')} images/${name}.jpg`);
+  else {
+    boxes.forEach((b, k) => jobs.push(`crop ${pic.page} ${b.join(' ')} images/${name}.part${k}.jpg`));
+    jobs.push(`join images/${name}.jpg ${boxes.map((_, k) => `images/${name}.part${k}.jpg`).join(' ')}`);
+  }
 }
 // Every picture the lesson names is one this file cuts
 const named = [...lesson.pieces.map(p => p.image?.file), ...lesson.script.flatMap(s => [s.question?.image, s.picture])].filter(Boolean);

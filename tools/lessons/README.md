@@ -21,7 +21,8 @@ question she can get wrong, both tries used up on one multiple choice (the answe
 other piece, «Πιο απλά» in the others. It plays the path of the dev kid's switch (Παιδιά → Μαθήματα: ΔΕΠΥ or plain). It refuses while the dev stack is down or a schedule would start mid-video.
 
 The source is the lesson as the Pi reads it plus where its pictures come from in the book (`book`: the PDF and the
-chapter's pages; `pictures`: a page and a box each). `build.sh` does the rest, stopping at the first problem:
+chapter's pages; `pictures`: a page and a box each, or a list of boxes for pictures the book shows apart, which the
+build sets side by side in that order). `build.sh` does the rest, stopping at the first problem:
 `compile.mjs` writes `package/lesson.json` (with `pages`) and the list of what to cut, the edu-materials image cuts
 the pictures and the pages, `pack.sh` checks, `voice.sh` records what is new, `pack.sh` zips.
 
